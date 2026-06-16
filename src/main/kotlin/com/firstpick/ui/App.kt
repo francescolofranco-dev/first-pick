@@ -51,6 +51,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.firstpick.advisor.Confidence
+import com.firstpick.advisor.ConfidenceLevel
 import com.firstpick.model.DraftPhase
 
 @Composable
@@ -141,12 +143,10 @@ private fun PackTable(cards: List<PackCardUi>) {
 /** Flags when the top pick isn't clearly ahead — "use your judgment". */
 @Composable
 private fun ConfidenceBanner(cards: List<PackCardUi>) {
-    val top = cards.getOrNull(0)?.value ?: return
-    val second = cards.getOrNull(1)?.value ?: return
-    val gap = top - second
-    if (gap >= 7.0) return // clear pick — no banner
-    val tossUp = gap < 3.0
-    val contenders = cards.count { (it.value ?: 0.0) >= top - 3.0 }
+    val confidence = Confidence.of(cards.mapNotNull { it.value })
+    if (confidence.level == ConfidenceLevel.CLEAR) return // clear pick — no banner
+    val tossUp = confidence.level == ConfidenceLevel.TOSS_UP
+    val contenders = confidence.contenders
     val accent = if (tossUp) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.secondary
     Row(
         Modifier.fillMaxWidth().padding(bottom = 6.dp).clip(RoundedCornerShape(8.dp))
