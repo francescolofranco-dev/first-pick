@@ -50,8 +50,17 @@ fun main(args: Array<String>) = runBlocking {
         }
     }
     val picksPerPack = maxPick + 1
-    val engine = AdvisorEngine(AdvisorEngine.Config(totalPicks = picksPerPack * 3, picksPerPack = picksPerPack))
-    println("Replaying $rows picks across ${drafts.size} drafts ($picksPerPack picks/pack)…")
+    // Constants overridable via -Dfirstpick.* so the tuning loop can A/B without recompiling.
+    fun sysD(key: String, def: Double) = System.getProperty(key)?.toDoubleOrNull() ?: def
+    val base = AdvisorEngine.Config()
+    val cfg = base.copy(
+        totalPicks = picksPerPack * 3,
+        picksPerPack = picksPerPack,
+        archWeightBase = sysD("firstpick.archWeightBase", base.archWeightBase),
+        needsRampStart = sysD("firstpick.needsRampStart", base.needsRampStart),
+    )
+    val engine = AdvisorEngine(cfg)
+    println("Replaying $rows picks across ${drafts.size} drafts ($picksPerPack picks/pack); archWeightBase=${cfg.archWeightBase} needsRampStart=${cfg.needsRampStart}")
 
     val m = Metrics()
     for ((_, picks) in drafts) {
