@@ -28,3 +28,25 @@ fun pipColor(c: Char): Color = when (c) {
     'G' -> Color(0xFF5FB36A)
     else -> Color(0xFF9AA6A2)
 }
+
+/** Quality tier color for a 0–100 pick VALUE — green = great, red = weak. */
+fun valueTierColor(value: Double?): Color = when {
+    value == null -> Color(0xFF9AA6A2)
+    value >= 75 -> Color(0xFFFFCA63) // bomb (gold)
+    value >= 63 -> Color(0xFF5FD08C) // great (green)
+    value >= 54 -> Color(0xFF7FD1C4) // good (teal)
+    value >= 46 -> Color(0xFFE3C766) // okay (yellow)
+    value >= 38 -> Color(0xFFE0995F) // filler (orange)
+    else -> Color(0xFFD9716B)        // weak (red)
+}
+
+/** One-word quality label for a pick VALUE. */
+fun valueTierLabel(value: Double?): String = when {
+    value == null -> "—"
+    value >= 75 -> "Bomb"
+    value >= 63 -> "Great"
+    value >= 54 -> "Good"
+    value >= 46 -> "Okay"
+    value >= 38 -> "Filler"
+    else -> "Weak"
+}

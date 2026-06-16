@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -117,9 +118,10 @@ private fun PackPane(state: DraftUiState) = when {
 @Composable
 private fun PackTable(cards: List<PackCardUi>) {
     Column(Modifier.fillMaxSize()) {
-        Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp)) {
-            HeaderCell("#", 26.dp)
-            HeaderCell("VALUE", 52.dp)
+        ConfidenceBanner(cards)
+        Row(Modifier.fillMaxWidth().padding(start = 12.dp, end = 8.dp, top = 4.dp, bottom = 4.dp)) {
+            HeaderCell("#", 22.dp)
+            HeaderCell("VALUE", 54.dp)
             HeaderCell("Card", weight = 1f)
             HeaderCell("Color", 52.dp)
             HeaderCell("GIH%", 52.dp)
@@ -136,45 +138,78 @@ private fun PackTable(cards: List<PackCardUi>) {
     }
 }
 
+/** Flags when the top pick isn't clearly ahead — "use your judgment". */
+@Composable
+private fun ConfidenceBanner(cards: List<PackCardUi>) {
+    val top = cards.getOrNull(0)?.value ?: return
+    val second = cards.getOrNull(1)?.value ?: return
+    val gap = top - second
+    if (gap >= 7.0) return // clear pick — no banner
+    val tossUp = gap < 3.0
+    val contenders = cards.count { (it.value ?: 0.0) >= top - 3.0 }
+    val accent = if (tossUp) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.secondary
+    Row(
+        Modifier.fillMaxWidth().padding(bottom = 6.dp).clip(RoundedCornerShape(8.dp))
+            .background(accent.copy(alpha = 0.14f)).padding(horizontal = 10.dp, vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(Modifier.clip(RoundedCornerShape(6.dp)).background(accent).padding(horizontal = 7.dp, vertical = 2.dp)) {
+            Text(if (tossUp) "TOSS-UP" else "LEAN", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimary)
+        }
+        Spacer(Modifier.width(8.dp))
+        Text(
+            if (tossUp) "Top $contenders are nearly tied — trust your read." else "Only a slight edge to the top pick.",
+            fontSize = 12.sp,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+    }
+}
+
 @Composable
 private fun PackRow(card: PackCardUi) {
     val highlight = card.rank == 1
+    val tier = valueTierColor(card.value)
     Row(
         Modifier
             .fillMaxWidth()
+            .height(IntrinsicSize.Min)
             .clip(RoundedCornerShape(8.dp))
             .background(
                 if (highlight) MaterialTheme.colorScheme.primaryContainer
                 else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
-            )
-            .padding(horizontal = 8.dp, vertical = 7.dp),
+            ),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        MonoCell("${card.rank}", 26.dp)
-        MonoCell(card.value.asInt(), 52.dp, weight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-        Column(Modifier.weight(1f)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                if (card.isBomb) Text("★ ", fontSize = 13.sp, color = MaterialTheme.colorScheme.tertiary)
-                CardPreview(card.imageUrl) {
-                    Text(
-                        card.name,
-                        fontSize = 13.sp,
-                        fontWeight = if (highlight) FontWeight.Bold else FontWeight.Normal,
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
+        Box(Modifier.width(4.dp).fillMaxHeight().background(tier)) // quality accent
+        Row(
+            Modifier.weight(1f).padding(start = 8.dp, end = 8.dp, top = 7.dp, bottom = 7.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            MonoCell("${card.rank}", 22.dp)
+            Column(Modifier.width(54.dp)) {
+                Text(card.value.asInt(), fontFamily = FontFamily.Monospace, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = tier)
+                Text(valueTierLabel(card.value), fontSize = 9.sp, color = tier)
+            }
+            Column(Modifier.weight(1f)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (card.isBomb) Text("★ ", fontSize = 13.sp, color = MaterialTheme.colorScheme.tertiary)
+                    CardPreview(card.imageUrl) {
+                        Text(
+                            card.name,
+                            fontSize = 13.sp,
+                            fontWeight = if (highlight) FontWeight.Bold else FontWeight.Normal,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                    }
+                }
+                if (card.reasons.isNotEmpty()) {
+                    Text(card.reasons.joinToString(" · "), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
-            if (card.reasons.isNotEmpty()) {
-                Text(
-                    card.reasons.joinToString(" · "),
-                    fontSize = 11.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
+            MonoCell(card.color.ifBlank { "—" }, 52.dp)
+            MonoCell(card.gihWr.asPct(), 52.dp)
+            MonoCell(card.alsa.as1dp(), 48.dp)
         }
-        MonoCell(card.color.ifBlank { "—" }, 52.dp)
-        MonoCell(card.gihWr.asPct(), 52.dp)
-        MonoCell(card.alsa.as1dp(), 48.dp)
     }
 }
 
