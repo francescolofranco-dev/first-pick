@@ -59,3 +59,27 @@ tasks.register<JavaExec>("rankDemo") {
     if (project.hasProperty("stop")) a.add(project.property("stop").toString())
     args(a)
 }
+
+// Eval: backtest the advisor against a 17Lands draft dataset (see docs/eval-harness.md).
+//   ./gradlew evalHarness -Pdata=/tmp/mkm_sample.csv -Pset=MKM [-Pformat=PremierDraft] [-Plimit=90000]
+tasks.register<JavaExec>("evalHarness") {
+    group = "verification"
+    description = "Backtest the advisor's picks against a 17Lands draft dataset."
+    mainClass.set("com.firstpick.eval.EvalHarnessKt")
+    classpath = sourceSets["main"].runtimeClasspath
+    maxHeapSize = "2g"
+    val a = mutableListOf<String>()
+    a.add(project.findProperty("data")?.toString() ?: "")
+    a.add(project.findProperty("set")?.toString() ?: "MKM")
+    a.add(project.findProperty("format")?.toString() ?: "PremierDraft")
+    project.findProperty("limit")?.let { a.add(it.toString()) }
+    args(a)
+}
+
+// Writes the eval harness runtime classpath to a file so it can be run as plain `java`
+// (parallel-safe — no Gradle lock contention when fanning out across sets).
+tasks.register("printEvalClasspath") {
+    val out = layout.buildDirectory.file("eval-classpath.txt")
+    val cp = sourceSets["main"].runtimeClasspath
+    doLast { out.get().asFile.writeText(cp.asPath) }
+}

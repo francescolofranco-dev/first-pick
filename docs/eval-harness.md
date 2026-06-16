@@ -15,9 +15,24 @@ P3 lock; needed removal jumps a slightly-better creature late but *not* early; t
 detection; …) and asserts the engine agrees. It tests **direction**, not exact scores,
 so it stays valid as constants are tuned. This is the safety net for every change.
 
-## Layer 2 — Dataset backtest harness (next milestone — M8)
+## Layer 2 — Dataset backtest harness (built ✅)
 
-The engine of actual improvement. Offline, reproducible, per-set.
+The engine of actual improvement. Offline, reproducible, per-set. Code in
+`src/main/kotlin/com/firstpick/eval/`.
+
+```bash
+# grab a sample (streams, stops early — only a few MB downloaded)
+SET=MKM
+curl -s "https://17lands-public.s3.amazonaws.com/analysis_data/draft_data/draft_data_public.$SET.PremierDraft.csv.gz" \
+  | gunzip | head -n 90000 > /tmp/${SET}_sample.csv
+./gradlew evalHarness -Pdata=/tmp/${SET}_sample.csv -Pset=$SET
+```
+
+**MKM baseline (90k picks, 2321 drafts):** Top-1 agreement 40.6%, Top-3 73.4%;
+winner-minus-loser agreement **+4.7 pts** (drafters who pick what we recommend win
+more); regret vs the greedy oracle **0.86 pts (ours) vs 2.23 pts (the field)**; VALUE
+calibration monotonic (52% → 61%). i.e. we sacrifice less win rate than the average
+drafter, align with winning play, and our 0–100 scale tracks real win rate.
 
 ### Data
 

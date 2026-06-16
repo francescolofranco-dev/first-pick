@@ -63,6 +63,12 @@ class CardRepository(
         return RankedCard(grpId, name ?: byNm?.name ?: "", byNm)
     }
 
+    /** Resolve a card by name (used by the eval harness, which works from 17Lands names). */
+    fun resolveName(name: String): RankedCard {
+        val r = byName[normalize(name)]
+        return RankedCard(r?.mtgaId ?: name.hashCode(), r?.name ?: name, r)
+    }
+
     private fun normalize(name: String): String =
         name.lowercase().substringBefore(" //").trim() // match split-card front face
 
