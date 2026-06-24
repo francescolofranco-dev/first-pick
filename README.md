@@ -76,13 +76,23 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the architecture.
 ## Development
 
 ```bash
-./gradlew run            # launch the app
-./gradlew test           # unit tests
-./gradlew packageDmg     # build the macOS .dmg
+./gradlew run                  # launch the app (fastest; uses your dev JDK)
+./gradlew test                 # unit tests
+./gradlew createDistributable  # build a runnable FirstPick.app for local testing
+./gradlew packageDmg           # build the macOS .dmg
 
 # dev helpers (replay / inspect real logs)
 ./gradlew replay   -PlogPath="$HOME/Library/Logs/Wizards of the Coast/MTGA/Player.log"
 ./gradlew rankDemo -PlogPath="<log>" -Pstop="2:3"   # advisor output for a mid-draft pack
+```
+
+`createDistributable` writes `build/compose/binaries/main/app/FirstPick.app`
+(`open` it or copy to /Applications). Packaging needs a **full** JDK that ships
+`jpackage`; if your default JDK is an IDE's bundled JBR (which omits it), point
+packaging at one:
+
+```bash
+./gradlew createDistributable -PcomposeJdk="$(/usr/libexec/java_home)"   # or set COMPOSE_JDK
 ```
 
 Env vars: `FIRSTPICK_LOG=<path>` watches a custom log; `FIRSTPICK_FORCE_DECKS=1`

@@ -29,9 +29,23 @@ dependencies {
 compose.desktop {
     application {
         mainClass = "com.firstpick.MainKt"
+
+        // Packaging (createDistributable / packageDmg / notarizeDmg) needs a *full*
+        // JDK that ships `jpackage`. The Gradle toolchain often resolves to an IDE's
+        // JBR, which omits jpackage, so allow pointing packaging at a full JDK ≥ 17
+        // via `-PcomposeJdk=<path>` or the COMPOSE_JDK env var. This does not affect
+        // compilation or `./gradlew run`.
+        val composeJdk = (project.findProperty("composeJdk") as String?)
+            ?: providers.environmentVariable("COMPOSE_JDK").orNull
+        if (composeJdk != null) javaHome = composeJdk
+
         nativeDistributions {
             targetFormats(TargetFormat.Dmg)
             packageName = "FirstPick"
+            // jlink builds a minimal runtime; without these the packaged app crashes
+            // (java.net.http for the 17Lands/Scryfall clients, jdk.unsupported for
+            // JNA). Regenerate with `./gradlew suggestRuntimeModules`.
+            modules("java.instrument", "java.net.http", "jdk.unsupported")
             // Distributable bundle version. The release workflow overrides this
             // from the git tag (-PpackageVersion=…). Defaults to 1.0.0 because
             // macOS requires the bundle's major version to be ≥ 1.
