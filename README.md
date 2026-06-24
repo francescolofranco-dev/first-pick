@@ -60,7 +60,8 @@ will quarantine it. After dragging it to Applications, clear the quarantine flag
 xattr -cr "/Applications/FirstPick.app"
 ```
 
-A signed/notarized `.dmg` and a Homebrew cask are on the roadmap.
+A signed/notarized `.dmg` and a Homebrew cask are wired up but not yet live (they
+need an Apple Developer account). Maintainers: see [docs/distribution.md](docs/distribution.md).
 
 ## How it works
 
@@ -90,8 +91,8 @@ previews the deck builder mid-draft; `FIRSTPICK_SMOKE=1` opens then self-exits.
 ## Roadmap
 
 - Card-image hover preview (Scryfall images)
-- Signed/notarized `.dmg` + Homebrew cask
-- Transparent always-on-top overlay over the Arena window
+- Signed/notarized `.dmg` + Homebrew cask — *scaffolded, pending Apple enrollment ([docs/distribution.md](docs/distribution.md))*
+- Transparent always-on-top overlay over the Arena window — *implemented, with click-through; polishing*
 - Sealed support; smarter curve-aware deck building
 
 ## Data sources & attribution

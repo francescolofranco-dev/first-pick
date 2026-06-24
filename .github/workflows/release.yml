@@ -1,0 +1,63 @@
+name: Release
+
+# Builds, signs, notarizes, and publishes a macOS .dmg when a vX.Y.Z tag is pushed.
+# Requires the repo secrets documented in docs/distribution.md. Until those exist
+# (and a tag is pushed) this workflow simply never runs — it's safe to merge now.
+
+on:
+  push:
+    tags: [ 'v*' ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build, sign, notarize & publish dmg
+    runs-on: macos-latest # Apple Silicon runner → arm64 dmg
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Import Developer ID certificate
+        uses: apple-actions/import-codesign-certs@v3
+        with:
+          p12-file-base64: ${{ secrets.MACOS_CERTIFICATE_P12 }}
+          p12-password: ${{ secrets.MACOS_CERTIFICATE_PWD }}
+
+      - name: Derive version from tag
+        id: ver
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Build, sign & notarize dmg
+        env:
+          MACOS_SIGNING_IDENTITY: ${{ secrets.MACOS_SIGNING_IDENTITY }}
+          NOTARIZATION_APPLE_ID: ${{ secrets.NOTARIZATION_APPLE_ID }}
+          NOTARIZATION_PASSWORD: ${{ secrets.NOTARIZATION_PASSWORD }}
+          NOTARIZATION_TEAM_ID: ${{ secrets.NOTARIZATION_TEAM_ID }}
+        run: ./gradlew notarizeDmg -PpackageVersion=${{ steps.ver.outputs.version }} --stacktrace
+
+      - name: Locate dmg & compute checksum
+        id: dmg
+        run: |
+          dmg=$(find build/compose/binaries -name '*.dmg' | head -n1)
+          if [ -z "$dmg" ]; then echo "No dmg produced" >&2; exit 1; fi
+          echo "path=$dmg" >> "$GITHUB_OUTPUT"
+          shasum -a 256 "$dmg" | tee "$dmg.sha256"
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            ${{ steps.dmg.outputs.path }}
+            ${{ steps.dmg.outputs.path }}.sha256
+          generate_release_notes: true
