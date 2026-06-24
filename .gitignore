@@ -1,6 +1,16 @@
 .gradle/
 build/
 *.log
+# ...but keep captured-log test fixtures under version control.
+!src/test/resources/*.log
 .DS_Store
 .idea/
 local.properties
+
+# Dev scratch / throwaway experiments — keep ad-hoc scripts out of the repo.
+# Put one-off scripts under scratch/ instead of the project root.
+/scratch/
+*.swift
+/fix_*.sh
+/test_*.kt
+/test_*.kts
