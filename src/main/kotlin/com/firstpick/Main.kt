@@ -61,7 +61,8 @@ fun main() {
             App(
                 state = state,
                 isOverlayOpen = isOverlayOpen,
-                onToggleOverlay = { isOverlayOpen = !isOverlayOpen }
+                onToggleOverlay = { isOverlayOpen = !isOverlayOpen },
+                onSelectFormat = { viewModel.setFormatChoice(it) }
             )
         }
 
@@ -81,6 +82,10 @@ fun main() {
                     undecorated = true,
                     transparent = true,
                     alwaysOnTop = true,
+                    // Don't steal keyboard/mouse focus from Arena. Mouse clicks still
+                    // reach this window's controls (the checklist needs them); we only
+                    // want to avoid grabbing focus away from the game.
+                    focusable = false,
                 ) {
                     DeckBuilderOverlay(
                         composeWindow = window,

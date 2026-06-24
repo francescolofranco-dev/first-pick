@@ -20,6 +20,7 @@ dependencies {
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.swing)
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.jna)
 
     testImplementation(kotlin("test-junit"))
     testImplementation(libs.kotlinx.coroutines.test)
@@ -31,7 +32,28 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Dmg)
             packageName = "FirstPick"
-            packageVersion = "1.0.0"
+            // Distributable bundle version. The release workflow overrides this
+            // from the git tag (-PpackageVersion=…). Defaults to 1.0.0 because
+            // macOS requires the bundle's major version to be ≥ 1.
+            packageVersion = (project.findProperty("packageVersion") as String?) ?: "1.0.0"
+
+            macOS {
+                bundleID = "com.firstpick.app"
+                // Code-signing + notarization are driven entirely by environment
+                // variables, so no credentials live in the repo. With them unset
+                // (local dev, CI test builds) the dmg is simply unsigned — today's
+                // behavior. The release workflow supplies them. See docs/distribution.md.
+                val signingIdentity = providers.environmentVariable("MACOS_SIGNING_IDENTITY")
+                signing {
+                    sign.set(signingIdentity.isPresent)
+                    identity.set(signingIdentity.orElse(""))
+                }
+                notarization {
+                    appleID.set(providers.environmentVariable("NOTARIZATION_APPLE_ID").orElse(""))
+                    password.set(providers.environmentVariable("NOTARIZATION_PASSWORD").orElse(""))
+                    teamID.set(providers.environmentVariable("NOTARIZATION_TEAM_ID").orElse(""))
+                }
+            }
         }
     }
 }

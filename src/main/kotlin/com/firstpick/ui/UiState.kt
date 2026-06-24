@@ -92,6 +92,8 @@ data class DraftUiState(
     val deckNeeds: List<String> = emptyList(),
     // Post-draft deck builder (M7).
     val deckOptions: List<DeckOptionUi> = emptyList(),
+    // Which 17Lands data source the user has selected (see [RatingsFormat]).
+    val ratingsFormatChoice: String = RatingsFormat.PREMIER,
 ) {
     val headline: String
         get() = when (phase) {
@@ -110,3 +112,40 @@ val DraftFormat.label: String
         DraftFormat.CUBE -> "Cube Draft"
         DraftFormat.UNKNOWN -> "Draft"
     }
+
+/**
+ * User-selectable source for 17Lands card-quality data, independent of the draft
+ * format actually being played. Premier Draft is the deepest, most stable sample,
+ * so it's the default even in Quick Draft (card quality transfers); power users can
+ * override per the dropdown, including "Auto" to match the detected draft format.
+ * A choice resolves to a 17Lands `format` query string via [resolve].
+ */
+object RatingsFormat {
+    const val PREMIER = "PREMIER"
+    const val QUICK = "QUICK"
+    const val TRAD = "TRAD"
+    const val AUTO = "AUTO"
+
+    /** Selectable choices, in dropdown order. */
+    val choices = listOf(PREMIER, AUTO, QUICK, TRAD)
+
+    fun label(choice: String): String = when (choice) {
+        PREMIER -> "Premier (default)"
+        QUICK -> "Quick Draft"
+        TRAD -> "Traditional"
+        AUTO -> "Auto · match draft"
+        else -> "Premier (default)"
+    }
+
+    /** Map a choice (+ the detected draft format, for [AUTO]) to a 17Lands format string. */
+    fun resolve(choice: String, detected: DraftFormat): String = when (choice) {
+        QUICK -> "QuickDraft"
+        TRAD -> "TradDraft"
+        AUTO -> when (detected) {
+            DraftFormat.QUICK -> "QuickDraft"
+            DraftFormat.TRADITIONAL -> "TradDraft"
+            else -> "PremierDraft"
+        }
+        else -> "PremierDraft" // PREMIER and any unknown value
+    }
+}

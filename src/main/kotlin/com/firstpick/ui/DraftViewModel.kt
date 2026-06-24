@@ -46,6 +46,11 @@ class DraftViewModel(
 
     private var requestedKey: String? = null
 
+    /** User-selected 17Lands data source ([RatingsFormat]); persisted across runs. */
+    @Volatile
+    private var formatChoice: String =
+        runCatching { OverlaySettings.load().ratingsFormatOverride }.getOrNull() ?: RatingsFormat.PREMIER
+
     fun start() {
         scope.launch(Dispatchers.IO) { tracker.consume(watcher.lines(fromStart = true)) }
         scope.launch {
@@ -57,20 +62,37 @@ class DraftViewModel(
         }
     }
 
+    /**
+     * Change the 17Lands data source. Persists the choice and reloads ratings for
+     * the active set (cheap if already cached on disk).
+     */
+    fun setFormatChoice(choice: String) {
+        if (choice == formatChoice) return
+        formatChoice = choice
+        runCatching { OverlaySettings.save(OverlaySettings.load().copy(ratingsFormatOverride = choice)) }
+        requestedKey = null // force a reload under the new format
+        scope.launch {
+            val state = tracker.state.value
+            state.setCode?.let { ensureLoaded(it) }
+            _ui.value = buildUi(tracker.state.value)
+        }
+    }
+
     private suspend fun ensureLoaded(set: String) {
-        val key = "${set}_$RATINGS_FORMAT"
+        val format = RatingsFormat.resolve(formatChoice, tracker.state.value.format)
+        val key = "${set}_$format"
         if (key == requestedKey) return
         requestedKey = key
         _ui.value = _ui.value.copy(loadingRatings = true, dataError = null)
 
-        val ok = runCatching { repo.load(set, RATINGS_FORMAT) }.isSuccess
+        val ok = runCatching { repo.load(set, format) }.isSuccess
         _ui.value = buildUi(tracker.state.value)
             .copy(dataError = if (ok && repo.isLoaded) null else "Couldn't load 17Lands data for $set")
 
         // Scryfall mana values + archetype strengths in the background.
         scope.launch {
             runCatching { metaRepo.load(set) }
-            runCatching { archetypeRepo.loadStrengths(set, RATINGS_FORMAT) }
+            runCatching { archetypeRepo.loadStrengths(set, format) }
             _ui.value = buildUi(tracker.state.value)
         }
     }
@@ -81,7 +103,8 @@ class DraftViewModel(
         if (!repo.isLoaded) return
         val pool = state.pool.map(repo::resolve)
         val pair = LaneDetector.detect(pool, repo.setMetrics, archetypeRepo.strengthMap()).pair ?: return
-        runCatching { archetypeRepo.ensurePair(set, RATINGS_FORMAT, pair) }
+        val format = RatingsFormat.resolve(formatChoice, state.format)
+        runCatching { archetypeRepo.ensurePair(set, format, pair) }
     }
 
     private fun buildUi(state: DraftState): DraftUiState {
@@ -151,6 +174,7 @@ class DraftViewModel(
             archetypes = archetypeRows(lane.pair),
             deckNeeds = deckNeeds,
             deckOptions = deckOptions,
+            ratingsFormatChoice = formatChoice,
         )
     }
 
@@ -230,13 +254,6 @@ class DraftViewModel(
     }
 
     companion object {
-        /**
-         * Card-quality data source. Premier Draft is the deepest, most stable
-         * sample, so we use it for evaluation even in Quick Draft (card quality
-         * transfers). TODO: make this user-selectable.
-         */
-        const val RATINGS_FORMAT = "PremierDraft"
-
         private const val TOTAL_PICKS = 45
         private val WUBRG_ORDER = listOf('W', 'U', 'B', 'R', 'G')
     }

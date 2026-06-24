@@ -54,7 +54,11 @@ data class OverlaySettings(
     val gridTop: Float = 0.095f,
     val gridColGap: Float = 0.150f,
     val gridRowGap: Float = 0.275f,
-    val isLocked: Boolean = false
+    val isLocked: Boolean = false,
+    /** Selected 17Lands data source ([RatingsFormat] choice); null = the default. */
+    val ratingsFormatOverride: String? = null,
+    /** Let mouse clicks pass through the drafting overlay to Arena beneath it. */
+    val clickThrough: Boolean = true,
 ) {
     companion object {
         private val json = Json { ignoreUnknownKeys = true; prettyPrint = true }
@@ -214,7 +218,7 @@ fun DeckBuilderOverlay(
                         modifier = Modifier
                             .weight(1f)
                             .fillMaxHeight()
-                            .then(if (composeWindow != null) Modifier.windowDraggable(composeWindow) else Modifier),
+                            .windowDraggable(composeWindow),
                         contentAlignment = Alignment.CenterStart
                     ) {
                         Text(
@@ -245,7 +249,7 @@ fun DeckBuilderOverlay(
                             .width(24.dp)
                             .fillMaxHeight()
                             .background(Color(0x1A7FD1C4))
-                            .then(if (composeWindow != null) Modifier.windowDraggable(composeWindow) else Modifier),
+                            .windowDraggable(composeWindow),
                         contentAlignment = Alignment.Center
                     ) {
                         Column(
@@ -586,11 +590,16 @@ private fun OverlayIconButton(
 }
 
 
+/** Distinctive (ASCII) NSWindow title so [MacOverlay] can find the drafting panel. */
+private const val DRAFTING_OVERLAY_TITLE = "FirstPick Picks"
+
 @Composable
 fun DraftingOverlay(state: DraftUiState) {
     if (state.packCards.isEmpty()) return
 
     var mtgaBounds by remember { mutableStateOf<java.awt.Rectangle?>(null) }
+    // Whether to let clicks fall through to Arena (user setting, persisted).
+    val clickThrough = remember { OverlaySettings.load().clickThrough }
     
     // Polling MTGA window bounds on macOS
     LaunchedEffect(Unit) {
@@ -601,7 +610,7 @@ fun DraftingOverlay(state: DraftUiState) {
                 mtgaBounds = bounds
                 lastBounds = bounds
             }
-            delay(1000)
+            delay(500)
         }
     }
 
@@ -636,11 +645,21 @@ fun DraftingOverlay(state: DraftUiState) {
     androidx.compose.ui.window.Window(
         onCloseRequest = {},
         state = wState,
+        title = DRAFTING_OVERLAY_TITLE,
         transparent = true,
         undecorated = true,
         alwaysOnTop = true,
         focusable = false
     ) {
+        // Let clicks fall through to Arena beneath the panel. The NSWindow may not
+        // be registered the instant the window opens, so retry briefly. macOS-only,
+        // best-effort (see [MacOverlay]); the panel is read-only so nothing is lost.
+        LaunchedEffect(clickThrough) {
+            repeat(15) {
+                if (MacOverlay.setClickThrough(DRAFTING_OVERLAY_TITLE, clickThrough)) return@LaunchedEffect
+                delay(200)
+            }
+        }
         MaterialTheme(colorScheme = DraftColorScheme) {
             Surface(
                 modifier = Modifier.fillMaxSize(),

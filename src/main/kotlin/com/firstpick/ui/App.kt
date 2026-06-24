@@ -27,6 +27,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
@@ -63,7 +65,8 @@ enum class AppScreen { DRAFT_POOL, DECK_BUILDER }
 fun App(
     state: DraftUiState,
     isOverlayOpen: Boolean,
-    onToggleOverlay: () -> Unit
+    onToggleOverlay: () -> Unit,
+    onSelectFormat: (String) -> Unit = {}
 ) {
     var currentScreen by remember(state.phase) { 
         mutableStateOf(if (state.phase == DraftPhase.COMPLETE) AppScreen.DECK_BUILDER else AppScreen.DRAFT_POOL) 
@@ -72,7 +75,7 @@ fun App(
     MaterialTheme(colorScheme = DraftColorScheme) {
         Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
             Column(Modifier.fillMaxSize().padding(14.dp)) {
-                Header(state, isOverlayOpen, onToggleOverlay)
+                Header(state, isOverlayOpen, onToggleOverlay, onSelectFormat)
                 
                 // Add Navigation Tabs
                 if (state.deckOptions.isNotEmpty() || state.poolSize > 0) {
@@ -122,7 +125,8 @@ fun App(
 private fun Header(
     state: DraftUiState,
     isOverlayOpen: Boolean,
-    onToggleOverlay: () -> Unit
+    onToggleOverlay: () -> Unit,
+    onSelectFormat: (String) -> Unit
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -143,6 +147,7 @@ private fun Header(
         }
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            FormatSelector(state.ratingsFormatChoice, onSelectFormat)
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(8.dp))
@@ -158,6 +163,42 @@ private fun Header(
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
                     color = if (isOverlayOpen) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                )
+            }
+        }
+    }
+}
+
+/** Dropdown to pick which 17Lands data source feeds the advisor (see [RatingsFormat]). */
+@Composable
+private fun FormatSelector(current: String, onSelect: (String) -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    Box {
+        Row(
+            modifier = Modifier
+                .clip(RoundedCornerShape(8.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .clickable { expanded = true }
+                .padding(horizontal = 12.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Data: ${RatingsFormat.label(current)}",
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Spacer(Modifier.width(4.dp))
+            Text("▾", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            RatingsFormat.choices.forEach { choice ->
+                DropdownMenuItem(
+                    text = { Text(RatingsFormat.label(choice), fontSize = 12.sp) },
+                    onClick = {
+                        onSelect(choice)
+                        expanded = false
+                    }
                 )
             }
         }
