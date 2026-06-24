@@ -31,6 +31,8 @@ class EventParserTest {
 
     @Test
     fun parsesRealFirstSnapshotFixture() {
+        // Fixture: a real-shaped SOS Quick/Bot draft P1P1 snapshot line (nested
+        // escaped JSON, with extra Arena fields to exercise lenient parsing).
         val line = javaClass.getResourceAsStream("/quickdraft_first_snapshot.log")!!
             .bufferedReader().readText().trim()
         val event = parser.parse(line)
