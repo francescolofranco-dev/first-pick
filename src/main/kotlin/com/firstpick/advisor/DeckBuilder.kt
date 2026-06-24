@@ -47,7 +47,7 @@ object DeckBuilder {
         val spells = pool.filter { meta(it.name)?.isLand != true }
         val lands = pool.filter { meta(it.name)?.isLand == true }
 
-        return COLOR_PAIRS
+        return (COLOR_PAIRS + TRI_COLORS)
             .mapNotNull { pair -> buildForPair(pair, spells, lands, metrics, meta, archetypeRating, pairStrength[pair]) }
             .sortedByDescending { it.powerScore }
             .take(maxOptions)
@@ -74,14 +74,29 @@ object DeckBuilder {
         }
 
         val eligible = spells.filter(::onColor)
-        if (eligible.size < MIN_PLAYABLES) return null
+        val chosen = eligible.sortedByDescending(::cardScore).take(SPELL_SLOTS).toMutableList()
+        val deficit = SPELL_SLOTS - chosen.size
+        
+        val splashedSpells = if (deficit > 0) {
+            val offColorSpells = spells.filterNot(::onColor)
+            offColorSpells.sortedByDescending(::cardScore).take(deficit)
+        } else emptyList()
+        
+        chosen.addAll(splashedSpells)
+        val splashColors = splashedSpells.flatMap { LaneDetector.colorsOf(it) }.filter { it !in pairSet }.toSet()
 
-        val chosen = eligible.sortedByDescending(::cardScore).take(SPELL_SLOTS)
-        val onColorLands = lands.filter(::onColor)
+        val onColorLands = lands.filter { card ->
+            val colors = LaneDetector.colorsOf(card)
+            colors.isEmpty() || pairSet.containsAll(colors) || colors.any { it in splashColors }
+        }
 
         // Reject "fake" pairs — a mono deck with a token splash isn't castable as two colors.
         val pips = mutableMapOf<Char, Int>()
-        for (card in chosen) for (ch in LaneDetector.colorsOf(card)) if (ch in pairSet) pips.merge(ch, 1, Int::plus)
+        for (card in chosen) {
+            for (ch in LaneDetector.colorsOf(card)) {
+                if (ch in pairSet || ch in splashColors) pips.merge(ch, 1, Int::plus)
+            }
+        }
         val totalPips = pips.values.sum()
         val minPips = pairSet.minOf { pips[it] ?: 0 }
         if (totalPips == 0 || minPips < MIN_COLOR_PIPS || minPips.toDouble() / totalPips < MIN_COLOR_RATIO) return null
@@ -92,8 +107,11 @@ object DeckBuilder {
         val removal = metas.count { it?.isRemoval == true }
         val twoDrops = metas.count { it != null && it.isCreature && it.cmc in 1..2 }
         val avgCmc = metas.mapNotNull { it?.cmc }.ifEmpty { listOf(3) }.average()
+        
+        val fixersCount = chosen.count { meta(it.name)?.isFixing == true } + onColorLands.count { meta(it.name)?.isFixing == true }
+        val splashCount = splashedSpells.size
 
-        val power = powerScore(deckWr, metrics, strength, creatures, removal, twoDrops)
+        val power = powerScore(deckWr, metrics, strength, creatures, removal, twoDrops, splashCount, fixersCount)
         return DeckOption(
             pair = pair,
             powerScore = power,
@@ -149,6 +167,8 @@ object DeckBuilder {
         creatures: Int,
         removal: Int,
         twoDrops: Int,
+        splashCount: Int,
+        fixersCount: Int
     ): Double {
         val z = metrics.z(deckWr) ?: 0.0
         var score = 50.0 + 18.0 * z
@@ -157,6 +177,17 @@ object DeckBuilder {
         if (removal >= 3) score += 3.0
         if (creatures in 13..18) score += 3.0
         if (twoDrops >= 6) score += 2.0
+        
+        // Splash penalty logic: penalize off-color cards that don't have supporting fixers
+        if (splashCount > 0) {
+            val unmitigatedSplash = (splashCount - fixersCount).coerceAtLeast(0)
+            score -= (unmitigatedSplash * 4.0)
+            // Small reward for having excess fixing when splashing
+            if (fixersCount > splashCount) {
+                score += ((fixersCount - splashCount) * 1.0).coerceAtMost(3.0)
+            }
+        }
+        
         return score.coerceIn(0.0, 100.0)
     }
 

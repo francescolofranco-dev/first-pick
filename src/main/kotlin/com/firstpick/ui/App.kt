@@ -29,6 +29,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -55,18 +57,58 @@ import com.firstpick.advisor.Confidence
 import com.firstpick.advisor.ConfidenceLevel
 import com.firstpick.model.DraftPhase
 
+enum class AppScreen { DRAFT_POOL, DECK_BUILDER }
+
 @Composable
-fun App(state: DraftUiState) {
+fun App(
+    state: DraftUiState,
+    isOverlayOpen: Boolean,
+    onToggleOverlay: () -> Unit
+) {
+    var currentScreen by remember(state.phase) { 
+        mutableStateOf(if (state.phase == DraftPhase.COMPLETE) AppScreen.DECK_BUILDER else AppScreen.DRAFT_POOL) 
+    }
+
     MaterialTheme(colorScheme = DraftColorScheme) {
         Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
             Column(Modifier.fillMaxSize().padding(14.dp)) {
-                Header(state)
+                Header(state, isOverlayOpen, onToggleOverlay)
+                
+                // Add Navigation Tabs
+                if (state.deckOptions.isNotEmpty() || state.poolSize > 0) {
+                    Spacer(Modifier.height(8.dp))
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                        TabRow(
+                            selectedTabIndex = if (currentScreen == AppScreen.DRAFT_POOL) 0 else 1,
+                            modifier = Modifier.width(300.dp).clip(RoundedCornerShape(8.dp)),
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                            contentColor = MaterialTheme.colorScheme.primary
+                        ) {
+                            Tab(
+                                selected = currentScreen == AppScreen.DRAFT_POOL,
+                                onClick = { currentScreen = AppScreen.DRAFT_POOL },
+                                text = { Text("Draft Pool", fontSize = 13.sp, fontWeight = FontWeight.Bold) }
+                            )
+                            Tab(
+                                selected = currentScreen == AppScreen.DECK_BUILDER,
+                                onClick = { currentScreen = AppScreen.DECK_BUILDER },
+                                enabled = state.deckOptions.isNotEmpty(),
+                                text = { Text("Deck Builder", fontSize = 13.sp, fontWeight = FontWeight.Bold) }
+                            )
+                        }
+                    }
+                }
+
                 Spacer(Modifier.height(10.dp))
                 Row(Modifier.fillMaxSize()) {
                     Box(Modifier.weight(1f).fillMaxHeight()) {
-                        if (state.deckOptions.isNotEmpty()) DeckBuilderPane(state.deckOptions) else PackPane(state)
+                        if (currentScreen == AppScreen.DECK_BUILDER && state.deckOptions.isNotEmpty()) {
+                            DeckBuilderPane(state.deckOptions)
+                        } else {
+                            PackPane(state)
+                        }
                     }
-                    if (state.poolSize > 0 || state.packCards.isNotEmpty()) {
+                    if (currentScreen == AppScreen.DRAFT_POOL && (state.poolSize > 0 || state.packCards.isNotEmpty())) {
                         Spacer(Modifier.width(12.dp))
                         Sidebar(state)
                     }
@@ -77,17 +119,47 @@ fun App(state: DraftUiState) {
 }
 
 @Composable
-private fun Header(state: DraftUiState) {
-    Column {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("FirstPick", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-            Spacer(Modifier.width(10.dp))
-            if (state.laneColors.isNotEmpty()) PipRow(state.laneColors)
+private fun Header(
+    state: DraftUiState,
+    isOverlayOpen: Boolean,
+    onToggleOverlay: () -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("FirstPick", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                Spacer(Modifier.width(10.dp))
+                if (state.laneColors.isNotEmpty()) PipRow(state.laneColors)
+            }
+            Spacer(Modifier.height(2.dp))
+            Text(state.headline, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
+            state.dataError?.let {
+                Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+            }
         }
-        Spacer(Modifier.height(2.dp))
-        Text(state.headline, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
-        state.dataError?.let {
-            Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(
+                        if (isOverlayOpen) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                        else MaterialTheme.colorScheme.surfaceVariant
+                    )
+                    .clickable(onClick = onToggleOverlay)
+                    .padding(horizontal = 12.dp, vertical = 6.dp)
+            ) {
+                Text(
+                    text = if (isOverlayOpen) "Hide Overlay" else "Show Overlay",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = if (isOverlayOpen) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                )
+            }
         }
     }
 }
@@ -165,6 +237,7 @@ private fun ConfidenceBanner(cards: List<PackCardUi>) {
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun PackRow(card: PackCardUi) {
     val highlight = card.rank == 1
@@ -187,8 +260,23 @@ private fun PackRow(card: PackCardUi) {
         ) {
             MonoCell("${card.rank}", 22.dp)
             Column(Modifier.width(54.dp)) {
-                Text(card.value.asInt(), fontFamily = FontFamily.Monospace, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = tier)
-                Text(valueTierLabel(card.value), fontSize = 9.sp, color = tier)
+                if (card.breakdown != null) {
+                    TooltipArea(
+                        tooltip = { BreakdownTooltip(card.breakdown) }
+                    ) {
+                        Column(modifier = Modifier.clickable { }) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(card.value.asInt(), fontFamily = FontFamily.Monospace, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = tier)
+                                Spacer(Modifier.width(2.dp))
+                                Text("👁", fontSize = 10.sp, color = tier.copy(alpha = 0.7f))
+                            }
+                            Text(valueTierLabel(card.value), fontSize = 9.sp, color = tier)
+                        }
+                    }
+                } else {
+                    Text(card.value.asInt(), fontFamily = FontFamily.Monospace, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = tier)
+                    Text(valueTierLabel(card.value), fontSize = 9.sp, color = tier)
+                }
             }
             Column(Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -300,24 +388,42 @@ private fun Sidebar(state: DraftUiState) {
         Modifier.width(232.dp).fillMaxHeight().verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        Panel("Your Lane") {
-            if (state.laneColors.isEmpty()) {
-                Text("Undecided", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            } else {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    PipRow(state.laneColors)
-                    state.lanePair?.let { pair ->
-                        val name = guildName(pair)
-                        if (name.isNotBlank()) {
-                            Spacer(Modifier.width(8.dp))
-                            Text(name, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface)
+        if (state.poolSize == 0 && state.topPairs.isNotEmpty()) {
+            val title = if (state.setCode != null) "Top Color Pairs for ${state.setCode.uppercase()}" else "Top Color Pairs"
+            Panel(title) {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    state.topPairs.forEach { pair ->
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            PipRow(pair.toList())
+                            val name = guildName(pair)
+                            if (name.isNotBlank()) {
+                                Spacer(Modifier.width(8.dp))
+                                Text(name, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface)
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            Panel("Your Lane") {
+                if (state.laneColors.isEmpty()) {
+                    Text("Undecided", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                } else {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        PipRow(state.laneColors)
+                        state.lanePair?.let { pair ->
+                            val name = guildName(pair)
+                            if (name.isNotBlank()) {
+                                Spacer(Modifier.width(8.dp))
+                                Text(name, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface)
+                            }
                         }
                     }
                 }
             }
         }
         if (state.archetypes.isNotEmpty()) {
-            Panel("Archetypes") {
+            Panel("Color Pair WR") {
                 val max = state.archetypes.maxOf { it.winRate }
                 val min = state.archetypes.minOf { it.winRate }
                 Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
@@ -347,7 +453,10 @@ private fun Sidebar(state: DraftUiState) {
             }
         }
         Panel("Deck Needs") { NeedsContent(state.deckNeeds, state.poolSize) }
-        Panel("Open Lanes") {
+        Panel(
+            title = "Open Lanes",
+            tooltip = "Shows which color pairs are open based on the quality of cards being passed to you. A high bar indicates a strong lane to draft."
+        ) {
             if (state.openLanes.isEmpty()) {
                 Text("Reading signals…", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             } else {
@@ -395,8 +504,9 @@ private fun Sidebar(state: DraftUiState) {
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun Panel(title: String, content: @Composable () -> Unit) {
+private fun Panel(title: String, tooltip: String? = null, content: @Composable () -> Unit) {
     Column(
         Modifier
             .fillMaxWidth()
@@ -404,7 +514,32 @@ private fun Panel(title: String, content: @Composable () -> Unit) {
             .background(MaterialTheme.colorScheme.surface)
             .padding(12.dp),
     ) {
-        Text(title.uppercase(), fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        if (tooltip != null) {
+            TooltipArea(
+                tooltip = {
+                    Surface(
+                        modifier = Modifier.padding(4.dp),
+                        color = MaterialTheme.colorScheme.inverseSurface,
+                        shape = RoundedCornerShape(4.dp)
+                    ) {
+                        Text(
+                            text = tooltip,
+                            color = MaterialTheme.colorScheme.inverseOnSurface,
+                            fontSize = 12.sp,
+                            modifier = Modifier.padding(8.dp).width(200.dp)
+                        )
+                    }
+                }
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(title.uppercase(), fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Spacer(Modifier.width(4.dp))
+                    Text("ⓘ", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))
+                }
+            }
+        } else {
+            Text(title.uppercase(), fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
         Spacer(Modifier.height(8.dp))
         content()
     }
@@ -465,12 +600,12 @@ private fun Bar(fraction: Float, color: Color, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun PipRow(colors: List<Char>) {
+fun PipRow(colors: List<Char>) {
     Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) { colors.forEach { Pip(it) } }
 }
 
 @Composable
-private fun Pip(color: Char, size: Dp = 16.dp) {
+fun Pip(color: Char, size: Dp = 16.dp) {
     val painter = manaPainter(color)
     if (painter != null) {
         Image(painter, contentDescription = color.toString(), modifier = Modifier.size(size))
@@ -501,7 +636,7 @@ private fun manaPainter(color: Char): Painter? {
 /** Wraps content so hovering it shows the card's art (Scryfall image), loaded lazily. */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun CardPreview(imageUrl: String?, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+fun CardPreview(imageUrl: String?, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
     if (imageUrl.isNullOrBlank()) {
         Box(modifier) { content() }
         return
@@ -575,3 +710,51 @@ private fun Centered(content: @Composable () -> Unit) {
 private fun Double?.asPct(): String = this?.let { "%.1f".format(it * 100) } ?: "—"
 private fun Double?.as1dp(): String = this?.let { "%.1f".format(it) } ?: "—"
 private fun Double?.asInt(): String = this?.let { "%.0f".format(it) } ?: "—"
+
+@Composable
+fun BreakdownTooltip(b: com.firstpick.advisor.ValueBreakdown) {
+    Surface(
+        modifier = Modifier.padding(4.dp),
+        color = MaterialTheme.colorScheme.inverseSurface,
+        shape = RoundedCornerShape(8.dp),
+        shadowElevation = 4.dp
+    ) {
+        Column(Modifier.padding(12.dp)) {
+            Text("Score Breakdown", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = MaterialTheme.colorScheme.inverseOnSurface)
+            Spacer(Modifier.height(8.dp))
+            Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.width(160.dp)) {
+                Text("Base Power", fontSize = 11.sp, color = MaterialTheme.colorScheme.inverseOnSurface)
+                Text(String.format("%.1f", b.baseScore), fontSize = 11.sp, color = MaterialTheme.colorScheme.inverseOnSurface)
+            }
+            if (b.archetypeShift != 0.0) {
+                Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.width(160.dp)) {
+                    Text("Archetype Shift", fontSize = 11.sp, color = MaterialTheme.colorScheme.inverseOnSurface)
+                    Text(String.format("%+.1f", b.archetypeShift), fontSize = 11.sp, color = MaterialTheme.colorScheme.inverseOnSurface)
+                }
+            }
+            if (b.synergyBonus != 0.0) {
+                Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.width(160.dp)) {
+                    Text("Synergy Bonus", fontSize = 11.sp, color = MaterialTheme.colorScheme.inverseOnSurface)
+                    Text(String.format("%+.1f", b.synergyBonus), fontSize = 11.sp, color = MaterialTheme.colorScheme.inverseOnSurface)
+                }
+            }
+            if (b.penalty != 0.0) {
+                Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.width(160.dp)) {
+                    Text("Color Penalty", fontSize = 11.sp, color = MaterialTheme.colorScheme.inverseOnSurface)
+                    Text(String.format("%+.1f", b.penalty), fontSize = 11.sp, color = MaterialTheme.colorScheme.inverseOnSurface)
+                }
+            }
+            if (b.needsMultiplier != 1.0) {
+                Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.width(160.dp)) {
+                    Text("Deck Need Mult", fontSize = 11.sp, color = MaterialTheme.colorScheme.inverseOnSurface)
+                    Text(String.format("%.2fx", b.needsMultiplier), fontSize = 11.sp, color = MaterialTheme.colorScheme.inverseOnSurface)
+                }
+            }
+            Spacer(Modifier.height(4.dp))
+            Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.width(160.dp)) {
+                Text("Final Score", fontWeight = FontWeight.Bold, fontSize = 11.sp, color = MaterialTheme.colorScheme.inverseOnSurface)
+                Text(String.format("%.1f", b.finalScore), fontWeight = FontWeight.Bold, fontSize = 11.sp, color = MaterialTheme.colorScheme.inverseOnSurface)
+            }
+        }
+    }
+}

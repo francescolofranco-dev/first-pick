@@ -93,6 +93,7 @@ class DraftViewModel(
             Lane(emptySet(), null, emptyMap())
         }
 
+        val poolMetas = pool.mapNotNull { metaRepo.meta(it.name) }
         val rows = if (loaded && state.packCards.isNotEmpty()) {
             advisor.score(
                 pack = repo.resolvePack(state.packCards),
@@ -103,13 +104,12 @@ class DraftViewModel(
                 lane = lane,
                 archetypeRating = archetypeRepo::archetypeRating,
                 meta = metaRepo::meta,
-            ).toRows()
+            ).toRows(state.packCards)
         } else {
             emptyList()
         }
 
         val openLanes = if (loaded) SignalsEngine.openLanes(state.seen, repo::resolve).toColorScores() else emptyList()
-        val poolMetas = pool.mapNotNull { metaRepo.meta(it.name) }
         val deckNeeds = if (loaded && state.pool.isNotEmpty()) {
             PoolNeeds.analyze(poolMetas, state.pool.size).activeNeeds(TOTAL_PICKS)
         } else {
@@ -147,6 +147,7 @@ class DraftViewModel(
             poolCreatures = poolMetas.count { it.isCreature },
             poolNonCreatures = poolMetas.count { !it.isCreature && !it.isLand },
             lanePair = lane.pair,
+            topPairs = lane.topPairs,
             archetypes = archetypeRows(lane.pair),
             deckNeeds = deckNeeds,
             deckOptions = deckOptions,
@@ -203,21 +204,29 @@ class DraftViewModel(
         return buckets.map { CurveBar(it.key, it.value) }
     }
 
-    private fun List<ScoredCard>.toRows(): List<PackCardUi> = mapIndexed { i, s ->
-        PackCardUi(
-            grpId = s.card.grpId,
-            rank = i + 1,
-            name = s.card.displayName,
-            color = s.card.rating?.color.orEmpty(),
-            rarity = s.card.rating?.rarity.orEmpty(),
-            gihWr = s.card.gihWr,
-            alsa = s.card.rating?.alsa,
-            ata = s.card.rating?.ata,
-            value = s.value,
-            isBomb = s.isBomb,
-            reasons = s.reasons,
-            imageUrl = s.card.rating?.imageUrl,
-        )
+    private fun List<ScoredCard>.toRows(originalPackIds: List<Int>): List<PackCardUi> {
+        val usedIndices = mutableSetOf<Int>()
+        return mapIndexed { i, s ->
+            val origIdx = originalPackIds.indexOfFirst { it == s.card.grpId && it !in usedIndices }.takeIf { it >= 0 } ?: 0
+            usedIndices.add(origIdx)
+            PackCardUi(
+                grpId = s.card.grpId,
+                originalIndex = origIdx,
+                rank = i + 1,
+                name = s.card.displayName,
+                color = s.card.rating?.color.orEmpty(),
+                rarity = s.card.rating?.rarity.orEmpty(),
+                gihWr = s.card.gihWr,
+                alsa = s.card.rating?.alsa,
+                ata = s.card.rating?.ata,
+                value = s.value,
+                isBomb = s.isBomb,
+                reasons = s.reasons,
+                imageUrl = s.card.rating?.imageUrl,
+                z = s.z,
+                breakdown = s.breakdown,
+            )
+        }
     }
 
     companion object {

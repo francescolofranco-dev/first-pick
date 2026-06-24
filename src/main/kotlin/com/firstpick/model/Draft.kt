@@ -15,7 +15,7 @@ enum class DraftFormat {
             val n = eventName.lowercase().replace("_", "")
             return when {
                 "traddraft" in n || "traditionaldraft" in n -> TRADITIONAL
-                "premierdraft" in n -> PREMIER
+                "premierdraft" in n || "premiumdraft" in n -> PREMIER
                 "quickdraft" in n || "botdraft" in n -> QUICK
                 "cube" in n -> CUBE
                 "sealed" in n -> SEALED
@@ -35,6 +35,11 @@ fun setCodeFromEventName(eventName: String): String? =
 
 /** Low-level signals decoded from a single log line. Pack/pick are 1-indexed. */
 sealed interface DraftEvent {
+    /** Discovered from an active event join log line, carrying format/set info. */
+    data class EventJoined(
+        val eventName: String,
+    ) : DraftEvent
+
     /** A complete state snapshot (MTGA Quick/Bot draft logs every pick this way). */
     data class Snapshot(
         val eventName: String,
@@ -78,15 +83,25 @@ data class DraftState(
 ) {
     /** Pure reducer: fold one decoded event into the next state. */
     fun reduce(event: DraftEvent): DraftState = when (event) {
-        is DraftEvent.Snapshot -> {
-            // Snapshots are authoritative — adopt them wholesale.
-            val resettingForNewEvent = eventName != null && eventName != event.eventName
+        is DraftEvent.EventJoined -> {
+            val resettingForNewEvent = event.eventName.isNotEmpty() && eventName != null && eventName != event.eventName
             val base = if (resettingForNewEvent) DraftState() else this
             base.copy(
-                phase = if (event.complete) DraftPhase.COMPLETE else DraftPhase.DRAFTING,
                 format = DraftFormat.fromEventName(event.eventName),
                 setCode = setCodeFromEventName(event.eventName) ?: base.setCode,
                 eventName = event.eventName,
+            )
+        }
+
+        is DraftEvent.Snapshot -> {
+            // Snapshots are authoritative — adopt them wholesale.
+            val resettingForNewEvent = event.eventName.isNotEmpty() && eventName != null && eventName != event.eventName
+            val base = if (resettingForNewEvent) DraftState() else this
+            base.copy(
+                phase = if (event.complete) DraftPhase.COMPLETE else DraftPhase.DRAFTING,
+                format = if (event.eventName.isNotEmpty()) DraftFormat.fromEventName(event.eventName) else base.format,
+                setCode = (if (event.eventName.isNotEmpty()) setCodeFromEventName(event.eventName) else null) ?: base.setCode,
+                eventName = if (event.eventName.isNotEmpty()) event.eventName else base.eventName,
                 pack = event.pack,
                 pick = event.pick,
                 packCards = event.packCards,
@@ -96,13 +111,13 @@ data class DraftState(
         }
 
         is DraftEvent.PackSeen -> {
-            val resettingForNewEvent = eventName != null && eventName != event.eventName
+            val resettingForNewEvent = event.eventName.isNotEmpty() && eventName != null && eventName != event.eventName
             val base = if (resettingForNewEvent) DraftState() else this
             base.copy(
                 phase = DraftPhase.DRAFTING,
-                format = DraftFormat.fromEventName(event.eventName),
-                setCode = setCodeFromEventName(event.eventName) ?: base.setCode,
-                eventName = event.eventName,
+                format = if (event.eventName.isNotEmpty()) DraftFormat.fromEventName(event.eventName) else base.format,
+                setCode = (if (event.eventName.isNotEmpty()) setCodeFromEventName(event.eventName) else null) ?: base.setCode,
+                eventName = if (event.eventName.isNotEmpty()) event.eventName else base.eventName,
                 pack = event.pack,
                 pick = event.pick,
                 packCards = event.packCards,
@@ -110,9 +125,24 @@ data class DraftState(
             )
         }
 
-        is DraftEvent.PickMade ->
-            // Incremental (human draft): move the picked cards into the pool.
-            copy(pool = pool + event.cardIds)
+        is DraftEvent.PickMade -> {
+            val newPool = pool + event.cardIds
+            
+            // The draft is complete if we hit typical pool size, OR if we just made the last possible pick in pack 3
+            // (i.e. the number of cards we just picked equals or exceeds what was left in the pack).
+            val isLastPickOfDraft = (pack >= 3 && packCards.size <= event.cardIds.size)
+            
+            val newPhase = if (isLastPickOfDraft || newPool.size >= 42) DraftPhase.COMPLETE 
+                           else if (phase == DraftPhase.IDLE) DraftPhase.DRAFTING 
+                           else phase
+            copy(
+                phase = newPhase,
+                pack = if (event.pack > 0) event.pack else pack,
+                pick = if (event.pick > 0) event.pick else pick,
+                pool = newPool,
+                packCards = if (isLastPickOfDraft) emptyList() else packCards
+            )
+        }
     }
 
     /** Record a pack we were offered (idempotent on repeated snapshots of the same pick). */

@@ -29,6 +29,7 @@ class LaneDetectorTest {
         val pool = listOf(
             card("a", 0.60, "U"),
             card("b", 0.60, "U"),
+            card("e", 0.60, "U"),
             card("c", 0.60, "B"),
             card("d", 0.58, "R"), // single weak red
         )
@@ -38,10 +39,11 @@ class LaneDetectorTest {
 
     @Test
     fun archetypeStrengthGuidesAnEmptyLane() {
-        // With no picks yet, the set's strongest archetype should be suggested.
+        // With no picks yet, the set's strongest archetypes should be suggested in topPairs, but pair is null.
         val strengths = mapOf("WR" to 0.59, "WU" to 0.55, "UB" to 0.54, "BG" to 0.53)
         val lane = LaneDetector.detect(emptyList(), metrics, strengths)
-        assertEquals("WR", lane.pair)
+        assertEquals(null, lane.pair)
+        assertEquals("WR", lane.topPairs.first())
     }
 
     @Test

@@ -96,4 +96,19 @@ class EventParserTest {
             parser.parse("{\"CurrentModule\":\"DeckSelect\",\"Payload\":\"{\\\"DraftPack\\\":[]}\"}"),
         )
     }
+
+    @Test
+    fun parsesEventJoinedFromLogLines() {
+        val premiumLine = "[UnityCrossThreadLogger]==> Event.Join {\"EventName\":\"PremiumDraft_MKM_20240206\"}"
+        val ev1 = parser.parse(premiumLine)
+        assertNotNull(ev1)
+        assertTrue(ev1 is DraftEvent.EventJoined)
+        assertEquals("PremiumDraft_MKM_20240206", ev1.eventName)
+
+        val tradLine = "some log prefix {\"InternalEventName\":\"TradDraft_DSK_20240924\"}"
+        val ev2 = parser.parse(tradLine)
+        assertNotNull(ev2)
+        assertTrue(ev2 is DraftEvent.EventJoined)
+        assertEquals("TradDraft_DSK_20240924", ev2.eventName)
+    }
 }

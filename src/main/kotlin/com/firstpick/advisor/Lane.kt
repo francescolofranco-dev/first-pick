@@ -9,8 +9,10 @@ data class Lane(
     val colors: Set<Char>,
     val pair: String?,
     val commitment: Map<Char, Double>,
+    val topPairs: List<String> = emptyList(),
 ) {
-    val isEstablished: Boolean get() = colors.isNotEmpty()
+    val isEstablished: Boolean get() = poolSize > 0 && colors.isNotEmpty()
+    var poolSize: Int = 0 // Stored so UI knows if we've started picking
 }
 
 val WUBRG = setOf('W', 'U', 'B', 'R', 'G')
@@ -18,6 +20,7 @@ private const val WUBRG_ORDER = "WUBRG"
 
 /** The ten two-color archetypes, in canonical WUBRG order. */
 val COLOR_PAIRS = listOf("WU", "WB", "WR", "WG", "UB", "UR", "UG", "BR", "BG", "RG")
+val TRI_COLORS = listOf("WUB", "WUR", "WUG", "WBR", "WBG", "WRG", "UBR", "UBG", "URG", "BRG")
 
 /** Canonical WUBRG-ordered pair string for two colors, or null if not exactly two. */
 fun canonicalPair(colors: Collection<Char>): String? {
@@ -48,20 +51,34 @@ object LaneDetector {
         val meanStrength = if (strengthValues.isEmpty()) 0.0 else strengthValues.average()
         val sdStrength = stdDev(strengthValues, meanStrength)
 
-        var bestPair: String? = null
-        var bestScore = 0.0
+        val pairScores = mutableListOf<Pair<String, Double>>()
         for (pair in COLOR_PAIRS) {
             val fit = poolFit(pool, metrics, pair)
             val archZ = pairStrength[pair]?.let { if (sdStrength > 1e-9) (it - meanStrength) / sdStrength else 0.0 } ?: 0.0
             val score = fit + ARCH_BIAS * archZ
-            if (score > bestScore) {
-                bestScore = score
-                bestPair = pair
-            }
+            pairScores.add(pair to score)
         }
 
-        val colors = bestPair?.toSet() ?: emptySet()
-        return Lane(colors, bestPair, commitment)
+        pairScores.sortByDescending { it.second }
+        val topPairs = pairScores.take(3).map { it.first }
+        val bestPairCandidate = if (pool.isNotEmpty()) topPairs.firstOrNull() else null
+        
+        // Don't claim a single best lane until we actually have some commitment to BOTH colors!
+        // It is confusing to declare "Simic" when the user has only picked a single blue card.
+        // It's also way too early to declare a lane before we have at least 5 cards.
+        val bestPair = if (pool.size >= 5 && bestPairCandidate != null && 
+                           (commitment[bestPairCandidate[0]] ?: 0.0) > 0.0 && 
+                           (commitment[bestPairCandidate[1]] ?: 0.0) > 0.0) {
+            bestPairCandidate
+        } else {
+            null
+        }
+        
+        // If we haven't established a pair yet, our "colors" are just our most committed colors so far.
+        // We take the top 2 committed colors so the pip display doesn't show 5 colors if we draft a 5-color pile early on.
+        // However, before we have 5 cards, we should just stay completely undecided.
+        val colors = if (pool.size < 5) emptySet() else (bestPair?.toSet() ?: commitment.entries.sortedByDescending { it.value }.take(2).map { it.key }.toSet())
+        return Lane(colors, bestPair, commitment, topPairs).apply { poolSize = pool.size }
     }
 
     fun colorsOf(card: RankedCard): Set<Char> =

@@ -34,15 +34,18 @@ class AdvisorEngine(
         val valuePerZ: Double = 16.0,
         // Archetype blend.
         val minArchSamples: Int = 200,
-        val archWeightBase: Double = 0.2,
-        val archWeightSlope: Double = 0.7,
+        val archWeightBase: Double = 0.0,
+        val archWeightSlope: Double = 1.0,
         val archWeightMax: Double = 0.9,
+        val archWeightRampStart: Double = 0.12,
         val synergyDeltaPct: Double = 1.0,
         val glueMult: Double = 5.0,
         val synergyMult: Double = 3.0,
         val synergyCapPts: Double = 14.0,
+        // Synergy time ramp.
+        val synergyRampStart: Double = 0.12,
         // Deck-needs time ramp (fraction of draft progress).
-        val needsRampStart: Double = 0.18,
+        val needsRampStart: Double = 0.25,
         val needsRampSpan: Double = 0.55,
     )
 
@@ -89,7 +92,7 @@ class AdvisorEngine(
         val archWr = archCard?.gihWr
         val archSamples = archCard?.everDrawnGameCount ?: 0
         val blendedZ = metrics.z(blend(globalWr, archWr, archSamples, progress)) ?: config.unratedZ
-        val synergyPts = synergyBonus(card, globalWr, archWr, archSamples, reasons)
+        val synergyPts = synergyBonus(card, globalWr, archWr, archSamples, reasons, progress)
 
         // (3) Sliding commitment penalty — bombs ignore it.
         val colors = LaneDetector.colorsOf(card)
@@ -117,14 +120,29 @@ class AdvisorEngine(
 
         val baseValue = config.valueMidpoint + config.valuePerZ * (blendedZ - penalty) + synergyPts
         val value = (baseValue * effMult).coerceIn(0.0, 100.0)
-        return ScoredCard(card, value, blendedZ, isBomb, reasons.take(MAX_REASONS))
+
+        val baseScore = config.valueMidpoint + config.valuePerZ * rawZ
+        val archetypeShift = config.valuePerZ * (blendedZ - rawZ)
+        val penaltyScore = -config.valuePerZ * penalty
+
+        val breakdown = ValueBreakdown(
+            baseScore = baseScore,
+            archetypeShift = archetypeShift,
+            synergyBonus = synergyPts,
+            penalty = penaltyScore,
+            needsMultiplier = effMult,
+            finalScore = value
+        )
+
+        return ScoredCard(card, value, blendedZ, isBomb, reasons.take(MAX_REASONS), breakdown)
     }
 
     /** Progressive global<->archetype blend, Bayesian-smoothed by the pair sample size. */
     private fun blend(globalWr: Double?, archWr: Double?, samples: Int, progress: Double): Double? {
         if (globalWr == null) return archWr
         if (archWr == null || samples < config.minArchSamples) return globalWr
-        val weight = (config.archWeightBase + progress * config.archWeightSlope).coerceAtMost(config.archWeightMax)
+        val effProgress = (progress - config.archWeightRampStart).coerceAtLeast(0.0)
+        val weight = (config.archWeightBase + effProgress * config.archWeightSlope).coerceAtMost(config.archWeightMax)
         val confidence = (samples / 1000.0).coerceAtMost(1.0)
         val trustedArch = archWr * confidence + globalWr * (1.0 - confidence)
         return globalWr * (1.0 - weight) + trustedArch * weight
@@ -136,14 +154,19 @@ class AdvisorEngine(
         archWr: Double?,
         samples: Int,
         reasons: MutableList<String>,
+        progress: Double,
     ): Double {
         if (globalWr == null || archWr == null || samples < config.minArchSamples) return 0.0
         val deltaPct = (archWr - globalWr) * 100.0
         if (deltaPct < config.synergyDeltaPct) return 0.0
         val rarity = card.rating?.rarity?.lowercase()
         val glue = rarity == "common" || rarity == "uncommon"
-        val pts = (deltaPct * if (glue) config.glueMult else config.synergyMult).coerceAtMost(config.synergyCapPts)
-        reasons += if (glue) "Archetype glue" else "Archetype synergy"
+        val rawPts = (deltaPct * if (glue) config.glueMult else config.synergyMult).coerceAtMost(config.synergyCapPts)
+        val ramp = ((progress - config.synergyRampStart) / 0.2).coerceIn(0.0, 1.0)
+        val pts = rawPts * ramp
+        if (pts > 1.0) {
+            reasons += if (glue) "Archetype glue" else "Archetype synergy"
+        }
         return pts
     }
 

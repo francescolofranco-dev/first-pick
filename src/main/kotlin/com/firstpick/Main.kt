@@ -3,11 +3,19 @@ package com.firstpick
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
+import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
+import com.firstpick.ui.DraftingOverlay
+import com.firstpick.ui.DeckBuilderOverlay
+import com.firstpick.model.DraftPhase
 import com.firstpick.core.AppPaths
 import com.firstpick.ui.App
 import com.firstpick.ui.DraftViewModel
@@ -39,6 +47,9 @@ fun main() {
         }
 
         val state by viewModel.ui.collectAsState()
+        var isOverlayOpen by remember { mutableStateOf(false) }
+
+
         Window(
             onCloseRequest = {
                 appScope.cancel()
@@ -47,7 +58,38 @@ fun main() {
             state = rememberWindowState(size = DpSize(720.dp, 760.dp)),
             title = "FirstPick",
         ) {
-            App(state)
+            App(
+                state = state,
+                isOverlayOpen = isOverlayOpen,
+                onToggleOverlay = { isOverlayOpen = !isOverlayOpen }
+            )
+        }
+
+        if (isOverlayOpen) {
+            val isDrafting = state.phase == DraftPhase.DRAFTING || state.phase == DraftPhase.IDLE
+            if (isDrafting) {
+                DraftingOverlay(state)
+            } else {
+                val overlayWindowState = rememberWindowState(
+                    size = DpSize(1000.dp, 650.dp),
+                    position = WindowPosition(Alignment.BottomCenter)
+                )
+                Window(
+                    onCloseRequest = { isOverlayOpen = false },
+                    state = overlayWindowState,
+                    title = "FirstPick Overlay",
+                    undecorated = true,
+                    transparent = true,
+                    alwaysOnTop = true,
+                ) {
+                    DeckBuilderOverlay(
+                        composeWindow = window,
+                        state = state,
+                        windowState = overlayWindowState,
+                        onClose = { isOverlayOpen = false }
+                    )
+                }
+            }
         }
     }
 }

@@ -84,4 +84,25 @@ class DraftTrackerTest {
         assertTrue(!tracker.onLine("just a log line"))
         assertEquals(DraftPhase.IDLE, tracker.state.value.phase)
     }
+
+    @Test
+    fun eventJoinedSetsFormatAndDoesNotResetEmptyPacks() {
+        val tracker = DraftTracker()
+        // Join PremiumDraft event
+        tracker.onLine("[UnityCrossThreadLogger]==> Event.Join {\"EventName\":\"PremiumDraft_MKM_20240206\"}")
+        var s = tracker.state.value
+        assertEquals(DraftFormat.PREMIER, s.format)
+        assertEquals("MKM", s.setCode)
+        assertEquals("PremiumDraft_MKM_20240206", s.eventName)
+
+        // Receive PackSeen without EventName (Draft.Notify simulation)
+        tracker.onLine("[UnityCrossThreadLogger]==> Draft.Notify {\"SelfPack\":1,\"SelfPick\":2,\"PackCards\":\"100,200,300\"}")
+        s = tracker.state.value
+        assertEquals(DraftFormat.PREMIER, s.format) // retained!
+        assertEquals("MKM", s.setCode) // retained!
+        assertEquals("PremiumDraft_MKM_20240206", s.eventName) // retained!
+        assertEquals(1, s.pack) // SelfPack=1 -> pack=1
+        assertEquals(2, s.pick) // SelfPick=2 -> pick=2
+        assertEquals(listOf(100, 200, 300), s.packCards)
+    }
 }

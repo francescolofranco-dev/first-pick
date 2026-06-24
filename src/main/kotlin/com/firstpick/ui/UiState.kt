@@ -6,6 +6,7 @@ import com.firstpick.model.DraftPhase
 /** One row in the pack table. [value]/[isBomb]/[reasons] are populated in M3. */
 data class PackCardUi(
     val grpId: Int,
+    val originalIndex: Int = 0,
     val rank: Int,
     val name: String,
     val color: String,
@@ -17,6 +18,8 @@ data class PackCardUi(
     val isBomb: Boolean = false,
     val reasons: List<String> = emptyList(),
     val imageUrl: String? = null,
+    val z: Double = 0.0,
+    val breakdown: com.firstpick.advisor.ValueBreakdown? = null,
 )
 
 /** A single colored magnitude (signals bar, pool count). */
@@ -83,6 +86,7 @@ data class DraftUiState(
     val poolNonCreatures: Int = 0,
     // Archetypes (M5).
     val lanePair: String? = null,
+    val topPairs: List<String> = emptyList(),
     val archetypes: List<ArchetypeRow> = emptyList(),
     // Deck needs (M6) — roles the pool is still short on.
     val deckNeeds: List<String> = emptyList(),

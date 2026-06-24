@@ -1,6 +1,7 @@
 package com.firstpick.log
 
 import com.firstpick.model.DraftEvent
+import com.firstpick.model.DraftFormat
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -42,7 +43,22 @@ class EventParser(
         if (LogMatch.contains(line, "PlayerDraftMakePick")) {
             parsePremierPick(line)?.let { return it }
         }
+
+        // Discover event joins to determine set and format (e.g. PremiumDraft / TradDraft).
+        if (LogMatch.contains(line, "EventName") || LogMatch.contains(line, "InternalEventName")) {
+            parseEventJoined(line)?.let { return it }
+        }
         return null
+    }
+
+    private val eventNamePattern = Regex("\"(?:Internal)?EventName\"\\s*:\\s*\"([^\"]+)\"")
+
+    private fun parseEventJoined(line: String): DraftEvent.EventJoined? {
+        val match = eventNamePattern.find(line) ?: return null
+        val name = match.groupValues[1]
+        val format = DraftFormat.fromEventName(name)
+        if (format == DraftFormat.UNKNOWN) return null
+        return DraftEvent.EventJoined(name)
     }
 
     // ---- Quick / Bot draft ------------------------------------------------
