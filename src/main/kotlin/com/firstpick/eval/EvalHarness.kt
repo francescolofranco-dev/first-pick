@@ -3,6 +3,7 @@ package com.firstpick.eval
 import com.firstpick.advisor.AdvisorEngine
 import com.firstpick.advisor.COLOR_PAIRS
 import com.firstpick.advisor.LaneDetector
+import com.firstpick.signals.SignalsEngine
 import com.firstpick.cards.ArchetypeRepository
 import com.firstpick.cards.CardMetaRepository
 import com.firstpick.cards.CardRepository
@@ -56,19 +57,40 @@ fun main(args: Array<String>) = runBlocking {
     val cfg = base.copy(
         totalPicks = picksPerPack * 3,
         picksPerPack = picksPerPack,
+        valuePerZ = sysD("firstpick.valuePerZ", base.valuePerZ),
+        unratedZ = sysD("firstpick.unratedZ", base.unratedZ),
+        alsaZSlope = sysD("firstpick.alsaZSlope", base.alsaZSlope),
+        bombZ = sysD("firstpick.bombZ", base.bombZ),
+        bombIwd = sysD("firstpick.bombIwd", base.bombIwd),
+        wheelPenaltyPts = sysD("firstpick.wheelPenaltyPts", base.wheelPenaltyPts),
         archWeightBase = sysD("firstpick.archWeightBase", base.archWeightBase),
+        archWeightSlope = sysD("firstpick.archWeightSlope", base.archWeightSlope),
+        archWeightMax = sysD("firstpick.archWeightMax", base.archWeightMax),
+        archWeightRampStart = sysD("firstpick.archWeightRampStart", base.archWeightRampStart),
+        glueMult = sysD("firstpick.glueMult", base.glueMult),
+        synergyMult = sysD("firstpick.synergyMult", base.synergyMult),
+        synergyCapPts = sysD("firstpick.synergyCapPts", base.synergyCapPts),
+        penaltyRampStart = sysD("firstpick.penaltyRampStart", base.penaltyRampStart),
+        penaltyMax = sysD("firstpick.penaltyMax", base.penaltyMax),
         needsRampStart = sysD("firstpick.needsRampStart", base.needsRampStart),
+        needsRampSpan = sysD("firstpick.needsRampSpan", base.needsRampSpan),
     )
     val engine = AdvisorEngine(cfg)
-    println("Replaying $rows picks across ${drafts.size} drafts ($picksPerPack picks/pack); archWeightBase=${cfg.archWeightBase} needsRampStart=${cfg.needsRampStart}")
+    println("Replaying $rows picks across ${drafts.size} drafts ($picksPerPack picks/pack); penaltyMax=${cfg.penaltyMax} needsRampStart=${cfg.needsRampStart} synergyCap=${cfg.synergyCapPts}")
 
     val m = Metrics()
     for ((_, picks) in drafts) {
         picks.sortWith(compareBy({ it.pack }, { it.pick }))
         val pool = ArrayList<RankedCard>()
+        val seen = LinkedHashMap<Pair<Int, Int>, List<RankedCard>>()
         for (row in picks) {
             val pack = row.packCards.map(repo::resolveName)
-            val lane = LaneDetector.detect(pool, repo.setMetrics, archRepo.strengthMap())
+            // Include the current pack in the signal (a strong card still here is the
+            // freshest "this color is flowing to me" read), mirroring the live app where
+            // DraftState.seen already contains the current pack at scoring time.
+            seen[(row.pack + 1) to (row.pick + 1)] = pack
+            val signals = SignalsEngine.openLanesResolved(seen)
+            val lane = LaneDetector.detect(pool, repo.setMetrics, archRepo.strengthMap(), signals)
             val scored = engine.score(pack, pool, row.pack + 1, row.pick + 1, repo.setMetrics, lane, archRepo::archetypeRating, metaRepo::meta)
             scored.firstOrNull()?.let { topPick ->
                 m.record(

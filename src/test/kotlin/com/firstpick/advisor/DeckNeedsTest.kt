@@ -40,8 +40,8 @@ class DeckNeedsTest {
         val saturated = short.copy(removal = 8)
         val a = DeckNeeds.evaluateCard(meta("kill", removal = true), short, totalPicks = 45)
         val b = DeckNeeds.evaluateCard(meta("kill", removal = true), saturated, totalPicks = 45)
-        assertTrue(a.multiplier > 1.0 && "Needs removal" in a.reasons)
-        assertTrue(b.multiplier < 1.0)
+        assertTrue(a.points > 0.0 && "Needs removal" in a.reasons)
+        assertTrue(b.points < 0.0)
     }
 
     @Test
@@ -49,8 +49,8 @@ class DeckNeedsTest {
         val dual = meta("dual", land = true, fixing = true)
         val early = PoolNeeds(creatures = 2, twoDrops = 1, removal = 0, fixing = 0, finishers = 0, topEnd = 0, poolSize = 5)
         val later = early.copy(poolSize = 20)
-        assertEquals(1.0, DeckNeeds.evaluateCard(dual, early, 45).multiplier, 1e-9)
-        assertTrue(DeckNeeds.evaluateCard(dual, later, 45).multiplier > 1.0)
+        assertEquals(0.0, DeckNeeds.evaluateCard(dual, early, 45).points, 1e-9)
+        assertTrue(DeckNeeds.evaluateCard(dual, later, 45).points > 0.0)
     }
 
     @Test

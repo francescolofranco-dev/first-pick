@@ -102,7 +102,8 @@ class DraftViewModel(
         val set = state.setCode ?: return
         if (!repo.isLoaded) return
         val pool = state.pool.map(repo::resolve)
-        val pair = LaneDetector.detect(pool, repo.setMetrics, archetypeRepo.strengthMap()).pair ?: return
+        val signals = SignalsEngine.openLanes(state.seen, repo::resolve)
+        val pair = LaneDetector.detect(pool, repo.setMetrics, archetypeRepo.strengthMap(), signals).pair ?: return
         val format = RatingsFormat.resolve(formatChoice, state.format)
         runCatching { archetypeRepo.ensurePair(set, format, pair) }
     }
@@ -110,8 +111,10 @@ class DraftViewModel(
     private fun buildUi(state: DraftState): DraftUiState {
         val loaded = repo.isLoaded
         val pool = if (loaded) state.pool.map(repo::resolve) else emptyList()
+        // Open-lane signals (cards flowing to you) now bias lane detection, not just the UI.
+        val signals = if (loaded) SignalsEngine.openLanes(state.seen, repo::resolve) else emptyMap()
         val lane = if (loaded) {
-            LaneDetector.detect(pool, repo.setMetrics, archetypeRepo.strengthMap())
+            LaneDetector.detect(pool, repo.setMetrics, archetypeRepo.strengthMap(), signals)
         } else {
             Lane(emptySet(), null, emptyMap())
         }
@@ -132,7 +135,7 @@ class DraftViewModel(
             emptyList()
         }
 
-        val openLanes = if (loaded) SignalsEngine.openLanes(state.seen, repo::resolve).toColorScores() else emptyList()
+        val openLanes = signals.toColorScores()
         val deckNeeds = if (loaded && state.pool.isNotEmpty()) {
             PoolNeeds.analyze(poolMetas, state.pool.size).activeNeeds(TOTAL_PICKS)
         } else {

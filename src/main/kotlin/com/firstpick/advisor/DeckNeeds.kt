@@ -13,17 +13,27 @@ data class PoolNeeds(
     val topEnd: Int,
     val poolSize: Int,
 ) {
-    /** Extrapolate a current count to a full 40-card draft. */
-    fun projected(count: Int, totalPicks: Int): Double =
-        if (poolSize < 1) count.toDouble() else count * (totalPicks.toDouble() / poolSize)
+    /**
+     * Extrapolate a current role count to a full deck, shrunk toward the role's
+     * expected pace so tiny early pools don't produce wild estimates (e.g. one
+     * removal at pool 2 no longer implies "22 removal"). [target] is the role's
+     * full-draft goal, which doubles as the prior we shrink toward.
+     */
+    fun projected(count: Int, totalPicks: Int, target: Double): Double {
+        if (poolSize < 1) return count.toDouble()
+        val priorRate = target / totalPicks
+        val w = DeckNeeds.PROJECTION_PRIOR
+        val rate = (count + priorRate * w) / (poolSize + w)
+        return rate * totalPicks
+    }
 
     /** Human-readable list of what the deck is still short on (for the UI). */
     fun activeNeeds(totalPicks: Int): List<String> = buildList {
-        if (projected(removal, totalPicks) < DeckNeeds.TARGET_REMOVAL) add("Removal")
-        if (projected(creatures, totalPicks) < DeckNeeds.TARGET_CREATURES) add("Creatures")
-        if (projected(twoDrops, totalPicks) < DeckNeeds.TARGET_TWO_DROPS) add("2-drops")
+        if (projected(removal, totalPicks, DeckNeeds.TARGET_REMOVAL) < DeckNeeds.TARGET_REMOVAL) add("Removal")
+        if (projected(creatures, totalPicks, DeckNeeds.TARGET_CREATURES) < DeckNeeds.TARGET_CREATURES) add("Creatures")
+        if (projected(twoDrops, totalPicks, DeckNeeds.TARGET_TWO_DROPS) < DeckNeeds.TARGET_TWO_DROPS) add("2-drops")
         if (poolSize >= DeckNeeds.FIXING_MIN_POOL && fixing < DeckNeeds.TARGET_FIXING) add("Fixing")
-        if (projected(finishers, totalPicks) < DeckNeeds.TARGET_FINISHERS) add("Finisher")
+        if (projected(finishers, totalPicks, DeckNeeds.TARGET_FINISHERS) < DeckNeeds.TARGET_FINISHERS) add("Finisher")
     }
 
     companion object {
@@ -46,13 +56,15 @@ data class PoolNeeds(
     }
 }
 
-/** A card's deck-needs multiplier plus the reasons that fired. */
-data class NeedsResult(val multiplier: Double, val reasons: List<String>)
+/** A card's additive deck-needs bonus (in value points, pre-ramp) plus the reasons that fired. */
+data class NeedsResult(val points: Double, val reasons: List<String>)
 
 /**
- * Scores how well a card fills the pool's current gaps. Returns a multiplier near
- * 1.0; the advisor scales its deviation from 1.0 by draft progress, so early picks
- * stay value-driven and the deck-building pressure ramps up in the mid/late draft.
+ * Scores how well a card fills the pool's current gaps as an ADDITIVE point bonus
+ * (0 = neutral). The advisor scales it by draft progress, so early picks stay
+ * value-driven and the deck-building pressure ramps up mid/late. Additive (not a
+ * multiplier on the whole value) so the boost is a fixed, interpretable slot-filling
+ * premium rather than an amplification of the arbitrary 50-point midpoint.
  */
 object DeckNeeds {
     const val TARGET_REMOVAL = 3.0
@@ -64,38 +76,52 @@ object DeckNeeds {
     const val TARGET_FINISHERS = 2.0
     const val TOP_HEAVY_THRESHOLD = 4
 
+    /** Shrink strength for [PoolNeeds.projected] (picks of prior weight). */
+    const val PROJECTION_PRIOR = 8.0
+
+    // Additive point bonuses/penalties (before the draft-progress ramp).
+    private const val PTS_NEEDS_REMOVAL = 9.0
+    private const val PTS_REMOVAL_SATURATED = -7.0
+    private const val PTS_NEEDS_CREATURES = 5.0
+    private const val PTS_TWO_DROP_MAX = 8.0
+    private const val PTS_NEEDS_FIXING = 6.0
+    private const val PTS_NEEDS_FINISHER = 7.0
+    private const val PTS_TOP_HEAVY = -8.0
+    private const val PTS_FLOOR = -14.0
+    private const val PTS_CEIL = 20.0
+
     fun evaluateCard(meta: CardMeta?, needs: PoolNeeds, totalPicks: Int): NeedsResult {
-        if (meta == null) return NeedsResult(1.0, emptyList())
+        if (meta == null) return NeedsResult(0.0, emptyList())
         val reasons = mutableListOf<String>()
-        var mult = 1.0
+        var pts = 0.0
 
         if (meta.isRemoval) {
-            if (needs.projected(needs.removal, totalPicks) < TARGET_REMOVAL) {
-                mult *= 1.30; reasons += "Needs removal"
+            if (needs.projected(needs.removal, totalPicks, TARGET_REMOVAL) < TARGET_REMOVAL) {
+                pts += PTS_NEEDS_REMOVAL; reasons += "Needs removal"
             } else if (needs.removal > REMOVAL_SATURATION) {
-                mult *= 0.80; reasons += "Removal saturated"
+                pts += PTS_REMOVAL_SATURATED; reasons += "Removal saturated"
             }
         }
-        if (meta.isCreature && needs.projected(needs.creatures, totalPicks) < TARGET_CREATURES) {
-            mult *= 1.18; reasons += "Needs creatures"
+        if (meta.isCreature && needs.projected(needs.creatures, totalPicks, TARGET_CREATURES) < TARGET_CREATURES) {
+            pts += PTS_NEEDS_CREATURES; reasons += "Needs creatures"
         }
         if (meta.isCreature && meta.cmc in 1..2) {
-            val projected = needs.projected(needs.twoDrops, totalPicks)
+            val projected = needs.projected(needs.twoDrops, totalPicks, TARGET_TWO_DROPS)
             if (projected < TARGET_TWO_DROPS) {
-                mult *= 1.0 + min(0.4, (TARGET_TWO_DROPS - projected) * 0.1)
+                pts += min(PTS_TWO_DROP_MAX, (TARGET_TWO_DROPS - projected) * 2.0)
                 reasons += "Fills 2-drop need"
             }
         }
         if (meta.isFixing && needs.poolSize >= FIXING_MIN_POOL && needs.fixing < TARGET_FIXING) {
-            mult *= 1.25; reasons += "Needs fixing"
+            pts += PTS_NEEDS_FIXING; reasons += "Needs fixing"
         }
-        if (meta.isFinisher && needs.projected(needs.finishers, totalPicks) < TARGET_FINISHERS) {
-            mult *= 1.22; reasons += "Needs a finisher"
+        if (meta.isFinisher && needs.projected(needs.finishers, totalPicks, TARGET_FINISHERS) < TARGET_FINISHERS) {
+            pts += PTS_NEEDS_FINISHER; reasons += "Needs a finisher"
         }
         if (!meta.isLand && meta.cmc >= 5 && needs.topEnd >= TOP_HEAVY_THRESHOLD) {
-            mult *= 0.75; reasons += "Top-heavy"
+            pts += PTS_TOP_HEAVY; reasons += "Top-heavy"
         }
 
-        return NeedsResult(mult.coerceIn(0.6, 1.7), reasons.take(2))
+        return NeedsResult(pts.coerceIn(PTS_FLOOR, PTS_CEIL), reasons.take(2))
     }
 }

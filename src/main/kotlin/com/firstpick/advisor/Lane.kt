@@ -44,6 +44,7 @@ object LaneDetector {
         pool: List<RankedCard>,
         metrics: SetMetrics,
         pairStrength: Map<String, Double> = emptyMap(),
+        signals: Map<Char, Double> = emptyMap(),
     ): Lane {
         val commitment = colorCommitment(pool, metrics)
 
@@ -51,11 +52,18 @@ object LaneDetector {
         val meanStrength = if (strengthValues.isEmpty()) 0.0 else strengthValues.average()
         val sdStrength = stdDev(strengthValues, meanStrength)
 
+        // Per-color z of the open-lane signal (how strongly each color is flowing to us).
+        // Both the archetype-strength and signal terms are z-normalized, so they're
+        // bounded nudges while pool fit grows unbounded — i.e. signals/archetypes guide
+        // an open early lane, your actual picks take over later.
+        val signalZ = zByColor(signals)
+
         val pairScores = mutableListOf<Pair<String, Double>>()
         for (pair in COLOR_PAIRS) {
             val fit = poolFit(pool, metrics, pair)
             val archZ = pairStrength[pair]?.let { if (sdStrength > 1e-9) (it - meanStrength) / sdStrength else 0.0 } ?: 0.0
-            val score = fit + ARCH_BIAS * archZ
+            val sig = (signalZ[pair[0]] ?: 0.0) + (signalZ[pair[1]] ?: 0.0)
+            val score = fit + ARCH_BIAS * archZ + SIGNAL_BIAS * sig
             pairScores.add(pair to score)
         }
 
@@ -119,6 +127,15 @@ object LaneDetector {
         return sqrt(values.sumOf { (it - mean) * (it - mean) } / values.size)
     }
 
+    /** Per-color z of the open-lane signal across all five colors (missing = 0). */
+    private fun zByColor(signals: Map<Char, Double>): Map<Char, Double> {
+        if (signals.isEmpty()) return emptyMap()
+        val full = WUBRG.associateWith { signals[it] ?: 0.0 }
+        val mean = full.values.average()
+        val sd = stdDev(full.values, mean)
+        return if (sd <= 1e-9) full.mapValues { 0.0 } else full.mapValues { (it.value - mean) / sd }
+    }
+
     private const val MIN_RECENCY = 1.0
     private const val MAX_RECENCY = 2.5
     private const val DEFAULT_POWER = -0.5
@@ -126,4 +143,7 @@ object LaneDetector {
 
     /** How strongly set archetype strength biases an undecided lane (in pool-fit units). */
     private const val ARCH_BIAS = 2.0
+
+    /** How strongly open-lane signals (cards flowing to you) bias an undecided lane. */
+    private const val SIGNAL_BIAS = 1.5
 }

@@ -17,13 +17,16 @@ object SignalsEngine {
     fun openLanes(
         seen: Map<Pair<Int, Int>, List<Int>>,
         resolve: (Int) -> RankedCard,
-    ): Map<Char, Double> {
+    ): Map<Char, Double> = openLanesResolved(seen.mapValues { (_, ids) -> ids.map(resolve) })
+
+    /** Same signal, but from packs already resolved to [RankedCard] (live app + eval harness). */
+    fun openLanesResolved(seen: Map<Pair<Int, Int>, List<RankedCard>>): Map<Char, Double> {
         val score = mutableMapOf<Char, Double>()
         for ((packPick, cards) in seen) {
             val (pack, pick) = packPick
             if (pack !in SIGNAL_PACKS) continue
-            for (grpId in cards) {
-                val rating = resolve(grpId).rating ?: continue
+            for (card in cards) {
+                val rating = card.rating ?: continue
                 val ata = rating.ata ?: continue
                 val gih = rating.gihWr ?: continue
                 val lateness = pick - ata           // later than expected = open

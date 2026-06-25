@@ -785,10 +785,10 @@ fun BreakdownTooltip(b: com.firstpick.advisor.ValueBreakdown) {
                     Text(String.format("%+.1f", b.penalty), fontSize = 11.sp, color = MaterialTheme.colorScheme.inverseOnSurface)
                 }
             }
-            if (b.needsMultiplier != 1.0) {
+            if (b.needsPoints != 0.0) {
                 Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.width(160.dp)) {
-                    Text("Deck Need Mult", fontSize = 11.sp, color = MaterialTheme.colorScheme.inverseOnSurface)
-                    Text(String.format("%.2fx", b.needsMultiplier), fontSize = 11.sp, color = MaterialTheme.colorScheme.inverseOnSurface)
+                    Text("Deck Needs", fontSize = 11.sp, color = MaterialTheme.colorScheme.inverseOnSurface)
+                    Text(String.format("%+.1f", b.needsPoints), fontSize = 11.sp, color = MaterialTheme.colorScheme.inverseOnSurface)
                 }
             }
             Spacer(Modifier.height(4.dp))
