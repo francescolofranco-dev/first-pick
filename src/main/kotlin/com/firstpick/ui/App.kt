@@ -42,6 +42,8 @@ fun App(
     isOverlayOpen: Boolean,
     onToggleOverlay: () -> Unit,
     onSelectFormat: (String) -> Unit = {},
+    onSimulate: (String) -> Unit = {},
+    onStopSim: () -> Unit = {},
 ) {
     var currentScreen by remember(state.phase) {
         mutableStateOf(if (state.phase == DraftPhase.COMPLETE) AppScreen.DECK_BUILDER else AppScreen.DRAFT_POOL)
@@ -50,7 +52,7 @@ fun App(
     MaterialTheme(colorScheme = DraftColorScheme) {
         Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
             Column(Modifier.fillMaxSize().padding(14.dp)) {
-                Header(state, isOverlayOpen, onToggleOverlay, onSelectFormat)
+                Header(state, isOverlayOpen, onToggleOverlay, onSelectFormat, onStopSim)
 
                 if (state.deckOptions.isNotEmpty() || state.poolSize > 0) {
                     Spacer(Modifier.height(8.dp))
@@ -82,7 +84,7 @@ fun App(
                         if (currentScreen == AppScreen.DECK_BUILDER && state.deckOptions.isNotEmpty()) {
                             DeckBuilderPane(state.deckOptions)
                         } else {
-                            PackPane(state)
+                            PackPane(state, onSimulate)
                         }
                     }
                     if (currentScreen == AppScreen.DRAFT_POOL && (state.poolSize > 0 || state.packCards.isNotEmpty())) {
@@ -101,6 +103,7 @@ private fun Header(
     isOverlayOpen: Boolean,
     onToggleOverlay: () -> Unit,
     onSelectFormat: (String) -> Unit,
+    onStopSim: () -> Unit,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -121,6 +124,22 @@ private fun Header(
         }
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            if (state.simulating) {
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(MaterialTheme.colorScheme.tertiary.copy(alpha = 0.2f))
+                        .clickable(onClick = onStopSim)
+                        .padding(horizontal = 12.dp, vertical = 6.dp),
+                ) {
+                    Text(
+                        text = "● Demo — stop",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.tertiary,
+                    )
+                }
+            }
             FormatSelector(state.ratingsFormatChoice, onSelectFormat)
             Box(
                 modifier = Modifier

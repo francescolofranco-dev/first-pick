@@ -94,6 +94,8 @@ data class DraftUiState(
     val deckOptions: List<DeckOptionUi> = emptyList(),
     // Which 17Lands data source the user has selected (see [RatingsFormat]).
     val ratingsFormatChoice: String = RatingsFormat.PREMIER,
+    // True while a simulated/demo draft is driving the app (not a live Arena log).
+    val simulating: Boolean = false,
 ) {
     val headline: String
         get() = when (phase) {

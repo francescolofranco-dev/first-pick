@@ -62,7 +62,9 @@ fun main() {
                 state = state,
                 isOverlayOpen = isOverlayOpen,
                 onToggleOverlay = { isOverlayOpen = !isOverlayOpen },
-                onSelectFormat = { viewModel.setFormatChoice(it) }
+                onSelectFormat = { viewModel.setFormatChoice(it) },
+                onSimulate = { viewModel.startSimulation(it) },
+                onStopSim = { viewModel.stopSimulation() }
             )
         }
 

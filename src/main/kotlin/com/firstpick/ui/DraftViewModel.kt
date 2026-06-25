@@ -20,8 +20,10 @@ import com.firstpick.draft.DraftTracker
 import com.firstpick.log.LogWatcher
 import com.firstpick.model.DraftState
 import com.firstpick.signals.SignalsEngine
+import com.firstpick.sim.DraftSimulator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -44,6 +46,7 @@ class DraftViewModel(
     private val metaRepo: CardMetaRepository = CardMetaRepository(),
     private val archetypeRepo: ArchetypeRepository = ArchetypeRepository(),
     private val advisor: AdvisorEngine = AdvisorEngine(),
+    private val simulator: DraftSimulator = DraftSimulator(),
 ) {
     private val _ui = MutableStateFlow(DraftUiState())
     val ui: StateFlow<DraftUiState> = _ui.asStateFlow()
@@ -57,13 +60,17 @@ class DraftViewModel(
     private var requestedKey: String? = null // guarded by [mutex]
     @Volatile private var currentError: String? = null
 
+    private var watcherJob: Job? = null
+    private var simJob: Job? = null
+    @Volatile private var simulating = false
+
     /** User-selected 17Lands data source ([RatingsFormat]); persisted across runs. */
     @Volatile
     private var formatChoice: String =
         runCatching { OverlaySettings.load().ratingsFormatOverride }.getOrNull() ?: RatingsFormat.PREMIER
 
     fun start() {
-        scope.launch(Dispatchers.IO) { tracker.consume(watcher.lines(fromStart = true)) }
+        watcherJob = scope.launch(Dispatchers.IO) { tracker.consume(watcher.lines(fromStart = true)) }
         scope.launch {
             tracker.state.collect { state ->
                 state.setCode?.let { ensureLoaded(it) }
@@ -71,6 +78,37 @@ class DraftViewModel(
                 publish()
             }
         }
+    }
+
+    /**
+     * Demo/test mode: stop tailing the real log and drive the app from a simulated
+     * draft of [set] (see [DraftSimulator]). The synthetic snapshots flow through the
+     * normal pipeline, so the UI behaves exactly as in a live draft.
+     */
+    fun startSimulation(set: String) {
+        simJob?.cancel()
+        watcherJob?.cancel()
+        simulating = true
+        scope.launch { publish() } // reflect "simulating" immediately, before the first pick
+        simJob = scope.launch(Dispatchers.IO) {
+            tracker.consume(simulator.simulate(set))
+            // The flow finished with nothing → the set had no 17Lands data to simulate.
+            if (tracker.state.value.setCode == null) {
+                currentError = "No 17Lands data to simulate ${set.uppercase()}"
+                simulating = false
+                publish()
+            }
+        }
+    }
+
+    /** Stop the demo and resume tailing the live Arena log. */
+    fun stopSimulation() {
+        if (!simulating) return
+        simJob?.cancel()
+        simJob = null
+        simulating = false
+        watcherJob = scope.launch(Dispatchers.IO) { tracker.consume(watcher.lines(fromStart = false)) }
+        scope.launch { publish() }
     }
 
     /**
@@ -195,6 +233,7 @@ class DraftViewModel(
             deckNeeds = deckNeeds,
             deckOptions = deckOptions,
             ratingsFormatChoice = formatChoice,
+            simulating = simulating,
         )
     }
 

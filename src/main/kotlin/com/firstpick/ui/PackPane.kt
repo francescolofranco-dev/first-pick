@@ -4,6 +4,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.TooltipArea
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,33 +28,44 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.firstpick.advisor.Confidence
 import com.firstpick.advisor.ConfidenceLevel
 import com.firstpick.model.DraftPhase
+import com.firstpick.sim.DraftSimulator
 
 @Composable
-internal fun PackPane(state: DraftUiState) = when {
+internal fun PackPane(state: DraftUiState, onSimulate: (String) -> Unit = {}) = when {
     state.loadingRatings && state.packCards.isEmpty() -> Centered {
         Row(verticalAlignment = Alignment.CenterVertically) {
             CircularProgressIndicator(Modifier.width(18.dp), strokeWidth = 2.dp)
             Spacer(Modifier.width(10.dp))
-            Text("Loading 17Lands data…", style = MaterialTheme.typography.bodyMedium)
+            Text(if (state.simulating) "Setting up the demo draft…" else "Loading 17Lands data…", style = MaterialTheme.typography.bodyMedium)
         }
     }
 
     state.packCards.isEmpty() -> Centered {
-        Text(
-            if (state.phase == DraftPhase.IDLE) {
-                "Start a draft in MTG Arena.\nEnable Options → Account → Detailed Logs (Plugin Support)."
-            } else {
-                "No cards in the current pack."
-            },
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            Text(
+                if (state.phase == DraftPhase.IDLE) {
+                    "Start a draft in MTG Arena.\nEnable Options → Account → Detailed Logs (Plugin Support)."
+                } else {
+                    "No cards in the current pack."
+                },
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+            )
+            if (state.phase == DraftPhase.IDLE && !state.simulating) {
+                Text("— or try a demo draft —", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    DraftSimulator.SETS.forEach { set -> DemoSetButton(set) { onSimulate(set) } }
+                }
+            }
+        }
     }
 
     else -> Column(Modifier.fillMaxSize()) {
@@ -66,6 +78,21 @@ internal fun PackPane(state: DraftUiState) = when {
             // Composite key: grpId can repeat in cube/special packs; rank keeps it unique.
             items(state.packCards, key = { "${it.grpId}#${it.rank}" }) { PackRow(it) }
         }
+    }
+}
+
+@Composable
+private fun DemoSetButton(set: String, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .clip(RoundedCornerShape(8.dp))
+            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.16f))
+            .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.4f), RoundedCornerShape(8.dp))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 14.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(set, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
     }
 }
 
