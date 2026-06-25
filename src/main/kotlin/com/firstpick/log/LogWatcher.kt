@@ -23,11 +23,11 @@ import kotlin.time.Duration.Companion.milliseconds
  * never be torn across a poll boundary; an unterminated trailing line is carried
  * over to the next poll.
  */
-class LogWatcher(
+open class LogWatcher(
     private val path: Path,
     private val pollInterval: Duration = 250.milliseconds,
 ) {
-    fun lines(fromStart: Boolean = true): Flow<String> = flow {
+    open fun lines(fromStart: Boolean = true): Flow<String> = flow {
         var position = if (fromStart) 0L else sizeOrZero()
         var carry = ByteArray(0)
 

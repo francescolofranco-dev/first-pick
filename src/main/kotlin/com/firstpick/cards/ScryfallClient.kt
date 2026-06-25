@@ -1,6 +1,7 @@
 package com.firstpick.cards
 
 import com.firstpick.core.AppPaths
+import com.firstpick.core.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.SerialName
@@ -101,23 +102,10 @@ class ScryfallClient(
     }
 
     private fun dtoOf(c: Card, removalNames: Set<String>): MetaDto {
-        val type = c.typeLine.lowercase()
-        val text = c.oracleText.lowercase()
-        val isLand = "land" in type
-        val isCreature = "creature" in type
         val cmc = c.cmc.roundToInt()
-        val producedColors = c.producedMana.filter { it.length == 1 && it[0] in "WUBRG" }.toSet()
         val power = c.power?.substringBefore("+")?.toIntOrNull() ?: 0
-
-        val evasion = isCreature && EVASION_RE.containsMatchIn(text)
-        val fixing = (producedColors.size >= 2) ||
-            ("any color" in text) ||
-            ("treasure" in text && "create" in text)
-        val finisher = isCreature && (power >= 5 || (power >= 4 && (cmc >= 5 || evasion)))
-        val removal = frontName(c.name) in removalNames || REMOVAL_RE.containsMatchIn(text)
-        val draw = "draw a card" in text || "draw two cards" in text || "draws a card" in text
-
-        return MetaDto(frontName(c.name), cmc, isCreature, isLand, removal, fixing, finisher, evasion, draw)
+        val r = classifyRoles(c.typeLine, c.oracleText, cmc, power, c.producedMana, frontName(c.name) in removalNames)
+        return MetaDto(frontName(c.name), cmc, r.creature, r.land, r.removal, r.fixing, r.finisher, r.evasion, r.draw)
     }
 
     private fun searchCards(query: String): List<Card>? {
@@ -135,7 +123,23 @@ class ScryfallClient(
         return out
     }
 
-    private fun getPage(url: String): SearchPage? = runCatching {
+    /** GET one search page with retry/backoff + logging (Scryfall data is optional). */
+    private fun getPage(url: String): SearchPage? {
+        for (attempt in 1..SeventeenLandsClient.MAX_ATTEMPTS) {
+            val (page, failure) = getPageOnce(url)
+            if (page != null) return page
+            if (failure == null || !SeventeenLandsClient.isTransient(failure) || attempt == SeventeenLandsClient.MAX_ATTEMPTS) {
+                if (failure != null) Log.warn(TAG, "GET page failed ($failure) after $attempt attempt(s)")
+                return null
+            }
+            val backoff = SeventeenLandsClient.BASE_BACKOFF_MS * (1L shl (attempt - 1))
+            Log.warn(TAG, "GET page $failure — retry $attempt/${SeventeenLandsClient.MAX_ATTEMPTS} in ${backoff}ms")
+            runCatching { Thread.sleep(backoff) }
+        }
+        return null
+    }
+
+    private fun getPageOnce(url: String): Pair<SearchPage?, FetchFailure?> = runCatching {
         val request = HttpRequest.newBuilder(URI.create(url))
             .header("User-Agent", SeventeenLandsClient.USER_AGENT)
             .header("Accept", "application/json")
@@ -145,11 +149,11 @@ class ScryfallClient(
         val resp = http.send(request, HttpResponse.BodyHandlers.ofString())
         // A search with zero matches returns 404; treat as an empty page, not an error.
         when (resp.statusCode()) {
-            200 -> json.decodeFromString<SearchPage>(resp.body())
-            404 -> SearchPage()
-            else -> null
+            200 -> json.decodeFromString<SearchPage>(resp.body()) to null
+            404 -> SearchPage() to null
+            else -> null to SeventeenLandsClient.failureForStatus(resp.statusCode())
         }
-    }.getOrNull()
+    }.getOrElse { null to FetchFailure.OFFLINE }
 
     private fun isFresh(cache: Path): Boolean {
         if (!Files.exists(cache)) return false
@@ -161,6 +165,7 @@ class ScryfallClient(
     private fun normalize(name: String): String = name.lowercase().substringBefore(" //").trim()
 
     companion object {
+        private const val TAG = "Scryfall"
         private const val MAX_PAGES = 6
         private const val PAGE_DELAY_MS = 120L
         private val LIST_SERIALIZER = ListSerializer(MetaDto.serializer())
@@ -168,5 +173,44 @@ class ScryfallClient(
         private val REMOVAL_RE = Regex(
             "destroy target|exile target|deals \\d+ damage to|fights?|gets -\\d|each (opponent|player) sacrifices",
         )
+
+        /**
+         * Derive the advisor's functional roles from a card's facts. Extracted (and
+         * `internal`) so the heuristics that drive deck-needs can be unit-tested
+         * without the network. [removalTagged] = Scryfall's curated `otag:removal`.
+         */
+        internal fun classifyRoles(
+            typeLine: String,
+            oracleText: String,
+            cmc: Int,
+            power: Int,
+            producedMana: List<String>,
+            removalTagged: Boolean,
+        ): CardRoleFlags {
+            val type = typeLine.lowercase()
+            val text = oracleText.lowercase()
+            val isLand = "land" in type
+            val isCreature = "creature" in type
+            val producedColors = producedMana.filter { it.length == 1 && it[0] in "WUBRG" }.toSet()
+            val evasion = isCreature && EVASION_RE.containsMatchIn(text)
+            val fixing = (producedColors.size >= 2) ||
+                ("any color" in text) ||
+                ("treasure" in text && "create" in text)
+            val finisher = isCreature && (power >= 5 || (power >= 4 && (cmc >= 5 || evasion)))
+            val removal = removalTagged || REMOVAL_RE.containsMatchIn(text)
+            val draw = "draw a card" in text || "draw two cards" in text || "draws a card" in text
+            return CardRoleFlags(isCreature, isLand, removal, fixing, finisher, evasion, draw)
+        }
     }
 }
+
+/** Functional roles derived from a card's facts (see [ScryfallClient.classifyRoles]). */
+internal data class CardRoleFlags(
+    val creature: Boolean,
+    val land: Boolean,
+    val removal: Boolean,
+    val fixing: Boolean,
+    val finisher: Boolean,
+    val evasion: Boolean,
+    val draw: Boolean,
+)

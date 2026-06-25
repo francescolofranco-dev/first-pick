@@ -26,7 +26,7 @@ fun main(args: Array<String>) = runBlocking {
     val limit = args.getOrNull(3)?.toIntOrNull() ?: Int.MAX_VALUE
 
     print("Loading 17Lands ratings + archetypes + Scryfall meta for $set… ")
-    val repo = CardRepository().apply { load(set, format) }
+    val repo = CardRepository().apply { runCatching { load(set, format) } }
     if (!repo.isLoaded) { println("\nNo 17Lands ratings for $set."); return@runBlocking }
     val archRepo = ArchetypeRepository().apply { loadStrengths(set, format) }
     for (p in COLOR_PAIRS) runCatching { archRepo.ensurePair(set, format, p) }

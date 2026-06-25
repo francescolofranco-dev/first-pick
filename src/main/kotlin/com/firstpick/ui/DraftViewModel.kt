@@ -13,6 +13,8 @@ import com.firstpick.cards.ArchetypeRepository
 import com.firstpick.cards.CardMeta
 import com.firstpick.cards.CardMetaRepository
 import com.firstpick.cards.CardRepository
+import com.firstpick.cards.DataUnavailableException
+import com.firstpick.cards.FetchFailure
 import com.firstpick.core.AppPaths
 import com.firstpick.draft.DraftTracker
 import com.firstpick.log.LogWatcher
@@ -24,6 +26,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.nio.file.Path
 
 /**
@@ -44,7 +48,14 @@ class DraftViewModel(
     private val _ui = MutableStateFlow(DraftUiState())
     val ui: StateFlow<DraftUiState> = _ui.asStateFlow()
 
-    private var requestedKey: String? = null
+    /**
+     * Serializes every `_ui` write and the load-once decision. Without it, the collect
+     * loop, the background data-load, and setFormatChoice all raced on `_ui`/[requestedKey]
+     * and could clobber each other's state.
+     */
+    private val mutex = Mutex()
+    private var requestedKey: String? = null // guarded by [mutex]
+    @Volatile private var currentError: String? = null
 
     /** User-selected 17Lands data source ([RatingsFormat]); persisted across runs. */
     @Volatile
@@ -57,7 +68,7 @@ class DraftViewModel(
             tracker.state.collect { state ->
                 state.setCode?.let { ensureLoaded(it) }
                 ensureLanePair(state)
-                _ui.value = buildUi(tracker.state.value)
+                publish()
             }
         }
     }
@@ -70,30 +81,36 @@ class DraftViewModel(
         if (choice == formatChoice) return
         formatChoice = choice
         runCatching { OverlaySettings.save(OverlaySettings.load().copy(ratingsFormatOverride = choice)) }
-        requestedKey = null // force a reload under the new format
         scope.launch {
-            val state = tracker.state.value
-            state.setCode?.let { ensureLoaded(it) }
-            _ui.value = buildUi(tracker.state.value)
+            mutex.withLock { requestedKey = null } // force a reload under the new format
+            tracker.state.value.setCode?.let { ensureLoaded(it) }
+            publish()
         }
+    }
+
+    /** Rebuild and publish the UI from the latest state, atomically. */
+    private suspend fun publish() = mutex.withLock {
+        _ui.value = buildUi(tracker.state.value).copy(dataError = currentError)
     }
 
     private suspend fun ensureLoaded(set: String) {
         val format = RatingsFormat.resolve(formatChoice, tracker.state.value.format)
         val key = "${set}_$format"
-        if (key == requestedKey) return
-        requestedKey = key
-        _ui.value = _ui.value.copy(loadingRatings = true, dataError = null)
+        val proceed = mutex.withLock { if (key == requestedKey) false else { requestedKey = key; true } }
+        if (!proceed) return
+        currentError = null
+        mutex.withLock { _ui.value = _ui.value.copy(loadingRatings = true, dataError = null) }
 
-        val ok = runCatching { repo.load(set, format) }.isSuccess
-        _ui.value = buildUi(tracker.state.value)
-            .copy(dataError = if (ok && repo.isLoaded) null else "Couldn't load 17Lands data for $set")
+        val outcome = runCatching { repo.load(set, format) }
+        currentError = outcome.exceptionOrNull()?.let { dataErrorMessage(it, set) }
+            ?: if (repo.isLoaded) null else dataErrorMessage(null, set)
+        publish()
 
-        // Scryfall mana values + archetype strengths in the background.
+        // Scryfall mana values + archetype strengths in the background (optional data).
         scope.launch {
             runCatching { metaRepo.load(set) }
             runCatching { archetypeRepo.loadStrengths(set, format) }
-            _ui.value = buildUi(tracker.state.value)
+            publish()
         }
     }
 
@@ -164,7 +181,7 @@ class DraftViewModel(
             pick = state.pick,
             poolSize = state.pool.size,
             loadingRatings = state.setCode != null && !loaded,
-            dataError = _ui.value.dataError,
+            dataError = null, // set by publish() from currentError
             packCards = rows,
             laneColors = WUBRG_ORDER.filter { it in lane.colors },
             openLanes = openLanes,
@@ -256,8 +273,21 @@ class DraftViewModel(
         }
     }
 
+    private fun dataErrorMessage(t: Throwable?, set: String): String =
+        ratingsErrorMessage((t as? DataUnavailableException)?.reason, set)
+
     companion object {
         private const val TOTAL_PICKS = 45
         private val WUBRG_ORDER = listOf('W', 'U', 'B', 'R', 'G')
     }
+}
+
+/** Map a fetch failure to a user-facing message. Top-level + internal so it's testable. */
+internal fun ratingsErrorMessage(reason: FetchFailure?, set: String): String = when (reason) {
+    FetchFailure.RATE_LIMITED -> "17Lands is rate-limiting — retrying; using cached data if available"
+    FetchFailure.OFFLINE -> "Can't reach 17Lands — check your connection"
+    FetchFailure.SERVER_ERROR -> "17Lands is having issues — retrying shortly"
+    FetchFailure.NOT_FOUND -> "No 17Lands data for $set yet"
+    FetchFailure.BAD_DATA -> "17Lands returned unexpected data for $set"
+    null -> "Couldn't load 17Lands data for $set"
 }
