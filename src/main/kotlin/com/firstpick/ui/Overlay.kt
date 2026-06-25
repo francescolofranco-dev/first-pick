@@ -711,102 +711,54 @@ fun DraftingOverlay(state: DraftUiState) {
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun OverlayListItem(card: PackCardUi) {
-    val scoreText = card.value?.let { "%.0f".format(it) } ?: "—"
-    val isHighTier = (card.value ?: 0.0) >= 70.0
-    val isBomb = card.isBomb || isHighTier
-    
-    val tierColor = if (isBomb) Color(0xFFFFD700) else valueTierColor(card.value ?: 0.0)
-    
+    val isBomb = card.isBomb
+    val tierColor = valueTierColor(card.value)
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
-            .background(if (isBomb) tierColor.copy(alpha = 0.15f) else Color.White.copy(alpha = 0.04f))
-            .border(if (isBomb) 2.dp else 0.dp, if (isBomb) tierColor.copy(alpha = 0.8f) else Color.Transparent, RoundedCornerShape(8.dp))
+            .background(if (isBomb) tierColor.copy(alpha = 0.12f) else Color.White.copy(alpha = 0.04f))
+            .border(if (isBomb) 1.dp else 0.dp, if (isBomb) tierColor.copy(alpha = 0.6f) else Color.Transparent, RoundedCornerShape(8.dp))
             .padding(horizontal = 8.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Score Badge
+        // Color-coded letter grade + 0–100 value, matching the main window.
         if (card.breakdown != null) {
-            TooltipArea(
-                tooltip = { BreakdownTooltip(card.breakdown) }
-            ) {
-                Box(
-                    modifier = Modifier
-                        .width(36.dp)
-                        .clip(RoundedCornerShape(4.dp))
-                        .background(tierColor.copy(alpha = if (isBomb) 0.3f else 0.2f))
-                        .border(1.dp, tierColor.copy(alpha = if (isBomb) 1.0f else 0.5f), RoundedCornerShape(4.dp))
-                        .padding(vertical = 4.dp)
-                        .clickable { },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = scoreText,
-                        color = tierColor,
-                        fontWeight = FontWeight.ExtraBold,
-                        fontSize = 13.sp
-                    )
-                }
-            }
+            TooltipArea(tooltip = { BreakdownTooltip(card.breakdown) }) { GradeBadge(card.value, size = 34.dp) }
         } else {
-            Box(
-                modifier = Modifier
-                    .width(36.dp)
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(tierColor.copy(alpha = if (isBomb) 0.3f else 0.2f))
-                    .border(1.dp, tierColor.copy(alpha = if (isBomb) 1.0f else 0.5f), RoundedCornerShape(4.dp))
-                    .padding(vertical = 4.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = scoreText,
-                    color = tierColor,
-                    fontWeight = FontWeight.ExtraBold,
-                    fontSize = 13.sp
-                )
-            }
+            GradeBadge(card.value, size = 34.dp)
         }
-        
+
         Spacer(modifier = Modifier.width(10.dp))
-        
-        // Card Name & Colors
+
         Column(modifier = Modifier.weight(1f)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
+                if (card.isBomb) Text("★ ", color = Color(0xFFFFD700), fontSize = 12.sp)
                 Text(
                     text = card.name,
-                    color = Color.White.copy(alpha = if (isBomb) 1.0f else 0.9f),
+                    color = Color.White.copy(alpha = if (isBomb) 1.0f else 0.92f),
                     fontWeight = if (isBomb) FontWeight.Bold else FontWeight.Medium,
                     fontSize = 13.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f)
                 )
-                if (card.isBomb) {
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = "★",
-                        color = Color(0xFFFFD700),
-                        fontSize = 12.sp
-                    )
-                }
-                Spacer(modifier = Modifier.width(6.dp))
-                Text(
-                    text = valueTierLabel(card.value),
-                    color = tierColor,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.padding(start = 4.dp)
-                )
-            }
-            // Show colors if any
-            if (card.color.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(2.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-                    card.color.forEach { color ->
-                        Pip(color, size = 14.dp)
+                if (card.color.isNotEmpty()) {
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+                        card.color.forEach { color -> Pip(color, size = 13.dp) }
                     }
                 }
+            }
+            if (card.reasons.isNotEmpty()) {
+                Text(
+                    text = card.reasons.joinToString(" · "),
+                    color = Color.White.copy(alpha = 0.55f),
+                    fontSize = 10.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
             }
         }
     }
