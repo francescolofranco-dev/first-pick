@@ -1,15 +1,8 @@
-
 package com.firstpick.ui
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Divider
 
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.TooltipArea
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -17,162 +10,22 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Slider
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
-import androidx.compose.ui.window.rememberWindowState
-import com.firstpick.core.AppPaths
-import com.firstpick.model.DraftPhase
-import kotlinx.coroutines.delay
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
-import java.awt.MouseInfo
-import java.nio.file.Files
-import kotlin.io.path.exists
 
-@Serializable
-data class OverlaySettings(
-    val x: Int = 100,
-    val y: Int = 100,
-    val width: Int = 1000,
-    val height: Int = 650,
-    val gridLeft: Float = 0.072f,
-    val gridTop: Float = 0.095f,
-    val gridColGap: Float = 0.150f,
-    val gridRowGap: Float = 0.275f,
-    val isLocked: Boolean = false,
-    /** Selected 17Lands data source ([RatingsFormat] choice); null = the default. */
-    val ratingsFormatOverride: String? = null,
-    /** Let mouse clicks pass through the drafting overlay to Arena beneath it. */
-    val clickThrough: Boolean = true,
-) {
-    companion object {
-        private val json = Json { ignoreUnknownKeys = true; prettyPrint = true }
-
-        fun load(): OverlaySettings {
-            AppPaths.ensureDirectories()
-            val file = AppPaths.configFile
-            if (!file.exists()) return OverlaySettings()
-            return runCatching {
-                val content = Files.readString(file)
-                json.decodeFromString<OverlaySettings>(content)
-            }.getOrElse { OverlaySettings() }
-        }
-
-        fun save(settings: OverlaySettings) {
-            runCatching {
-                AppPaths.ensureDirectories()
-                val content = json.encodeToString(serializer(), settings)
-                Files.writeString(AppPaths.configFile, content)
-            }
-        }
-    }
-}
-
-/**
- * Queries the position and size of the MTGA window on macOS using a compiled Swift binary
- * (which queries the Quartz window server directly and requires no accessibility/assistive permissions).
- * Falls back to AppleScript if Swift compilation or execution fails.
- */
-fun getMTGAWindowBounds(): java.awt.Rectangle? {
-    val os = System.getProperty("os.name").lowercase()
-    if (!os.contains("mac")) return null
-    
-    try {
-        AppPaths.ensureDirectories()
-        val binaryPath = AppPaths.appSupport.resolve("get_mtga_bounds")
-        if (!Files.exists(binaryPath)) {
-            val swiftCode = """
-                import Cocoa
-                import CoreGraphics
-
-                if let windowList = CGWindowListCopyWindowInfo([.optionOnScreenOnly], kCGNullWindowID) as? [[String: Any]] {
-                    for window in windowList {
-                        let ownerName = window[kCGWindowOwnerName as String] as? String ?? ""
-                        if ownerName == "MTGA" {
-                            if let boundsDict = window[kCGWindowBounds as String] as? [String: Any],
-                               let bounds = CGRect(dictionaryRepresentation: boundsDict as CFDictionary) {
-                                print("\(Int(bounds.origin.x)),\(Int(bounds.origin.y)),\(Int(bounds.size.width)),\(Int(bounds.size.height))")
-                                break
-                            }
-                        }
-                    }
-                }
-            """.trimIndent()
-            val tempSwift = Files.createTempFile("get_bounds", ".swift")
-            Files.writeString(tempSwift, swiftCode)
-            val compileProc = ProcessBuilder(
-                "swiftc", 
-                "-o", binaryPath.toAbsolutePath().toString(), 
-                "-O", tempSwift.toAbsolutePath().toString()
-            ).start()
-            compileProc.waitFor()
-            Files.deleteIfExists(tempSwift)
-        }
-
-        if (Files.exists(binaryPath)) {
-            val proc = ProcessBuilder(binaryPath.toAbsolutePath().toString()).start()
-            val output = proc.inputStream.bufferedReader().readText().trim()
-            if (proc.waitFor() == 0 && output.isNotEmpty()) {
-                val parts = output.split(",").mapNotNull { it.toIntOrNull() }
-                if (parts.size == 4) {
-                    return java.awt.Rectangle(parts[0], parts[1], parts[2], parts[3])
-                }
-            }
-        }
-    } catch (e: Exception) {
-        // Fall through to AppleScript fallback
-    }
-
-    // Fallback AppleScript
-    return try {
-        val script = "tell application \"System Events\" to tell process \"MTGA\" to get {position of window 1, size of window 1}"
-        val process = ProcessBuilder("osascript", "-e", script).start()
-        val output = process.inputStream.bufferedReader().readText().trim()
-        val numbers = output.replace("{", "").replace("}", "").split(",").mapNotNull { it.trim().toIntOrNull() }
-        if (numbers.size == 4) {
-            java.awt.Rectangle(numbers[0], numbers[1], numbers[2], numbers[3])
-        } else null
-    } catch (e: Exception) {
-        null
-    }
-}
-
-/**
- * A modifier that enables dragging a borderless Swing window.
- */
-fun Modifier.windowDraggable(window: java.awt.Window): Modifier = this.pointerInput(window) {
-    var dx = 0
-    var dy = 0
-    detectDragGestures(
-        onDragStart = { _ ->
-            val mouseLoc = MouseInfo.getPointerInfo().location
-            val winLoc = window.location
-            dx = mouseLoc.x - winLoc.x
-            dy = mouseLoc.y - winLoc.y
-        },
-        onDrag = { change, _ ->
-            change.consume()
-            val mouseLoc = MouseInfo.getPointerInfo().location
-            window.setLocation(mouseLoc.x - dx, mouseLoc.y - dy)
-        }
-    )
-}
-
+/** Post-draft companion overlay: pick a build and tick off cards as you add them. */
 @Composable
 fun DeckBuilderOverlay(
     composeWindow: java.awt.Window,
@@ -182,7 +35,7 @@ fun DeckBuilderOverlay(
 ) {
     var isMinimized by remember { mutableStateOf(false) }
     var selectedOptionIndex by remember(state.deckOptions) { mutableStateOf<Int?>(null) }
-    
+
     // Auto-resize / adjust layout when switching modes or minimized
     LaunchedEffect(isMinimized, selectedOptionIndex) {
         if (isMinimized) {
@@ -277,7 +130,7 @@ fun DeckBuilderOverlay(
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text(
-                                "Draft Complete · Deck Builder Companion",
+                                "Draft complete · deck builder companion",
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -305,58 +158,6 @@ fun DeckBuilderOverlay(
                     }
                 }
             }
-        }
-    }
-}
-/**
- * Sleek integrated banner that sits at the bottom of the card frame.
- */
-@Composable
-fun OverlayCardBanner(
-    scoreText: String,
-    isBomb: Boolean,
-    scoreVal: Int,
-    width: androidx.compose.ui.unit.Dp,
-    modifier: Modifier = Modifier
-) {
-    val tierColor = valueTierColor(scoreVal.toDouble())
-    
-    Box(
-        modifier = modifier
-            .width(width)
-            .height(24.dp)
-            .background(
-                androidx.compose.ui.graphics.Brush.verticalGradient(
-                    colors = listOf(Color(0x00000000), Color(0xE6000000)),
-                    startY = 0f,
-                    endY = Float.POSITIVE_INFINITY
-                )
-            ),
-        contentAlignment = Alignment.BottomCenter
-    ) {
-        // A thin accent line at the bottom of the banner
-        Box(Modifier.fillMaxWidth().height(2.dp).background(tierColor).align(Alignment.BottomCenter))
-
-        Row(
-            modifier = Modifier.padding(bottom = 4.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            if (isBomb) {
-                Text(
-                    text = "★",
-                    fontSize = 13.sp,
-                    color = MaterialTheme.colorScheme.tertiary,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-            Text(
-                text = scoreText,
-                fontSize = 13.sp,
-                fontWeight = FontWeight.ExtraBold,
-                color = Color.White,
-                fontFamily = FontFamily.SansSerif
-            )
         }
     }
 }
@@ -437,7 +238,7 @@ private fun DeckHelperView(
                     PipRow(sel.pair.toList())
                     Spacer(Modifier.width(6.dp))
                     Text(
-                        text = "${sel.title} Build Checklist",
+                        text = "${sel.title} build checklist",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
@@ -450,7 +251,7 @@ private fun DeckHelperView(
                     )
                 }
                 Text(
-                    text = "Change Build",
+                    text = "Change build",
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.secondary,
@@ -541,7 +342,7 @@ private fun DeckHelperView(
                                     ) {
                                         Text(
                                             text = if (isComplete) "✓ " else "$checkedCount/$totalCount ",
-                                            fontFamily = FontFamily.Monospace,
+                                            fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
                                             fontSize = 9.sp,
                                             fontWeight = FontWeight.Bold,
                                             color = if (isComplete) Color(0xFF5FD08C) else MaterialTheme.colorScheme.primary
@@ -586,180 +387,5 @@ private fun OverlayIconButton(
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
-    }
-}
-
-
-/** Distinctive (ASCII) NSWindow title so [MacOverlay] can find the drafting panel. */
-private const val DRAFTING_OVERLAY_TITLE = "FirstPick Picks"
-
-@Composable
-fun DraftingOverlay(state: DraftUiState) {
-    if (state.packCards.isEmpty()) return
-
-    var mtgaBounds by remember { mutableStateOf<java.awt.Rectangle?>(null) }
-    // Whether to let clicks fall through to Arena (user setting, persisted).
-    val clickThrough = remember { OverlaySettings.load().clickThrough }
-    
-    // Polling MTGA window bounds on macOS
-    LaunchedEffect(Unit) {
-        var lastBounds: java.awt.Rectangle? = null
-        while (true) {
-            val bounds = getMTGAWindowBounds()
-            if (bounds != null && bounds != lastBounds) {
-                mtgaBounds = bounds
-                lastBounds = bounds
-            }
-            delay(500)
-        }
-    }
-
-    val bounds = mtgaBounds ?: return
-    
-    // Check if window has a titlebar to apply offset
-    val ratioWithTitleBar = bounds.width.toFloat() / (bounds.height - 28f)
-    val hasTitleBar = kotlin.math.abs(ratioWithTitleBar - 1.777f) < 0.05f || 
-                      kotlin.math.abs(ratioWithTitleBar - 1.6f) < 0.05f || 
-                      kotlin.math.abs(ratioWithTitleBar - 1.54f) < 0.05f ||
-                      kotlin.math.abs(ratioWithTitleBar - 1.33f) < 0.05f
-                      
-    val clientYOffset = if (hasTitleBar) 28 else 0
-    
-    // Sleek single list panel positioned top-right of MTGA client
-    val panelWidth = 260.dp
-    val panelHeight = 420.dp
-    
-    val windowX = bounds.x + bounds.width - 270 // 260 width + 10 margin
-    val windowY = bounds.y + clientYOffset + 40 // offset below top elements
-    
-    val wState = rememberWindowState(
-        position = WindowPosition(windowX.dp, windowY.dp),
-        size = DpSize(panelWidth, panelHeight)
-    )
-    
-    // Ensure position updates if bounds change
-    LaunchedEffect(windowX, windowY) {
-        wState.position = WindowPosition(windowX.dp, windowY.dp)
-    }
-    
-    androidx.compose.ui.window.Window(
-        onCloseRequest = {},
-        state = wState,
-        title = DRAFTING_OVERLAY_TITLE,
-        transparent = true,
-        undecorated = true,
-        alwaysOnTop = true,
-        focusable = false
-    ) {
-        // Let clicks fall through to Arena beneath the panel. The NSWindow may not
-        // be registered the instant the window opens, so retry briefly. macOS-only,
-        // best-effort (see [MacOverlay]); the panel is read-only so nothing is lost.
-        LaunchedEffect(clickThrough) {
-            repeat(15) {
-                if (MacOverlay.setClickThrough(DRAFTING_OVERLAY_TITLE, clickThrough)) return@LaunchedEffect
-                delay(200)
-            }
-        }
-        MaterialTheme(colorScheme = DraftColorScheme) {
-            Surface(
-                modifier = Modifier.fillMaxSize(),
-                color = Color(0xFA121212), // Sleek, almost completely opaque dark background
-                shape = RoundedCornerShape(12.dp),
-                border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(alpha = 0.1f))
-            ) {
-                Column(modifier = Modifier.padding(12.dp)) {
-                    // Header / Lane Indicator
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
-                    ) {
-                        Text(
-                            text = "FirstPick Recommendations",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 12.sp,
-                            color = Color.White.copy(alpha = 0.9f),
-                            modifier = Modifier.weight(1f)
-                        )
-                        if (state.laneColors.isNotEmpty()) {
-                            Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-                                state.laneColors.forEach { color ->
-                                    Pip(color, size = 16.dp)
-                                }
-                            }
-                        }
-                    }
-                    
-                    Divider(color = Color.White.copy(alpha = 0.1f), thickness = 1.dp)
-                    Spacer(modifier = Modifier.height(8.dp))
-                    
-                    // List of cards
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        // Show top 10 recommended cards
-                        items(state.packCards.take(10)) { card ->
-                            OverlayListItem(card)
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-fun OverlayListItem(card: PackCardUi) {
-    val isBomb = card.isBomb
-    val tierColor = valueTierColor(card.value)
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(8.dp))
-            .background(if (isBomb) tierColor.copy(alpha = 0.12f) else Color.White.copy(alpha = 0.04f))
-            .border(if (isBomb) 1.dp else 0.dp, if (isBomb) tierColor.copy(alpha = 0.6f) else Color.Transparent, RoundedCornerShape(8.dp))
-            .padding(horizontal = 8.dp, vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        // Color-coded letter grade + 0–100 value, matching the main window.
-        if (card.breakdown != null) {
-            TooltipArea(tooltip = { BreakdownTooltip(card.breakdown) }) { GradeBadge(card.value, size = 34.dp) }
-        } else {
-            GradeBadge(card.value, size = 34.dp)
-        }
-
-        Spacer(modifier = Modifier.width(10.dp))
-
-        Column(modifier = Modifier.weight(1f)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                if (card.isBomb) Text("★ ", color = Color(0xFFFFD700), fontSize = 12.sp)
-                Text(
-                    text = card.name,
-                    color = Color.White.copy(alpha = if (isBomb) 1.0f else 0.92f),
-                    fontWeight = if (isBomb) FontWeight.Bold else FontWeight.Medium,
-                    fontSize = 13.sp,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f)
-                )
-                if (card.color.isNotEmpty()) {
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-                        card.color.forEach { color -> Pip(color, size = 13.dp) }
-                    }
-                }
-            }
-            if (card.reasons.isNotEmpty()) {
-                Text(
-                    text = card.reasons.joinToString(" · "),
-                    color = Color.White.copy(alpha = 0.55f),
-                    fontSize = 10.sp,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
-        }
     }
 }
