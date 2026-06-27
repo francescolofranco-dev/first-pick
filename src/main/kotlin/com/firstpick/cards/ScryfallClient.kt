@@ -23,9 +23,10 @@ import kotlin.math.roundToInt
 /**
  * Fetches a set's cards from Scryfall to recover mana values, type lines, and the
  * functional roles (removal/fixing/finisher/evasion/draw) the advisor's deck-needs
- * logic depends on. Removal uses Scryfall's curated `otag:removal` (accurate); the
- * rest are derived from oracle text / produced mana / power. Cached per set for a
- * week. Polite: descriptive User-Agent and a short delay between pages.
+ * logic depends on. Removal, evasion, and draw use Scryfall's curated oracle tags
+ * (`otag:`), with an oracle-text heuristic only as a day-one fallback; fixing keys off
+ * Scryfall's produced-mana data; finisher is a curve heuristic (no curated tag exists).
+ * Cached per set for a week. Polite: descriptive User-Agent and a short delay between pages.
  */
 class ScryfallClient(
     private val cacheDir: Path = AppPaths.cacheDir,
@@ -70,9 +71,9 @@ class ScryfallClient(
     /** Map of normalized card name -> [CardMeta] for the given set. */
     suspend fun setMeta(set: String): Map<String, CardMeta> = withContext(Dispatchers.IO) {
         Files.createDirectories(cacheDir)
-        // Cache version bumped to v3 so the tightened role classification re-derives
+        // Cache version bumped (v4) so the curated-tag role classification re-derives
         // immediately rather than waiting out the staleness window on old caches.
-        val cache = cacheDir.resolve("scryfall3_${set.uppercase()}.json")
+        val cache = cacheDir.resolve("scryfall4_${set.uppercase()}.json")
         val dtos: List<MetaDto> = if (isFresh(cache)) {
             runCatching { json.decodeFromString(LIST_SERIALIZER, Files.readString(cache)) }.getOrDefault(emptyList())
         } else {
@@ -96,18 +97,31 @@ class ScryfallClient(
     )
 
     private fun build(set: String): List<MetaDto>? {
-        val cards = searchCards("set:${set.lowercase()} game:arena unique:cards") ?: return null
-        // Scryfall's curated removal tag — more accurate than an oracle-text guess.
-        val removalNames = searchCards("set:${set.lowercase()} otag:removal").orEmpty()
-            .mapTo(mutableSetOf()) { frontName(it.name) }
-        return cards.map { dtoOf(it, removalNames) }
+        val q = "set:${set.lowercase()}"
+        val cards = searchCards("$q game:arena unique:cards") ?: return null
+        // Scryfall's curated functional (oracle) tags — the opinionated source for these
+        // roles, more accurate than an oracle-text guess. (Fixing keys off Scryfall's
+        // produced-mana data; finisher has no curated tag, so stays heuristic.)
+        val removalNames = taggedNames("$q otag:removal")
+        val evasionNames = taggedNames("$q otag:evasion")
+        val drawNames = taggedNames("$q otag:draw")
+        return cards.map { dtoOf(it, removalNames, evasionNames, drawNames) }
     }
 
-    private fun dtoOf(c: Card, removalNames: Set<String>): MetaDto {
+    private fun taggedNames(query: String): Set<String> =
+        searchCards(query).orEmpty().mapTo(mutableSetOf()) { frontName(it.name) }
+
+    private fun dtoOf(c: Card, removalNames: Set<String>, evasionNames: Set<String>, drawNames: Set<String>): MetaDto {
         val cmc = c.cmc.roundToInt()
         val power = c.power?.substringBefore("+")?.toIntOrNull() ?: 0
-        val r = classifyRoles(c.typeLine, c.oracleText, cmc, power, c.producedMana, frontName(c.name) in removalNames)
-        return MetaDto(frontName(c.name), cmc, r.creature, r.land, r.removal, r.fixing, r.finisher, r.evasion, r.draw)
+        val name = frontName(c.name)
+        val r = classifyRoles(
+            c.typeLine, c.oracleText, cmc, power, c.producedMana,
+            removalTagged = name in removalNames,
+            evasionTagged = name in evasionNames,
+            drawTagged = name in drawNames,
+        )
+        return MetaDto(name, cmc, r.creature, r.land, r.removal, r.fixing, r.finisher, r.evasion, r.draw)
     }
 
     private fun searchCards(query: String): List<Card>? {
@@ -196,20 +210,27 @@ class ScryfallClient(
             cmc: Int,
             power: Int,
             producedMana: List<String>,
-            removalTagged: Boolean,
+            removalTagged: Boolean = false,
+            evasionTagged: Boolean = false,
+            drawTagged: Boolean = false,
         ): CardRoleFlags {
             val type = typeLine.lowercase()
             val text = oracleText.lowercase()
             val isLand = "land" in type
             val isCreature = "creature" in type
             val producedColors = producedMana.filter { it.length == 1 && it[0] in "WUBRG" }.toSet()
-            val evasion = isCreature && EVASION_RE.containsMatchIn(text)
+            // Curated Scryfall otag first, oracle-text heuristic as a fallback (for cards
+            // the tagger hasn't reached yet, e.g. a brand-new set on release day).
+            val evasion = evasionTagged || (isCreature && EVASION_RE.containsMatchIn(text))
+            val removal = removalTagged || REMOVAL_RE.containsMatchIn(text)
+            val draw = drawTagged ||
+                ("draw a card" in text || "draw two cards" in text || "draws a card" in text)
+            // Fixing already keys off Scryfall's produced-mana data (≈ produces>=2);
+            // finisher has no curated tag, so it's an intentional curve/board heuristic.
             val fixing = (producedColors.size >= 2) ||
                 ("any color" in text) ||
                 ("treasure" in text && "create" in text)
             val finisher = isCreature && (power >= 5 || (power >= 4 && (cmc >= 5 || evasion)))
-            val removal = removalTagged || REMOVAL_RE.containsMatchIn(text)
-            val draw = "draw a card" in text || "draw two cards" in text || "draws a card" in text
             return CardRoleFlags(isCreature, isLand, removal, fixing, finisher, evasion, draw)
         }
     }

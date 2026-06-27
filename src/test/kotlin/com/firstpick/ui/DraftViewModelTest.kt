@@ -51,7 +51,7 @@ class DraftViewModelTest {
             Files.writeString(cache.resolve("ratings2_SOS_$f.json"), "[]")
             Files.writeString(cache.resolve("colorratings_SOS_$f.json"), "[]")
         }
-        Files.writeString(cache.resolve("scryfall3_SOS.json"), "[]")
+        Files.writeString(cache.resolve("scryfall4_SOS.json"), "[]")
 
         val repo = CardRepository(SeventeenLandsClient(cacheDir = cache))
         val metaRepo = CardMetaRepository(ScryfallClient(cacheDir = cache))

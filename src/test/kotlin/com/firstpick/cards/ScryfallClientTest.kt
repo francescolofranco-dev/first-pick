@@ -17,7 +17,9 @@ class ScryfallClientTest {
         power: Int = 0,
         produced: List<String> = emptyList(),
         removalTagged: Boolean = false,
-    ) = ScryfallClient.classifyRoles(type, text, cmc, power, produced, removalTagged)
+        evasionTagged: Boolean = false,
+        drawTagged: Boolean = false,
+    ) = ScryfallClient.classifyRoles(type, text, cmc, power, produced, removalTagged, evasionTagged, drawTagged)
 
     @Test
     fun creatureAndLandComeFromTheTypeLine() {
@@ -73,5 +75,15 @@ class ScryfallClientTest {
         assertFalse(roles("Creature — Bear", "Vigilance").evasion)
         assertTrue(roles("Sorcery", "Draw a card.").draw)
         assertFalse(roles("Sorcery", "Gain 3 life.").draw)
+    }
+
+    @Test
+    fun curatedTagsDriveEvasionAndDraw() {
+        // The curated otag wins even when the oracle text doesn't spell the role out.
+        assertTrue(roles("Creature — Eldrazi", "It is just enormous.", evasionTagged = true).evasion)
+        assertTrue(roles("Sorcery", "Investigate twice.", drawTagged = true).draw)
+        // Heuristic fallback still applies when there's no tag.
+        assertFalse(roles("Creature — Bear", "Vigilance.", evasionTagged = false).evasion)
+        assertTrue(roles("Sorcery", "Draw a card.", drawTagged = false).draw)
     }
 }
