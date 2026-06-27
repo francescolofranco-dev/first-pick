@@ -15,10 +15,12 @@ import kotlin.time.Duration.Companion.milliseconds
  * real-shaped `Player.log` snapshot lines, so the whole live pipeline (EventParser →
  * DraftTracker → AdvisorEngine → UI) runs exactly as it would for a real draft.
  *
- * A normal draft = 3 packs of 15 (45 picks). The visible pack shrinks 15 → 1 as you
- * pick, the pool grows, and an auto-picker advances the draft every [pickInterval].
- * The picker is win-rate weighted with a light on-color bias so a coherent lane
- * forms — enough for the lane, archetype, and deck-needs panels to come alive.
+ * A normal draft = 3 packs of 15 (45 picks). This mimics a [SEATS]-seat table: each
+ * round every seat opens a pack and the packs circulate (direction alternates per
+ * round), so you only ever see — and pick from — a depleted subset, just like a real
+ * draft (no longer "pick every card"). You and the bots auto-pick every [pickInterval],
+ * win-rate weighted with a light on-color bias so coherent lanes form — enough for the
+ * lane, archetype, and deck-needs panels to come alive.
  *
  * Real card IDs + win rates come from the set's 17Lands data, so the app resolves and
  * scores the simulated cards just like live ones. Requires a set with 17Lands data.
@@ -37,19 +39,43 @@ class DraftSimulator(
         }
         val byId = cards.associateBy { it.mtgaId!! }
         val eventName = "QuickDraftEmblem_${set.uppercase()}_20260101"
-        val pool = ArrayList<Int>()
+        val pools = Array(SEATS) { ArrayList<Int>() } // running pool per seat (seat 0 = you)
 
-        for (p in 0 until PACKS) {
-            val pack = cards.shuffled(random).take(CARDS_PER_PACK).toMutableList()
-            while (pack.isNotEmpty()) {
-                emit(snapshot(eventName, p, CARDS_PER_PACK - pack.size, pack.map { it.mtgaId!! }, pool, "PickNext"))
+        for (round in 0 until PACKS) {
+            // Every seat opens a fresh pack; packs circulate, alternating direction per round.
+            val held = Array(SEATS) { cards.shuffled(random).take(CARDS_PER_PACK).toMutableList() }
+            val clockwise = round % 2 == 0
+            for (pick in 0 until CARDS_PER_PACK) {
+                // You see (and the advisor scores) the pack you currently hold.
+                emit(snapshot(eventName, round, pick, held[YOU].map { it.mtgaId!! }, pools[YOU], "PickNext"))
                 delay(pickInterval)
-                val picked = autoPick(pack, pool, byId)
-                pool.add(picked.mtgaId!!)
-                pack.remove(picked)
+                // Every seat takes a card from its current pack (bots draft on-color too)...
+                for (seat in 0 until SEATS) {
+                    val pack = held[seat]
+                    if (pack.isEmpty()) continue
+                    val picked = autoPick(pack, pools[seat], byId)
+                    pools[seat].add(picked.mtgaId!!)
+                    pack.remove(picked)
+                }
+                // ...then passes its pack to the next seat.
+                rotate(held, clockwise)
             }
         }
-        emit(snapshot(eventName, PACKS - 1, CARDS_PER_PACK - 1, emptyList(), pool, "Complete"))
+        emit(snapshot(eventName, PACKS - 1, CARDS_PER_PACK - 1, emptyList(), pools[YOU], "Complete"))
+    }
+
+    /** Pass every pack one seat along (clockwise = each seat receives from the previous one). */
+    private fun rotate(held: Array<MutableList<CardRating>>, clockwise: Boolean) {
+        if (held.size < 2) return
+        if (clockwise) {
+            val last = held[held.size - 1]
+            for (i in held.size - 1 downTo 1) held[i] = held[i - 1]
+            held[0] = last
+        } else {
+            val first = held[0]
+            for (i in 0 until held.size - 1) held[i] = held[i + 1]
+            held[held.size - 1] = first
+        }
     }
 
     /** Win-rate weighted pick with a light bias toward the pool's leaning colors. */
@@ -90,6 +116,10 @@ class DraftSimulator(
         private const val TAG = "Sim"
         const val PACKS = 3
         const val CARDS_PER_PACK = 15
+
+        /** Seats at the table (you + bots). 4 packs circulate per round → real selection. */
+        const val SEATS = 4
+        private const val YOU = 0
         private const val ON_COLOR_BIAS = 1.8
 
         /** Sets offered in the demo launcher. Any set code with 17Lands data works — edit freely. */

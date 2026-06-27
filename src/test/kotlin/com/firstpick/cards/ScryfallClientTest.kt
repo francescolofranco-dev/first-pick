@@ -32,9 +32,23 @@ class ScryfallClientTest {
         assertTrue(roles("Instant", "Destroy target creature.").removal)
         assertTrue(roles("Sorcery", "Exile target creature or planeswalker.").removal)
         assertTrue(roles("Instant", "Lightning Bolt deals 3 damage to any target.").removal)
+        assertTrue(roles("Instant", "Deals 2 damage to target creature.").removal)
         assertFalse(roles("Instant", "Draw two cards.").removal)
         // Curated otag:removal overrides text that wouldn't match the regex.
         assertTrue(roles("Enchantment", "Some unusual removal wording.", removalTagged = true).removal)
+    }
+
+    @Test
+    fun damageToAPlayerIsNotRemoval() {
+        // Regression: "Lonely Arroyo" — a land that pings a PLAYER — was tagged removal
+        // because the regex matched a bare "deals N damage to". Player/face damage,
+        // edicts that hit players, etc. are not creature removal.
+        assertFalse(roles("Land", "{T}, Sacrifice Lonely Arroyo: It deals 1 damage to target player.").removal)
+        assertFalse(roles("Sorcery", "Deals 2 damage to each opponent.").removal)
+        assertFalse(roles("Instant", "Target player loses 3 life.").removal)
+        // Graveyard hate / land destruction aren't creature removal either.
+        assertFalse(roles("Instant", "Exile target card from a graveyard.").removal)
+        assertFalse(roles("Sorcery", "Destroy target land.").removal)
     }
 
     @Test

@@ -70,7 +70,9 @@ class ScryfallClient(
     /** Map of normalized card name -> [CardMeta] for the given set. */
     suspend fun setMeta(set: String): Map<String, CardMeta> = withContext(Dispatchers.IO) {
         Files.createDirectories(cacheDir)
-        val cache = cacheDir.resolve("scryfall2_${set.uppercase()}.json")
+        // Cache version bumped to v3 so the tightened role classification re-derives
+        // immediately rather than waiting out the staleness window on old caches.
+        val cache = cacheDir.resolve("scryfall3_${set.uppercase()}.json")
         val dtos: List<MetaDto> = if (isFresh(cache)) {
             runCatching { json.decodeFromString(LIST_SERIALIZER, Files.readString(cache)) }.getOrDefault(emptyList())
         } else {
@@ -170,8 +172,17 @@ class ScryfallClient(
         private const val PAGE_DELAY_MS = 120L
         private val LIST_SERIALIZER = ListSerializer(MetaDto.serializer())
         private val EVASION_RE = Regex("flying|menace|can't be blocked|skulk|shadow|intimidate|horsemanship")
+
+        // Interaction that answers a CREATURE/permanent — deliberately NOT matching
+        // damage/effects aimed only at a player (e.g. "deals 1 damage to target player",
+        // "to each opponent"), which is reach/burn-to-face, not removal. The curated
+        // otag:removal tag remains the primary signal; this is the fallback.
         private val REMOVAL_RE = Regex(
-            "destroy target|exile target|deals \\d+ damage to|fights?|gets -\\d|each (opponent|player) sacrifices",
+            "(destroy|exile) target (creature|permanent|artifact|enchantment|planeswalker|nonland)" +
+                "|deals \\d+ damage to (any target|target creature|each creature|all creatures|target permanent|target planeswalker|that creature)" +
+                "|fights?" +
+                "|gets -\\d" +
+                "|each (opponent|player) sacrifices",
         )
 
         /**
