@@ -25,8 +25,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -34,6 +37,8 @@ import androidx.compose.ui.unit.sp
 internal fun DeckBuilderPane(options: List<DeckOptionUi>) {
     var selected by remember(options) { mutableStateOf(0) }
     val sel = options.getOrElse(selected) { options.first() }
+    val spellCount = sel.spells.sumOf { it.count }
+    val landCount = sel.lands.sumOf { it.count }
     Column(Modifier.fillMaxSize()) {
         Text("Draft complete — pick your build", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(10.dp))
@@ -42,16 +47,108 @@ internal fun DeckBuilderPane(options: List<DeckOptionUi>) {
         }
         Spacer(Modifier.height(12.dp))
         Text(
-            "${sel.title} (${sel.pair}) · ${sel.spells.size} spells · lands ${sel.landLine}",
+            "${sel.title} (${sel.pair}) · $spellCount spells · " +
+                (if (landCount > 0) "$landCount nonbasic + " else "") + "basics ${sel.landLine}",
             fontSize = 12.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        Spacer(Modifier.height(6.dp))
+        Spacer(Modifier.height(8.dp))
+        DeckListHeader()
+        Spacer(Modifier.height(4.dp))
         LazyColumn(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(3.dp)) {
-            // No key: a deck can hold duplicate cards (multiple copies of a common).
             items(sel.spells) { DeckSpellRow(it) }
+            if (sel.lands.isNotEmpty()) {
+                item { SectionLabel("Lands") }
+                items(sel.lands) { DeckSpellRow(it) }
+            }
         }
     }
+}
+
+@Composable
+private fun DeckListHeader() {
+    Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+        Text("MV", fontSize = 10.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.width(28.dp))
+        Text("Card", fontSize = 10.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
+        Text("Type / role", fontSize = 10.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.width(132.dp))
+        Text("GIH%", fontSize = 10.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.End, modifier = Modifier.width(44.dp))
+    }
+}
+
+@Composable
+private fun SectionLabel(text: String) {
+    Text(
+        text.uppercase(),
+        fontSize = 10.sp,
+        fontWeight = FontWeight.Bold,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.padding(top = 6.dp, bottom = 2.dp, start = 8.dp),
+    )
+}
+
+@Composable
+private fun DeckSpellRow(s: DeckSpellUi) {
+    Row(
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(6.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
+            .padding(horizontal = 8.dp, vertical = 5.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        // Mana value (lands have none).
+        Text(
+            if (s.isLand) "–" else "${s.cmc}",
+            fontFamily = FontFamily.Monospace,
+            fontSize = 12.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.width(28.dp),
+        )
+        // Card name, with a copy count when there's more than one.
+        Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
+            if (s.count > 1) {
+                Box(
+                    Modifier.clip(RoundedCornerShape(4.dp)).background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
+                        .padding(horizontal = 4.dp, vertical = 1.dp),
+                ) {
+                    Text("${s.count}×", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                }
+                Spacer(Modifier.width(6.dp))
+            }
+            CardPreview(s.imageUrl) {
+                Text(s.name, fontSize = 12.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
+        }
+        // Type + role tag.
+        Row(Modifier.width(132.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+            Text(s.typeLabel, fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
+            s.role?.let { RoleChip(it) }
+        }
+        Text(
+            s.gihWr.asPct(),
+            fontFamily = FontFamily.Monospace,
+            fontSize = 11.sp,
+            textAlign = TextAlign.End,
+            modifier = Modifier.width(44.dp),
+        )
+    }
+}
+
+@Composable
+private fun RoleChip(role: String) {
+    val color = roleColor(role)
+    Box(
+        Modifier.clip(RoundedCornerShape(4.dp)).background(color.copy(alpha = 0.2f)).padding(horizontal = 5.dp, vertical = 1.dp),
+    ) {
+        Text(role, fontSize = 9.sp, fontWeight = FontWeight.Bold, color = color, maxLines = 1)
+    }
+}
+
+@Composable
+private fun roleColor(role: String): Color = when (role) {
+    "Removal" -> MaterialTheme.colorScheme.error
+    "Fixing" -> MaterialTheme.colorScheme.primary
+    "Finisher" -> MaterialTheme.colorScheme.tertiary
+    else -> MaterialTheme.colorScheme.secondary // Draw / Evasion
 }
 
 @Composable
@@ -87,22 +184,5 @@ private fun TierBadge(tier: String) {
         Modifier.clip(RoundedCornerShape(6.dp)).background(MaterialTheme.colorScheme.tertiary).padding(horizontal = 7.dp, vertical = 2.dp),
     ) {
         Text(tier, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimary)
-    }
-}
-
-@Composable
-private fun DeckSpellRow(s: DeckSpellUi) {
-    Row(
-        Modifier.fillMaxWidth().clip(RoundedCornerShape(6.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
-            .padding(horizontal = 8.dp, vertical = 5.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text("${s.cmc}", fontFamily = FontFamily.Monospace, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.width(20.dp))
-        CardPreview(s.imageUrl, modifier = Modifier.weight(1f)) {
-            Text(s.name, fontSize = 12.sp)
-        }
-        Text(s.color.ifBlank { "—" }, fontFamily = FontFamily.Monospace, fontSize = 11.sp, modifier = Modifier.width(48.dp))
-        Text(s.gihWr.asPct(), fontFamily = FontFamily.Monospace, fontSize = 11.sp, modifier = Modifier.width(48.dp))
     }
 }

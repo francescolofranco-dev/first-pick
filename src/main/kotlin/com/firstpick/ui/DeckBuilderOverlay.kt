@@ -309,18 +309,16 @@ private fun DeckHelperView(
                             )
                         }
 
-                        val aggregatedSpells = remember(spells) {
-                            spells.groupBy { it.name }.map { (name, copies) ->
-                                val first = copies.first()
-                                Triple(name, copies.size, first.imageUrl)
-                            }.sortedBy { it.first }
-                        }
+                        val sortedSpells = remember(spells) { spells.sortedBy { it.name } }
 
                         LazyColumn(
                             modifier = Modifier.fillMaxSize(),
                             verticalArrangement = Arrangement.spacedBy(3.dp)
                         ) {
-                            items(aggregatedSpells) { (name, totalCount, imageUrl) ->
+                            items(sortedSpells) { spell ->
+                                val name = spell.name
+                                val totalCount = spell.count
+                                val imageUrl = spell.imageUrl
                                 val checkedCount = checkedCounts[name] ?: 0
                                 val isComplete = checkedCount >= totalCount
 

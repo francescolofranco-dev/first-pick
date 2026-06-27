@@ -36,6 +36,12 @@ object DeckBuilder {
     private const val MIN_COLOR_PIPS = 4
     private const val MIN_COLOR_RATIO = 0.20
 
+    // A 3-color deck only works with real fixing: reward it when fixed, penalize it
+    // (so it isn't offered unless the raw power gain is large) when it isn't.
+    private const val TRI_FIXERS_NEEDED = 3
+    private const val TRI_FIXER_PENALTY = 5.0
+    private const val TRI_CASTABLE_BONUS = 2.0
+
     fun build(
         pool: List<RankedCard>,
         metrics: SetMetrics,
@@ -48,9 +54,19 @@ object DeckBuilder {
         val lands = pool.filter { meta(it.name)?.isLand == true }
 
         return (COLOR_PAIRS + TRI_COLORS)
-            .mapNotNull { pair -> buildForPair(pair, spells, lands, metrics, meta, archetypeRating, pairStrength[pair]) }
+            .mapNotNull { pair ->
+                buildForPair(pair, spells, lands, metrics, meta, archetypeRating, strengthFor(pair, pairStrength))
+            }
             .sortedByDescending { it.powerScore }
             .take(maxOptions)
+    }
+
+    /** Archetype tailwind for a pair. A 3-color deck inherits its strongest 2-color core. */
+    private fun strengthFor(pair: String, pairStrength: Map<String, Double>): Double? {
+        pairStrength[pair]?.let { return it }
+        if (pair.length != 3) return null
+        val subPairs = listOf("${pair[0]}${pair[1]}", "${pair[0]}${pair[2]}", "${pair[1]}${pair[2]}")
+        return subPairs.mapNotNull { pairStrength[it] }.maxOrNull()
     }
 
     private fun buildForPair(
@@ -111,7 +127,7 @@ object DeckBuilder {
         val fixersCount = chosen.count { meta(it.name)?.isFixing == true } + onColorLands.count { meta(it.name)?.isFixing == true }
         val splashCount = splashedSpells.size
 
-        val power = powerScore(deckWr, metrics, strength, creatures, removal, twoDrops, splashCount, fixersCount)
+        val power = powerScore(deckWr, metrics, strength, creatures, removal, twoDrops, splashCount, fixersCount, pairSet.size)
         return DeckOption(
             pair = pair,
             powerScore = power,
@@ -168,7 +184,8 @@ object DeckBuilder {
         removal: Int,
         twoDrops: Int,
         splashCount: Int,
-        fixersCount: Int
+        fixersCount: Int,
+        colorCount: Int
     ): Double {
         val z = metrics.z(deckWr) ?: 0.0
         var score = 50.0 + 18.0 * z
@@ -177,7 +194,7 @@ object DeckBuilder {
         if (removal >= 3) score += 3.0
         if (creatures in 13..18) score += 3.0
         if (twoDrops >= 6) score += 2.0
-        
+
         // Splash penalty logic: penalize off-color cards that don't have supporting fixers
         if (splashCount > 0) {
             val unmitigatedSplash = (splashCount - fixersCount).coerceAtLeast(0)
@@ -187,7 +204,15 @@ object DeckBuilder {
                 score += ((fixersCount - splashCount) * 1.0).coerceAtMost(3.0)
             }
         }
-        
+
+        // A 3-color deck is only worth offering with real fixing: reward when adequately
+        // fixed, penalize the shortfall otherwise so it needs a big power edge to surface.
+        if (colorCount >= 3) {
+            val shortfall = (TRI_FIXERS_NEEDED - fixersCount).coerceAtLeast(0)
+            score -= shortfall * TRI_FIXER_PENALTY
+            if (fixersCount >= TRI_FIXERS_NEEDED) score += TRI_CASTABLE_BONUS
+        }
+
         return score.coerceIn(0.0, 100.0)
     }
 

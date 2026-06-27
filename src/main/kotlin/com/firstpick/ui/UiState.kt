@@ -33,8 +33,21 @@ data class ArchetypeRow(val pair: String, val winRate: Double, val isLane: Boole
     val label: String get() = "$pair ${guildName(pair)}".trim()
 }
 
-/** One card line in a built deck. */
-data class DeckSpellUi(val name: String, val cmc: Int, val color: String, val gihWr: Double?, val imageUrl: String? = null)
+/** One card line in a built deck (deduplicated; [count] copies). */
+data class DeckSpellUi(
+    val name: String,
+    val cmc: Int,
+    val color: String,
+    val gihWr: Double?,
+    val imageUrl: String? = null,
+    /** Number of copies of this card in the deck. */
+    val count: Int = 1,
+    /** Primary card type, e.g. "Creature", "Instant", "Land". */
+    val typeLabel: String = "",
+    /** Functional role tag, e.g. "Removal", "Fixing", "Finisher" — null if none. */
+    val role: String? = null,
+    val isLand: Boolean = false,
+)
 
 /** A finished deck proposal for the post-draft builder. */
 data class DeckOptionUi(
@@ -47,6 +60,8 @@ data class DeckOptionUi(
     val removal: Int,
     val landLine: String,
     val spells: List<DeckSpellUi>,
+    /** Drafted non-basic lands in the build (deduplicated). */
+    val lands: List<DeckSpellUi> = emptyList(),
 ) {
     val title: String get() = guildName(pair).ifBlank { pair }
 }

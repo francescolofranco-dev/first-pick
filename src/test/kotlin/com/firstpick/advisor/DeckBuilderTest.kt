@@ -52,4 +52,34 @@ class DeckBuilderTest {
         val redOnly = (0 until 8).map { card(it, "R$it", 0.5, "R") }
         assertTrue(DeckBuilder.build(redOnly, metrics, meta).isEmpty())
     }
+
+    @Test
+    fun offersThreeColorDeckOnlyWhenFixingSupportsIt() {
+        // Equally deep W/U/B (so each 2-color pair is a clean, splash-free deck) where
+        // the best 23 cards span all three colors — a 3-color deck has a real card-quality
+        // edge, but should only be offered when the pool also has the fixing to cast it.
+        val colors = listOf("W", "U", "B")
+        val base = buildList {
+            colors.forEachIndexed { ci, col ->
+                repeat(12) { i -> add(card(ci * 100 + i, "$col$i", 0.62 - 0.01 * i, col)) }
+            }
+        }
+        val fixingLands = (0 until 3).map { card(900 + it, "Fixer$it", 0.0, "") }
+        val metaFix: (String) -> CardMeta? = { name ->
+            if (name.startsWith("Fixer")) CardMeta(name, cmc = 0, isCreature = false, isLand = true, isFixing = true)
+            else CardMeta(name, cmc = 3, isCreature = true, isLand = false)
+        }
+
+        val withFixing = DeckBuilder.build(base + fixingLands, metrics, metaFix)
+        val withoutFixing = DeckBuilder.build(base, metrics, metaFix)
+
+        assertTrue(
+            withFixing.any { it.pair.length == 3 },
+            "3-color should be offered with fixing: ${withFixing.map { it.pair to it.powerScore.toInt() }}",
+        )
+        assertTrue(
+            withoutFixing.none { it.pair.length == 3 },
+            "3-color should NOT be offered without fixing: ${withoutFixing.map { it.pair to it.powerScore.toInt() }}",
+        )
+    }
 }

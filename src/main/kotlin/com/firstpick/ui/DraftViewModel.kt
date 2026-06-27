@@ -240,7 +240,6 @@ class DraftViewModel(
     private fun DeckOption.toUi(): DeckOptionUi {
         val basicsLine = basics.entries.sortedByDescending { it.value }
             .joinToString(", ") { "${it.value}${it.key}" }
-        val nonbasic = if (nonbasicLands.isNotEmpty()) " +${nonbasicLands.size} nonbasic" else ""
         return DeckOptionUi(
             pair = pair,
             tier = tier,
@@ -249,17 +248,55 @@ class DraftViewModel(
             power = powerScore.toInt(),
             creatures = creatures,
             removal = removal,
-            landLine = (basicsLine.ifBlank { "—" }) + nonbasic,
-            spells = spells.map {
-                DeckSpellUi(
-                    name = it.displayName,
-                    cmc = metaRepo.meta(it.name)?.cmc ?: 0,
-                    color = it.rating?.color.orEmpty(),
-                    gihWr = it.gihWr,
-                    imageUrl = it.rating?.imageUrl,
-                )
-            },
+            landLine = basicsLine.ifBlank { "—" },
+            spells = spells.toDeckSpells(),
+            lands = nonbasicLands.toDeckSpells(),
         )
+    }
+
+    /** Deduplicate cards by name (with a copy count) and annotate type + role. */
+    private fun List<com.firstpick.cards.RankedCard>.toDeckSpells(): List<DeckSpellUi> =
+        groupBy { it.displayName }.map { (name, copies) ->
+            val c = copies.first()
+            val m = metaRepo.meta(c.name)
+            DeckSpellUi(
+                name = name,
+                count = copies.size,
+                cmc = m?.cmc ?: 0,
+                color = c.rating?.color.orEmpty(),
+                gihWr = c.gihWr,
+                imageUrl = c.rating?.imageUrl,
+                typeLabel = deckCardType(c.rating, m),
+                role = deckCardRole(m),
+                isLand = m?.isLand == true,
+            )
+        }.sortedWith(compareBy({ it.cmc }, { -(it.gihWr ?: 0.0) }))
+
+    private fun deckCardType(rating: com.firstpick.cards.CardRating?, meta: CardMeta?): String {
+        val types = rating?.types.orEmpty()
+        fun has(t: String) = types.any { it.equals(t, ignoreCase = true) }
+        return when {
+            meta?.isLand == true || has("Land") -> "Land"
+            meta?.isCreature == true || has("Creature") -> "Creature"
+            has("Instant") -> "Instant"
+            has("Sorcery") -> "Sorcery"
+            has("Planeswalker") -> "Planeswalker"
+            has("Enchantment") -> "Enchantment"
+            has("Artifact") -> "Artifact"
+            has("Battle") -> "Battle"
+            else -> "Spell"
+        }
+    }
+
+    /** The single most salient functional role for a card (priority order), or null. */
+    private fun deckCardRole(meta: CardMeta?): String? = when {
+        meta == null -> null
+        meta.isRemoval -> "Removal"
+        meta.isFixing -> "Fixing"
+        meta.isFinisher -> "Finisher"
+        meta.isCardDraw -> "Draw"
+        meta.isEvasion -> "Evasion"
+        else -> null
     }
 
     private fun archetypeRows(lanePair: String?): List<ArchetypeRow> =
