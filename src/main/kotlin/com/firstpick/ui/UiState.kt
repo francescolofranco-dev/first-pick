@@ -49,6 +49,26 @@ data class DeckSpellUi(
     val isLand: Boolean = false,
 )
 
+/**
+ * WUBRG ordering rank for a card's color string, following the MTG Arena convention:
+ * White, Blue, Black, Red, Green, then multicolor (gold), then colorless/lands last.
+ */
+fun deckColorRank(color: String): Int {
+    val c = color.trim()
+    return when {
+        c.isEmpty() -> 7
+        c.length > 1 -> 6
+        else -> "WUBRG".indexOf(c[0]).let { if (it < 0) 7 else it }
+    }
+}
+
+/**
+ * Deck-list ordering: by mana value, then WUBRG color, then win rate — matching MTGA's
+ * deck builder so cards are easy to cross-reference when adding/removing them in Arena.
+ */
+val deckSpellOrder: Comparator<DeckSpellUi> =
+    compareBy({ it.cmc }, { deckColorRank(it.color) }, { -(it.gihWr ?: 0.0) })
+
 /** A finished deck proposal for the post-draft builder. */
 data class DeckOptionUi(
     val pair: String,

@@ -309,7 +309,11 @@ private fun DeckHelperView(
                             )
                         }
 
-                        val sortedSpells = remember(spells) { spells.sortedBy { it.name } }
+                        // Within each color column, order by mana value (then win rate) so the
+                        // overlay matches the deck pane's MV + WUBRG ordering.
+                        val sortedSpells = remember(spells) {
+                            spells.sortedWith(compareBy({ it.cmc }, { -(it.gihWr ?: 0.0) }))
+                        }
 
                         LazyColumn(
                             modifier = Modifier.fillMaxSize(),

@@ -32,6 +32,17 @@ object DeckBuilder {
     private const val LAND_SLOTS = 17
     private const val MIN_PLAYABLES = 18
 
+    // Deck-shaping targets. A limited deck wants a creature-dense board and a real mana
+    // curve — not just the 23 highest win rates (which skews top-heavy and trick-heavy).
+    private const val CREATURE_TARGET = 15
+    private const val NONCREATURE_CAP = 8
+    // A leftover creature is preferred over a (slightly better) non-creature within this
+    // win-rate margin while the deck is still short on creatures.
+    private const val CREATURE_BIAS = 0.015
+    // Ideal creature count per mana-value bucket (6 = 6+). Sums to CREATURE_TARGET; the
+    // 1-drop slot is filled last because cheap creatures matter least to the curve.
+    private val CREATURE_CURVE = linkedMapOf(2 to 4, 3 to 4, 4 to 3, 5 to 2, 6 to 1, 1 to 1)
+
     /** Reject pairs where the second color is only a token splash (uncastable as 2-color). */
     private const val MIN_COLOR_PIPS = 4
     private const val MIN_COLOR_RATIO = 0.20
@@ -90,9 +101,9 @@ object DeckBuilder {
         }
 
         val eligible = spells.filter(::onColor)
-        val chosen = eligible.sortedByDescending(::cardScore).take(SPELL_SLOTS).toMutableList()
+        val chosen = selectSpells(eligible, metrics, meta, ::cardScore).toMutableList()
         val deficit = SPELL_SLOTS - chosen.size
-        
+
         val splashedSpells = if (deficit > 0) {
             val offColorSpells = spells.filterNot(::onColor)
             offColorSpells.sortedByDescending(::cardScore).take(deficit)
@@ -143,6 +154,85 @@ object DeckBuilder {
             curve = curveOf(metas),
         )
     }
+
+    /** A copy-capped, scored candidate for deck inclusion. Identity equality (one per copy). */
+    private class Candidate(
+        val card: RankedCard,
+        val score: Double,
+        val cmc: Int,
+        val isCreature: Boolean,
+    )
+
+    /**
+     * Pick up to [SPELL_SLOTS] nonland cards from [eligible] to form a *coherent* deck —
+     * not just the 23 highest win rates. That naive approach produced the decks players
+     * complained about: top-heavy curves, three copies of mediocre commons, and too few
+     * creatures. Here we (1) cap copies by card quality, (2) fill a creature mana curve,
+     * then (3) fill the rest preferring creatures so the board stays dense.
+     */
+    private fun selectSpells(
+        eligible: List<RankedCard>,
+        metrics: SetMetrics,
+        meta: (String) -> CardMeta?,
+        cardScore: (RankedCard) -> Double,
+    ): List<RankedCard> {
+        // 1. Copy cap: a card's quality (win-rate z-score) limits how many copies belong in
+        //    a deck. Mediocre commons get 1, solid cards 2, only strong cards 3.
+        val candidates = eligible
+            .groupBy { it.name }
+            .flatMap { (_, copies) ->
+                val cap = copyCap(metrics.z(cardScore(copies.first())) ?: 0.0)
+                copies.sortedByDescending { it.gihWr ?: 0.0 }.take(cap)
+            }
+            .map { card ->
+                val m = meta(card.name)
+                Candidate(card, cardScore(card), m?.cmc ?: 3, m?.isCreature == true)
+            }
+            .sortedByDescending { it.score }
+
+        val creatures = candidates.filter { it.isCreature }
+        val others = candidates.filterNot { it.isCreature }
+
+        // 2. Curve pass: fill each mana-value bucket toward a healthy creature curve.
+        val chosen = LinkedHashSet<Candidate>()
+        val byBucket = creatures.groupBy { curveBucket(it.cmc) }
+        for ((bucket, target) in CREATURE_CURVE) {
+            byBucket[bucket].orEmpty().take(target).forEach { chosen.add(it) }
+        }
+
+        // 3. Biased merge: fill the remaining slots, preferring creatures until the deck is
+        //    creature-dense, then taking the best card available. The non-creature cap keeps
+        //    a pile of high-win-rate tricks/removal from crowding out the board — but only
+        //    while creatures remain to take instead (so it never forces a needless splash).
+        val creatureQueue = ArrayDeque(creatures.filterNot { it in chosen })
+        val otherQueue = ArrayDeque(others)
+        var creatureCount = chosen.size // the curve pass added only creatures
+        var otherCount = 0
+        while (chosen.size < SPELL_SLOTS && (creatureQueue.isNotEmpty() || otherQueue.isNotEmpty())) {
+            val c = creatureQueue.firstOrNull()
+            val o = otherQueue.firstOrNull()
+            val pick = when {
+                c == null -> otherQueue.removeFirst().also { otherCount++ }
+                o == null -> creatureQueue.removeFirst()
+                otherCount >= NONCREATURE_CAP -> creatureQueue.removeFirst()
+                creatureCount < CREATURE_TARGET && c.score >= o.score - CREATURE_BIAS -> creatureQueue.removeFirst()
+                c.score > o.score -> creatureQueue.removeFirst()
+                else -> otherQueue.removeFirst().also { otherCount++ }
+            }
+            if (chosen.add(pick) && pick.isCreature) creatureCount++
+        }
+        return chosen.map { it.card }
+    }
+
+    /** Copies of a card that belong in a deck, by its win-rate z-score (1=filler, 3=premium). */
+    private fun copyCap(z: Double): Int = when {
+        z >= 1.0 -> 3
+        z >= 0.0 -> 2
+        else -> 1
+    }
+
+    /** Mana-value bucket for the curve (0–1 -> 1, 6+ -> 6). */
+    private fun curveBucket(cmc: Int): Int = cmc.coerceIn(1, 6)
 
     /** Distribute basic lands across the pair's colors by the spells' colored-pip weight. */
     private fun basicSplit(pips: Map<Char, Int>, pairSet: Set<Char>, slots: Int): Map<Char, Int> {

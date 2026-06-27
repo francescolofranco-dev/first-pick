@@ -5,6 +5,7 @@ import com.firstpick.cards.CardRating
 import com.firstpick.cards.RankedCard
 import com.firstpick.cards.SetMetrics
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class DeckBuilderTest {
@@ -81,5 +82,63 @@ class DeckBuilderTest {
             withoutFixing.none { it.pair.length == 3 },
             "3-color should NOT be offered without fixing: ${withoutFixing.map { it.pair to it.powerScore.toInt() }}",
         )
+    }
+
+    @Test
+    fun capsCopiesOfMediocreCards() {
+        // Four copies of an above-mean-but-not-premium card (z≈0.3 -> cap 2), plus enough
+        // weaker on-color cards to fill the deck. The build must run only 2, never all four.
+        val pool = buildList {
+            repeat(4) { add(card(it, "Dup", 0.56, "W")) }
+            repeat(11) { add(card(100 + it, "W$it", 0.50, "W")) }
+            repeat(11) { add(card(200 + it, "U$it", 0.50, "U")) }
+        }
+        val meta: (String) -> CardMeta? = { CardMeta(it, cmc = 3, isCreature = true, isLand = false) }
+
+        val top = DeckBuilder.build(pool, metrics, meta).first()
+        assertEquals(2, top.spells.count { it.name == "Dup" }, "should cap mediocre dupes at 2")
+    }
+
+    @Test
+    fun shapesAManaCurveInsteadOfStackingTopWinRates() {
+        // Four-drops have the best win rates, so a naive "take the 23 best" build would be
+        // top-heavy with too few early plays. A real curve keeps cheap creatures.
+        val metaMap = mutableMapOf<String, CardMeta>()
+        fun creature(id: Int, name: String, gih: Double, color: String, cmc: Int): RankedCard {
+            metaMap[name] = CardMeta(name, cmc = cmc, isCreature = true, isLand = false)
+            return card(id, name, gih, color)
+        }
+        val pool = buildList {
+            repeat(6) { add(creature(it, "Two$it", 0.53, if (it % 2 == 0) "W" else "U", 2)) }
+            repeat(6) { add(creature(20 + it, "Three$it", 0.54, if (it % 2 == 0) "W" else "U", 3)) }
+            repeat(12) { add(creature(40 + it, "Four$it", 0.58, if (it % 2 == 0) "W" else "U", 4)) }
+        }
+        val meta: (String) -> CardMeta? = { metaMap[it] }
+
+        val top = DeckBuilder.build(pool, metrics, meta).first()
+        val twoDrops = top.spells.count { meta(it.name)?.cmc == 2 }
+        val threeDrops = top.spells.count { meta(it.name)?.cmc == 3 }
+        assertTrue(twoDrops >= 4, "expected a real 2-drop count, got $twoDrops")
+        assertTrue(threeDrops >= 4, "expected a real 3-drop count, got $threeDrops")
+    }
+
+    @Test
+    fun keepsTheDeckCreatureDenseDespiteHighWinRateSpells() {
+        // Non-creature spells have the higher win rates here; a naive build would run a
+        // dozen of them and far too few creatures. The deck must stay creature-dense.
+        val metaMap = mutableMapOf<String, CardMeta>()
+        fun mk(id: Int, name: String, gih: Double, color: String, cmc: Int, creature: Boolean): RankedCard {
+            metaMap[name] = CardMeta(name, cmc = cmc, isCreature = creature, isLand = false)
+            return card(id, name, gih, color)
+        }
+        val cmcs = listOf(2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 5, 5, 6)
+        val pool = buildList {
+            cmcs.forEachIndexed { i, c -> add(mk(i, "Cre$i", 0.54, if (i % 2 == 0) "W" else "U", c, true)) }
+            repeat(12) { add(mk(100 + it, "Spell$it", 0.60, if (it % 2 == 0) "W" else "U", 2, false)) }
+        }
+        val meta: (String) -> CardMeta? = { metaMap[it] }
+
+        val top = DeckBuilder.build(pool, metrics, meta).first()
+        assertTrue(top.creatures >= 15, "expected a creature-dense deck, got ${top.creatures}")
     }
 }

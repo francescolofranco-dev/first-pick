@@ -281,7 +281,7 @@ class DraftViewModel(
                 role = deckCardRole(m),
                 isLand = m?.isLand == true,
             )
-        }.sortedWith(compareBy({ it.cmc }, { -(it.gihWr ?: 0.0) }))
+        }.sortedWith(deckSpellOrder)
 
     private fun deckCardType(rating: com.firstpick.cards.CardRating?, meta: CardMeta?): String {
         val types = rating?.types.orEmpty()

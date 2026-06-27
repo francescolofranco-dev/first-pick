@@ -43,6 +43,25 @@ class DraftViewModelTest {
     }
 
     @Test
+    fun deckSpellOrderSortsByManaValueThenWubrgColor() {
+        fun spell(name: String, cmc: Int, color: String, gih: Double = 0.55) =
+            DeckSpellUi(name = name, cmc = cmc, color = color, gihWr = gih)
+        val unsorted = listOf(
+            spell("g2", 2, "G"),
+            spell("w2", 2, "W"),
+            spell("gold2", 2, "WU"),
+            spell("u1", 1, "U"),
+            spell("r2", 2, "R"),
+            spell("w1", 1, "W"),
+            spell("b2", 2, "B"),
+            spell("colorless2", 2, ""),
+        )
+        val ordered = unsorted.sortedWith(deckSpellOrder).map { it.name }
+        // MV 1 first (W before U), then all MV 2 in WUBRG, then gold, then colorless.
+        assertEquals(listOf("w1", "u1", "w2", "b2", "r2", "g2", "gold2", "colorless2"), ordered)
+    }
+
+    @Test
     fun pipelineScoresThePackFromALogLine() = runBlocking {
         // Seed disk caches for every format so the data layer is fully offline
         // regardless of the persisted format choice.
