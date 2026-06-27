@@ -44,6 +44,7 @@ fun App(
     onSelectFormat: (String) -> Unit = {},
     onSimulate: (String) -> Unit = {},
     onStopSim: () -> Unit = {},
+    onTogglePause: () -> Unit = {},
 ) {
     var currentScreen by remember(state.phase) {
         mutableStateOf(if (state.phase == DraftPhase.COMPLETE) AppScreen.DECK_BUILDER else AppScreen.DRAFT_POOL)
@@ -52,7 +53,7 @@ fun App(
     MaterialTheme(colorScheme = DraftColorScheme) {
         Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
             Column(Modifier.fillMaxSize().padding(14.dp)) {
-                Header(state, isOverlayOpen, onToggleOverlay, onSelectFormat, onStopSim)
+                Header(state, isOverlayOpen, onToggleOverlay, onSelectFormat, onStopSim, onTogglePause)
 
                 if (state.deckOptions.isNotEmpty() || state.poolSize > 0) {
                     Spacer(Modifier.height(8.dp))
@@ -104,6 +105,7 @@ private fun Header(
     onToggleOverlay: () -> Unit,
     onSelectFormat: (String) -> Unit,
     onStopSim: () -> Unit,
+    onTogglePause: () -> Unit,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -125,6 +127,22 @@ private fun Header(
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
             if (state.simulating) {
+                // Pause / resume — keeps the in-progress demo's state.
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.18f))
+                        .clickable(onClick = onTogglePause)
+                        .padding(horizontal = 12.dp, vertical = 6.dp),
+                ) {
+                    Text(
+                        text = if (state.simPaused) "▶ Resume demo" else "❚❚ Pause demo",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                }
+                // Exit the demo and return to the live Arena log.
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
@@ -133,7 +151,7 @@ private fun Header(
                         .padding(horizontal = 12.dp, vertical = 6.dp),
                 ) {
                     Text(
-                        text = "● Demo — stop",
+                        text = "✕ Exit demo",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.tertiary,

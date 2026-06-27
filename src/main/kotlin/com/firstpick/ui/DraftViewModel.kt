@@ -63,6 +63,7 @@ class DraftViewModel(
     private var watcherJob: Job? = null
     private var simJob: Job? = null
     @Volatile private var simulating = false
+    private val simPaused = MutableStateFlow(false)
 
     /** User-selected 17Lands data source ([RatingsFormat]); persisted across runs. */
     @Volatile
@@ -89,9 +90,10 @@ class DraftViewModel(
         simJob?.cancel()
         watcherJob?.cancel()
         simulating = true
+        simPaused.value = false
         scope.launch { publish() } // reflect "simulating" immediately, before the first pick
         simJob = scope.launch(Dispatchers.IO) {
-            tracker.consume(simulator.simulate(set))
+            tracker.consume(simulator.simulate(set, paused = simPaused))
             // The flow finished with nothing → the set had no 17Lands data to simulate.
             if (tracker.state.value.setCode == null) {
                 currentError = "No 17Lands data to simulate ${set.uppercase()}"
@@ -101,12 +103,20 @@ class DraftViewModel(
         }
     }
 
-    /** Stop the demo and resume tailing the live Arena log. */
+    /** Pause or resume an in-progress demo. Paused keeps all draft state in place. */
+    fun toggleSimulationPause() {
+        if (!simulating) return
+        simPaused.value = !simPaused.value
+        scope.launch { publish() }
+    }
+
+    /** Exit the demo entirely and resume tailing the live Arena log. */
     fun stopSimulation() {
         if (!simulating) return
         simJob?.cancel()
         simJob = null
         simulating = false
+        simPaused.value = false
         watcherJob = scope.launch(Dispatchers.IO) { tracker.consume(watcher.lines(fromStart = false)) }
         scope.launch { publish() }
     }
@@ -234,6 +244,7 @@ class DraftViewModel(
             deckOptions = deckOptions,
             ratingsFormatChoice = formatChoice,
             simulating = simulating,
+            simPaused = simPaused.value,
         )
     }
 

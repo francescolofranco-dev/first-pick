@@ -111,6 +111,8 @@ data class DraftUiState(
     val ratingsFormatChoice: String = RatingsFormat.PREMIER,
     // True while a simulated/demo draft is driving the app (not a live Arena log).
     val simulating: Boolean = false,
+    // True when the in-progress demo is paused (resumable).
+    val simPaused: Boolean = false,
 ) {
     val headline: String
         get() = when (phase) {

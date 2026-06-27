@@ -5,6 +5,9 @@ import com.firstpick.cards.SeventeenLandsClient
 import com.firstpick.core.Log
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlin.random.Random
 import kotlin.time.Duration
@@ -30,7 +33,11 @@ class DraftSimulator(
     private val pickInterval: Duration = 1900.milliseconds,
     private val random: Random = Random.Default,
 ) {
-    fun simulate(set: String, format: String = "PremierDraft"): Flow<String> = flow {
+    fun simulate(
+        set: String,
+        format: String = "PremierDraft",
+        paused: StateFlow<Boolean> = MutableStateFlow(false),
+    ): Flow<String> = flow {
         val cards = runCatching { client.fetch(set, format) }.getOrDefault(emptyList())
             .filter { it.mtgaId != null && it.gihWr != null }
         if (cards.size < CARDS_PER_PACK) {
@@ -48,6 +55,8 @@ class DraftSimulator(
             for (pick in 0 until CARDS_PER_PACK) {
                 // You see (and the advisor scores) the pack you currently hold.
                 emit(snapshot(eventName, round, pick, held[YOU].map { it.mtgaId!! }, pools[YOU], "PickNext"))
+                // Pause point: stay on the current pack (state preserved) until resumed.
+                paused.first { !it }
                 delay(pickInterval)
                 // Every seat takes a card from its current pack (bots draft on-color too)...
                 for (seat in 0 until SEATS) {
@@ -117,8 +126,8 @@ class DraftSimulator(
         const val PACKS = 3
         const val CARDS_PER_PACK = 15
 
-        /** Seats at the table (you + bots). 4 packs circulate per round → real selection. */
-        const val SEATS = 4
+        /** Seats at the table (you + bots). 6 packs circulate per round → real selection. */
+        const val SEATS = 6
         private const val YOU = 0
         private const val ON_COLOR_BIAS = 1.8
 
