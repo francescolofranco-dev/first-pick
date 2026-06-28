@@ -13,10 +13,10 @@ class CardMetaRepository(
     var loadedSet: String? = null
         private set
 
-    suspend fun load(setCode: String) {
+    suspend fun load(setCode: String, names: Collection<String> = emptyList()) {
         val key = setCode.uppercase()
         if (key == loadedSet) return
-        val loaded = client.setMeta(key)
+        val loaded = client.setMeta(key, names)
         if (loaded.isNotEmpty()) {
             byName = loaded
             loadedSet = key

@@ -33,6 +33,13 @@ class CardRepository(
 
     val isLoaded: Boolean get() = loadedKey != null
 
+    /**
+     * Every card name in the loaded set, per 17Lands. This is the authoritative draft
+     * pool — including bonus-sheet cards (e.g. OTJ's *The Big Score*) that a Scryfall
+     * `set:` query misses — so Scryfall metadata is fetched against this list, not the set.
+     */
+    val cardNames: List<String> get() = byName.values.map { it.name }
+
     /** Fetch + index ratings for a set/format. Idempotent per (set, format). */
     suspend fun load(setCode: String, format: String) {
         val key = "${setCode.uppercase()}_$format"

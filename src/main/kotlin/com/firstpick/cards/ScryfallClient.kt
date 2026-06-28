@@ -45,6 +45,15 @@ class ScryfallClient(
     )
 
     @Serializable
+    private data class CollectionResponse(@SerialName("data") val data: List<Card> = emptyList())
+
+    @Serializable
+    private data class Identifier(val name: String)
+
+    @Serializable
+    private data class CollectionRequest(val identifiers: List<Identifier>)
+
+    @Serializable
     private data class Card(
         @SerialName("name") val name: String = "",
         @SerialName("cmc") val cmc: Double = 0.0,
@@ -68,16 +77,21 @@ class ScryfallClient(
         val draw: Boolean,
     )
 
-    /** Map of normalized card name -> [CardMeta] for the given set. */
-    suspend fun setMeta(set: String): Map<String, CardMeta> = withContext(Dispatchers.IO) {
+    /**
+     * Map of normalized card name -> [CardMeta] for the given set. When [names] is given
+     * (the 17Lands card list), metadata is fetched by name via Scryfall's collection
+     * endpoint so bonus-sheet cards a `set:` query misses (e.g. OTJ's *The Big Score*) are
+     * still covered; otherwise it falls back to a `set:` search.
+     */
+    suspend fun setMeta(set: String, names: Collection<String> = emptyList()): Map<String, CardMeta> = withContext(Dispatchers.IO) {
         Files.createDirectories(cacheDir)
-        // Cache version bumped (v4) so the curated-tag role classification re-derives
-        // immediately rather than waiting out the staleness window on old caches.
-        val cache = cacheDir.resolve("scryfall4_${set.uppercase()}.json")
+        // Cache version bumped (v5) so the by-name fetch (which adds bonus-sheet cards and
+        // their mana values) re-derives immediately rather than waiting out staleness.
+        val cache = cacheDir.resolve("scryfall5_${set.uppercase()}.json")
         val dtos: List<MetaDto> = if (isFresh(cache)) {
             runCatching { json.decodeFromString(LIST_SERIALIZER, Files.readString(cache)) }.getOrDefault(emptyList())
         } else {
-            val built = build(set)
+            val built = build(set, names)
             if (built != null) {
                 Files.writeString(cache, json.encodeToString(LIST_SERIALIZER, built))
                 built
@@ -96,17 +110,68 @@ class ScryfallClient(
         isEvasion = evasion, isCardDraw = draw,
     )
 
-    private fun build(set: String): List<MetaDto>? {
+    private fun build(set: String, names: Collection<String>): List<MetaDto>? {
+        // Prefer the authoritative 17Lands card list (covers bonus sheets); fall back to a
+        // `set:` search when we have no names (e.g. a meta-only load before ratings arrive).
+        val cards = (if (names.isNotEmpty()) fetchByNames(names) else null)
+            ?: searchCards("set:${set.lowercase()} game:arena unique:cards")
+            ?: return null
         val q = "set:${set.lowercase()}"
-        val cards = searchCards("$q game:arena unique:cards") ?: return null
         // Scryfall's curated functional (oracle) tags — the opinionated source for these
-        // roles, more accurate than an oracle-text guess. (Fixing keys off Scryfall's
-        // produced-mana data; finisher has no curated tag, so stays heuristic.)
+        // roles, more accurate than an oracle-text guess. Scoped to the main set; bonus-sheet
+        // cards fall back to the oracle-text heuristic in [classifyRoles]. (Fixing keys off
+        // Scryfall's produced-mana data; finisher has no curated tag, so stays heuristic.)
         val removalNames = taggedNames("$q otag:removal")
         val evasionNames = taggedNames("$q otag:evasion")
         val drawNames = taggedNames("$q otag:draw")
         return cards.map { dtoOf(it, removalNames, evasionNames, drawNames) }
     }
+
+    /** Fetch full card objects by name via Scryfall's collection endpoint (batched ≤75). */
+    private fun fetchByNames(names: Collection<String>): List<Card>? {
+        val ids = names.map { frontName(it) }.filter { it.isNotEmpty() }.distinct()
+        if (ids.isEmpty()) return null
+        val out = mutableListOf<Card>()
+        var anySucceeded = false
+        for ((i, batch) in ids.chunked(COLLECTION_BATCH).withIndex()) {
+            val cards = postCollection(batch) ?: continue
+            out += cards
+            anySucceeded = true
+            if (i < ids.size / COLLECTION_BATCH) runCatching { Thread.sleep(PAGE_DELAY_MS) }
+        }
+        return out.takeIf { anySucceeded }
+    }
+
+    /** POST one batch of name identifiers; returns the resolved cards (missing names dropped). */
+    private fun postCollection(names: List<String>): List<Card>? {
+        val body = json.encodeToString(CollectionRequest.serializer(), CollectionRequest(names.map { Identifier(it) }))
+        for (attempt in 1..SeventeenLandsClient.MAX_ATTEMPTS) {
+            val (cards, failure) = postCollectionOnce(body)
+            if (cards != null) return cards
+            if (failure == null || !SeventeenLandsClient.isTransient(failure) || attempt == SeventeenLandsClient.MAX_ATTEMPTS) {
+                if (failure != null) Log.warn(TAG, "POST collection failed ($failure) after $attempt attempt(s)")
+                return null
+            }
+            val backoff = SeventeenLandsClient.BASE_BACKOFF_MS * (1L shl (attempt - 1))
+            runCatching { Thread.sleep(backoff) }
+        }
+        return null
+    }
+
+    private fun postCollectionOnce(body: String): Pair<List<Card>?, FetchFailure?> = runCatching {
+        val request = HttpRequest.newBuilder(URI.create("https://api.scryfall.com/cards/collection"))
+            .header("User-Agent", SeventeenLandsClient.USER_AGENT)
+            .header("Accept", "application/json")
+            .header("Content-Type", "application/json")
+            .timeout(Duration.ofSeconds(30))
+            .POST(HttpRequest.BodyPublishers.ofString(body))
+            .build()
+        val resp = http.send(request, HttpResponse.BodyHandlers.ofString())
+        when (resp.statusCode()) {
+            200 -> json.decodeFromString<CollectionResponse>(resp.body()).data to null
+            else -> null to SeventeenLandsClient.failureForStatus(resp.statusCode())
+        }
+    }.getOrElse { null to FetchFailure.OFFLINE }
 
     private fun taggedNames(query: String): Set<String> =
         searchCards(query).orEmpty().mapTo(mutableSetOf()) { frontName(it.name) }
@@ -184,6 +249,7 @@ class ScryfallClient(
         private const val TAG = "Scryfall"
         private const val MAX_PAGES = 6
         private const val PAGE_DELAY_MS = 120L
+        private const val COLLECTION_BATCH = 75 // Scryfall's max identifiers per collection request
         private val LIST_SERIALIZER = ListSerializer(MetaDto.serializer())
         private val EVASION_RE = Regex("flying|menace|can't be blocked|skulk|shadow|intimidate|horsemanship")
 

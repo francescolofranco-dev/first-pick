@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -18,6 +19,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.LineHeightStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpSize
@@ -56,7 +59,10 @@ fun DeckBuilderOverlay(
                 .fillMaxSize()
                 .clip(RoundedCornerShape(12.dp))
                 .border(1.dp, Color(0x3B7FD1C4), RoundedCornerShape(12.dp)),
-            color = Color(0xF20F1413)
+            color = Color(0xF20F1413),
+            // The background is a custom color (not a scheme role), so set the content color
+            // explicitly — otherwise unstyled text defaults to black and is invisible here.
+            contentColor = MaterialTheme.colorScheme.onSurface,
         ) {
             if (isMinimized) {
                 // Minimized floating pill
@@ -83,7 +89,7 @@ fun DeckBuilderOverlay(
                     }
                     Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                         OverlayIconButton(
-                            text = "＋",
+                            text = "+",
                             onClick = { isMinimized = false },
                             tooltip = "Expand overlay"
                         )
@@ -137,7 +143,7 @@ fun DeckBuilderOverlay(
                             )
                             Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                                 OverlayIconButton(
-                                    text = "－",
+                                    text = "−",
                                     onClick = { isMinimized = true },
                                     tooltip = "Minimize overlay"
                                 )
@@ -203,7 +209,7 @@ private fun DeckHelperView(
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 PipRow(opt.pair.toList())
                                 Spacer(Modifier.width(6.dp))
-                                Text(opt.title, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                                Text(opt.title, fontWeight = FontWeight.Bold, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface)
                             }
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Box(
@@ -217,7 +223,7 @@ private fun DeckHelperView(
                                 Spacer(Modifier.width(6.dp))
                                 Text("Power: ${opt.power}", fontSize = 11.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
                             }
-                            Text(opt.type, fontSize = 10.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            Text(opt.type, fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis)
                             Text(opt.outlook, fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
                         }
                     }
@@ -385,9 +391,20 @@ private fun OverlayIconButton(
     ) {
         Text(
             text = text,
-            fontSize = 10.sp,
+            fontSize = 11.sp,
+            lineHeight = 11.sp,
             fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            textAlign = TextAlign.Center,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            // Trim the line's leading and center the glyph so the symbol sits dead-center
+            // in the circle (default leading made "－"/"✕" look top/bottom-heavy).
+            style = LocalTextStyle.current.copy(
+                lineHeightStyle = LineHeightStyle(
+                    alignment = LineHeightStyle.Alignment.Center,
+                    trim = LineHeightStyle.Trim.Both,
+                ),
+            ),
+            modifier = Modifier.fillMaxWidth(),
         )
     }
 }

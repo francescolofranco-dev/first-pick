@@ -58,7 +58,7 @@ fun main(args: Array<String>) = runBlocking {
     archRepo.loadStrengths(set, format)
 
     val metaRepo = CardMetaRepository()
-    metaRepo.load(set)
+    metaRepo.load(set, repo.cardNames)
 
     val pack = repo.resolvePack(state.packCards)
     val pool = state.pool.map(repo::resolve)

@@ -123,6 +123,33 @@ class DeckBuilderTest {
     }
 
     @Test
+    fun everyDeckContainsOnlyItsDeclaredColors() {
+        // A 5-color soup with no fixing. Whatever builds are offered, each must be castable:
+        // every spell's colors must fall within that build's declared color identity — no
+        // off-color rainbow filler jammed in to reach 23 cards.
+        val pool = buildList {
+            repeat(8) { add(card(it, "W$it", 0.55, "W")) }
+            repeat(8) { add(card(20 + it, "U$it", 0.55, "U")) }
+            repeat(8) { add(card(40 + it, "B$it", 0.56, "B")) }
+            repeat(8) { add(card(60 + it, "R$it", 0.54, "R")) }
+            repeat(8) { add(card(80 + it, "G$it", 0.55, "G")) }
+        }
+        val meta: (String) -> CardMeta? = { CardMeta(it, cmc = 3, isCreature = true, isLand = false) }
+
+        val options = DeckBuilder.build(pool, metrics, meta)
+        assertTrue(options.isNotEmpty())
+        for (opt in options) {
+            val declared = opt.pair.toSet()
+            for (s in opt.spells) {
+                assertTrue(
+                    LaneDetector.colorsOf(s).all { it in declared },
+                    "${opt.pair} build has off-color card ${s.name} ${LaneDetector.colorsOf(s)}",
+                )
+            }
+        }
+    }
+
+    @Test
     fun keepsTheDeckCreatureDenseDespiteHighWinRateSpells() {
         // Non-creature spells have the higher win rates here; a naive build would run a
         // dozen of them and far too few creatures. The deck must stay creature-dense.

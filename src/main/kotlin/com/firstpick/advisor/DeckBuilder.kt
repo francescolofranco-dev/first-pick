@@ -30,7 +30,13 @@ data class DeckOption(
 object DeckBuilder {
     private const val SPELL_SLOTS = 23
     private const val LAND_SLOTS = 17
+    private const val DECK_SIZE = 40
     private const val MIN_PLAYABLES = 18
+
+    // A short on-color pool may splash a SINGLE off-color, and only with fixing — never an
+    // incoherent multi-color pile. Capped, and limited by how much fixing the pool has.
+    private const val SPLASH_CAP = 3
+    private const val SPLASH_MIN_FIXERS = 2
 
     // Deck-shaping targets. A limited deck wants a creature-dense board and a real mana
     // curve — not just the 23 highest win rates (which skews top-heavy and trick-heavy).
@@ -47,11 +53,12 @@ object DeckBuilder {
     private const val MIN_COLOR_PIPS = 4
     private const val MIN_COLOR_RATIO = 0.20
 
-    // A 3-color deck only works with real fixing: reward it when fixed, penalize it
-    // (so it isn't offered unless the raw power gain is large) when it isn't.
+    // A 3-color deck pays a flat consistency tax (it's two-color decks by default), plus a
+    // steep extra penalty per missing fixer so it only surfaces with real fixing AND a clear
+    // card-quality edge over the player's 2-color lane.
     private const val TRI_FIXERS_NEEDED = 3
     private const val TRI_FIXER_PENALTY = 5.0
-    private const val TRI_CASTABLE_BONUS = 2.0
+    private const val TRI_CONSISTENCY_PENALTY = 6.0
 
     fun build(
         pool: List<RankedCard>,
@@ -102,26 +109,38 @@ object DeckBuilder {
 
         val eligible = spells.filter(::onColor)
         val chosen = selectSpells(eligible, metrics, meta, ::cardScore).toMutableList()
-        val deficit = SPELL_SLOTS - chosen.size
 
-        val splashedSpells = if (deficit > 0) {
-            val offColorSpells = spells.filterNot(::onColor)
-            offColorSpells.sortedByDescending(::cardScore).take(deficit)
-        } else emptyList()
-        
+        // Fixing already in the pool (on-color/colorless lands + cards). A splash is only
+        // honest if we can actually cast it, so this gates the off-color top-up below.
+        val baseFixers = chosen.count { meta(it.name)?.isFixing == true } +
+            lands.count { val c = LaneDetector.colorsOf(it); (c.isEmpty() || pairSet.containsAll(c)) && meta(it.name)?.isFixing == true }
+
+        // Top up a short pool with a single off-color splash — never an incoherent multi-color
+        // pile — and only when the pool has fixing for it. The deck's color identity then
+        // includes that splash color, so the label/pips/basics match what's actually in it.
+        // Only 2-color decks splash; a 3-color deck stays 3 colors rather than going rainbow.
+        val splashedSpells = if (pairSet.size == 2)
+            chooseSplash(spells, pairSet, SPELL_SLOTS - chosen.size, baseFixers, ::onColor, ::cardScore)
+        else emptyList()
         chosen.addAll(splashedSpells)
-        val splashColors = splashedSpells.flatMap { LaneDetector.colorsOf(it) }.filter { it !in pairSet }.toSet()
+        val splashColor = splashedSpells.firstOrNull()
+            ?.let { card -> LaneDetector.colorsOf(card).firstOrNull { it !in pairSet } }
+        val deckColors = pairSet + setOfNotNull(splashColor)
+
+        // Not enough castable cards in these colors to build a real deck — don't offer one
+        // (otherwise we'd pad it out to 40 with an absurd number of lands).
+        if (chosen.size < MIN_PLAYABLES) return null
 
         val onColorLands = lands.filter { card ->
             val colors = LaneDetector.colorsOf(card)
-            colors.isEmpty() || pairSet.containsAll(colors) || colors.any { it in splashColors }
+            colors.isEmpty() || deckColors.containsAll(colors)
         }
 
         // Reject "fake" pairs — a mono deck with a token splash isn't castable as two colors.
         val pips = mutableMapOf<Char, Int>()
         for (card in chosen) {
             for (ch in LaneDetector.colorsOf(card)) {
-                if (ch in pairSet || ch in splashColors) pips.merge(ch, 1, Int::plus)
+                if (ch in deckColors) pips.merge(ch, 1, Int::plus)
             }
         }
         val totalPips = pips.values.sum()
@@ -134,13 +153,16 @@ object DeckBuilder {
         val removal = metas.count { it?.isRemoval == true }
         val twoDrops = metas.count { it != null && it.isCreature && it.cmc in 1..2 }
         val avgCmc = metas.mapNotNull { it?.cmc }.ifEmpty { listOf(3) }.average()
-        
+
         val fixersCount = chosen.count { meta(it.name)?.isFixing == true } + onColorLands.count { meta(it.name)?.isFixing == true }
         val splashCount = splashedSpells.size
 
-        val power = powerScore(deckWr, metrics, strength, creatures, removal, twoDrops, splashCount, fixersCount, pairSet.size)
+        val power = powerScore(deckWr, metrics, strength, creatures, removal, twoDrops, splashCount, fixersCount, deckColors.size)
+        // Fill the deck to 40 cards with lands (a short spell pool means more lands, not
+        // off-color filler). landTarget is ≥ LAND_SLOTS and only exceeds it for thin pools.
+        val landTarget = (DECK_SIZE - chosen.size).coerceAtLeast(LAND_SLOTS)
         return DeckOption(
-            pair = pair,
+            pair = "WUBRG".filter { it in deckColors },
             powerScore = power,
             tier = tierOf(power),
             type = typeOf(avgCmc, twoDrops, removal),
@@ -148,11 +170,36 @@ object DeckBuilder {
             deckWinRate = deckWr,
             spells = chosen.sortedWith(compareBy({ meta(it.name)?.cmc ?: 9 }, { -(it.gihWr ?: 0.0) })),
             nonbasicLands = onColorLands,
-            basics = basicSplit(pips, pairSet, (LAND_SLOTS - onColorLands.size).coerceAtLeast(0)),
+            basics = basicSplit(pips, deckColors, (landTarget - onColorLands.size).coerceAtLeast(0)),
             creatures = creatures,
             removal = removal,
             curve = curveOf(metas),
         )
+    }
+
+    /**
+     * Choose at most [SPLASH_CAP] cards of a SINGLE off-color to top up a short pool, and
+     * only when the pool has fixing ([fixers] ≥ [SPLASH_MIN_FIXERS]). Cards that would add
+     * more than one new color are skipped, so the result never turns a 2-/3-color deck into
+     * an uncastable rainbow pile. Returns empty when no honest splash is available.
+     */
+    private fun chooseSplash(
+        spells: List<RankedCard>,
+        pairSet: Set<Char>,
+        deficit: Int,
+        fixers: Int,
+        onColor: (RankedCard) -> Boolean,
+        cardScore: (RankedCard) -> Double,
+    ): List<RankedCard> {
+        if (deficit <= 0 || fixers < SPLASH_MIN_FIXERS) return emptyList()
+        val byColor = LinkedHashMap<Char, MutableList<RankedCard>>()
+        for (card in spells.filterNot(onColor)) {
+            val extra = LaneDetector.colorsOf(card).filter { it !in pairSet }
+            if (extra.size != 1) continue // only single-color splashes
+            byColor.getOrPut(extra.first()) { mutableListOf() }.add(card)
+        }
+        val best = byColor.values.maxByOrNull { cards -> cards.maxOf(cardScore) } ?: return emptyList()
+        return best.sortedByDescending(cardScore).take(minOf(deficit, SPLASH_CAP, fixers))
     }
 
     /** A copy-capped, scored candidate for deck inclusion. Identity equality (one per copy). */
@@ -295,12 +342,12 @@ object DeckBuilder {
             }
         }
 
-        // A 3-color deck is only worth offering with real fixing: reward when adequately
-        // fixed, penalize the shortfall otherwise so it needs a big power edge to surface.
+        // A 3-color deck is inherently less consistent than two, so it always pays a
+        // consistency tax — and a much steeper one when the fixing isn't there. This keeps
+        // suggestions aligned with the player's 2-color lane unless a tri is clearly better.
         if (colorCount >= 3) {
             val shortfall = (TRI_FIXERS_NEEDED - fixersCount).coerceAtLeast(0)
-            score -= shortfall * TRI_FIXER_PENALTY
-            if (fixersCount >= TRI_FIXERS_NEEDED) score += TRI_CASTABLE_BONUS
+            score -= TRI_CONSISTENCY_PENALTY + shortfall * TRI_FIXER_PENALTY
         }
 
         return score.coerceIn(0.0, 100.0)

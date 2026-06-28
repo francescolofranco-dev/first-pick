@@ -156,7 +156,7 @@ class DraftViewModel(
 
         // Scryfall mana values + archetype strengths in the background (optional data).
         scope.launch {
-            runCatching { metaRepo.load(set) }
+            runCatching { metaRepo.load(set, repo.cardNames) }
             runCatching { archetypeRepo.loadStrengths(set, format) }
             publish()
         }
@@ -285,7 +285,9 @@ class DraftViewModel(
 
     private fun deckCardType(rating: com.firstpick.cards.CardRating?, meta: CardMeta?): String {
         val types = rating?.types.orEmpty()
-        fun has(t: String) = types.any { it.equals(t, ignoreCase = true) }
+        // 17Lands types can be a full type line ("Legendary Planeswalker - Oko"), so match
+        // by substring rather than exact equality. Priority order below disambiguates.
+        fun has(t: String) = types.any { it.contains(t, ignoreCase = true) }
         return when {
             meta?.isLand == true || has("Land") -> "Land"
             meta?.isCreature == true || has("Creature") -> "Creature"

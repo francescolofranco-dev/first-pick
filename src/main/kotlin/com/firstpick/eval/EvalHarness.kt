@@ -30,7 +30,7 @@ fun main(args: Array<String>) = runBlocking {
     if (!repo.isLoaded) { println("\nNo 17Lands ratings for $set."); return@runBlocking }
     val archRepo = ArchetypeRepository().apply { loadStrengths(set, format) }
     for (p in COLOR_PAIRS) runCatching { archRepo.ensurePair(set, format, p) }
-    val metaRepo = CardMetaRepository().apply { runCatching { load(set) } }
+    val metaRepo = CardMetaRepository().apply { runCatching { load(set, repo.cardNames) } }
     println("done.")
 
     // Read rows, grouped by draft (the dataset is contiguous per draft_id).

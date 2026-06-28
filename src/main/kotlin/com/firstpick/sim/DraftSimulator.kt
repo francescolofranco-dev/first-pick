@@ -87,13 +87,25 @@ class DraftSimulator(
         }
     }
 
-    /** Win-rate weighted pick with a light bias toward the pool's leaning colors. */
+    /** Win-rate weighted pick that commits to the seat's two main colors, like a real drafter. */
     private fun autoPick(pack: List<CardRating>, pool: List<Int>, byId: Map<Int, CardRating>): CardRating {
         val poolColors = pool.mapNotNull { byId[it]?.color }.flatMap { it.asIterable() }.groupingBy { it }.eachCount()
+        // Once a seat has a few picks, lock onto its two most-drafted colors: on-color cards
+        // get a strong boost, off-color cards a steep cut. (Earlier, any color ever picked
+        // counted as on-color, so seats never committed and pools became 5-color soup.)
+        val mainColors = if (pool.size >= COMMIT_AFTER)
+            poolColors.entries.sortedByDescending { it.value }.take(2).map { it.key }.toSet()
+        else emptySet()
         val weights = pack.map { c ->
             val base = ((c.gihWr ?: 0.5) - 0.40).coerceAtLeast(0.02)
-            val onColor = pool.size >= 3 && c.color.any { poolColors.getOrDefault(it, 0) > 0 }
-            base * base * (if (onColor) ON_COLOR_BIAS else 1.0)
+            val colors = c.color.filter { it in "WUBRG" }.toSet()
+            val multiplier = when {
+                mainColors.isEmpty() || colors.isEmpty() -> 1.0   // undecided, or colorless
+                colors.all { it in mainColors } -> ON_COLOR_BIAS  // fully on-color
+                colors.any { it in mainColors } -> 1.0            // a splash — neutral
+                else -> OFF_COLOR_PENALTY                          // fully off-color
+            }
+            base * base * multiplier
         }
         val total = weights.sum()
         var r = random.nextDouble(total)
@@ -129,7 +141,9 @@ class DraftSimulator(
         /** Seats at the table (you + bots). 6 packs circulate per round → real selection. */
         const val SEATS = 6
         private const val YOU = 0
-        private const val ON_COLOR_BIAS = 1.8
+        private const val COMMIT_AFTER = 4   // picks before a seat locks onto its two colors
+        private const val ON_COLOR_BIAS = 3.0
+        private const val OFF_COLOR_PENALTY = 0.2
 
         /** Sets offered in the demo launcher. Any set code with 17Lands data works — edit freely. */
         val SETS = listOf("DSK", "BLB", "OTJ")
