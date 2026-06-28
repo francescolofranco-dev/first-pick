@@ -4,7 +4,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -88,6 +91,32 @@ fun ArenaOverlayTracker(locator: WindowLocator = WindowLocator()) {
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
                 )
+            }
+
+            // Predicted card slots (calibration): outline + index where the model thinks
+            // each pack card is. Default 15 (max P1P1 grid); override with -Dfirstpick.packCards.
+            val count = System.getProperty("firstpick.packCards")?.toIntOrNull() ?: 15
+            for (slot in PackLayout.slots(b.w, b.h, count)) {
+                Box(
+                    Modifier
+                        .offset(slot.x.dp, slot.y.dp)
+                        .size(slot.w.dp, slot.h.dp)
+                        .border(2.dp, Color(0xFFFF5C8A), RoundedCornerShape(6.dp))
+                ) {
+                    Box(
+                        Modifier.align(Alignment.TopStart)
+                            .background(Color(0xCCFF5C8A), RoundedCornerShape(bottomEnd = 6.dp))
+                            .padding(horizontal = 5.dp, vertical = 1.dp)
+                    ) {
+                        Text(
+                            "${slot.index + 1}",
+                            color = Color.White,
+                            fontFamily = FontFamily.Monospace,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                        )
+                    }
+                }
             }
         }
     }
