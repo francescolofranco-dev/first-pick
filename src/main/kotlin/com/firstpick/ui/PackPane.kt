@@ -59,7 +59,8 @@ internal fun PackPane(state: DraftUiState, onSimulate: (String) -> Unit = {}) = 
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
             )
-            if (state.phase == DraftPhase.IDLE && !state.simulating) {
+            // The demo draft is a dev-only aid (see DevFlags) — hidden in the shipped app.
+            if (DevFlags.demoEnabled && state.phase == DraftPhase.IDLE && !state.simulating) {
                 Text("— or try a demo draft —", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     DraftSimulator.SETS.forEach { set -> DemoSetButton(set) { onSimulate(set) } }

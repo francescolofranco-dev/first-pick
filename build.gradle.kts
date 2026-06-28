@@ -53,6 +53,8 @@ compose.desktop {
 
             macOS {
                 bundleID = "com.firstpick.app"
+                // App icon. Regenerate with packaging/icon/build-icon.sh.
+                iconFile.set(project.file("packaging/macos/FirstPick.icns"))
                 // Code-signing + notarization are driven entirely by environment
                 // variables, so no credentials live in the repo. With them unset
                 // (local dev, CI test builds) the dmg is simply unsigned — today's
@@ -70,6 +72,15 @@ compose.desktop {
             }
         }
     }
+}
+
+// The built-in demo/simulation draft is a dev aid, gated by FIRSTPICK_DEMO (see
+// DevFlags). Enable it automatically for `./gradlew run` only — the packaged app
+// (createDistributable/packageDmg) never sets it, so end users don't see the demo.
+// `run` is registered lazily by the Compose plugin, so configure it via a live
+// collection rather than tasks.named (which would resolve too early).
+tasks.withType<JavaExec>().matching { it.name == "run" }.configureEach {
+    environment("FIRSTPICK_DEMO", "1")
 }
 
 // Dev helper: replay a Player.log and print the reconstructed draft.
