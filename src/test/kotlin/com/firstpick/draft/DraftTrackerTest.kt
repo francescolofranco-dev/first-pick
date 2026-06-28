@@ -45,6 +45,20 @@ class DraftTrackerTest {
     }
 
     @Test
+    fun resetReturnsToIdle() {
+        val tracker = DraftTracker()
+        tracker.onLine(snapshotLine(0, 0, listOf(11, 12, 13), emptyList()))
+        assertEquals(DraftPhase.DRAFTING, tracker.state.value.phase)
+
+        tracker.reset()
+
+        val s = tracker.state.value
+        assertEquals(DraftPhase.IDLE, s.phase)
+        assertTrue(s.setCode == null)
+        assertTrue(s.pool.isEmpty() && s.packCards.isEmpty())
+    }
+
+    @Test
     fun marksComplete() {
         val tracker = DraftTracker()
         tracker.onLine(snapshotLine(2, 0, emptyList(), listOf(1, 2, 3), status = "Complete"))

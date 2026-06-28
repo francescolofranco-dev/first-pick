@@ -89,6 +89,8 @@ class DraftViewModel(
     fun startSimulation(set: String) {
         simJob?.cancel()
         watcherJob?.cancel()
+        tracker.reset() // clear any prior draft/demo so this run starts clean
+        currentError = null
         simulating = true
         simPaused.value = false
         scope.launch { publish() } // reflect "simulating" immediately, before the first pick
@@ -117,6 +119,10 @@ class DraftViewModel(
         simJob = null
         simulating = false
         simPaused.value = false
+        currentError = null
+        // Reset to the idle home screen (so the demo set picker reappears), then resume
+        // tailing the real Arena log — without this the finished demo draft stays on screen.
+        tracker.reset()
         watcherJob = scope.launch(Dispatchers.IO) { tracker.consume(watcher.lines(fromStart = false)) }
         scope.launch { publish() }
     }

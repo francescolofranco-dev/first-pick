@@ -30,4 +30,9 @@ class DraftTracker(
     suspend fun consume(lines: Flow<String>) {
         lines.collect { onLine(it) }
     }
+
+    /** Reset to the initial idle state (e.g. when exiting a demo draft). */
+    fun reset() {
+        _state.value = DraftState()
+    }
 }
