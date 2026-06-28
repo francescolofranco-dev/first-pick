@@ -15,13 +15,15 @@ data class CardSlot(val index: Int, val x: Int, val y: Int, val w: Int, val h: I
 object PackLayout {
     const val COLS = 5
 
-    // Window-fraction geometry (calibration constants).
-    private const val LEFT = 0.110     // left edge of column 0
-    private const val TOP = 0.190      // top edge of row 0
-    private const val CARD_W = 0.115   // card width
-    private const val CARD_H = 0.200   // card height
-    private const val COL_PITCH = 0.133
-    private const val ROW_PITCH = 0.245
+    // Window-fraction geometry, calibrated from a 1280x748 P1P1 capture (card columns +
+    // rows measured by pixel analysis; cross-checks to sub-pixel). Assumes Arena's draft
+    // layout scales proportionally with window size — re-verify at another size if it drifts.
+    private const val LEFT = 0.150     // left edge of column 0
+    private const val TOP = 0.210      // top edge of row 0
+    private const val CARD_W = 0.081   // card width
+    private const val CARD_H = 0.201   // card height
+    private const val COL_PITCH = 0.102
+    private const val ROW_PITCH = 0.238
 
     /** Predicted card rectangles (window-local points) for a pack of [count] cards. */
     fun slots(windowW: Int, windowH: Int, count: Int): List<CardSlot> =
