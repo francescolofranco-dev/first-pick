@@ -17,3 +17,5 @@ local.properties
 
 # Stray pasted screenshots dropped in the repo root
 /image*.png
+
+.vscode/
