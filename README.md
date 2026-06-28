@@ -1,11 +1,10 @@
-<img src="docs/icon.png" alt="FirstPick" width="120" align="left" />
+<p align="center">
+  <img src="docs/logo-banner.png" alt="FirstPick" width="480" />
+</p>
 
-# FirstPick
-
-A native macOS draft assistant for **Magic: The Gathering Arena**, built with
-Kotlin + Compose Multiplatform.
-
-<br clear="left" />
+<p align="center">
+  A native macOS draft assistant for <b>Magic: The Gathering Arena</b>, built with Kotlin + Compose Multiplatform.
+</p>
 
 During a draft, FirstPick watches Arena's log, and for each pack it ranks the
 cards by how good a **pick** they are — driven by [17Lands](https://www.17lands.com/)
@@ -139,8 +138,9 @@ previews the deck builder mid-draft; `FIRSTPICK_SMOKE=1` opens then self-exits;
 `FIRSTPICK_DEMO=1` shows the built-in demo-draft launcher (a dev aid that `./gradlew
 run` sets automatically, and the packaged app omits).
 
-The app icon is generated from `packaging/icon/IconGen.java`; rebuild the `.icns` and
-repo logo with `packaging/icon/build-icon.sh` (macOS only).
+Brand assets live in `packaging/icon/` (SVG source + `AppIcon.iconset`) and `docs/`
+(banner, mark, social preview). Regenerate the `.icns` from the iconset with
+`packaging/icon/build-icon.sh` (macOS only).
 
 ## Data sources & attribution
 

@@ -54,7 +54,7 @@ compose.desktop {
             macOS {
                 bundleID = "com.firstpick.app"
                 // App icon. Regenerate with packaging/icon/build-icon.sh.
-                iconFile.set(project.file("packaging/macos/FirstPick.icns"))
+                iconFile.set(project.file("packaging/icon/FirstPick.icns"))
                 // Code-signing + notarization are driven entirely by environment
                 // variables, so no credentials live in the repo. With them unset
                 // (local dev, CI test builds) the dmg is simply unsigned — today's
