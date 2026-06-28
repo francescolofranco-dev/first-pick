@@ -16,6 +16,7 @@ import com.firstpick.cards.CardRepository
 import com.firstpick.cards.DataUnavailableException
 import com.firstpick.cards.FetchFailure
 import com.firstpick.core.AppPaths
+import com.firstpick.core.Log
 import com.firstpick.draft.DraftTracker
 import com.firstpick.log.LogWatcher
 import com.firstpick.model.DraftState
@@ -74,9 +75,14 @@ class DraftViewModel(
         watcherJob = scope.launch(Dispatchers.IO) { tracker.consume(watcher.lines(fromStart = true)) }
         scope.launch {
             tracker.state.collect { state ->
-                state.setCode?.let { ensureLoaded(it) }
-                ensureLanePair(state)
-                publish()
+                // Guard the whole step: an exception here would kill this collector for good
+                // (SupervisorJob keeps the scope but won't restart it), freezing the UI on all
+                // later draft state — e.g. starting a second demo after one completed.
+                runCatching {
+                    state.setCode?.let { ensureLoaded(it) }
+                    ensureLanePair(state)
+                    publish()
+                }.onFailure { Log.warn(TAG, "pipeline step failed: $it") }
             }
         }
     }
@@ -216,13 +222,16 @@ class DraftViewModel(
         // Decks show when the draft completes; FIRSTPICK_FORCE_DECKS=1 previews them anytime.
         val deckReady = state.phase == DraftPhase.COMPLETE || System.getenv("FIRSTPICK_FORCE_DECKS") == "1"
         val deckOptions = if (loaded && deckReady && state.pool.size >= 20) {
-            DeckBuilder.build(
-                pool = pool,
-                metrics = repo.setMetrics,
-                meta = metaRepo::meta,
-                archetypeRating = archetypeRepo::archetypeRating,
-                pairStrength = archetypeRepo.strengthMap(),
-            ).map { it.toUi() }
+            // Deck options are optional UI — never let a builder failure break the pipeline.
+            runCatching {
+                DeckBuilder.build(
+                    pool = pool,
+                    metrics = repo.setMetrics,
+                    meta = metaRepo::meta,
+                    archetypeRating = archetypeRepo::archetypeRating,
+                    pairStrength = archetypeRepo.strengthMap(),
+                ).map { it.toUi() }
+            }.getOrElse { Log.warn(TAG, "deck build failed: $it"); emptyList() }
         } else {
             emptyList()
         }
@@ -372,6 +381,7 @@ class DraftViewModel(
         ratingsErrorMessage((t as? DataUnavailableException)?.reason, set)
 
     companion object {
+        private const val TAG = "DraftViewModel"
         private const val TOTAL_PICKS = 45
         private val WUBRG_ORDER = listOf('W', 'U', 'B', 'R', 'G')
     }
