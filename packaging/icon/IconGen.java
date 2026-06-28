@@ -23,18 +23,11 @@ public class IconGen {
         // --- Squircle background (Apple icon grid: 824x824 inset, ~185 corner radius) ---
         double inset = 100, size = S - 2 * inset, rad = 185.4;
         RoundRectangle2D sq = new RoundRectangle2D.Double(inset, inset, size, size, rad * 2, rad * 2);
-        g.setPaint(new GradientPaint(
-            0, (float) inset, new Color(0x18, 0x24, 0x21),
-            0, (float) (inset + size), new Color(0x0B, 0x10, 0x0F)));
+        // Flat, solid charcoal background (no gradient, no glow).
+        g.setColor(new Color(0x14, 0x18, 0x1A));
         g.fill(sq);
-        // soft teal glow from the top
-        g.setPaint(new RadialGradientPaint(
-            new Point2D.Double(S * 0.5, inset + size * 0.28), (float) (size * 0.60),
-            new float[] { 0f, 1f },
-            new Color[] { new Color(0x7F, 0xD1, 0xC4, 80), new Color(0x7F, 0xD1, 0xC4, 0) }));
-        g.fill(sq);
-        // inner hairline
-        g.setColor(new Color(0x7F, 0xD1, 0xC4, 55));
+        // subtle teal hairline to define the edge on dark backgrounds
+        g.setColor(new Color(0x7F, 0xD1, 0xC4, 45));
         g.setStroke(new BasicStroke(3f));
         g.draw(new RoundRectangle2D.Double(inset + 2, inset + 2, size - 4, size - 4, rad * 2, rad * 2));
 
@@ -44,21 +37,18 @@ public class IconGen {
         double total = 3 * rh + 2 * gap;
         double y0 = (S - total) / 2;
         Color teal = new Color(0x7F, 0xD1, 0xC4);
-        Color[] dim = { new Color(0x2A, 0x39, 0x35), new Color(0x22, 0x2F, 0x2B) };
+        Color ink = new Color(0x12, 0x16, 0x18); // near-bg dark, for marks on the teal row
+        Color[] dim = { new Color(0x2B, 0x32, 0x36), new Color(0x23, 0x2A, 0x2E) };
 
         for (int i = 0; i < 3; i++) {
             double y = y0 + i * (rh + gap);
-            // drop shadow
-            g.setColor(new Color(0, 0, 0, 80));
-            g.fill(new RoundRectangle2D.Double(rx, y + 10, rw, rh, rr, rr));
             RoundRectangle2D row = new RoundRectangle2D.Double(rx, y, rw, rh, rr, rr);
             if (i == 0) {
-                g.setPaint(new GradientPaint(0, (float) y, new Color(0x9B, 0xE0, 0xD5),
-                    0, (float) (y + rh), teal));
+                // flat, solid teal "first pick" row
+                g.setColor(teal);
                 g.fill(row);
-                Color ink = new Color(0x0B, 0x10, 0x0F);
                 // rank marker (left dot)
-                g.setColor(new Color(0x0B, 0x10, 0x0F, 150));
+                g.setColor(new Color(ink.getRed(), ink.getGreen(), ink.getBlue(), 150));
                 g.fill(new Ellipse2D.Double(rx + 40, y + rh / 2 - 22, 44, 44));
                 // checkmark (right)
                 g.setColor(ink);
@@ -73,7 +63,7 @@ public class IconGen {
                 g.setColor(dim[i - 1]);
                 g.fill(row);
                 // muted content bar
-                g.setColor(new Color(0x46, 0x57, 0x52));
+                g.setColor(new Color(0x49, 0x55, 0x5A));
                 g.fill(new RoundRectangle2D.Double(rx + 40, y + rh / 2 - 14, rw * 0.46, 28, 14, 14));
             }
         }
