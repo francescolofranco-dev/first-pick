@@ -1,5 +1,7 @@
 <p align="center">
-  <img src="docs/logo-banner.png" alt="FirstPick" width="480" />
+  <picture>
+    <img src="docs/logo-banner.png" alt="FirstPick" width="480" />
+  </picture>
 </p>
 
 <p align="center">
@@ -15,7 +17,9 @@ ends, it proposes 2–3 finished decks with a power estimate.
 > Unofficial fan project. Not affiliated with or endorsed by Wizards of the Coast.
 
 <p align="center">
-  <img src="docs/screenshots/draft-dashboard.png" width="820" alt="FirstPick live draft dashboard" />
+  <picture>
+    <img src="docs/screenshots/draft-dashboard.png" width="820" alt="FirstPick live draft dashboard" />
+  </picture>
 </p>
 
 ## Screenshots
@@ -27,23 +31,31 @@ mana curve, and your pool — all updating as you pick.
 
 **Hover for the card.** Mouse over any card to see its full image while you read the ranking.
 
-<img src="docs/screenshots/card-preview.png" width="320" alt="Card-image preview on hover" />
+<picture>
+  <img src="docs/screenshots/card-preview.png" width="320" alt="Card-image preview on hover" />
+</picture>
 
 **Pick your data source.** Score from Premier, Quick, or Traditional 17Lands data — or
 *Auto* to match the format you're drafting.
 
-<img src="docs/screenshots/data-source.png" width="260" alt="17Lands data source selector" />
+<picture>
+  <img src="docs/screenshots/data-source.png" width="260" alt="17Lands data source selector" />
+</picture>
 
 **Post-draft deck builder.** When the draft ends, get 2–3 buildable decks ranked by power,
 each with a letter tier, archetype, and a win-rate outlook. It favors a clean two-color
 build over a greedy splash.
 
-<img src="docs/screenshots/deck-builder.png" width="820" alt="Post-draft deck builder options" />
+<picture>
+  <img src="docs/screenshots/deck-builder.png" width="820" alt="Post-draft deck builder options" />
+</picture>
 
 **The full deck list.** Each build is laid out by mana value and WUBRG color, with role
 tags (removal · fixing · finisher · draw · evasion), copy counts, and a suggested manabase.
 
-<img src="docs/screenshots/deck-list.png" width="820" alt="Deck list with roles and manabase" />
+<picture>
+  <img src="docs/screenshots/deck-list.png" width="820" alt="Deck list with roles and manabase" />
+</picture>
 
 ## What it does
 
