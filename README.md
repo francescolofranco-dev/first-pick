@@ -11,6 +11,22 @@ ends, it proposes 2–3 finished decks with a power estimate.
 
 > Unofficial fan project. Not affiliated with or endorsed by Wizards of the Coast.
 
+## Screenshots
+
+_Screenshots and a short demo GIF live in [`docs/screenshots/`](docs/screenshots/)._
+Drop the images in, then enable the gallery below by uncommenting it. A short GIF of
+live pack ranking is the single most effective thing for the README and a launch post.
+
+<!-- Suggested captures (filenames the gallery expects):
+       pick-ranking.png  — the pack ranked best-first, with VALUE + reasons
+       deck-builder.png  — the post-draft deck builder options
+       overlay.gif       — the live overlay during an actual draft
+
+| Live pack ranking | Post-draft deck builder |
+| --- | --- |
+| ![Live pack ranking](docs/screenshots/pick-ranking.png) | ![Deck builder](docs/screenshots/deck-builder.png) |
+-->
+
 ## What it does
 
 - **Live pack ranking** — every card scored 0–100 (`VALUE`), best pick on top,

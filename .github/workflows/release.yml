@@ -3,10 +3,15 @@ name: Release
 # Builds an UNSIGNED macOS .dmg for both Apple Silicon (arm64) and Intel (x86_64)
 # when a vX.Y.Z tag is pushed, then publishes them to a GitHub Release.
 #
+# Both architectures build on Apple Silicon runners (macos-14): arm64 natively, and
+# x86_64 via an Intel JDK under Rosetta (jpackage bundles a runtime matching the JDK
+# arch, so pointing `composeJdk` at the Intel JDK yields an Intel app). This avoids
+# the scarce/deprecated Intel `macos-13` runners.
+#
 # The build is unsigned (no Apple Developer certificate), so users clear the
 # Gatekeeper quarantine on first launch — see the README. To upgrade to a signed +
-# notarized build later: add the secrets from docs/distribution.md, then swap the
-# "Build dmg" step for `./gradlew notarizeDmg …` and re-add a cert-import step.
+# notarized build later: add the secrets from docs/distribution.md, swap the build
+# step for `./gradlew notarizeDmg …`, and re-add a cert-import step.
 
 on:
   push:
@@ -23,19 +28,24 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - runner: macos-14   # Apple Silicon → arm64
-            arch: arm64
-          - runner: macos-13   # Intel → x86_64
-            arch: x86_64
-    runs-on: ${{ matrix.runner }}
+          - arch: arm64
+            jdkArch: aarch64
+          - arch: x86_64
+            jdkArch: x64
+    runs-on: macos-14 # Apple Silicon (reliable); x86_64 cross-builds here via Rosetta
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up JDK 21
+      - name: Set up JDK 21 (${{ matrix.jdkArch }})
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '21'
+          architecture: ${{ matrix.jdkArch }}
+
+      - name: Install Rosetta (x86_64 cross-build only)
+        if: matrix.arch == 'x86_64'
+        run: sudo softwareupdate --install-rosetta --agree-to-license
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -50,8 +60,10 @@ jobs:
           esac
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
+      # composeJdk points jpackage at this job's JDK, so the bundled runtime (and thus
+      # the .app) matches the JDK architecture: aarch64 -> arm64, x64 (Rosetta) -> Intel.
       - name: Build dmg
-        run: ./gradlew packageDmg -PpackageVersion=${{ steps.ver.outputs.version }} --stacktrace
+        run: ./gradlew packageDmg -PpackageVersion=${{ steps.ver.outputs.version }} -PcomposeJdk="$JAVA_HOME" --stacktrace
 
       - name: Rename dmg per architecture & checksum
         id: dmg
