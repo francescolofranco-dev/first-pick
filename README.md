@@ -32,36 +32,44 @@ ends, it proposes 2–3 finished decks with a power estimate.
 
 ## Requirements
 
-- macOS
-- JDK 21 (e.g. `brew install --cask temurin@21`)
+- macOS (Apple Silicon or Intel)
 - MTG Arena, with **Options → Account → Detailed Logs (Plugin Support)** enabled
 
-## Install & run
+## Download & install
 
-### From source (recommended for now)
+Grab the latest `.dmg` from the [**Releases**](../../releases/latest) page:
+
+- **Apple Silicon** (M1/M2/M3/M4 Macs): `FirstPick-<version>-arm64.dmg`
+- **Intel** Macs: `FirstPick-<version>-x86_64.dmg`
+
+> Not sure which? Apple menu  → **About This Mac** → look at "Chip" (Apple Silicon)
+> vs "Processor" (Intel).
+
+Open the `.dmg` and drag **FirstPick** into Applications. The app is **unsigned** —
+it's a free, open-source project without a (paid) Apple Developer certificate — so on
+first launch macOS will refuse to open it. To allow it, **either**:
+
+- **System Settings → Privacy & Security**, scroll to the *"FirstPick was blocked…"*
+  notice and click **Open Anyway**, then **Open** in the confirmation dialog; **or**
+- run this once in Terminal:
+  ```bash
+  xattr -dr com.apple.quarantine "/Applications/FirstPick.app"
+  ```
+
+Then launch FirstPick, start a draft in Arena, and it updates live.
+
+> A signed/notarized `.dmg` (no Gatekeeper prompt) and a Homebrew cask are
+> scaffolded but not yet live — they need an Apple Developer account. Maintainers:
+> see [docs/distribution.md](docs/distribution.md).
+
+## Run from source
 
 ```bash
-git clone <your-fork-url> firstpick && cd firstpick
-./gradlew run
+git clone https://github.com/francescolofranco-dev/first-pick firstpick && cd firstpick
+./gradlew run     # needs a full JDK 21, e.g. brew install --cask temurin@21
 ```
 
 Start a draft in Arena and FirstPick updates live.
-
-### Build a macOS app
-
-```bash
-./gradlew packageDmg     # build/compose/binaries/main/dmg/FirstPick-*.dmg
-```
-
-The app is **unsigned** (no paid Apple Developer certificate), so macOS Gatekeeper
-will quarantine it. After dragging it to Applications, clear the quarantine flag:
-
-```bash
-xattr -cr "/Applications/FirstPick.app"
-```
-
-A signed/notarized `.dmg` and a Homebrew cask are wired up but not yet live (they
-need an Apple Developer account). Maintainers: see [docs/distribution.md](docs/distribution.md).
 
 ## How it works
 

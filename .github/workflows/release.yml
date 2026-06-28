@@ -1,8 +1,12 @@
 name: Release
 
-# Builds, signs, notarizes, and publishes a macOS .dmg when a vX.Y.Z tag is pushed.
-# Requires the repo secrets documented in docs/distribution.md. Until those exist
-# (and a tag is pushed) this workflow simply never runs — it's safe to merge now.
+# Builds an UNSIGNED macOS .dmg for both Apple Silicon (arm64) and Intel (x86_64)
+# when a vX.Y.Z tag is pushed, then publishes them to a GitHub Release.
+#
+# The build is unsigned (no Apple Developer certificate), so users clear the
+# Gatekeeper quarantine on first launch — see the README. To upgrade to a signed +
+# notarized build later: add the secrets from docs/distribution.md, then swap the
+# "Build dmg" step for `./gradlew notarizeDmg …` and re-add a cert-import step.
 
 on:
   push:
@@ -13,9 +17,17 @@ permissions:
   contents: write
 
 jobs:
-  release:
-    name: Build, sign, notarize & publish dmg
-    runs-on: macos-latest # Apple Silicon runner → arm64 dmg
+  build:
+    name: Build unsigned dmg (${{ matrix.arch }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-14   # Apple Silicon → arm64
+            arch: arm64
+          - runner: macos-13   # Intel → x86_64
+            arch: x86_64
+    runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v4
 
@@ -28,36 +40,54 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Import Developer ID certificate
-        uses: apple-actions/import-codesign-certs@v3
-        with:
-          p12-file-base64: ${{ secrets.MACOS_CERTIFICATE_P12 }}
-          p12-password: ${{ secrets.MACOS_CERTIFICATE_PWD }}
-
-      - name: Derive version from tag
+      - name: Derive version
         id: ver
-        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          case "$version" in
+            [0-9]*) ;;            # a real vX.Y.Z tag
+            *) version="1.0.0" ;; # workflow_dispatch / non-version ref: just a test build
+          esac
+          echo "version=$version" >> "$GITHUB_OUTPUT"
 
-      - name: Build, sign & notarize dmg
-        env:
-          MACOS_SIGNING_IDENTITY: ${{ secrets.MACOS_SIGNING_IDENTITY }}
-          NOTARIZATION_APPLE_ID: ${{ secrets.NOTARIZATION_APPLE_ID }}
-          NOTARIZATION_PASSWORD: ${{ secrets.NOTARIZATION_PASSWORD }}
-          NOTARIZATION_TEAM_ID: ${{ secrets.NOTARIZATION_TEAM_ID }}
-        run: ./gradlew notarizeDmg -PpackageVersion=${{ steps.ver.outputs.version }} --stacktrace
+      - name: Build dmg
+        run: ./gradlew packageDmg -PpackageVersion=${{ steps.ver.outputs.version }} --stacktrace
 
-      - name: Locate dmg & compute checksum
+      - name: Rename dmg per architecture & checksum
         id: dmg
         run: |
-          dmg=$(find build/compose/binaries -name '*.dmg' | head -n1)
-          if [ -z "$dmg" ]; then echo "No dmg produced" >&2; exit 1; fi
-          echo "path=$dmg" >> "$GITHUB_OUTPUT"
-          shasum -a 256 "$dmg" | tee "$dmg.sha256"
+          src=$(find build/compose/binaries -name '*.dmg' | head -n1)
+          if [ -z "$src" ]; then echo "No dmg produced" >&2; exit 1; fi
+          out="FirstPick-${{ steps.ver.outputs.version }}-${{ matrix.arch }}.dmg"
+          mv "$src" "$out"
+          shasum -a 256 "$out" | tee "$out.sha256"
+          echo "path=$out" >> "$GITHUB_OUTPUT"
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dmg-${{ matrix.arch }}
+          path: |
+            ${{ steps.dmg.outputs.path }}
+            ${{ steps.dmg.outputs.path }}.sha256
+          if-no-files-found: error
+
+  release:
+    name: Publish GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    # Only publish for real tag pushes; workflow_dispatch runs are build-test only.
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - name: Download all dmg artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
 
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            ${{ steps.dmg.outputs.path }}
-            ${{ steps.dmg.outputs.path }}.sha256
+          files: dist/*
           generate_release_notes: true
+          fail_on_unmatched_files: true
