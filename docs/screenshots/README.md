@@ -1,12 +1,16 @@
 # Screenshots
 
-Put launch images here, then enable the gallery in the top-level `README.md`
-(uncomment the table in the "Screenshots" section). Expected filenames:
+Images embedded in the top-level `README.md`:
 
-- `pick-ranking.png` — a pack ranked best-first, with the VALUE score + reasons
-- `deck-builder.png` — the post-draft deck builder options
-- `overlay.gif` — the live overlay during an actual draft (a short GIF carries a launch post)
+- `draft-dashboard.png` — live pick ranking + the full sidebar (hero image)
+- `card-preview.png` — card-image preview on hover
+- `data-source.png` — the 17Lands data-source selector
+- `deck-builder.png` — post-draft deck-builder options
+- `deck-list.png` — the chosen deck laid out by MV/WUBRG with role tags + manabase
+
+To refresh one, recapture and overwrite the file (keep the same name). A short
+`overlay.gif` of the live overlay during a real draft would be a great future add.
 
 Tips:
-- Capture a window with ⌘⇧4 then Space (click the window) for a clean shot with shadow.
-- For a GIF, record with ⌘⇧5 (or Kap / Gifski) and keep it under ~8 MB so it loads in the README.
+- ⌘⇧4 then Space (click a window) for a clean shot with the rounded corners + shadow.
+- For a GIF, record with ⌘⇧5 (or Kap / Gifski) and keep it under ~8 MB so it loads inline.

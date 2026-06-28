@@ -15,21 +15,36 @@ ends, it proposes 2–3 finished decks with a power estimate.
 
 > Unofficial fan project. Not affiliated with or endorsed by Wizards of the Coast.
 
+<p align="center">
+  <img src="docs/screenshots/draft-dashboard.png" width="820" alt="FirstPick live draft dashboard" />
+</p>
+
 ## Screenshots
 
-_Screenshots and a short demo GIF live in [`docs/screenshots/`](docs/screenshots/)._
-Drop the images in, then enable the gallery below by uncommenting it. A short GIF of
-live pack ranking is the single most effective thing for the README and a launch post.
+**Live draft assistant.** Every card in the pack is graded **A+ → F** with a 0–100 value,
+best pick on top, and a confidence banner when the call is close. The sidebar (above) tracks
+your lane, the set's color-pair win rates, the roles your deck still needs, open lanes, your
+mana curve, and your pool — all updating as you pick.
 
-<!-- Suggested captures (filenames the gallery expects):
-       pick-ranking.png  — the pack ranked best-first, with VALUE + reasons
-       deck-builder.png  — the post-draft deck builder options
-       overlay.gif       — the live overlay during an actual draft
+**Hover for the card.** Mouse over any card to see its full image while you read the ranking.
 
-| Live pack ranking | Post-draft deck builder |
-| --- | --- |
-| ![Live pack ranking](docs/screenshots/pick-ranking.png) | ![Deck builder](docs/screenshots/deck-builder.png) |
--->
+<img src="docs/screenshots/card-preview.png" width="320" alt="Card-image preview on hover" />
+
+**Pick your data source.** Score from Premier, Quick, or Traditional 17Lands data — or
+*Auto* to match the format you're drafting.
+
+<img src="docs/screenshots/data-source.png" width="260" alt="17Lands data source selector" />
+
+**Post-draft deck builder.** When the draft ends, get 2–3 buildable decks ranked by power,
+each with a letter tier, archetype, and a win-rate outlook. It favors a clean two-color
+build over a greedy splash.
+
+<img src="docs/screenshots/deck-builder.png" width="820" alt="Post-draft deck builder options" />
+
+**The full deck list.** Each build is laid out by mana value and WUBRG color, with role
+tags (removal · fixing · finisher · draw · evasion), copy counts, and a suggested manabase.
+
+<img src="docs/screenshots/deck-list.png" width="820" alt="Deck list with roles and manabase" />
 
 ## What it does
 
