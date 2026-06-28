@@ -19,3 +19,5 @@ local.properties
 /image*.png
 
 .vscode/
+# Compiled overlay helper (build with native/macos/build.sh)
+/src/main/resources/native/macos/window-locator

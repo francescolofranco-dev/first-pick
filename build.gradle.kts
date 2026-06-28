@@ -83,6 +83,15 @@ tasks.withType<JavaExec>().matching { it.name == "run" }.configureEach {
     environment("FIRSTPICK_DEMO", "1")
 }
 
+// Overlay spike: print MTG Arena's live window bounds (run native/macos/build.sh first).
+//   ./gradlew locateArena
+tasks.register<JavaExec>("locateArena") {
+    group = "verification"
+    description = "Print MTG Arena's window bounds via the bundled CoreGraphics helper (macOS)."
+    mainClass.set("com.firstpick.tools.LocateArenaKt")
+    classpath = sourceSets["main"].runtimeClasspath
+}
+
 // Dev helper: replay a Player.log and print the reconstructed draft.
 //   ./gradlew replay -PlogPath="/abs/path/Player-prev.log"
 tasks.register<JavaExec>("replay") {
