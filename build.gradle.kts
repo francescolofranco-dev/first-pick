@@ -81,6 +81,9 @@ compose.desktop {
 // collection rather than tasks.named (which would resolve too early).
 tasks.withType<JavaExec>().matching { it.name == "run" }.configureEach {
     environment("FIRSTPICK_DEMO", "1")
+    // Overlay spike: `./gradlew run -Ptrack` pins a frame to the live Arena window.
+    // (A project property, not an env var, so it reliably reaches the daemon's JavaExec.)
+    if (project.hasProperty("track")) systemProperty("firstpick.overlayTrack", "true")
 }
 
 // Overlay spike: print MTG Arena's live window bounds (run native/macos/build.sh first).

@@ -12,4 +12,12 @@ internal object DevFlags {
      */
     val demoEnabled: Boolean =
         System.getenv("FIRSTPICK_DEMO") == "1" || System.getProperty("firstpick.demo") == "true"
+
+    /**
+     * Spike: pin a transparent, click-through frame to the live Arena window to prove the
+     * overlay can align to and track the client. Enable with `FIRSTPICK_OVERLAY_TRACK=1`
+     * or `./gradlew run -Ptrack`. Off in the shipped app until the feature lands.
+     */
+    val overlayTrack: Boolean =
+        System.getenv("FIRSTPICK_OVERLAY_TRACK") == "1" || System.getProperty("firstpick.overlayTrack") == "true"
 }

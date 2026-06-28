@@ -15,6 +15,8 @@ import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import com.firstpick.ui.DraftingOverlay
 import com.firstpick.ui.DeckBuilderOverlay
+import com.firstpick.ui.DevFlags
+import com.firstpick.overlay.ArenaOverlayTracker
 import com.firstpick.model.DraftPhase
 import com.firstpick.core.AppPaths
 import com.firstpick.ui.App
@@ -99,5 +101,9 @@ fun main() {
                 }
             }
         }
+
+        // Overlay spike (Phase 1a): pin a transparent, click-through frame to the live
+        // Arena window to verify alignment/tracking. Dev-only — see DevFlags.overlayTrack.
+        if (DevFlags.overlayTrack) ArenaOverlayTracker()
     }
 }
