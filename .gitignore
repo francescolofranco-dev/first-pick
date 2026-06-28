@@ -14,3 +14,6 @@ local.properties
 /fix_*.sh
 /test_*.kt
 /test_*.kts
+
+# Stray pasted screenshots dropped in the repo root
+/image*.png
