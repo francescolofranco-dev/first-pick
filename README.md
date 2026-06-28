@@ -93,10 +93,6 @@ first launch macOS will refuse to open it. To allow it, **either**:
 
 Then launch FirstPick, start a draft in Arena, and it updates live.
 
-> A signed/notarized `.dmg` (no Gatekeeper prompt) and a Homebrew cask are
-> scaffolded but not yet live — they need an Apple Developer account. Maintainers:
-> see [docs/distribution.md](docs/distribution.md).
-
 ## Run from source
 
 ```bash
@@ -145,13 +141,6 @@ run` sets automatically, and the packaged app omits).
 
 The app icon is generated from `packaging/icon/IconGen.java`; rebuild the `.icns` and
 repo logo with `packaging/icon/build-icon.sh` (macOS only).
-
-## Roadmap
-
-- Card-image hover preview (Scryfall images)
-- Signed/notarized `.dmg` + Homebrew cask — *scaffolded, pending Apple enrollment ([docs/distribution.md](docs/distribution.md))*
-- Transparent always-on-top overlay over the Arena window — *implemented, with click-through; polishing*
-- Sealed support; smarter curve-aware deck building
 
 ## Data sources & attribution
 
