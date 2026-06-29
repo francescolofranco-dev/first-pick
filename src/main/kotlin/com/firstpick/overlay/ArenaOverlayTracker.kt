@@ -27,21 +27,32 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberWindowState
 import com.firstpick.ui.MacOverlay
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 
 private const val TRACKER_TITLE = "FirstPick Arena Tracker"
+private const val POLL_MS = 300L
+private const val CAPTURE_DEBOUNCE_MS = 350L
+
+private val DETECTED_COLOR = Color(0xFF38E08B) // green: rectangles found by CV
+private val FALLBACK_COLOR = Color(0xFFFF5C8A) // pink: geometric guess (no capture)
 
 /**
- * Overlay spike (Phase 1a): a transparent, click-through frame pinned to the live MTG
- * Arena window, proving the overlay can align to and track the client as it moves/resizes.
- * Renders nothing when Arena isn't on screen. Coordinates from [WindowLocator] are global
- * display points, the same space Compose window positions use, so they should line up
- * (minor calibration — e.g. Arena's title-bar inset — is a later refinement).
+ * Overlay spike: a transparent, click-through frame pinned to the live MTG Arena window that
+ * marks where each draft-pack card is, so grade badges can sit on the cards.
  *
- * The frame outlines Arena; the corner badge echoes the live bounds so tracking is obvious.
+ * Position/size are tracked cheaply every [POLL_MS] via [WindowLocator] (no permission). The
+ * card rectangles come from [CardDetector] run on a [WindowCapture] frame — but only when the
+ * window *size* changes (the grid is fixed for a given size), so the costly capture never runs
+ * on the per-frame position poll. If capture is unavailable (no Screen Recording permission,
+ * off macOS), it falls back to [PackLayout]'s geometric guess so something still shows.
  */
 @Composable
-fun ArenaOverlayTracker(locator: WindowLocator = WindowLocator()) {
+fun ArenaOverlayTracker(
+    locator: WindowLocator = WindowLocator(),
+    capturer: WindowCapture = WindowCapture(),
+) {
     var bounds by remember { mutableStateOf<WindowBounds?>(null) }
     LaunchedEffect(locator) {
         while (true) {
@@ -58,6 +69,14 @@ fun ArenaOverlayTracker(locator: WindowLocator = WindowLocator()) {
     LaunchedEffect(b) {
         wState.position = WindowPosition(b.x.dp, b.y.dp)
         wState.size = DpSize(b.w.dp, b.h.dp)
+    }
+
+    // Detect the card grid whenever the window size changes (debounced so a drag-resize doesn't
+    // spawn a capture per frame). Null when capture/detection isn't available.
+    var grid by remember { mutableStateOf<CardDetector.Grid?>(null) }
+    LaunchedEffect(b.w, b.h) {
+        delay(CAPTURE_DEBOUNCE_MS)
+        grid = withContext(Dispatchers.IO) { capturer.capture()?.let { CardDetector.detect(it) } }
     }
 
     Window(
@@ -84,8 +103,9 @@ fun ArenaOverlayTracker(locator: WindowLocator = WindowLocator()) {
                     .background(Color(0xCC19211F))
                     .padding(horizontal = 8.dp, vertical = 4.dp)
             ) {
+                val mode = if (grid != null) "CV" else "geom"
                 Text(
-                    "FirstPick overlay · ${b.w}×${b.h} @ ${b.x},${b.y}",
+                    "FirstPick overlay · ${b.w}×${b.h} · $mode",
                     color = Color(0xFF6FD4BC),
                     fontFamily = FontFamily.Monospace,
                     fontSize = 12.sp,
@@ -93,33 +113,51 @@ fun ArenaOverlayTracker(locator: WindowLocator = WindowLocator()) {
                 )
             }
 
-            // Predicted card slots (calibration): outline + index where the model thinks
-            // each pack card is. Default 15 (max P1P1 grid); override with -Dfirstpick.packCards.
-            val count = System.getProperty("firstpick.packCards")?.toIntOrNull() ?: 15
-            for (slot in PackLayout.slots(b.w, b.h, count)) {
-                Box(
-                    Modifier
-                        .offset(slot.x.dp, slot.y.dp)
-                        .size(slot.w.dp, slot.h.dp)
-                        .border(2.dp, Color(0xFFFF5C8A), RoundedCornerShape(6.dp))
-                ) {
-                    Box(
-                        Modifier.align(Alignment.TopStart)
-                            .background(Color(0xCCFF5C8A), RoundedCornerShape(bottomEnd = 6.dp))
-                            .padding(horizontal = 5.dp, vertical = 1.dp)
-                    ) {
-                        Text(
-                            "${slot.index + 1}",
-                            color = Color.White,
-                            fontFamily = FontFamily.Monospace,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                        )
-                    }
+            val g = grid
+            if (g != null) {
+                // CV-detected rectangles, scaled from capture pixels to window points.
+                val sx = b.w.toFloat() / g.imageW
+                val sy = b.h.toFloat() / g.imageH
+                val count = System.getProperty("firstpick.packCards")?.toIntOrNull()
+                    ?: (g.cols.size * g.rows.size)
+                for (card in g.cards(count)) {
+                    CardMarker(
+                        x = (card.x * sx).toInt(), y = (card.y * sy).toInt(),
+                        w = (card.w * sx).toInt(), h = (card.h * sy).toInt(),
+                        label = card.index + 1, color = DETECTED_COLOR,
+                    )
+                }
+            } else {
+                // Fallback: geometric guess (drifts across window sizes) when capture is off.
+                val count = System.getProperty("firstpick.packCards")?.toIntOrNull() ?: 15
+                for (slot in PackLayout.slots(b.w, b.h, count)) {
+                    CardMarker(slot.x, slot.y, slot.w, slot.h, slot.index + 1, FALLBACK_COLOR)
                 }
             }
         }
     }
 }
 
-private const val POLL_MS = 300L
+@Composable
+private fun CardMarker(x: Int, y: Int, w: Int, h: Int, label: Int, color: Color) {
+    Box(
+        Modifier
+            .offset(x.dp, y.dp)
+            .size(w.dp, h.dp)
+            .border(2.dp, color, RoundedCornerShape(6.dp))
+    ) {
+        Box(
+            Modifier.align(Alignment.TopStart)
+                .background(color, RoundedCornerShape(bottomEnd = 6.dp))
+                .padding(horizontal = 5.dp, vertical = 1.dp)
+        ) {
+            Text(
+                "$label",
+                color = Color.Black,
+                fontFamily = FontFamily.Monospace,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+            )
+        }
+    }
+}
