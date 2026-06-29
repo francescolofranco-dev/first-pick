@@ -14,15 +14,6 @@ import java.nio.file.StandardOpenOption
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
-/**
- * Tails an MTGA `Player.log` and emits each complete newline-terminated line as
- * it appears. Tracks a byte cursor so only new bytes are processed, and resets
- * to the start when the file shrinks (Arena writes a fresh log on every restart).
- *
- * Lines are split on `\n` at the byte level so a multi-byte UTF-8 character can
- * never be torn across a poll boundary; an unterminated trailing line is carried
- * over to the next poll.
- */
 open class LogWatcher(
     private val path: Path,
     private val pollInterval: Duration = 250.milliseconds,
@@ -34,7 +25,7 @@ open class LogWatcher(
         while (true) {
             currentCoroutineContext().ensureActive()
             val size = sizeOrZero()
-            if (size < position) { // rotation / restart
+            if (size < position) {
                 position = 0
                 carry = ByteArray(0)
             }
@@ -80,6 +71,6 @@ open class LogWatcher(
     private fun sizeOrZero(): Long = if (Files.exists(path)) Files.size(path) else 0L
 
     companion object {
-        private const val CHUNK = 1 shl 20 // 1 MiB
+        private const val CHUNK = 1 shl 20
     }
 }

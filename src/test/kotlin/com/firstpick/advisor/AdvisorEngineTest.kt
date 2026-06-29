@@ -38,7 +38,6 @@ class AdvisorEngineTest {
         ),
     )
 
-    /** Score a pack, deriving the lane from the pool (as the live app does). */
     private fun run(
         pack: List<RankedCard>,
         pool: List<RankedCard>,
@@ -118,13 +117,12 @@ class AdvisorEngineTest {
 
     @Test
     fun archetypeSynergyRaisesACardThatOverperformsInTheLane() {
-        // Lane is UB (from the pool). A glue card has a much higher win rate in UB.
         val pool = List(6) { card(100 + it, "Pick$it", 0.58, if (it % 2 == 0) "U" else "B") }
         val glue = card(1, "Glue", 0.55, "U", rarity = "common")
         val plain = card(2, "Plain", 0.55, "U", rarity = "common")
         val archetypeRating: (String, String) -> CardRating? = { name, pair ->
             if (name == "Glue" && pair == "UB") {
-                CardRating(name = "Glue", everDrawnWinRate = 0.60, everDrawnGameCount = 1500) // +5% in UB
+                CardRating(name = "Glue", everDrawnWinRate = 0.60, everDrawnGameCount = 1500)
             } else {
                 null
             }
@@ -136,9 +134,7 @@ class AdvisorEngineTest {
 
     @Test
     fun deckNeedsCarryLittleWeightEarlyButMoreLate() {
-        // A needed (on-color) removal spell should jump in value from P1P1 to deep in pack 3,
-        // as the deck-building pressure ramps up — early it tracks pure card value.
-        val pool = List(6) { card(100 + it, "BlueGuy$it", 0.58, "U") } // lane includes U; no removal in pool
+        val pool = List(6) { card(100 + it, "BlueGuy$it", 0.58, "U") }
         val killMeta: (String) -> CardMeta? = { name ->
             if (name == "Kill") CardMeta("Kill", cmc = 3, isCreature = false, isLand = false, isRemoval = true) else null
         }

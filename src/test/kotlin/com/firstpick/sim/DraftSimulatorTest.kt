@@ -34,7 +34,6 @@ class DraftSimulatorTest {
         val parser = EventParser()
         val snaps = lines.map { parser.parse(it) }
 
-        // 45 picks + a final complete snapshot.
         assertEquals(DraftSimulator.PACKS * DraftSimulator.CARDS_PER_PACK + 1, lines.size)
         assertTrue(snaps.all { it is DraftEvent.Snapshot }, "every simulated line must parse to a Snapshot")
 
@@ -45,7 +44,6 @@ class DraftSimulatorTest {
         assertEquals(15, first.packCards.size)
         assertTrue(first.pool.isEmpty())
 
-        // The pool grows monotonically as picks are made.
         val poolSizes = snaps.map { (it as DraftEvent.Snapshot).pool.size }
         assertEquals(poolSizes.sorted(), poolSizes, "pool should only grow")
 

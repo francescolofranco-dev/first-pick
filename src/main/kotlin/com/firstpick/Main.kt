@@ -31,7 +31,6 @@ import java.nio.file.Path
 fun main() {
     AppPaths.ensureDirectories()
 
-    // Allow pointing at a custom log (custom Arena install, or replaying a capture).
     val logPath = System.getenv("FIRSTPICK_LOG")?.let(Path::of) ?: AppPaths.defaultPlayerLog
 
     val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
@@ -39,7 +38,6 @@ fun main() {
     viewModel.start()
 
     application {
-        // Smoke-test hook: `FIRSTPICK_SMOKE=1 ./gradlew run` opens then self-exits.
         if (System.getenv("FIRSTPICK_SMOKE") == "1") {
             LaunchedEffect(Unit) {
                 delay(4000)
@@ -74,9 +72,6 @@ fun main() {
         if (isOverlayOpen) {
             val isDrafting = state.phase == DraftPhase.DRAFTING || state.phase == DraftPhase.IDLE
             if (isDrafting) {
-                // Embedded on-card grades pinned to Arena. Each pack card carries its image so
-                // the overlay can recognize which on-screen card is which (Arena's draw order
-                // isn't derivable from the log). This replaces the old standalone list panel.
                 val cards = remember(state.packCards) {
                     state.packCards.map { OverlayCard(it.value, it.imageUrl, it.name) }
                 }
@@ -93,9 +88,6 @@ fun main() {
                     undecorated = true,
                     transparent = true,
                     alwaysOnTop = true,
-                    // Don't steal keyboard/mouse focus from Arena. Mouse clicks still
-                    // reach this window's controls (the checklist needs them); we only
-                    // want to avoid grabbing focus away from the game.
                     focusable = false,
                 ) {
                     DeckBuilderOverlay(
@@ -108,8 +100,6 @@ fun main() {
             }
         }
 
-        // Dev calibration: with no draft/overlay open, show the tracker's numbered card boxes
-        // to verify alignment against a live Arena window. See DevFlags.overlayTrack.
         else if (DevFlags.overlayTrack) ArenaOverlayTracker()
     }
 }

@@ -27,11 +27,8 @@ class DraftTrackerTest {
     @Test
     fun reconstructsQuickDraftFromSnapshots() {
         val tracker = DraftTracker()
-        // P1P1: 3-card pack, empty pool
         tracker.onLine(snapshotLine(0, 0, listOf(11, 12, 13), emptyList()))
-        // P1P2: picked 11, 2-card pack
         tracker.onLine(snapshotLine(0, 1, listOf(12, 13), listOf(11)))
-        // P1P3: picked 12, 1-card pack
         tracker.onLine(snapshotLine(0, 2, listOf(13), listOf(11, 12)))
 
         val s = tracker.state.value
@@ -70,7 +67,6 @@ class DraftTrackerTest {
     fun resetsWhenANewEventStarts() {
         val tracker = DraftTracker()
         tracker.onLine(snapshotLine(2, 5, listOf(50), listOf(1, 2, 3, 4, 5)))
-        // A brand new draft event begins — pool must not carry over.
         tracker.onLine(
             snapshotLine(0, 0, listOf(80, 81), emptyList(), eventName = "QuickDraftEmblem_TLA_20260701"),
         )
@@ -102,21 +98,19 @@ class DraftTrackerTest {
     @Test
     fun eventJoinedSetsFormatAndDoesNotResetEmptyPacks() {
         val tracker = DraftTracker()
-        // Join PremiumDraft event
         tracker.onLine("[UnityCrossThreadLogger]==> Event.Join {\"EventName\":\"PremiumDraft_MKM_20240206\"}")
         var s = tracker.state.value
         assertEquals(DraftFormat.PREMIER, s.format)
         assertEquals("MKM", s.setCode)
         assertEquals("PremiumDraft_MKM_20240206", s.eventName)
 
-        // Receive PackSeen without EventName (Draft.Notify simulation)
         tracker.onLine("[UnityCrossThreadLogger]==> Draft.Notify {\"SelfPack\":1,\"SelfPick\":2,\"PackCards\":\"100,200,300\"}")
         s = tracker.state.value
-        assertEquals(DraftFormat.PREMIER, s.format) // retained!
-        assertEquals("MKM", s.setCode) // retained!
-        assertEquals("PremiumDraft_MKM_20240206", s.eventName) // retained!
-        assertEquals(1, s.pack) // SelfPack=1 -> pack=1
-        assertEquals(2, s.pick) // SelfPick=2 -> pick=2
+        assertEquals(DraftFormat.PREMIER, s.format)
+        assertEquals("MKM", s.setCode)
+        assertEquals("PremiumDraft_MKM_20240206", s.eventName)
+        assertEquals(1, s.pack)
+        assertEquals(2, s.pick)
         assertEquals(listOf(100, 200, 300), s.packCards)
     }
 }

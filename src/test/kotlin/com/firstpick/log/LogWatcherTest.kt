@@ -26,15 +26,12 @@ class LogWatcherTest {
             watcher.lines(fromStart = true).collect { received.add(it) }
         }
         try {
-            // Existing content is replayed.
             waitUntil { received.size >= 2 }
             assertEquals(listOf("alpha", "beta"), received.toList())
 
-            // New appended line is tailed.
             Files.writeString(file, "gamma\n", StandardOpenOption.APPEND)
             waitUntil { received.contains("gamma") }
 
-            // Truncation (Arena restart) resets the cursor and re-reads.
             Files.writeString(file, "delta\n")
             waitUntil { received.contains("delta") }
             assertTrue(received.contains("delta"))

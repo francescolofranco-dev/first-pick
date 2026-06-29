@@ -16,8 +16,6 @@ class SignalsEngineTest {
 
     @Test
     fun lateHighQualityCardMarksColorOpen() {
-        // Red card (ATA 2.0) still in the pack at pick 7 -> red is flowing.
-        // Blue card seen at pick 1 (earlier than its ATA) -> not a signal.
         val seen = mapOf(1 to 7 to listOf(1), 1 to 1 to listOf(2))
         val resolve: (Int) -> RankedCard = { id ->
             when (id) {
@@ -41,7 +39,7 @@ class SignalsEngineTest {
     @Test
     fun belowBaselineQualityContributesNothing() {
         val seen = mapOf(1 to 9 to listOf(1))
-        val resolve: (Int) -> RankedCard = { rc(1, "B", 0.46, 1.0) } // below 0.50 baseline
+        val resolve: (Int) -> RankedCard = { rc(1, "B", 0.46, 1.0) }
         assertTrue(SignalsEngine.openLanes(seen, resolve).isEmpty())
     }
 }

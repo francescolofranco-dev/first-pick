@@ -127,7 +127,6 @@ private fun Header(
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
             if (state.simulating) {
-                // Pause / resume — keeps the in-progress demo's state.
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
@@ -142,7 +141,6 @@ private fun Header(
                         color = MaterialTheme.colorScheme.primary,
                     )
                 }
-                // Exit the demo and return to the live Arena log.
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
@@ -180,7 +178,6 @@ private fun Header(
     }
 }
 
-/** Dropdown to pick which 17Lands data source feeds the advisor (see [RatingsFormat]). */
 @Composable
 private fun FormatSelector(current: String, onSelect: (String) -> Unit) {
     var expanded by remember { mutableStateOf(false) }

@@ -2,13 +2,6 @@ package com.firstpick.core
 
 import java.time.Instant
 
-/**
- * Minimal dependency-free logger (stderr). The app has no logging framework and a
- * desktop tool doesn't need one; this just replaces silent `runCatching{}.getOrNull()`
- * swallowing in the network layer with a visible, level-gated trail.
- *
- * Threshold via `FIRSTPICK_LOG_LEVEL` (DEBUG|INFO|WARN|ERROR); defaults to INFO.
- */
 object Log {
     enum class Level { DEBUG, INFO, WARN, ERROR }
 

@@ -1,11 +1,3 @@
-// Captures the MTG Arena window to a PNG via ScreenCaptureKit (CGWindowListCreateImage is
-// obsoleted in macOS 15+). Needs Screen Recording permission. Prints JSON result.
-//   window-capture [AppName] <outPath>
-//
-// SCK's real capture path talks to the WindowServer. A plain CLI tool is a background-only
-// process with no WindowServer connection, so once capture is actually permitted it aborts
-// with `CGS_REQUIRE_INIT (did_initialize)`. Becoming an .accessory NSApplication establishes
-// the connection, and running the main run loop lets SCK's async capture pump to completion.
 import ScreenCaptureKit
 import CoreGraphics
 import ImageIO

@@ -7,11 +7,6 @@ import com.firstpick.core.AppPaths
 import java.awt.MouseInfo
 import java.nio.file.Files
 
-/**
- * Queries the position and size of the MTGA window on macOS using a compiled Swift binary
- * (which queries the Quartz window server directly and requires no accessibility/assistive permissions).
- * Falls back to AppleScript if Swift compilation or execution fails.
- */
 fun getMTGAWindowBounds(): java.awt.Rectangle? {
     val os = System.getProperty("os.name").lowercase()
     if (!os.contains("mac")) return null
@@ -59,10 +54,8 @@ fun getMTGAWindowBounds(): java.awt.Rectangle? {
             }
         }
     } catch (e: Exception) {
-        // Fall through to AppleScript fallback
     }
 
-    // Fallback AppleScript
     return try {
         val script = "tell application \"System Events\" to tell process \"MTGA\" to get {position of window 1, size of window 1}"
         val process = ProcessBuilder("osascript", "-e", script).start()
@@ -76,7 +69,6 @@ fun getMTGAWindowBounds(): java.awt.Rectangle? {
     }
 }
 
-/** A modifier that enables dragging a borderless Swing/Compose window by this surface. */
 fun Modifier.windowDraggable(window: java.awt.Window): Modifier = this.pointerInput(window) {
     var dx = 0
     var dy = 0

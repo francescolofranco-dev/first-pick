@@ -6,7 +6,6 @@ import kotlinx.serialization.json.Json
 import java.nio.file.Files
 import kotlin.io.path.exists
 
-/** Persisted overlay + app preferences, stored as JSON at [AppPaths.configFile]. */
 @Serializable
 data class OverlaySettings(
     val x: Int = 100,
@@ -18,9 +17,7 @@ data class OverlaySettings(
     val gridColGap: Float = 0.150f,
     val gridRowGap: Float = 0.275f,
     val isLocked: Boolean = false,
-    /** Selected 17Lands data source ([RatingsFormat] choice); null = the default. */
     val ratingsFormatOverride: String? = null,
-    /** Let mouse clicks pass through the drafting overlay to Arena beneath it. */
     val clickThrough: Boolean = true,
 ) {
     companion object {

@@ -18,7 +18,6 @@ class DeckBuilderTest {
         rating = CardRating(name = name, mtgaId = id, color = color, everDrawnWinRate = gih, everDrawnGameCount = 2000),
     )
 
-    /** A pool: 24 strong UW cards plus 8 weak red cards. */
     private fun pool(): List<RankedCard> = buildList {
         repeat(12) { add(card(it, "W$it", 0.58, "W")) }
         repeat(12) { add(card(100 + it, "U$it", 0.58, "U")) }
@@ -33,15 +32,12 @@ class DeckBuilderTest {
     fun buildsTheStrongestPairFirst() {
         val options = DeckBuilder.build(pool(), metrics, meta)
         assertTrue(options.isNotEmpty())
-        // WU is the deep, strong pair; it should be the top option.
         assertEquals("WU", options.first().basePair)
         assertTrue(options.first().powerScore > options.last().powerScore)
     }
 
     @Test
     fun fillsToTwentyThreeSpellsAndSeventeenLandsNeverPadding() {
-        // A deep two-color pool must yield the golden ratio: 23 spells + 17 lands = 40,
-        // never a thin spell count padded out with extra basics.
         val top = DeckBuilder.build(pool(), metrics, meta).first()
         assertEquals(23, top.spells.size, "a complete deck runs 23 spells")
         assertEquals(17, top.landCount, "a complete deck runs 17 lands")
@@ -50,16 +46,12 @@ class DeckBuilderTest {
 
     @Test
     fun skipsPairsWithoutEnoughPlayables() {
-        // Only red cards (8) — no two-color pair is castable (the second color is absent).
         val redOnly = (0 until 8).map { card(it, "R$it", 0.5, "R") }
         assertTrue(DeckBuilder.build(redOnly, metrics, meta).isEmpty())
     }
 
     @Test
     fun neverOffersABalancedThreeColorDeck() {
-        // A deep, equally-strong W/U/B pool: each two-color base is a complete deck on its
-        // own, so the builder must offer clean two-color decks — never a balanced tri-color
-        // pile (its mana base is too weak in 40 cards).
         val pool = buildList {
             listOf("W", "U", "B").forEachIndexed { ci, col ->
                 repeat(12) { i -> add(card(ci * 100 + i, "$col$i", 0.60 - 0.005 * i, col)) }
@@ -75,9 +67,6 @@ class DeckBuilderTest {
 
     @Test
     fun topsUpAShortBaseWithACappedSingleColorSplash() {
-        // A short WU base (so it can't reach 23 alone) plus a few strong off-color black
-        // cards and fixing: the build should top up to 23 with a small B splash — still a
-        // two-color base, splash labeled separately, never more than a handful of cards.
         val pool = buildList {
             repeat(9) { add(card(it, "W$it", 0.56, "W")) }
             repeat(9) { add(card(100 + it, "U$it", 0.56, "U")) }
@@ -95,8 +84,6 @@ class DeckBuilderTest {
 
     @Test
     fun capsCopiesOfMediocreCards() {
-        // Four copies of an above-mean-but-not-premium card (z≈0.3 -> cap 2), plus enough
-        // weaker on-color cards to fill the deck. The build must run only 2, never all four.
         val pool = buildList {
             repeat(4) { add(card(it, "Dup", 0.56, "W")) }
             repeat(11) { add(card(100 + it, "W$it", 0.50, "W")) }
@@ -110,8 +97,6 @@ class DeckBuilderTest {
 
     @Test
     fun shapesAManaCurveInsteadOfStackingTopWinRates() {
-        // Four-drops have the best win rates, so a naive "take the 23 best" build would be
-        // top-heavy with too few early plays. A real curve keeps cheap creatures.
         val metaMap = mutableMapOf<String, CardMeta>()
         fun creature(id: Int, name: String, gih: Double, color: String, cmc: Int): RankedCard {
             metaMap[name] = CardMeta(name, cmc = cmc, isCreature = true, isLand = false)
@@ -133,9 +118,6 @@ class DeckBuilderTest {
 
     @Test
     fun everyDeckContainsOnlyItsDeclaredColors() {
-        // A 5-color soup with no fixing. Whatever builds are offered, each must be castable:
-        // every spell's colors must fall within that build's declared color identity — no
-        // off-color rainbow filler jammed in to reach 23 cards.
         val pool = buildList {
             repeat(8) { add(card(it, "W$it", 0.55, "W")) }
             repeat(8) { add(card(20 + it, "U$it", 0.55, "U")) }
@@ -160,8 +142,6 @@ class DeckBuilderTest {
 
     @Test
     fun keepsTheDeckCreatureDenseDespiteHighWinRateSpells() {
-        // Non-creature spells have the higher win rates here; a naive build would run a
-        // dozen of them and far too few creatures. The deck must stay creature-dense.
         val metaMap = mutableMapOf<String, CardMeta>()
         fun mk(id: Int, name: String, gih: Double, color: String, cmc: Int, creature: Boolean): RankedCard {
             metaMap[name] = CardMeta(name, cmc = cmc, isCreature = creature, isLand = false)

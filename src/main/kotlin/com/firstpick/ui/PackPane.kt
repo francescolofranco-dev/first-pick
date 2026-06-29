@@ -59,7 +59,6 @@ internal fun PackPane(state: DraftUiState, onSimulate: (String) -> Unit = {}) = 
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
             )
-            // The demo draft is a dev-only aid (see DevFlags) — hidden in the shipped app.
             if (DevFlags.demoEnabled && state.phase == DraftPhase.IDLE && !state.simulating) {
                 Text("— or try a demo draft —", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -76,7 +75,6 @@ internal fun PackPane(state: DraftUiState, onSimulate: (String) -> Unit = {}) = 
             contentPadding = PaddingValues(vertical = 2.dp),
             verticalArrangement = Arrangement.spacedBy(5.dp),
         ) {
-            // Composite key: grpId can repeat in cube/special packs; rank keeps it unique.
             items(state.packCards, key = { "${it.grpId}#${it.rank}" }) { PackRow(it) }
         }
     }
@@ -97,7 +95,6 @@ private fun DemoSetButton(set: String, onClick: () -> Unit) {
     }
 }
 
-/** Flags when the top pick isn't clearly ahead — "use your judgment". */
 @Composable
 private fun ConfidenceBanner(cards: List<PackCardUi>) {
     val confidence = Confidence.of(cards.mapNotNull { it.value })

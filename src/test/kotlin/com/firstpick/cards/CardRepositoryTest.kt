@@ -17,7 +17,7 @@ class CardRepositoryTest {
             listOf(
                 rating(1, "Alpha", 0.60),
                 rating(2, "Beta", 0.55),
-                rating(3, "Gamma", null), // unrated -> last
+                rating(3, "Gamma", null),
             ),
         )
         val ranked = repo.rankPack(listOf(3, 2, 1))
@@ -30,7 +30,7 @@ class CardRepositoryTest {
         repo.index(
             listOf(
                 rating(1, "Solid", 0.56, games = 5000),
-                rating(2, "Mirage", 0.99, games = 10), // tiny sample -> unreliable
+                rating(2, "Mirage", 0.99, games = 10),
             ),
         )
         val ranked = repo.rankPack(listOf(2, 1))
@@ -40,7 +40,6 @@ class CardRepositoryTest {
     @Test
     fun resolvesUnmatchedGrpIdByNameFallback() {
         val alpha = rating(1, "Alpha", 0.60)
-        // grpId 999 isn't an mtga_id, but the name resolver maps it to "Alpha".
         val repo = CardRepository(nameResolver = { if (it == 999) "Alpha" else null })
         repo.index(listOf(alpha))
         val resolved = repo.resolve(999)

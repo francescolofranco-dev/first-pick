@@ -42,10 +42,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.firstpick.advisor.ValueBreakdown
 
-/**
- * The headline pick signal: a color-coded letter grade with the raw 0–100 value
- * beneath it. Grade, color, and value all derive from the same bands (see Theme).
- */
 @Composable
 fun GradeBadge(value: Double?, modifier: Modifier = Modifier, size: Dp = 40.dp) {
     val color = valueTierColor(value)
@@ -87,7 +83,6 @@ fun Pip(color: Char, size: Dp = 16.dp) {
     }
 }
 
-/** Loads the bundled official Scryfall mana symbol SVG for a color. */
 @Composable
 private fun manaPainter(color: Char): Painter? {
     val density = LocalDensity.current
@@ -162,7 +157,6 @@ internal fun Panel(title: String, tooltip: String? = null, content: @Composable 
     }
 }
 
-/** Wraps content so hovering it shows the card's art (Scryfall image), loaded lazily. */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CardPreview(imageUrl: String?, modifier: Modifier = Modifier, content: @Composable () -> Unit) {

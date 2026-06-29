@@ -16,11 +16,6 @@ import java.nio.file.Path
 import java.time.Duration
 import java.util.concurrent.ConcurrentHashMap
 
-/**
- * Loads card art (Scryfall image URLs from 17Lands) for the hover preview. Disk-
- * cached under the app cache dir and memoized in-process, so each card downloads
- * at most once. Decodes via Skia (bundled with Compose Desktop).
- */
 object CardImageLoader {
     private val http: HttpClient = HttpClient.newBuilder()
         .connectTimeout(Duration.ofSeconds(15))
@@ -36,17 +31,10 @@ object CardImageLoader {
             bitmap?.also { memory[url] = it }
         }
 
-    /**
-     * Load a card image as an AWT [BufferedImage] for pixel work (the overlay's card
-     * recognition), reusing the same on-disk cache as the hover previews so nothing
-     * re-downloads. Decodes via ImageIO. Returns null on a blank URL or any failure.
-     */
     suspend fun loadBufferedImage(url: String, cacheDir: Path = AppPaths.cacheDir): java.awt.image.BufferedImage? =
         withContext(Dispatchers.IO) {
             if (url.isBlank()) return@withContext null
             val bytes = cachedBytes(url, cacheDir) ?: return@withContext null
-            // Log failures (ImageIO returns null for unsupported/corrupt data without throwing),
-            // so a card silently missing its overlay grade is diagnosable.
             val img = runCatching { javax.imageio.ImageIO.read(java.io.ByteArrayInputStream(bytes)) }
                 .onFailure { com.firstpick.core.Log.warn("CardImageLoader", "decode failed for $url: $it") }
                 .getOrNull()

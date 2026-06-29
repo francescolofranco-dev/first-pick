@@ -3,7 +3,6 @@ package com.firstpick.advisor
 import com.firstpick.cards.CardMeta
 import kotlin.math.min
 
-/** A snapshot of the pool's "backbone" — the roles a balanced limited deck needs. */
 data class PoolNeeds(
     val creatures: Int,
     val twoDrops: Int,
@@ -13,12 +12,6 @@ data class PoolNeeds(
     val topEnd: Int,
     val poolSize: Int,
 ) {
-    /**
-     * Extrapolate a current role count to a full deck, shrunk toward the role's
-     * expected pace so tiny early pools don't produce wild estimates (e.g. one
-     * removal at pool 2 no longer implies "22 removal"). [target] is the role's
-     * full-draft goal, which doubles as the prior we shrink toward.
-     */
     fun projected(count: Int, totalPicks: Int, target: Double): Double {
         if (poolSize < 1) return count.toDouble()
         val priorRate = target / totalPicks
@@ -27,7 +20,6 @@ data class PoolNeeds(
         return rate * totalPicks
     }
 
-    /** Human-readable list of what the deck is still short on (for the UI). */
     fun activeNeeds(totalPicks: Int): List<String> = buildList {
         if (projected(removal, totalPicks, DeckNeeds.TARGET_REMOVAL) < DeckNeeds.TARGET_REMOVAL) add("Removal")
         if (projected(creatures, totalPicks, DeckNeeds.TARGET_CREATURES) < DeckNeeds.TARGET_CREATURES) add("Creatures")
@@ -56,16 +48,8 @@ data class PoolNeeds(
     }
 }
 
-/** A card's additive deck-needs bonus (in value points, pre-ramp) plus the reasons that fired. */
 data class NeedsResult(val points: Double, val reasons: List<String>)
 
-/**
- * Scores how well a card fills the pool's current gaps as an ADDITIVE point bonus
- * (0 = neutral). The advisor scales it by draft progress, so early picks stay
- * value-driven and the deck-building pressure ramps up mid/late. Additive (not a
- * multiplier on the whole value) so the boost is a fixed, interpretable slot-filling
- * premium rather than an amplification of the arbitrary 50-point midpoint.
- */
 object DeckNeeds {
     const val TARGET_REMOVAL = 3.0
     const val REMOVAL_SATURATION = 6
@@ -76,10 +60,8 @@ object DeckNeeds {
     const val TARGET_FINISHERS = 2.0
     const val TOP_HEAVY_THRESHOLD = 4
 
-    /** Shrink strength for [PoolNeeds.projected] (picks of prior weight). */
     const val PROJECTION_PRIOR = 8.0
 
-    // Additive point bonuses/penalties (before the draft-progress ramp).
     private const val PTS_NEEDS_REMOVAL = 9.0
     private const val PTS_REMOVAL_SATURATED = -7.0
     private const val PTS_NEEDS_CREATURES = 5.0

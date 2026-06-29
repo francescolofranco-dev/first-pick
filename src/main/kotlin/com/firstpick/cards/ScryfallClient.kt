@@ -20,14 +20,6 @@ import java.time.Duration
 import java.time.Instant
 import kotlin.math.roundToInt
 
-/**
- * Fetches a set's cards from Scryfall to recover mana values, type lines, and the
- * functional roles (removal/fixing/finisher/evasion/draw) the advisor's deck-needs
- * logic depends on. Removal, evasion, and draw use Scryfall's curated oracle tags
- * (`otag:`), with an oracle-text heuristic only as a day-one fallback; fixing keys off
- * Scryfall's produced-mana data; finisher is a curve heuristic (no curated tag exists).
- * Cached per set for a week. Polite: descriptive User-Agent and a short delay between pages.
- */
 class ScryfallClient(
     private val cacheDir: Path = AppPaths.cacheDir,
     private val staleness: Duration = Duration.ofDays(7),
@@ -63,7 +55,6 @@ class ScryfallClient(
         @SerialName("produced_mana") val producedMana: List<String> = emptyList(),
     )
 
-    /** Cached, role-annotated card facts. */
     @Serializable
     private data class MetaDto(
         val name: String,
@@ -77,16 +68,8 @@ class ScryfallClient(
         val draw: Boolean,
     )
 
-    /**
-     * Map of normalized card name -> [CardMeta] for the given set. When [names] is given
-     * (the 17Lands card list), metadata is fetched by name via Scryfall's collection
-     * endpoint so bonus-sheet cards a `set:` query misses (e.g. OTJ's *The Big Score*) are
-     * still covered; otherwise it falls back to a `set:` search.
-     */
     suspend fun setMeta(set: String, names: Collection<String> = emptyList()): Map<String, CardMeta> = withContext(Dispatchers.IO) {
         Files.createDirectories(cacheDir)
-        // Cache version bumped (v5) so the by-name fetch (which adds bonus-sheet cards and
-        // their mana values) re-derives immediately rather than waiting out staleness.
         val cache = cacheDir.resolve("scryfall5_${set.uppercase()}.json")
         val dtos: List<MetaDto> = if (isFresh(cache)) {
             runCatching { json.decodeFromString(LIST_SERIALIZER, Files.readString(cache)) }.getOrDefault(emptyList())
@@ -111,23 +94,16 @@ class ScryfallClient(
     )
 
     private fun build(set: String, names: Collection<String>): List<MetaDto>? {
-        // Prefer the authoritative 17Lands card list (covers bonus sheets); fall back to a
-        // `set:` search when we have no names (e.g. a meta-only load before ratings arrive).
         val cards = (if (names.isNotEmpty()) fetchByNames(names) else null)
             ?: searchCards("set:${set.lowercase()} game:arena unique:cards")
             ?: return null
         val q = "set:${set.lowercase()}"
-        // Scryfall's curated functional (oracle) tags — the opinionated source for these
-        // roles, more accurate than an oracle-text guess. Scoped to the main set; bonus-sheet
-        // cards fall back to the oracle-text heuristic in [classifyRoles]. (Fixing keys off
-        // Scryfall's produced-mana data; finisher has no curated tag, so stays heuristic.)
         val removalNames = taggedNames("$q otag:removal")
         val evasionNames = taggedNames("$q otag:evasion")
         val drawNames = taggedNames("$q otag:draw")
         return cards.map { dtoOf(it, removalNames, evasionNames, drawNames) }
     }
 
-    /** Fetch full card objects by name via Scryfall's collection endpoint (batched ≤75). */
     private fun fetchByNames(names: Collection<String>): List<Card>? {
         val ids = names.map { frontName(it) }.filter { it.isNotEmpty() }.distinct()
         if (ids.isEmpty()) return null
@@ -142,7 +118,6 @@ class ScryfallClient(
         return out.takeIf { anySucceeded }
     }
 
-    /** POST one batch of name identifiers; returns the resolved cards (missing names dropped). */
     private fun postCollection(names: List<String>): List<Card>? {
         val body = json.encodeToString(CollectionRequest.serializer(), CollectionRequest(names.map { Identifier(it) }))
         for (attempt in 1..SeventeenLandsClient.MAX_ATTEMPTS) {
@@ -204,7 +179,6 @@ class ScryfallClient(
         return out
     }
 
-    /** GET one search page with retry/backoff + logging (Scryfall data is optional). */
     private fun getPage(url: String): SearchPage? {
         for (attempt in 1..SeventeenLandsClient.MAX_ATTEMPTS) {
             val (page, failure) = getPageOnce(url)
@@ -228,7 +202,6 @@ class ScryfallClient(
             .GET()
             .build()
         val resp = http.send(request, HttpResponse.BodyHandlers.ofString())
-        // A search with zero matches returns 404; treat as an empty page, not an error.
         when (resp.statusCode()) {
             200 -> json.decodeFromString<SearchPage>(resp.body()) to null
             404 -> SearchPage() to null
@@ -249,14 +222,10 @@ class ScryfallClient(
         private const val TAG = "Scryfall"
         private const val MAX_PAGES = 6
         private const val PAGE_DELAY_MS = 120L
-        private const val COLLECTION_BATCH = 75 // Scryfall's max identifiers per collection request
+        private const val COLLECTION_BATCH = 75
         private val LIST_SERIALIZER = ListSerializer(MetaDto.serializer())
         private val EVASION_RE = Regex("flying|menace|can't be blocked|skulk|shadow|intimidate|horsemanship")
 
-        // Interaction that answers a CREATURE/permanent — deliberately NOT matching
-        // damage/effects aimed only at a player (e.g. "deals 1 damage to target player",
-        // "to each opponent"), which is reach/burn-to-face, not removal. The curated
-        // otag:removal tag remains the primary signal; this is the fallback.
         private val REMOVAL_RE = Regex(
             "(destroy|exile) target (creature|permanent|artifact|enchantment|planeswalker|nonland)" +
                 "|deals \\d+ damage to (any target|target creature|each creature|all creatures|target permanent|target planeswalker|that creature)" +
@@ -265,11 +234,6 @@ class ScryfallClient(
                 "|each (opponent|player) sacrifices",
         )
 
-        /**
-         * Derive the advisor's functional roles from a card's facts. Extracted (and
-         * `internal`) so the heuristics that drive deck-needs can be unit-tested
-         * without the network. [removalTagged] = Scryfall's curated `otag:removal`.
-         */
         internal fun classifyRoles(
             typeLine: String,
             oracleText: String,
@@ -285,14 +249,10 @@ class ScryfallClient(
             val isLand = "land" in type
             val isCreature = "creature" in type
             val producedColors = producedMana.filter { it.length == 1 && it[0] in "WUBRG" }.toSet()
-            // Curated Scryfall otag first, oracle-text heuristic as a fallback (for cards
-            // the tagger hasn't reached yet, e.g. a brand-new set on release day).
             val evasion = evasionTagged || (isCreature && EVASION_RE.containsMatchIn(text))
             val removal = removalTagged || REMOVAL_RE.containsMatchIn(text)
             val draw = drawTagged ||
                 ("draw a card" in text || "draw two cards" in text || "draws a card" in text)
-            // Fixing already keys off Scryfall's produced-mana data (≈ produces>=2);
-            // finisher has no curated tag, so it's an intentional curve/board heuristic.
             val fixing = (producedColors.size >= 2) ||
                 ("any color" in text) ||
                 ("treasure" in text && "create" in text)
@@ -302,7 +262,6 @@ class ScryfallClient(
     }
 }
 
-/** Functional roles derived from a card's facts (see [ScryfallClient.classifyRoles]). */
 internal data class CardRoleFlags(
     val creature: Boolean,
     val land: Boolean,

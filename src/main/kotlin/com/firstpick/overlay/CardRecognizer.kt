@@ -3,21 +3,7 @@ package com.firstpick.overlay
 import java.awt.RenderingHints
 import java.awt.image.BufferedImage
 
-/**
- * Identifies which detected card rectangle is which card, by matching each rect's art against
- * the known pack cards' reference images.
- *
- * This is required because MTG Arena draws the pack in a different, non-derivable order than the
- * log's pack array — so we can't place grades by position, we have to recognize the art (the
- * approach Untapped uses). It's a *constrained* match: we already know the N cards in the pack
- * (from the log), so we only assign N detected rects to those N candidates.
- *
- * Signature = a horizontal + vertical difference-hash of the card's art window (robust to scale
- * and the MTGA-vs-Scryfall rendering difference) plus a coarse color fingerprint (so cards in a
- * same-art-style cycle still separate by palette). Validated 13/13 on a real BLB P1P1 frame.
- */
 object CardRecognizer {
-    // Art window as fractions of a card (standard MTG frame): below the title, above the type line.
     private const val AX0 = 0.08
     private const val AX1 = 0.92
     private const val AY0 = 0.11
@@ -26,10 +12,8 @@ object CardRecognizer {
 
     class Signature(val bits: BooleanArray, val color: FloatArray)
 
-    /** Signature of a full reference card image (cropped to its art window). */
     fun ofCard(card: BufferedImage): Signature = ofRegion(card, 0, 0, card.width, card.height)
 
-    /** Signature of a card occupying [rx,ry,rw,rh] within [frame]. */
     fun ofRegion(frame: BufferedImage, rx: Int, ry: Int, rw: Int, rh: Int): Signature {
         val ax = (rx + AX0 * rw).toInt().coerceIn(0, frame.width - 1)
         val ay = (ry + AY0 * rh).toInt().coerceIn(0, frame.height - 1)
@@ -57,11 +41,6 @@ object CardRecognizer {
         return ham + COLOR_WEIGHT * c
     }
 
-    /**
-     * Assign each rect to a candidate (rect.index -> candidate index). [refs] is parallel to the
-     * candidate list; a null entry (no reference image) is skipped. Globally greedy: take the
-     * lowest-distance rect/candidate pair first, so one weak match can't cascade.
-     */
     fun match(frame: BufferedImage, rects: List<CardDetector.CardRect>, refs: List<Signature?>): Map<Int, Int> {
         if (rects.isEmpty() || refs.all { it == null }) return emptyMap()
         val rectSigs = rects.associate { it.index to ofRegion(frame, it.x, it.y, it.w, it.h) }

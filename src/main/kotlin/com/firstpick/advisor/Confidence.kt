@@ -1,15 +1,9 @@
 package com.firstpick.advisor
 
-/** How clearly the top pick stands out from the rest of the pack. */
 enum class ConfidenceLevel { CLEAR, LEAN, TOSS_UP }
 
 data class PickConfidence(val level: ConfidenceLevel, val gap: Double, val contenders: Int)
 
-/**
- * Turns the spread of pack VALUEs into a confidence read. When the top picks are
- * within noise of each other the advisor should admit it ("toss-up — your call")
- * rather than imply false precision.
- */
 object Confidence {
     const val TOSS_UP_GAP = 3.0
     const val LEAN_GAP = 7.0

@@ -14,21 +14,12 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
 
-/**
- * Ranks one real pack end-to-end: reconstruct a pack from a log, fetch 17Lands
- * data for its set, and print the cards best-first by GIH win rate.
- *
- *   ./gradlew rankDemo                                  # uses the bundled P1P1 fixture
- *   ./gradlew rankDemo -PlogPath="/abs/Player.log" -Pformat=PremierDraft
- */
 fun main(args: Array<String>) = runBlocking {
     val logPath: Path? = args.getOrNull(0)?.takeIf { it.isNotBlank() }?.let(Path::of)
     val format = args.getOrNull(1)?.takeIf { it.isNotBlank() } ?: "PremierDraft"
-    // Optional "pack:pick" stop target (e.g. "2:3") to inspect a mid-draft pack.
     val stopAt: Pair<Int, Int>? = args.getOrNull(2)?.takeIf { it.isNotBlank() }?.split(":")
         ?.let { it[0].toInt() to it[1].toInt() }
 
-    // Reconstruct the current pack + set from the log (or the bundled fixture).
     val tracker = DraftTracker()
     val lines: Sequence<String> = if (logPath != null) {
         Files.newBufferedReader(logPath, StandardCharsets.UTF_8).useLines { it.toList() }.asSequence()

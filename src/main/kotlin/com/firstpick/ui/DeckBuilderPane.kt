@@ -92,7 +92,6 @@ private fun DeckSpellRow(s: DeckSpellUi) {
             .padding(horizontal = 8.dp, vertical = 5.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        // Mana value (lands have none).
         Text(
             if (s.isLand) "–" else "${s.cmc}",
             fontFamily = FontFamily.Monospace,
@@ -101,7 +100,6 @@ private fun DeckSpellRow(s: DeckSpellUi) {
             textAlign = TextAlign.Center,
             modifier = Modifier.width(28.dp),
         )
-        // Card name, with a copy count when there's more than one.
         Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
             if (s.count > 1) {
                 Box(
@@ -116,7 +114,6 @@ private fun DeckSpellRow(s: DeckSpellUi) {
                 Text(s.name, fontSize = 12.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
         }
-        // Type + role tag.
         Row(Modifier.width(132.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(5.dp)) {
             Text(s.typeLabel, fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
             s.role?.let { RoleChip(it) }
@@ -146,7 +143,7 @@ private fun roleColor(role: String): Color = when (role) {
     "Removal" -> MaterialTheme.colorScheme.error
     "Fixing" -> MaterialTheme.colorScheme.primary
     "Finisher" -> MaterialTheme.colorScheme.tertiary
-    else -> MaterialTheme.colorScheme.secondary // Draw / Evasion
+    else -> MaterialTheme.colorScheme.secondary
 }
 
 @Composable

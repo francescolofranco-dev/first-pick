@@ -11,32 +11,18 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 
-/**
- * Decodes a single MTGA `Player.log` line into a [DraftEvent], or null if the
- * line carries nothing we care about.
- *
- * Grounded in the real SOS-era log format (see docs and captured fixtures):
- *  - Quick/Bot draft pack: a bare-JSON line
- *      {"CurrentModule":"BotDraft","Payload":"<escaped JSON with DraftPack/PickedCards>"}
- *  - Quick/Bot draft pick: `BotDraftDraftPick ... "request":"{...PickInfo.CardIds...}"`
- *  - Premier/Traditional (human) draft is best-effort per spec until validated
- *    against a real human-draft log (Draft.Notify / Event_PlayerDraftMakePick).
- */
 class EventParser(
     private val json: Json = Json { ignoreUnknownKeys = true; isLenient = true },
 ) {
     fun parse(line: String): DraftEvent? {
         if ('{' !in line) return null
 
-        // Quick/Bot draft snapshot — the most reliable signal.
         if (LogMatch.contains(line, "DraftPack")) {
             parseBotDraftSnapshot(line)?.let { return it }
         }
-        // Quick/Bot draft pick action.
         if (LogMatch.contains(line, "BotDraftDraftPick") && LogMatch.contains(line, "CardIds")) {
             parseBotDraftPick(line)?.let { return it }
         }
-        // Human draft (Premier/Traditional) — best effort.
         if (LogMatch.contains(line, "DraftNotify") || LogMatch.contains(line, "PackCards")) {
             parsePremierPack(line)?.let { return it }
         }
@@ -44,7 +30,6 @@ class EventParser(
             parsePremierPick(line)?.let { return it }
         }
 
-        // Discover event joins to determine set and format (e.g. PremiumDraft / TradDraft).
         if (LogMatch.contains(line, "EventName") || LogMatch.contains(line, "InternalEventName")) {
             parseEventJoined(line)?.let { return it }
         }
@@ -61,7 +46,6 @@ class EventParser(
         return DraftEvent.EventJoined(name)
     }
 
-    // ---- Quick / Bot draft ------------------------------------------------
 
     @Serializable
     private data class BotDraftOuter(
@@ -90,7 +74,7 @@ class EventParser(
 
         return DraftEvent.Snapshot(
             eventName = payload.eventName,
-            pack = payload.packNumber + 1, // Arena is 0-indexed
+            pack = payload.packNumber + 1,
             pick = payload.pickNumber + 1,
             packCards = payload.draftPack.toInts(),
             pool = payload.pickedCards.toInts(),
@@ -131,11 +115,9 @@ class EventParser(
         )
     }
 
-    // ---- Premier / Traditional (human) draft — best effort ----------------
 
     private fun parsePremierPack(line: String): DraftEvent.PackSeen? {
         val obj = decodeObject(line) ?: return null
-        // PackCards may be a comma-separated string or an array, depending on Arena version.
         val packCards = obj.findStringList("PackCards") ?: return null
         if (packCards.isEmpty()) return null
         val pack = obj.findInt("SelfPack") ?: obj.findInt("PackNumber")?.plus(1) ?: 1
@@ -146,7 +128,6 @@ class EventParser(
 
     private fun parsePremierPick(line: String): DraftEvent.PickMade? {
         val obj = decodeObject(line) ?: return null
-        // Picks live inside a nested escaped "request" string here too.
         val request = obj.findString("request")
         val payload = request?.let { runCatching { json.parseToJsonElement(it) }.getOrNull() as? JsonObject }
             ?: obj
@@ -160,9 +141,7 @@ class EventParser(
         )
     }
 
-    // ---- JSON helpers -----------------------------------------------------
 
-    /** Extract the outermost JSON object from a line that may carry a log prefix. */
     private fun decodeObject(line: String): JsonObject? {
         val start = line.indexOf('{')
         if (start < 0) return null
@@ -178,7 +157,6 @@ class EventParser(
     private fun JsonObject.findInt(key: String): Int? =
         (this[key] as? JsonPrimitive)?.contentOrNull?.toIntOrNull()
 
-    /** Read a key that is either a JSON array of ids or a comma-separated string. */
     private fun JsonObject.findStringList(key: String): List<String>? {
         return when (val el: JsonElement? = this[key]) {
             is JsonArray -> el.mapNotNull { (it as? JsonPrimitive)?.contentOrNull }

@@ -33,11 +33,9 @@ class DraftViewModelTest {
         assertTrue(ratingsErrorMessage(FetchFailure.SERVER_ERROR, "SOS").contains("issues", true))
         assertTrue(ratingsErrorMessage(FetchFailure.NOT_FOUND, "SOS").contains("SOS"))
         assertTrue(ratingsErrorMessage(FetchFailure.BAD_DATA, "SOS").contains("SOS"))
-        // Generic fallback when there's no typed reason.
         assertTrue(ratingsErrorMessage(null, "SOS").contains("SOS"))
     }
 
-    /** A LogWatcher that emits canned lines instead of tailing a real file. */
     private class FakeWatcher(private vararg val lines: String) : LogWatcher(Path.of("/dev/null")) {
         override fun lines(fromStart: Boolean): Flow<String> = flowOf(*lines)
     }
@@ -57,14 +55,11 @@ class DraftViewModelTest {
             spell("colorless2", 2, ""),
         )
         val ordered = unsorted.sortedWith(deckSpellOrder).map { it.name }
-        // MV 1 first (W before U), then all MV 2 in WUBRG, then gold, then colorless.
         assertEquals(listOf("w1", "u1", "w2", "b2", "r2", "g2", "gold2", "colorless2"), ordered)
     }
 
     @Test
     fun pipelineScoresThePackFromALogLine() = runBlocking {
-        // Seed disk caches for every format so the data layer is fully offline
-        // regardless of the persisted format choice.
         val cache = createTempDirectory("fp-vm")
         for (f in listOf("PremierDraft", "QuickDraft", "TradDraft")) {
             Files.writeString(cache.resolve("ratings2_SOS_$f.json"), "[]")
@@ -76,7 +71,6 @@ class DraftViewModelTest {
         val metaRepo = CardMetaRepository(ScryfallClient(cacheDir = cache))
         val archRepo = ArchetypeRepository(SeventeenLandsClient(cacheDir = cache))
 
-        // Reuse the committed P1P1 snapshot fixture (14 cards, set SOS).
         val line = javaClass.getResourceAsStream("/quickdraft_first_snapshot.log")!!
             .bufferedReader().readText().trim()
 
@@ -94,7 +88,6 @@ class DraftViewModelTest {
             val ui = withTimeout(15_000) { vm.ui.first { it.packCards.isNotEmpty() } }
             assertEquals("SOS", ui.setCode)
             assertEquals(14, ui.packCards.size)
-            // Ranks are 1..14 and the list is ordered (rank 1 first).
             assertEquals(1, ui.packCards.first().rank)
         } finally {
             scope.cancel()

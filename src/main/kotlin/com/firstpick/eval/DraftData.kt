@@ -1,16 +1,14 @@
 package com.firstpick.eval
 
-/** A single pick from a 17Lands draft dataset row. */
 data class PickRow(
     val draftId: String,
-    val pack: Int,        // 0-indexed as in the dataset
-    val pick: Int,        // 0-indexed
+    val pack: Int,
+    val pick: Int,
     val pickedName: String,
-    val wins: Int,        // event_match_wins for this drafter
+    val wins: Int,
     val packCards: List<String>,
 )
 
-/** Minimal RFC-4180 CSV line parser — handles quoted fields with embedded commas. */
 object Csv {
     fun parse(line: String): List<String> {
         val out = ArrayList<String>(8)
@@ -36,11 +34,6 @@ object Csv {
     }
 }
 
-/**
- * Reads 17Lands draft-dataset rows. The header maps which columns are `pack_card_<Name>`;
- * the ordered pool is reconstructed from the sequence of picks (see [EvalHarness]), not the
- * `pool_*` columns, so it matches what the live advisor sees.
- */
 class DraftReader(header: List<String>) {
     private val idxDraftId = header.indexOf("draft_id")
     private val idxPack = header.indexOf("pack_number")

@@ -12,7 +12,6 @@ import kotlin.test.assertTrue
 class EventParserTest {
     private val parser = EventParser()
 
-    /** Builds a real-shaped Quick/Bot draft snapshot line (nested escaped JSON). */
     private fun snapshotLine(
         pack: Int,
         pick: Int,
@@ -31,15 +30,13 @@ class EventParserTest {
 
     @Test
     fun parsesRealFirstSnapshotFixture() {
-        // Fixture: a real-shaped SOS Quick/Bot draft P1P1 snapshot line (nested
-        // escaped JSON, with extra Arena fields to exercise lenient parsing).
         val line = javaClass.getResourceAsStream("/quickdraft_first_snapshot.log")!!
             .bufferedReader().readText().trim()
         val event = parser.parse(line)
         assertNotNull(event)
         val snap = event as DraftEvent.Snapshot
         assertEquals("QuickDraftEmblem_SOS_20260611", snap.eventName)
-        assertEquals(1, snap.pack)  // 0-indexed -> 1
+        assertEquals(1, snap.pack)
         assertEquals(1, snap.pick)
         assertEquals(14, snap.packCards.size)
         assertEquals(102490, snap.packCards.first())
@@ -61,8 +58,8 @@ class EventParserTest {
         val snap = parser.parse(snapshotLine(pack = 2, pick = 5, packCards = listOf(1, 2, 3), pickedCards = listOf(9)))
         assertNotNull(snap)
         snap as DraftEvent.Snapshot
-        assertEquals(3, snap.pack) // 2 -> 3
-        assertEquals(6, snap.pick) // 5 -> 6
+        assertEquals(3, snap.pack)
+        assertEquals(6, snap.pick)
         assertEquals(listOf(1, 2, 3), snap.packCards)
         assertEquals(listOf(9), snap.pool)
     }
@@ -93,7 +90,6 @@ class EventParserTest {
     fun ignoresNoiseAndOtherModules() {
         assertNull(parser.parse("Wotc.Mtga.Wrapper.Draft.DraftContentController:ReserveCardAndLockIn(DraftPack)"))
         assertNull(parser.parse("[UnityCrossThreadLogger] some plain text without json"))
-        // A DeckSelect module line that merely mentions DraftPack must not be treated as a pack.
         assertNull(
             parser.parse("{\"CurrentModule\":\"DeckSelect\",\"Payload\":\"{\\\"DraftPack\\\":[]}\"}"),
         )

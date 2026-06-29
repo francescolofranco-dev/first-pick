@@ -28,7 +28,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.WindowState
 
-/** Post-draft companion overlay: pick a build and tick off cards as you add them. */
 @Composable
 fun DeckBuilderOverlay(
     composeWindow: java.awt.Window,
@@ -39,12 +38,10 @@ fun DeckBuilderOverlay(
     var isMinimized by remember { mutableStateOf(false) }
     var selectedOptionIndex by remember(state.deckOptions) { mutableStateOf<Int?>(null) }
 
-    // Auto-resize / adjust layout when switching modes or minimized
     LaunchedEffect(isMinimized, selectedOptionIndex) {
         if (isMinimized) {
             windowState.size = DpSize(150.dp, 40.dp)
         } else {
-            // Deck building checklist mode
             if (selectedOptionIndex != null) {
                 windowState.size = DpSize(920.dp, 280.dp)
             } else {
@@ -60,12 +57,9 @@ fun DeckBuilderOverlay(
                 .clip(RoundedCornerShape(12.dp))
                 .border(1.dp, Color(0x3B7FD1C4), RoundedCornerShape(12.dp)),
             color = Color(0xF20F1413),
-            // The background is a custom color (not a scheme role), so set the content color
-            // explicitly — otherwise unstyled text defaults to black and is invisible here.
             contentColor = MaterialTheme.colorScheme.onSurface,
         ) {
             if (isMinimized) {
-                // Minimized floating pill
                 Row(
                     modifier = Modifier
                         .fillMaxSize()
@@ -101,7 +95,6 @@ fun DeckBuilderOverlay(
                     }
                 }
             } else {
-                // Deck builder mode (Companion Window UI)
                 Row(modifier = Modifier.fillMaxSize()) {
                     Box(
                         modifier = Modifier
@@ -315,8 +308,6 @@ private fun DeckHelperView(
                             )
                         }
 
-                        // Within each color column, order by mana value (then win rate) so the
-                        // overlay matches the deck pane's MV + WUBRG ordering.
                         val sortedSpells = remember(spells) {
                             spells.sortedWith(compareBy({ it.cmc }, { -(it.gihWr ?: 0.0) }))
                         }
@@ -396,8 +387,6 @@ private fun OverlayIconButton(
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            // Trim the line's leading and center the glyph so the symbol sits dead-center
-            // in the circle (default leading made "－"/"✕" look top/bottom-heavy).
             style = LocalTextStyle.current.copy(
                 lineHeightStyle = LineHeightStyle(
                     alignment = LineHeightStyle.Alignment.Center,

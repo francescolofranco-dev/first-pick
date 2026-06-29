@@ -33,6 +33,8 @@ import com.firstpick.ui.DevFlags
 import com.firstpick.ui.MacOverlay
 import com.firstpick.ui.letterGrade
 import com.firstpick.ui.valueTierColor
+import com.firstpick.ui.BreakdownTooltip
+import com.firstpick.advisor.ValueBreakdown
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -42,41 +44,22 @@ private const val TRACKER_TITLE = "FirstPick Arena Tracker"
 private const val POLL_MS = 300L
 private const val CAPTURE_DEBOUNCE_MS = 350L
 
-/** One pack card the overlay should grade: its pick [value] and a reference [imageUrl] for art matching. */
-data class OverlayCard(val value: Double?, val imageUrl: String?, val name: String = "")
+data class OverlayCard(val value: Double?, val imageUrl: String?, val name: String = "", val breakdown: ValueBreakdown? = null)
 
-/** A grade to draw, in window points: either a recognized card [value] or a calibration [number]. */
-private data class Mark(val x: Int, val y: Int, val w: Int, val h: Int, val value: Double?, val number: Int?, val isBest: Boolean)
+private data class Mark(val x: Int, val y: Int, val w: Int, val h: Int, val value: Double?, val number: Int?, val isBest: Boolean, val breakdown: ValueBreakdown? = null)
 
-/**
- * The embedded draft overlay: a transparent, click-through window pinned to the live MTG Arena
- * window that draws a pick grade on each pack card — the Untapped-style on-card experience,
- * draft support only.
- *
- * Position/size are tracked cheaply every [POLL_MS] via [WindowLocator] (no permission). The card
- * rectangles come from [CardDetector] run on a [WindowCapture] frame, and each rect is matched to
- * an actual pack card by [CardRecognizer] (Arena draws the pack in a non-derivable order, so we
- * recognize the art rather than assume position). Detection + recognition rerun only when the
- * window size or the pack changes, never on the per-frame position poll.
- *
- * Hides itself whenever Arena isn't the frontmost app, so it doesn't float over other windows.
- * With no [cards] it renders nothing, unless [DevFlags.overlayTrack] is set, in which case it
- * draws numbered calibration boxes for aligning the detector.
- */
 @Composable
 fun ArenaOverlayTracker(
     cards: List<OverlayCard> = emptyList(),
     locator: WindowLocator = WindowLocator(),
     capturer: WindowCapture = WindowCapture(),
 ) {
-    // Stabilize the deps: a default-arg constructor is re-evaluated on every recomposition, which
-    // would re-key the poll effect (restarting it) and re-extract the native helper each frame.
     val loc = remember { locator }
     val cap = remember { capturer }
     var bounds by remember { mutableStateOf<WindowBounds?>(null) }
     LaunchedEffect(loc) {
         while (true) {
-            bounds = withContext(Dispatchers.IO) { loc.locate() } // blocking subprocess, off the UI thread
+            bounds = withContext(Dispatchers.IO) { loc.locate() }
             delay(POLL_MS)
         }
     }
@@ -92,9 +75,6 @@ fun ArenaOverlayTracker(
         wState.size = DpSize(b.w.dp, b.h.dp)
     }
 
-    // Capture → detect → recognize. Reruns only on size or pack change (not the position poll
-    // or focus toggle), since the costly capture + art match needn't repeat otherwise. The key
-    // uses the card name (always present) since a no-art card's imageUrl can be blank.
     var marks by remember { mutableStateOf<List<Mark>>(emptyList()) }
     val packKey = remember(cards) { cards.joinToString("|") { "${it.name}#${it.imageUrl}" } }
     LaunchedEffect(b.w, b.h, packKey, calibrating) {
@@ -102,10 +82,44 @@ fun ArenaOverlayTracker(
         marks = withContext(Dispatchers.IO) { computeMarks(cap, cards, calibrating, b.w, b.h) }
     }
 
-    // Keep the window mounted and toggle visibility, so the native peer + click-through flag
-    // persist instead of being torn down/recreated on every focus toggle. Hide it when Arena
-    // isn't frontmost or there's nothing to show.
     val visible = (b.frontmost || calibrating) && (cards.isNotEmpty() || calibrating)
+
+    var hoveredIndex by remember { mutableStateOf<Int?>(null) }
+    LaunchedEffect(visible, b.x, b.y, marks) {
+        if (!visible || marks.isEmpty()) {
+            hoveredIndex = null
+            return@LaunchedEffect
+        }
+        var lastHovered: Int? = null
+        while (true) {
+            val ptr = withContext(Dispatchers.IO) { java.awt.MouseInfo.getPointerInfo()?.location }
+            if (ptr != null) {
+                val mx = ptr.x - b.x
+                val my = ptr.y - b.y
+
+                val expand = 10
+
+                var hIndex: Int? = null
+                for ((i, m) in marks.withIndex()) {
+                    val d = (m.w * 0.40f).roundToInt().coerceIn(34, 92)
+                    val cx = m.x + m.w / 2 - d / 2
+                    val cy = m.y + m.h - (d * 0.72f).roundToInt()
+
+                    val p = if (i == lastHovered) expand else 0
+                    if (mx >= cx - p && mx <= cx + d + p && my >= cy - p && my <= cy + d + p) {
+                        hIndex = i
+                        break
+                    }
+                }
+
+                if (hIndex != lastHovered) {
+                    hoveredIndex = hIndex
+                    lastHovered = hIndex
+                }
+            }
+            delay(50)
+        }
+    }
 
     Window(
         onCloseRequest = {},
@@ -127,6 +141,31 @@ fun ArenaOverlayTracker(
         Box(Modifier.fillMaxSize()) {
             for (m in marks) {
                 if (m.number != null) NumberBox(m) else GradeSeal(m)
+            }
+
+            val hIndex = hoveredIndex
+            if (hIndex != null && hIndex in marks.indices) {
+                val m = marks[hIndex]
+                val bd = m.breakdown
+                if (bd != null) {
+                    val d = (m.w * 0.40f).roundToInt().coerceIn(34, 92)
+                    val cx = m.x + m.w / 2 - d / 2
+                    val cy = m.y + m.h - (d * 0.72f).roundToInt()
+
+                    val tooltipW = 205
+                    val tooltipH = 150
+
+                    var tooltipX = cx + d / 2 - tooltipW / 2
+                    var tooltipY = cy - tooltipH - 8
+
+                    if (tooltipX < 8) tooltipX = 8
+                    if (tooltipX + tooltipW > b.w - 8) tooltipX = b.w - tooltipW - 8
+                    if (tooltipY < 8) tooltipY = cy + d + 8
+
+                    Box(Modifier.offset(tooltipX.dp, tooltipY.dp)) {
+                        BreakdownTooltip(bd)
+                    }
+                }
             }
         }
     }
@@ -150,7 +189,7 @@ private suspend fun computeMarks(
         val sy = winH.toFloat() / grid.imageH
         return rects.mapNotNull { r ->
             val ci = assign[r.index] ?: return@mapNotNull null
-            Mark((r.x * sx).roundToInt(), (r.y * sy).roundToInt(), (r.w * sx).roundToInt(), (r.h * sy).roundToInt(), cards[ci].value, null, ci == best)
+            Mark((r.x * sx).roundToInt(), (r.y * sy).roundToInt(), (r.w * sx).roundToInt(), (r.h * sy).roundToInt(), cards[ci].value, null, ci == best, cards[ci].breakdown)
         }
     }
     if (calibrating) {
@@ -158,19 +197,18 @@ private suspend fun computeMarks(
         val sx = winW.toFloat() / grid.imageW
         val sy = winH.toFloat() / grid.imageH
         return grid.cards(15).map { r ->
-            Mark((r.x * sx).roundToInt(), (r.y * sy).roundToInt(), (r.w * sx).roundToInt(), (r.h * sy).roundToInt(), null, r.index + 1, false)
+            Mark((r.x * sx).roundToInt(), (r.y * sy).roundToInt(), (r.w * sx).roundToInt(), (r.h * sy).roundToInt(), null, r.index + 1, false, null)
         }
     }
     return emptyList()
 }
 
-/** Untapped-style grade seal at the card's bottom edge: letter grade + 0–100 value, tier-colored. */
 @Composable
 private fun GradeSeal(m: Mark) {
     val color = valueTierColor(m.value)
-    val d = (m.w * 0.40f).roundToInt().coerceIn(34, 92) // seal diameter ~40% of card width
+    val d = (m.w * 0.40f).roundToInt().coerceIn(34, 92)
     val cx = m.x + m.w / 2 - d / 2
-    val cy = m.y + m.h - (d * 0.72f).roundToInt() // sit across the bottom edge
+    val cy = m.y + m.h - (d * 0.72f).roundToInt()
     Box(
         Modifier
             .offset(cx.dp, cy.dp)

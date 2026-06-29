@@ -31,7 +31,7 @@ class LaneDetectorTest {
             card("b", 0.60, "U"),
             card("e", 0.60, "U"),
             card("c", 0.60, "B"),
-            card("d", 0.58, "R"), // single weak red
+            card("d", 0.58, "R"),
         )
         val lane = LaneDetector.detect(pool, metrics)
         assertEquals(setOf('U', 'B'), lane.colors)
@@ -39,7 +39,6 @@ class LaneDetectorTest {
 
     @Test
     fun archetypeStrengthGuidesAnEmptyLane() {
-        // With no picks yet, the set's strongest archetypes should be suggested in topPairs, but pair is null.
         val strengths = mapOf("WR" to 0.59, "WU" to 0.55, "UB" to 0.54, "BG" to 0.53)
         val lane = LaneDetector.detect(emptyList(), metrics, strengths)
         assertEquals(null, lane.pair)
@@ -48,7 +47,6 @@ class LaneDetectorTest {
 
     @Test
     fun poolOverridesArchetypeStrengthOnceCommitted() {
-        // Even if Boros (WR) is the set's best archetype, a committed UB pool wins.
         val strengths = mapOf("WR" to 0.59, "UB" to 0.54)
         val pool = List(6) { card("p$it", 0.60, if (it % 2 == 0) "U" else "B") }
         val lane = LaneDetector.detect(pool, metrics, strengths)
@@ -57,7 +55,6 @@ class LaneDetectorTest {
 
     @Test
     fun recencyLetsLatePivotOverturnEarlyPicks() {
-        // Early: two strong green. Late: three strong white. Recency should favor white.
         val pool = listOf(
             card("earlyG1", 0.62, "G"),
             card("earlyG2", 0.62, "G"),

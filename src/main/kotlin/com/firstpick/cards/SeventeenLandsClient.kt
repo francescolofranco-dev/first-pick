@@ -17,7 +17,6 @@ import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
 
-/** One color-pair (archetype) row from the 17Lands color_ratings endpoint. */
 @Serializable
 data class ColorRatingRow(
     @SerialName("color_name") val colorName: String = "",
@@ -28,11 +27,6 @@ data class ColorRatingRow(
     val winRate: Double? get() = if (games > 0) wins.toDouble() / games else null
 }
 
-/**
- * Fetches 17Lands data, caching each response on disk and skipping the network
- * while the cache is fresh. Uses the JDK HTTP client (no extra dependency) and a
- * descriptive User-Agent per 17Lands' usage guidelines. Data is CC-BY-4.0.
- */
 class SeventeenLandsClient(
     private val cacheDir: Path = AppPaths.cacheDir,
     private val staleness: Duration = Duration.ofHours(12),
@@ -42,11 +36,6 @@ class SeventeenLandsClient(
 ) {
     private val json = Json { ignoreUnknownKeys = true; isLenient = true }
 
-    /**
-     * Card ratings for a set/format (ESSENTIAL data). [colors] (e.g. "WU") narrows the
-     * stats to a specific archetype; null gives the global "All Decks" data. Throws
-     * [DataUnavailableException] if neither a fresh fetch nor a stale cache is available.
-     */
     suspend fun fetch(set: String, format: String, colors: String? = null): List<CardRating> =
         withContext(Dispatchers.IO) {
             val suffix = colors?.let { "_$it" }.orEmpty()
@@ -59,7 +48,6 @@ class SeventeenLandsClient(
             }
         }
 
-    /** Color-pair (archetype) win rates for a set (OPTIONAL — degrades to empty on failure). */
     suspend fun colorRatings(set: String, format: String): List<ColorRatingRow> =
         withContext(Dispatchers.IO) {
             val body = runCatching {
@@ -76,7 +64,6 @@ class SeventeenLandsClient(
         data class Failed(val reason: FetchFailure) : HttpResult
     }
 
-    /** Fresh cache → download (with retry) → stale cache → throw. */
     private fun cachedBody(cacheName: String, url: () -> String): String {
         Files.createDirectories(cacheDir)
         val cache = cacheDir.resolve(cacheName)
@@ -100,7 +87,6 @@ class SeventeenLandsClient(
         return age < staleness
     }
 
-    /** GET with exponential backoff on transient failures (429 / 5xx / offline). */
     private fun httpGet(url: String): HttpResult {
         var last: HttpResult.Failed = HttpResult.Failed(FetchFailure.OFFLINE)
         for (attempt in 1..MAX_ATTEMPTS) {
@@ -141,7 +127,6 @@ class SeventeenLandsClient(
         const val USER_AGENT =
             "FirstPick/0.1 (personal use; +https://github.com/francescolofranco-dev)"
 
-        /** Map an HTTP status to a failure reason, or null if it's a success. */
         internal fun failureForStatus(code: Int): FetchFailure? = when {
             code == 200 -> null
             code == 404 -> FetchFailure.NOT_FOUND
@@ -150,19 +135,13 @@ class SeventeenLandsClient(
             else -> FetchFailure.SERVER_ERROR
         }
 
-        /** Whether a failure is worth retrying (vs. a definitive 404). */
         internal fun isTransient(reason: FetchFailure): Boolean = when (reason) {
             FetchFailure.RATE_LIMITED, FetchFailure.SERVER_ERROR, FetchFailure.OFFLINE -> true
             FetchFailure.NOT_FOUND, FetchFailure.BAD_DATA -> false
         }
 
-        /** Earliest plausible Arena draft-data date; gives all-time aggregates per set. */
         const val START_DATE = "2019-01-01"
 
-        /**
-         * Card-ratings URL. A wide date window is REQUIRED: without it the API
-         * returns the card list with null win rates for any non-current set.
-         */
         fun ratingsUrl(
             set: String,
             format: String,

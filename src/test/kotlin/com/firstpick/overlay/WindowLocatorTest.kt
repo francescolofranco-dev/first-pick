@@ -14,7 +14,6 @@ class WindowLocatorTest {
 
     @Test
     fun parsesNegativeCoordinates() {
-        // A window on a secondary display can have negative origin.
         val b = WindowLocator.parse("""{"found":true,"x":-1440,"y":-200,"w":800,"h":600}""")
         assertEquals(WindowBounds(-1440, -200, 800, 600), b)
     }
@@ -28,7 +27,6 @@ class WindowLocatorTest {
     fun returnsNullOnGarbage() {
         assertNull(WindowLocator.parse(""))
         assertNull(WindowLocator.parse("not json"))
-        // found:true but missing fields → null, not a partial bounds
         assertNull(WindowLocator.parse("""{"found":true,"x":10}"""))
     }
 }

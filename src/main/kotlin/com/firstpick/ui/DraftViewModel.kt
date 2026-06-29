@@ -33,11 +33,6 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.nio.file.Path
 
-/**
- * Wires the live pipeline: tail Player.log -> reconstruct draft state -> load
- * 17Lands ratings + archetype data (+ Scryfall mana values) for the active set ->
- * run the contextual advisor -> publish a [DraftUiState] for Compose.
- */
 class DraftViewModel(
     private val scope: CoroutineScope,
     logPath: Path = AppPaths.defaultPlayerLog,
@@ -52,13 +47,8 @@ class DraftViewModel(
     private val _ui = MutableStateFlow(DraftUiState())
     val ui: StateFlow<DraftUiState> = _ui.asStateFlow()
 
-    /**
-     * Serializes every `_ui` write and the load-once decision. Without it, the collect
-     * loop, the background data-load, and setFormatChoice all raced on `_ui`/[requestedKey]
-     * and could clobber each other's state.
-     */
     private val mutex = Mutex()
-    private var requestedKey: String? = null // guarded by [mutex]
+    private var requestedKey: String? = null
     @Volatile private var currentError: String? = null
 
     private var watcherJob: Job? = null
@@ -66,7 +56,6 @@ class DraftViewModel(
     @Volatile private var simulating = false
     private val simPaused = MutableStateFlow(false)
 
-    /** User-selected 17Lands data source ([RatingsFormat]); persisted across runs. */
     @Volatile
     private var formatChoice: String =
         runCatching { OverlaySettings.load().ratingsFormatOverride }.getOrNull() ?: RatingsFormat.PREMIER
@@ -75,9 +64,6 @@ class DraftViewModel(
         watcherJob = scope.launch(Dispatchers.IO) { tracker.consume(watcher.lines(fromStart = true)) }
         scope.launch {
             tracker.state.collect { state ->
-                // Guard the whole step: an exception here would kill this collector for good
-                // (SupervisorJob keeps the scope but won't restart it), freezing the UI on all
-                // later draft state — e.g. starting a second demo after one completed.
                 runCatching {
                     state.setCode?.let { ensureLoaded(it) }
                     ensureLanePair(state)
@@ -87,22 +73,16 @@ class DraftViewModel(
         }
     }
 
-    /**
-     * Demo/test mode: stop tailing the real log and drive the app from a simulated
-     * draft of [set] (see [DraftSimulator]). The synthetic snapshots flow through the
-     * normal pipeline, so the UI behaves exactly as in a live draft.
-     */
     fun startSimulation(set: String) {
         simJob?.cancel()
         watcherJob?.cancel()
-        tracker.reset() // clear any prior draft/demo so this run starts clean
+        tracker.reset()
         currentError = null
         simulating = true
         simPaused.value = false
-        scope.launch { publish() } // reflect "simulating" immediately, before the first pick
+        scope.launch { publish() }
         simJob = scope.launch(Dispatchers.IO) {
             tracker.consume(simulator.simulate(set, paused = simPaused))
-            // The flow finished with nothing → the set had no 17Lands data to simulate.
             if (tracker.state.value.setCode == null) {
                 currentError = "No 17Lands data to simulate ${set.uppercase()}"
                 simulating = false
@@ -111,14 +91,12 @@ class DraftViewModel(
         }
     }
 
-    /** Pause or resume an in-progress demo. Paused keeps all draft state in place. */
     fun toggleSimulationPause() {
         if (!simulating) return
         simPaused.value = !simPaused.value
         scope.launch { publish() }
     }
 
-    /** Exit the demo entirely and resume tailing the live Arena log. */
     fun stopSimulation() {
         if (!simulating) return
         simJob?.cancel()
@@ -126,29 +104,22 @@ class DraftViewModel(
         simulating = false
         simPaused.value = false
         currentError = null
-        // Reset to the idle home screen (so the demo set picker reappears), then resume
-        // tailing the real Arena log — without this the finished demo draft stays on screen.
         tracker.reset()
         watcherJob = scope.launch(Dispatchers.IO) { tracker.consume(watcher.lines(fromStart = false)) }
         scope.launch { publish() }
     }
 
-    /**
-     * Change the 17Lands data source. Persists the choice and reloads ratings for
-     * the active set (cheap if already cached on disk).
-     */
     fun setFormatChoice(choice: String) {
         if (choice == formatChoice) return
         formatChoice = choice
         runCatching { OverlaySettings.save(OverlaySettings.load().copy(ratingsFormatOverride = choice)) }
         scope.launch {
-            mutex.withLock { requestedKey = null } // force a reload under the new format
+            mutex.withLock { requestedKey = null }
             tracker.state.value.setCode?.let { ensureLoaded(it) }
             publish()
         }
     }
 
-    /** Rebuild and publish the UI from the latest state, atomically. */
     private suspend fun publish() = mutex.withLock {
         _ui.value = buildUi(tracker.state.value).copy(dataError = currentError)
     }
@@ -166,7 +137,6 @@ class DraftViewModel(
             ?: if (repo.isLoaded) null else dataErrorMessage(null, set)
         publish()
 
-        // Scryfall mana values + archetype strengths in the background (optional data).
         scope.launch {
             runCatching { metaRepo.load(set, repo.cardNames) }
             runCatching { archetypeRepo.loadStrengths(set, format) }
@@ -174,7 +144,6 @@ class DraftViewModel(
         }
     }
 
-    /** Lazily fetch the archetype-specific card data for the lane the pool points at. */
     private suspend fun ensureLanePair(state: DraftState) {
         val set = state.setCode ?: return
         if (!repo.isLoaded) return
@@ -188,7 +157,6 @@ class DraftViewModel(
     private fun buildUi(state: DraftState): DraftUiState {
         val loaded = repo.isLoaded
         val pool = if (loaded) state.pool.map(repo::resolve) else emptyList()
-        // Open-lane signals (cards flowing to you) now bias lane detection, not just the UI.
         val signals = if (loaded) SignalsEngine.openLanes(state.seen, repo::resolve) else emptyMap()
         val lane = if (loaded) {
             LaneDetector.detect(pool, repo.setMetrics, archetypeRepo.strengthMap(), signals)
@@ -219,10 +187,8 @@ class DraftViewModel(
             emptyList()
         }
 
-        // Decks show when the draft completes; FIRSTPICK_FORCE_DECKS=1 previews them anytime.
         val deckReady = state.phase == DraftPhase.COMPLETE || System.getenv("FIRSTPICK_FORCE_DECKS") == "1"
         val deckOptions = if (loaded && deckReady && state.pool.size >= 20) {
-            // Deck options are optional UI — never let a builder failure break the pipeline.
             runCatching {
                 DeckBuilder.build(
                     pool = pool,
@@ -244,7 +210,7 @@ class DraftViewModel(
             pick = state.pick,
             poolSize = state.pool.size,
             loadingRatings = state.setCode != null && !loaded,
-            dataError = null, // set by publish() from currentError
+            dataError = null,
             packCards = rows,
             laneColors = WUBRG_ORDER.filter { it in lane.colors },
             openLanes = openLanes,
@@ -266,8 +232,6 @@ class DraftViewModel(
     private fun DeckOption.toUi(): DeckOptionUi {
         val nonbasicCount = nonbasicLands.size
         val basics = (landCount - nonbasicCount).coerceAtLeast(0)
-        // Never name specific basics — Arena's editor adds the right split. We only state the
-        // land count and any drafted nonbasics, and that Arena fills the rest.
         val landLine = buildString {
             append("$landCount lands")
             if (nonbasicCount > 0) append(" · $nonbasicCount nonbasic")
@@ -289,7 +253,6 @@ class DraftViewModel(
         )
     }
 
-    /** Deduplicate cards by name (with a copy count) and annotate type + role. */
     private fun List<com.firstpick.cards.RankedCard>.toDeckSpells(): List<DeckSpellUi> =
         groupBy { it.displayName }.map { (name, copies) ->
             val c = copies.first()
@@ -309,8 +272,6 @@ class DraftViewModel(
 
     private fun deckCardType(rating: com.firstpick.cards.CardRating?, meta: CardMeta?): String {
         val types = rating?.types.orEmpty()
-        // 17Lands types can be a full type line ("Legendary Planeswalker - Oko"), so match
-        // by substring rather than exact equality. Priority order below disambiguates.
         fun has(t: String) = types.any { it.contains(t, ignoreCase = true) }
         return when {
             meta?.isLand == true || has("Land") -> "Land"
@@ -325,7 +286,6 @@ class DraftViewModel(
         }
     }
 
-    /** The single most salient functional role for a card (priority order), or null. */
     private fun deckCardRole(meta: CardMeta?): String? = when {
         meta == null -> null
         meta.isRemoval -> "Removal"
@@ -396,7 +356,6 @@ class DraftViewModel(
     }
 }
 
-/** Map a fetch failure to a user-facing message. Top-level + internal so it's testable. */
 internal fun ratingsErrorMessage(reason: FetchFailure?, set: String): String = when (reason) {
     FetchFailure.RATE_LIMITED -> "17Lands is rate-limiting — retrying; using cached data if available"
     FetchFailure.OFFLINE -> "Can't reach 17Lands — check your connection"

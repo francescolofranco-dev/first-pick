@@ -1,6 +1,5 @@
 package com.firstpick.model
 
-/** MTGA limited event families we care about. */
 enum class DraftFormat {
     PREMIER,
     TRADITIONAL,
@@ -10,7 +9,6 @@ enum class DraftFormat {
     UNKNOWN;
 
     companion object {
-        /** Derive the format from an Arena InternalEventName, e.g. "QuickDraftEmblem_SOS_20260611". */
         fun fromEventName(eventName: String): DraftFormat {
             val n = eventName.lowercase().replace("_", "")
             return when {
@@ -19,28 +17,23 @@ enum class DraftFormat {
                 "quickdraft" in n || "botdraft" in n -> QUICK
                 "cube" in n -> CUBE
                 "sealed" in n -> SEALED
-                "draft" in n -> PREMIER // generic human-draft fallback
+                "draft" in n -> PREMIER
                 else -> UNKNOWN
             }
         }
     }
 }
 
-/** Matches the 3–5 char set code wedged before the YYYYMMDD date in an event name. */
 private val SET_CODE_RE = Regex("_([A-Za-z0-9]{2,5})_\\d{6,8}")
 
-/** "QuickDraftEmblem_SOS_20260611" -> "SOS". Null if the name doesn't carry a set code. */
 fun setCodeFromEventName(eventName: String): String? =
     SET_CODE_RE.find(eventName)?.groupValues?.get(1)?.uppercase()
 
-/** Low-level signals decoded from a single log line. Pack/pick are 1-indexed. */
 sealed interface DraftEvent {
-    /** Discovered from an active event join log line, carrying format/set info. */
     data class EventJoined(
         val eventName: String,
     ) : DraftEvent
 
-    /** A complete state snapshot (MTGA Quick/Bot draft logs every pick this way). */
     data class Snapshot(
         val eventName: String,
         val pack: Int,
@@ -50,7 +43,6 @@ sealed interface DraftEvent {
         val complete: Boolean,
     ) : DraftEvent
 
-    /** A pack offered to the player (human Premier/Traditional draft). */
     data class PackSeen(
         val eventName: String,
         val pack: Int,
@@ -58,7 +50,6 @@ sealed interface DraftEvent {
         val packCards: List<Int>,
     ) : DraftEvent
 
-    /** Cards the player locked in (human Premier/Traditional draft). */
     data class PickMade(
         val pack: Int,
         val pick: Int,
@@ -68,7 +59,6 @@ sealed interface DraftEvent {
 
 enum class DraftPhase { IDLE, DRAFTING, COMPLETE }
 
-/** Immutable, UI-facing reconstruction of the current draft. */
 data class DraftState(
     val phase: DraftPhase = DraftPhase.IDLE,
     val format: DraftFormat = DraftFormat.UNKNOWN,
@@ -78,10 +68,8 @@ data class DraftState(
     val pick: Int = 0,
     val packCards: List<Int> = emptyList(),
     val pool: List<Int> = emptyList(),
-    /** Every pack offered, keyed by (pack, pick) — feeds open-lane signal detection. */
     val seen: Map<Pair<Int, Int>, List<Int>> = emptyMap(),
 ) {
-    /** Pure reducer: fold one decoded event into the next state. */
     fun reduce(event: DraftEvent): DraftState = when (event) {
         is DraftEvent.EventJoined -> {
             val resettingForNewEvent = event.eventName.isNotEmpty() && eventName != null && eventName != event.eventName
@@ -94,7 +82,6 @@ data class DraftState(
         }
 
         is DraftEvent.Snapshot -> {
-            // Snapshots are authoritative — adopt them wholesale.
             val resettingForNewEvent = event.eventName.isNotEmpty() && eventName != null && eventName != event.eventName
             val base = if (resettingForNewEvent) DraftState() else this
             base.copy(
@@ -127,13 +114,11 @@ data class DraftState(
 
         is DraftEvent.PickMade -> {
             val newPool = pool + event.cardIds
-            
-            // The draft is complete if we hit typical pool size, OR if we just made the last possible pick in pack 3
-            // (i.e. the number of cards we just picked equals or exceeds what was left in the pack).
+
             val isLastPickOfDraft = (pack >= 3 && packCards.size <= event.cardIds.size)
-            
-            val newPhase = if (isLastPickOfDraft || newPool.size >= 42) DraftPhase.COMPLETE 
-                           else if (phase == DraftPhase.IDLE) DraftPhase.DRAFTING 
+
+            val newPhase = if (isLastPickOfDraft || newPool.size >= 42) DraftPhase.COMPLETE
+                           else if (phase == DraftPhase.IDLE) DraftPhase.DRAFTING
                            else phase
             copy(
                 phase = newPhase,
@@ -145,7 +130,6 @@ data class DraftState(
         }
     }
 
-    /** Record a pack we were offered (idempotent on repeated snapshots of the same pick). */
     private fun recordSeen(pack: Int, pick: Int, cards: List<Int>): Map<Pair<Int, Int>, List<Int>> =
         if (cards.isEmpty()) seen else seen + (Pair(pack, pick) to cards)
 }

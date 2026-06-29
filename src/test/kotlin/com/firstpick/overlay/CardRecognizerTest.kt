@@ -7,7 +7,6 @@ import kotlin.test.assertEquals
 
 class CardRecognizerTest {
 
-    /** A synthetic card: dark frame with a distinct colored gradient in its art window. */
     private fun card(seed: Int, w: Int = 300, h: Int = 420): BufferedImage {
         val img = BufferedImage(w, h, BufferedImage.TYPE_INT_RGB)
         val g = img.createGraphics()
@@ -30,8 +29,6 @@ class CardRecognizerTest {
         val n = 6
         val refs = (0 until n).map { CardRecognizer.ofCard(card(it + 1)) }
 
-        // Draw the cards into a frame in a shuffled order, so a correct match must rely on the
-        // art, not position. drawn[rectIndex] = which card was painted into that rect.
         val drawn = intArrayOf(3, 0, 5, 1, 4, 2)
         val cw = 300; val ch = 420; val cols = 3
         val frame = BufferedImage(cols * cw + 40, 2 * ch + 40, BufferedImage.TYPE_INT_RGB)

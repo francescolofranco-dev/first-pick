@@ -7,21 +7,11 @@ import com.firstpick.cards.SetMetrics
 import kotlin.test.Test
 import kotlin.test.assertTrue
 
-/**
- * Draft-judgment regression suite. Each scenario is a situation a good drafter has
- * a clear opinion on; we assert the engine agrees. This is the safety net that
- * catches regressions whenever the scoring constants are tuned — see the eval plan
- * in `docs/eval-harness.md` for how the dataset-driven side complements it.
- *
- * Scenarios assert *direction* (A ranks above B, X is flagged) rather than exact
- * scores, so they stay valid as the engine is tuned.
- */
 class ScenarioSuiteTest {
 
     private val metrics = SetMetrics(meanGihWr = 0.55, stdDevGihWr = 0.03)
     private val engine = AdvisorEngine()
 
-    // ---- builders --------------------------------------------------------
 
     private fun card(name: String, gih: Double?, color: String = "", iwd: Double = 0.0, alsa: Double = 4.0, rarity: String = "common") =
         RankedCard(
@@ -49,7 +39,6 @@ class ScenarioSuiteTest {
     private fun bluePool(n: Int) = List(n) { card("Blue$it", 0.58, "U") }
     private fun ubPool(n: Int) = List(n) { card("Pool$it", 0.58, if (it % 2 == 0) "U" else "B") }
 
-    // ---- check DSL -------------------------------------------------------
 
     private fun List<ScoredCard>.idx(name: String) = indexOfFirst { it.card.name == name }
     private fun List<ScoredCard>.byName(name: String) = find { it.card.name == name }
@@ -62,10 +51,8 @@ class ScenarioSuiteTest {
     private fun confidence(level: ConfidenceLevel): Check = { s -> val c = Confidence.of(s.map { it.value }).level; if (c == level) null else "expected confidence $level, got $c" }
     private fun all(vararg cs: Check): Check = { s -> cs.firstNotNullOfOrNull { it(s) } }
 
-    // ---- scenarios -------------------------------------------------------
 
     private fun scenarios(): List<Scenario> = listOf(
-        // Raw power
         Scenario("P1P1 best card on top",
             pack = listOf(card("Strong", 0.61, "U"), card("Weak", 0.49, "U")),
             check = topIs("Strong")),
@@ -76,7 +63,6 @@ class ScenarioSuiteTest {
             pack = listOf(card("Rated", 0.56, "U"), card("Unrated", null, "U")),
             check = above("Rated", "Unrated")),
 
-        // Color commitment
         Scenario("P1 early: no off-color penalty (best card wins)",
             pool = bluePool(3), packNo = 1, pickNo = 3,
             pack = listOf(card("OffRed", 0.60, "R"), card("OnBlue", 0.555, "U")),
@@ -98,7 +84,6 @@ class ScenarioSuiteTest {
             pack = listOf(card("Artifact", 0.55, ""), card("OffRed", 0.55, "R")),
             check = above("Artifact", "OffRed")),
 
-        // Deck needs — removal
         run {
             val pool = List(6) { card("PC$it", 0.55, "U") }
             Scenario("P3 needed removal jumps a slightly-better creature",
@@ -121,7 +106,6 @@ class ScenarioSuiteTest {
                 check = all(above("Creature", "MoreRemoval"), reason("MoreRemoval", "saturat")))
         },
 
-        // Deck needs — curve / creatures / finisher / fixing
         Scenario("P2 short on 2-drops boosts a cheap creature",
             packNo = 2, pickNo = 1,
             pack = listOf(card("TwoDrop", 0.55, "U"), card("FiveDrop", 0.55, "U")),
@@ -152,19 +136,16 @@ class ScenarioSuiteTest {
                 check = all(above("Dual", "BadCard"), reason("Dual", "fixing")))
         },
 
-        // Archetype synergy
         Scenario("Archetype glue: a card better in your pair is boosted",
             pool = ubPool(6), packNo = 2, pickNo = 6,
             pack = listOf(card("Glue", 0.55, "U"), card("Plain", 0.55, "U")),
             archetypeRating = archOf(Triple("Glue", "UB", 0.60)),
             check = all(above("Glue", "Plain"), reason("Glue", "glue"))),
 
-        // Wheel
         Scenario("Late-ALSA card flagged as a wheeler",
             pack = listOf(card("Wheeler", 0.55, "U", alsa = 8.5)),
             check = reason("Wheeler", "wheel")),
 
-        // Confidence
         Scenario("Two near-tied tops → TOSS-UP",
             pack = listOf(card("A", 0.575, "U"), card("B", 0.573, "U"), card("C", 0.50, "U")),
             check = confidence(ConfidenceLevel.TOSS_UP)),
@@ -192,7 +173,6 @@ class ScenarioSuiteTest {
 
     @Test
     fun archetypeBlendStrengthensACardLateInTheDraft() {
-        // A card that overperforms in your pair should be valued more as the draft commits.
         val pool = ubPool(6)
         val lane = LaneDetector.detect(pool, metrics)
         val pack = listOf(card("PairCard", 0.55, "U"))

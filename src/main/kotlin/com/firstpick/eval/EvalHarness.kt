@@ -12,13 +12,6 @@ import kotlinx.coroutines.runBlocking
 import java.nio.file.Files
 import java.nio.file.Path
 
-/**
- * Backtests the advisor against a real 17Lands draft dataset: replays every pick a
- * real drafter faced, runs our engine, and measures how our recommendation compares
- * to what they took — split by whether they won. See docs/eval-harness.md.
- *
- *   ./gradlew evalHarness -Pdata=/tmp/mkm_sample.csv -Pset=MKM [-Plimit=90000]
- */
 fun main(args: Array<String>) = runBlocking {
     val path = Path.of(args.getOrElse(0) { error("usage: <draft.csv> [set] [format] [limit]") })
     val set = args.getOrElse(1) { "MKM" }
@@ -33,7 +26,6 @@ fun main(args: Array<String>) = runBlocking {
     val metaRepo = CardMetaRepository().apply { runCatching { load(set, repo.cardNames) } }
     println("done.")
 
-    // Read rows, grouped by draft (the dataset is contiguous per draft_id).
     val drafts = LinkedHashMap<String, MutableList<PickRow>>()
     var rows = 0
     var maxPick = 0
@@ -51,7 +43,6 @@ fun main(args: Array<String>) = runBlocking {
         }
     }
     val picksPerPack = maxPick + 1
-    // Constants overridable via -Dfirstpick.* so the tuning loop can A/B without recompiling.
     fun sysD(key: String, def: Double) = System.getProperty(key)?.toDoubleOrNull() ?: def
     val base = AdvisorEngine.Config()
     val cfg = base.copy(
@@ -85,9 +76,6 @@ fun main(args: Array<String>) = runBlocking {
         val seen = LinkedHashMap<Pair<Int, Int>, List<RankedCard>>()
         for (row in picks) {
             val pack = row.packCards.map(repo::resolveName)
-            // Include the current pack in the signal (a strong card still here is the
-            // freshest "this color is flowing to me" read), mirroring the live app where
-            // DraftState.seen already contains the current pack at scoring time.
             seen[(row.pack + 1) to (row.pick + 1)] = pack
             val signals = SignalsEngine.openLanesResolved(seen)
             val lane = LaneDetector.detect(pool, repo.setMetrics, archRepo.strengthMap(), signals)

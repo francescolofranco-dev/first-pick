@@ -1,10 +1,5 @@
 package com.firstpick.cards
 
-/**
- * Caches per-set [CardMeta] (mana values etc.) from Scryfall. The advisor's curve
- * logic degrades gracefully — [meta] simply returns null — if a set hasn't loaded
- * or Scryfall is unreachable.
- */
 class CardMetaRepository(
     private val client: ScryfallClient = ScryfallClient(),
 ) {
@@ -23,7 +18,6 @@ class CardMetaRepository(
         }
     }
 
-    /** Expose the lookup directly for tests / manual indexing. */
     internal fun index(metas: List<CardMeta>, setCode: String = "TEST") {
         byName = metas.associateBy { normalize(it.name) }
         loadedSet = setCode.uppercase()

@@ -7,12 +7,6 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
 
-/**
- * Replays an MTGA Player.log from the start and prints the reconstructed draft.
- * A non-interactive way to validate the parser + state machine against real data.
- *
- *   ./gradlew replay -PlogPath="/abs/path/Player-prev.log"
- */
 fun main(args: Array<String>) {
     val path: Path = args.firstOrNull()?.let(Path::of) ?: AppPaths.defaultPlayerLog
     println("Replaying: $path")
