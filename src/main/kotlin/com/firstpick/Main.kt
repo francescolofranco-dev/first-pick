@@ -17,6 +17,7 @@ import com.firstpick.ui.DraftingOverlay
 import com.firstpick.ui.DeckBuilderOverlay
 import com.firstpick.ui.DevFlags
 import com.firstpick.overlay.ArenaOverlayTracker
+import com.firstpick.overlay.CardGrade
 import com.firstpick.model.DraftPhase
 import com.firstpick.core.AppPaths
 import com.firstpick.ui.App
@@ -74,7 +75,12 @@ fun main() {
         if (isOverlayOpen) {
             val isDrafting = state.phase == DraftPhase.DRAFTING || state.phase == DraftPhase.IDLE
             if (isDrafting) {
+                // Compact ranked list (top-right) + the embedded on-card grades pinned to Arena.
                 DraftingOverlay(state)
+                val grades = remember(state.packCards) {
+                    state.packCards.map { CardGrade(it.originalIndex, it.value) }
+                }
+                ArenaOverlayTracker(grades = grades)
             } else {
                 val overlayWindowState = rememberWindowState(
                     size = DpSize(1000.dp, 650.dp),
@@ -102,8 +108,8 @@ fun main() {
             }
         }
 
-        // Overlay spike (Phase 1a): pin a transparent, click-through frame to the live
-        // Arena window to verify alignment/tracking. Dev-only — see DevFlags.overlayTrack.
-        if (DevFlags.overlayTrack) ArenaOverlayTracker()
+        // Dev calibration: with no draft/overlay open, show the tracker's numbered card boxes
+        // to verify alignment against a live Arena window. See DevFlags.overlayTrack.
+        else if (DevFlags.overlayTrack) ArenaOverlayTracker()
     }
 }

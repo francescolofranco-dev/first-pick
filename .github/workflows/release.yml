@@ -60,6 +60,12 @@ jobs:
           esac
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
+      # The overlay's macOS helpers (window-locator, window-capture) are gitignored binaries,
+      # so build them here (universal arm64+x86_64 via swiftc/lipo on the macos-14 runner) into
+      # src/main/resources/native/macos/ so packageDmg bundles them into the app.
+      - name: Build native helpers (universal)
+        run: bash native/macos/build.sh
+
       # composeJdk points jpackage at this job's JDK, so the bundled runtime (and thus
       # the .app) matches the JDK architecture: aarch64 -> arm64, x64 (Rosetta) -> Intel.
       - name: Build dmg

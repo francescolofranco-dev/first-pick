@@ -43,16 +43,6 @@ class WindowCapture(
         private const val TAG = "WindowCapture"
         private const val RESOURCE = "/native/macos/window-capture"
 
-        /** Copy the bundled helper out of the classpath to an executable temp file (mac only). */
-        private fun extractHelper(): File? {
-            if (!System.getProperty("os.name").orEmpty().contains("Mac", ignoreCase = true)) return null
-            return runCatching {
-                val stream = WindowCapture::class.java.getResourceAsStream(RESOURCE) ?: return null
-                val tmp = File.createTempFile("window-capture", "").apply { deleteOnExit() }
-                stream.use { input -> tmp.outputStream().use { input.copyTo(it) } }
-                tmp.setExecutable(true)
-                tmp
-            }.getOrElse { Log.warn(TAG, "helper extract failed: $it"); null }
-        }
+        private fun extractHelper(): File? = NativeHelpers.extract(RESOURCE, "window-capture")
     }
 }
