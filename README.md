@@ -73,6 +73,10 @@ tags (removal · fixing · finisher · draw · evasion), copy counts, and a sugg
   so early picks stay value-driven and late picks build a balanced deck.
 - **At-a-glance dashboard** — your lane, ranked archetypes, open-lane signals,
   mana curve, pool, and current deck needs.
+- **On-card overlay** — a transparent, click-through layer pinned to the Arena
+  window that draws each card's grade (A+→F + 0–100) right on the card, locating
+  them by screen capture so it stays aligned at any window size. Draft support
+  only — no deck tracking.
 - **Post-draft deck builder** — 2–3 buildable decks with power score, tier, type,
   manabase, and outlook.
 
@@ -80,6 +84,10 @@ tags (removal · fixing · finisher · draw · evasion), copy counts, and a sugg
 
 - macOS (Apple Silicon or Intel)
 - MTG Arena, with **Options → Account → Detailed Logs (Plugin Support)** enabled
+- For the on-card overlay only: **Screen Recording** permission (System Settings →
+  Privacy & Security → Screen Recording). macOS prompts on first use; FirstPick uses
+  it solely to find where the cards are drawn — frames are analyzed in memory and
+  never stored or sent anywhere. The rest of the app works without it.
 
 ## Download & install
 
@@ -118,8 +126,9 @@ Start a draft in Arena and FirstPick updates live.
 A coroutine pipeline: tail `~/Library/Logs/Wizards of the Coast/MTGA/Player.log`
 → reconstruct the live draft → fetch + cache 17Lands ratings, archetype data, and
 Scryfall card facts → run the contextual advisor → render a Compose dashboard.
-It only ever **reads** the log and your local MTGA card database; it never writes
-to Arena or uploads anything.
+It only ever **reads** the log and your local MTGA card database — plus, when the
+on-card overlay is on, screen frames of the Arena window analyzed in memory to
+locate the cards. It never writes to Arena, and never stores or uploads frames.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the architecture.
 
