@@ -34,54 +34,63 @@ class DeckBuilderTest {
         val options = DeckBuilder.build(pool(), metrics, meta)
         assertTrue(options.isNotEmpty())
         // WU is the deep, strong pair; it should be the top option.
-        assertTrue(options.first().pair == "WU")
+        assertEquals("WU", options.first().basePair)
         assertTrue(options.first().powerScore > options.last().powerScore)
     }
 
     @Test
-    fun deckHasAFullSpellCountAndLands() {
+    fun fillsToTwentyThreeSpellsAndSeventeenLandsNeverPadding() {
+        // A deep two-color pool must yield the golden ratio: 23 spells + 17 lands = 40,
+        // never a thin spell count padded out with extra basics.
         val top = DeckBuilder.build(pool(), metrics, meta).first()
-        assertTrue(top.spells.size in 18..23)
-        assertTrue(top.basics.values.sum() in 1..17)
-        // Lands split across the two pair colors.
-        assertTrue(top.basics.keys.all { it in setOf('W', 'U') })
+        assertEquals(23, top.spells.size, "a complete deck runs 23 spells")
+        assertEquals(17, top.landCount, "a complete deck runs 17 lands")
+        assertEquals(40, top.spells.size + top.landCount)
     }
 
     @Test
     fun skipsPairsWithoutEnoughPlayables() {
-        // Only red cards (8) — no pair reaches the 18-playable minimum.
+        // Only red cards (8) — no two-color pair is castable (the second color is absent).
         val redOnly = (0 until 8).map { card(it, "R$it", 0.5, "R") }
         assertTrue(DeckBuilder.build(redOnly, metrics, meta).isEmpty())
     }
 
     @Test
-    fun offersThreeColorDeckOnlyWhenFixingSupportsIt() {
-        // Equally deep W/U/B (so each 2-color pair is a clean, splash-free deck) where
-        // the best 23 cards span all three colors — a 3-color deck has a real card-quality
-        // edge, but should only be offered when the pool also has the fixing to cast it.
-        val colors = listOf("W", "U", "B")
-        val base = buildList {
-            colors.forEachIndexed { ci, col ->
-                repeat(12) { i -> add(card(ci * 100 + i, "$col$i", 0.62 - 0.01 * i, col)) }
+    fun neverOffersABalancedThreeColorDeck() {
+        // A deep, equally-strong W/U/B pool: each two-color base is a complete deck on its
+        // own, so the builder must offer clean two-color decks — never a balanced tri-color
+        // pile (its mana base is too weak in 40 cards).
+        val pool = buildList {
+            listOf("W", "U", "B").forEachIndexed { ci, col ->
+                repeat(12) { i -> add(card(ci * 100 + i, "$col$i", 0.60 - 0.005 * i, col)) }
             }
         }
-        val fixingLands = (0 until 3).map { card(900 + it, "Fixer$it", 0.0, "") }
-        val metaFix: (String) -> CardMeta? = { name ->
-            if (name.startsWith("Fixer")) CardMeta(name, cmc = 0, isCreature = false, isLand = true, isFixing = true)
-            else CardMeta(name, cmc = 3, isCreature = true, isLand = false)
+        val options = DeckBuilder.build(pool, metrics, meta)
+        assertTrue(options.isNotEmpty())
+        for (o in options) {
+            assertEquals(2, o.basePair.length, "base must be two colors")
+            assertTrue(o.colors.length <= 3, "a deck is two colors plus at most one splash: ${o.colors}")
         }
+    }
 
-        val withFixing = DeckBuilder.build(base + fixingLands, metrics, metaFix)
-        val withoutFixing = DeckBuilder.build(base, metrics, metaFix)
-
-        assertTrue(
-            withFixing.any { it.pair.length == 3 },
-            "3-color should be offered with fixing: ${withFixing.map { it.pair to it.powerScore.toInt() }}",
-        )
-        assertTrue(
-            withoutFixing.none { it.pair.length == 3 },
-            "3-color should NOT be offered without fixing: ${withoutFixing.map { it.pair to it.powerScore.toInt() }}",
-        )
+    @Test
+    fun topsUpAShortBaseWithACappedSingleColorSplash() {
+        // A short WU base (so it can't reach 23 alone) plus a few strong off-color black
+        // cards and fixing: the build should top up to 23 with a small B splash — still a
+        // two-color base, splash labeled separately, never more than a handful of cards.
+        val pool = buildList {
+            repeat(9) { add(card(it, "W$it", 0.56, "W")) }
+            repeat(9) { add(card(100 + it, "U$it", 0.56, "U")) }
+            repeat(4) { add(card(200 + it, "B$it", 0.60, "B")) }
+        }
+        val metaFix: (String) -> CardMeta? = { name ->
+            CardMeta(name, cmc = 3, isCreature = true, isLand = false)
+        }
+        val top = DeckBuilder.build(pool, metrics, metaFix).first()
+        assertEquals("WU", top.basePair)
+        assertEquals('B', top.splash)
+        val splashCards = top.spells.count { LaneDetector.colorsOf(it) == setOf('B') }
+        assertTrue(splashCards in 1..4, "splash should be a few cards, got $splashCards")
     }
 
     @Test
@@ -139,11 +148,11 @@ class DeckBuilderTest {
         val options = DeckBuilder.build(pool, metrics, meta)
         assertTrue(options.isNotEmpty())
         for (opt in options) {
-            val declared = opt.pair.toSet()
+            val declared = opt.colors.toSet()
             for (s in opt.spells) {
                 assertTrue(
                     LaneDetector.colorsOf(s).all { it in declared },
-                    "${opt.pair} build has off-color card ${s.name} ${LaneDetector.colorsOf(s)}",
+                    "${opt.colors} build has off-color card ${s.name} ${LaneDetector.colorsOf(s)}",
                 )
             }
         }

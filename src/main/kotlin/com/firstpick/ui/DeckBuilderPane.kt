@@ -38,7 +38,6 @@ internal fun DeckBuilderPane(options: List<DeckOptionUi>) {
     var selected by remember(options) { mutableStateOf(0) }
     val sel = options.getOrElse(selected) { options.first() }
     val spellCount = sel.spells.sumOf { it.count }
-    val landCount = sel.lands.sumOf { it.count }
     Column(Modifier.fillMaxSize()) {
         Text("Draft complete — pick your build", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(10.dp))
@@ -47,8 +46,7 @@ internal fun DeckBuilderPane(options: List<DeckOptionUi>) {
         }
         Spacer(Modifier.height(12.dp))
         Text(
-            "${sel.title} (${sel.pair}) · $spellCount spells · " +
-                (if (landCount > 0) "$landCount nonbasic + " else "") + "basics ${sel.landLine}",
+            "${sel.title} (${sel.colors}) · $spellCount spells · ${sel.landLine}",
             fontSize = 12.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -163,7 +161,7 @@ private fun OptionCard(opt: DeckOptionUi, selected: Boolean, onClick: () -> Unit
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            PipRow(opt.pair.toList())
+            PipRow(opt.colors.toList())
             Spacer(Modifier.width(6.dp))
             Text(opt.title, fontWeight = FontWeight.Bold, fontSize = 13.sp)
         }

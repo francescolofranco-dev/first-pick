@@ -71,7 +71,12 @@ val deckSpellOrder: Comparator<DeckSpellUi> =
 
 /** A finished deck proposal for the post-draft builder. */
 data class DeckOptionUi(
-    val pair: String,
+    /** Full color identity (base pair + splash), in WUBRG order — drives the pips. */
+    val colors: String,
+    /** The two base colors, for the guild name. */
+    val basePair: String,
+    /** The single splash color, or null for a clean two-color deck. */
+    val splash: Char? = null,
     val tier: String,
     val type: String,
     val outlook: String,
@@ -83,7 +88,8 @@ data class DeckOptionUi(
     /** Drafted non-basic lands in the build (deduplicated). */
     val lands: List<DeckSpellUi> = emptyList(),
 ) {
-    val title: String get() = guildName(pair).ifBlank { pair }
+    val title: String
+        get() = guildName(basePair).ifBlank { basePair } + (splash?.let { " · splash $it" } ?: "")
 }
 
 /** Common two-color guild names, for friendlier archetype labels. */

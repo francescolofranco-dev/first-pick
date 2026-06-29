@@ -207,7 +207,7 @@ private fun DeckHelperView(
                     ) {
                         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                PipRow(opt.pair.toList())
+                                PipRow(opt.colors.toList())
                                 Spacer(Modifier.width(6.dp))
                                 Text(opt.title, fontWeight = FontWeight.Bold, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface)
                             }
@@ -241,7 +241,7 @@ private fun DeckHelperView(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    PipRow(sel.pair.toList())
+                    PipRow(sel.colors.toList())
                     Spacer(Modifier.width(6.dp))
                     Text(
                         text = "${sel.title} build checklist",
@@ -251,7 +251,7 @@ private fun DeckHelperView(
                     )
                     Spacer(Modifier.width(10.dp))
                     Text(
-                        text = "${sel.spells.size} spells · lands ${sel.landLine}",
+                        text = "${sel.spells.sumOf { it.count }} spells · ${sel.landLine}",
                         fontSize = 10.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

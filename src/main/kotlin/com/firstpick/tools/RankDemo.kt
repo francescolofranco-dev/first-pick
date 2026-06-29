@@ -86,10 +86,10 @@ fun main(args: Array<String>) = runBlocking {
         println("\n=== Deck builder (from ${pool.size} pool cards) ===")
         val options = DeckBuilder.build(pool, repo.setMetrics, metaRepo::meta, archRepo::archetypeRating, archRepo.strengthMap())
         for (o in options) {
+            val splash = o.splash?.let { " splash $it" } ?: ""
             println(
-                "${o.pair}  tier ${o.tier}  power ${"%.0f".format(o.powerScore)}  ${o.type}  " +
-                    "${o.creatures}cr/${o.removal}rem  lands ${o.basics.entries.joinToString("+") { "${it.value}${it.key}" }}" +
-                    "  — ${o.outlook}",
+                "${o.colors} (${o.basePair}$splash)  tier ${o.tier}  power ${"%.0f".format(o.powerScore)}  ${o.type}  " +
+                    "${o.spells.size}sp/${o.landCount}ln  ${o.creatures}cr/${o.removal}rem  — ${o.outlook}",
             )
         }
     }

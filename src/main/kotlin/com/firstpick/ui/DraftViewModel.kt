@@ -264,17 +264,26 @@ class DraftViewModel(
     }
 
     private fun DeckOption.toUi(): DeckOptionUi {
-        val basicsLine = basics.entries.sortedByDescending { it.value }
-            .joinToString(", ") { "${it.value}${it.key}" }
+        val nonbasicCount = nonbasicLands.size
+        val basics = (landCount - nonbasicCount).coerceAtLeast(0)
+        // Never name specific basics — Arena's editor adds the right split. We only state the
+        // land count and any drafted nonbasics, and that Arena fills the rest.
+        val landLine = buildString {
+            append("$landCount lands")
+            if (nonbasicCount > 0) append(" · $nonbasicCount nonbasic")
+            append(" · Arena adds $basics basics")
+        }
         return DeckOptionUi(
-            pair = pair,
+            colors = colors,
+            basePair = basePair,
+            splash = splash,
             tier = tier,
             type = type,
             outlook = outlook,
             power = powerScore.toInt(),
             creatures = creatures,
             removal = removal,
-            landLine = basicsLine.ifBlank { "—" },
+            landLine = landLine,
             spells = spells.toDeckSpells(),
             lands = nonbasicLands.toDeckSpells(),
         )
