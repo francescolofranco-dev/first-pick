@@ -17,7 +17,7 @@ class CardDetectorTest {
     @Test
     fun findsThePackGridInARealCaptureFrame() {
         // A real ScreenCaptureKit P1P1 frame (5/5/3 = 13 cards), downscaled + grayscaled.
-        val grid = CardDetector.detect(fixture("p1p1-13cards.png"))
+        val grid = CardDetector.detect(fixture("p1p1-13cards.png"), expectedCount = 13)
         assertNotNull(grid, "should detect a grid in a real draft frame")
         assertEquals(5, grid.cols.size, "P1P1 lays out five columns")
         assertEquals(3, grid.rows.size, "13 cards wrap to three rows")
@@ -25,7 +25,7 @@ class CardDetectorTest {
 
     @Test
     fun cardsAreInRowMajorPickOrder() {
-        val grid = CardDetector.detect(fixture("p1p1-13cards.png"))!!
+        val grid = CardDetector.detect(fixture("p1p1-13cards.png"), expectedCount = 13)!!
         val cards = grid.cards(13)
         assertEquals(13, cards.size, "13-card pack yields 13 rects (partial last row trimmed)")
 
@@ -40,7 +40,7 @@ class CardDetectorTest {
 
     @Test
     fun boxesAreCardSizedAndTightToTheGrid() {
-        val grid = CardDetector.detect(fixture("p1p1-13cards.png"))!!
+        val grid = CardDetector.detect(fixture("p1p1-13cards.png"), expectedCount = 13)!!
         val w = grid.imageW
         val h = grid.imageH
         val card = grid.cards(1).single()

@@ -4,7 +4,7 @@ import com.firstpick.core.Log
 import java.io.File
 
 /** On-screen bounds of a window, in global display points (top-left origin). */
-data class WindowBounds(val x: Int, val y: Int, val w: Int, val h: Int)
+data class WindowBounds(val x: Int, val y: Int, val w: Int, val h: Int, val frontmost: Boolean = false)
 
 /**
  * Locates the MTG Arena window on macOS so the overlay can align to it.
@@ -39,7 +39,8 @@ class WindowLocator(
             val y = int("y") ?: return null
             val w = int("w") ?: return null
             val h = int("h") ?: return null
-            return WindowBounds(x, y, w, h)
+            val frontmost = json.contains("\"frontmost\":true")
+            return WindowBounds(x, y, w, h, frontmost)
         }
 
         private fun extractHelper(): File? = NativeHelpers.extract(RESOURCE, "window-locator")

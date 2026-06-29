@@ -36,6 +36,18 @@ object CardImageLoader {
             bitmap?.also { memory[url] = it }
         }
 
+    /**
+     * Load a card image as an AWT [BufferedImage] for pixel work (the overlay's card
+     * recognition), reusing the same on-disk cache as the hover previews so nothing
+     * re-downloads. Decodes via ImageIO. Returns null on a blank URL or any failure.
+     */
+    suspend fun loadBufferedImage(url: String, cacheDir: Path = AppPaths.cacheDir): java.awt.image.BufferedImage? =
+        withContext(Dispatchers.IO) {
+            if (url.isBlank()) return@withContext null
+            val bytes = cachedBytes(url, cacheDir) ?: return@withContext null
+            runCatching { javax.imageio.ImageIO.read(java.io.ByteArrayInputStream(bytes)) }.getOrNull()
+        }
+
     private fun cachedBytes(url: String, cacheDir: Path): ByteArray? {
         val dir = cacheDir.resolve("images")
         Files.createDirectories(dir)

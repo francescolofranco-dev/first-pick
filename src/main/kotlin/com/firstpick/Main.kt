@@ -13,11 +13,10 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
-import com.firstpick.ui.DraftingOverlay
 import com.firstpick.ui.DeckBuilderOverlay
 import com.firstpick.ui.DevFlags
 import com.firstpick.overlay.ArenaOverlayTracker
-import com.firstpick.overlay.CardGrade
+import com.firstpick.overlay.OverlayCard
 import com.firstpick.model.DraftPhase
 import com.firstpick.core.AppPaths
 import com.firstpick.ui.App
@@ -75,12 +74,13 @@ fun main() {
         if (isOverlayOpen) {
             val isDrafting = state.phase == DraftPhase.DRAFTING || state.phase == DraftPhase.IDLE
             if (isDrafting) {
-                // Compact ranked list (top-right) + the embedded on-card grades pinned to Arena.
-                DraftingOverlay(state)
-                val grades = remember(state.packCards) {
-                    state.packCards.map { CardGrade(it.originalIndex, it.value) }
+                // Embedded on-card grades pinned to Arena. Each pack card carries its image so
+                // the overlay can recognize which on-screen card is which (Arena's draw order
+                // isn't derivable from the log). This replaces the old standalone list panel.
+                val cards = remember(state.packCards) {
+                    state.packCards.map { OverlayCard(it.value, it.imageUrl, it.name) }
                 }
-                ArenaOverlayTracker(grades = grades)
+                ArenaOverlayTracker(cards = cards)
             } else {
                 val overlayWindowState = rememberWindowState(
                     size = DpSize(1000.dp, 650.dp),

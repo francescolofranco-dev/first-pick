@@ -1,6 +1,8 @@
 package com.firstpick.overlay
 
 import java.awt.image.BufferedImage
+import kotlin.math.ceil
+import kotlin.math.roundToInt
 
 /**
  * Finds the draft-pack card grid in a captured MTG Arena frame by brightness projection.
@@ -67,8 +69,16 @@ object CardDetector {
     private const val ROW_THRESH = 0.20f
     private const val ROW_MIN_LEN = 0.10
     private const val ROW_MAX_GAP = 0.005
+    // A Magic card is 5:7 (w:h ≈ 0.714); used to sanity-check / fall back the card height.
+    private const val CARD_ASPECT = 0.714
+    private const val DEFAULT_PITCH_RATIO = 1.1 // row pitch ≈ card height + a small gap
 
-    fun detect(img: BufferedImage): Grid? {
+    /**
+     * Detect the pack grid. [expectedCount] (the number of cards in the pack, from the log)
+     * lets us lay out the exact number of uniform rows instead of trusting per-row detection,
+     * which is fragile on text-heavy bottom cards. Pass 0 to infer the row count.
+     */
+    fun detect(img: BufferedImage, expectedCount: Int = 0): Grid? {
         val w = img.width
         val h = img.height
         if (w < 200 || h < 200) return null
@@ -93,7 +103,11 @@ object CardDetector {
         val cols = runsAbove(colProj, COL_THRESH, (COL_MIN_LEN * w).toInt(), (COL_MAX_GAP * w).toInt())
         if (cols.isEmpty() || cols.size > MAX_COLS) return null
 
-        // --- Rows: mean over the leftmost column only. ---
+        // --- Rows: from the leftmost column, but extrapolated into a uniform grid. ---
+        // A card's internal art/text stripe can split its band (worse on land/text-heavy
+        // cards, which is why the bottom row came out half-height), so we DON'T trust per-row
+        // heights. Instead we take the clean top row's position + height and the row pitch,
+        // then lay out the known number of equal rows.
         val c0 = cols.first()
         val cw = c0.last - c0.first + 1
         val rowProj = FloatArray(h)
@@ -105,9 +119,27 @@ object CardDetector {
         }
         smoothInPlace(rowProj, (ROW_SMOOTH * h).toInt())
         normalize(rowProj)
-        val rows = runsAbove(rowProj, ROW_THRESH, (ROW_MIN_LEN * h).toInt(), (ROW_MAX_GAP * h).toInt())
-        if (rows.isEmpty()) return null
+        val bands = runsAbove(rowProj, ROW_THRESH, (ROW_MIN_LEN * h).toInt(), (ROW_MAX_GAP * h).toInt())
+        if (bands.isEmpty()) return null
 
+        val cardW = cols.map { it.last - it.first + 1 }.sorted().let { it[it.size / 2] }
+        val aspectH = (cardW / CARD_ASPECT).toInt()
+        val row0Top = bands.first().first
+        val row0H = bands.first().last - bands.first().first + 1
+        // Trust the clean first row's height; fall back to the aspect ratio if it looks split.
+        val cardH = if (row0H >= (0.75 * aspectH).toInt()) row0H else aspectH
+        // Row pitch from the first two row starts; fall back to card height + a small gap.
+        val row1Top = bands.firstOrNull { it.first > row0Top + (0.6 * cardH).toInt() }?.first
+        val pitch = (row1Top?.minus(row0Top)) ?: (cardH * DEFAULT_PITCH_RATIO).toInt()
+
+        val rowCount = when {
+            expectedCount > 0 -> ceil(expectedCount.toDouble() / cols.size).toInt()
+            else -> ((bands.last().first - row0Top).toDouble() / pitch).roundToInt() + 1
+        }.coerceAtLeast(1)
+        val rows = (0 until rowCount).map { r ->
+            val top = row0Top + r * pitch
+            top..(top + cardH - 1).coerceAtMost(h - 1)
+        }
         return Grid(cols, rows, w, h)
     }
 
