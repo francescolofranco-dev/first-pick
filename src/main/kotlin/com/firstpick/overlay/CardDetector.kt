@@ -102,6 +102,10 @@ object CardDetector {
         for (x in cut until w) colProj[x] = 0f
         val cols = runsAbove(colProj, COL_THRESH, (COL_MIN_LEN * w).toInt(), (COL_MAX_GAP * w).toInt())
         if (cols.isEmpty() || cols.size > MAX_COLS) return null
+        // Arena lays the pack out 5-wide (fewer only when the pack itself is smaller). If we
+        // detected a different number of columns, a column was missed/spurious — bail rather
+        // than lay out a misaligned grid that would put grades on the wrong cards.
+        if (expectedCount > 0 && cols.size != minOf(MAX_COLS, expectedCount)) return null
 
         // --- Rows: from the leftmost column, but extrapolated into a uniform grid. ---
         // A card's internal art/text stripe can split its band (worse on land/text-heavy
@@ -136,10 +140,14 @@ object CardDetector {
             expectedCount > 0 -> ceil(expectedCount.toDouble() / cols.size).toInt()
             else -> ((bands.last().first - row0Top).toDouble() / pitch).roundToInt() + 1
         }.coerceAtLeast(1)
-        val rows = (0 until rowCount).map { r ->
+        val rows = (0 until rowCount).mapNotNull { r ->
             val top = row0Top + r * pitch
-            top..(top + cardH - 1).coerceAtMost(h - 1)
+            val bottom = (top + cardH - 1).coerceAtMost(h - 1)
+            // Drop any row that an over-estimated count pushed off the frame (clamp the TOP too,
+            // not just the bottom, so we never emit a reversed/empty range or negative height).
+            if (top < 0 || top > h - 1 || bottom <= top) null else top..bottom
         }
+        if (rows.isEmpty()) return null
         return Grid(cols, rows, w, h)
     }
 

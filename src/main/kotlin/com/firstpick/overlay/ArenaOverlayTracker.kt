@@ -69,10 +69,14 @@ fun ArenaOverlayTracker(
     locator: WindowLocator = WindowLocator(),
     capturer: WindowCapture = WindowCapture(),
 ) {
+    // Stabilize the deps: a default-arg constructor is re-evaluated on every recomposition, which
+    // would re-key the poll effect (restarting it) and re-extract the native helper each frame.
+    val loc = remember { locator }
+    val cap = remember { capturer }
     var bounds by remember { mutableStateOf<WindowBounds?>(null) }
-    LaunchedEffect(locator) {
+    LaunchedEffect(loc) {
         while (true) {
-            bounds = locator.locate()
+            bounds = withContext(Dispatchers.IO) { loc.locate() } // blocking subprocess, off the UI thread
             delay(POLL_MS)
         }
     }
@@ -89,19 +93,23 @@ fun ArenaOverlayTracker(
     }
 
     // Capture → detect → recognize. Reruns only on size or pack change (not the position poll
-    // or focus toggle), since the costly capture + art match needn't repeat otherwise.
+    // or focus toggle), since the costly capture + art match needn't repeat otherwise. The key
+    // uses the card name (always present) since a no-art card's imageUrl can be blank.
     var marks by remember { mutableStateOf<List<Mark>>(emptyList()) }
-    val packKey = remember(cards) { cards.joinToString("|") { it.imageUrl ?: it.name } }
+    val packKey = remember(cards) { cards.joinToString("|") { "${it.name}#${it.imageUrl}" } }
     LaunchedEffect(b.w, b.h, packKey, calibrating) {
         delay(CAPTURE_DEBOUNCE_MS)
-        marks = withContext(Dispatchers.IO) { computeMarks(capturer, cards, calibrating, b.w, b.h) }
+        marks = withContext(Dispatchers.IO) { computeMarks(cap, cards, calibrating, b.w, b.h) }
     }
 
-    // Hide the overlay when the player tabs away from Arena (keep it in dev calibration).
-    if (!b.frontmost && !calibrating) return
+    // Keep the window mounted and toggle visibility, so the native peer + click-through flag
+    // persist instead of being torn down/recreated on every focus toggle. Hide it when Arena
+    // isn't frontmost or there's nothing to show.
+    val visible = (b.frontmost || calibrating) && (cards.isNotEmpty() || calibrating)
 
     Window(
         onCloseRequest = {},
+        visible = visible,
         state = wState,
         title = TRACKER_TITLE,
         transparent = true,

@@ -12,7 +12,8 @@ import javax.imageio.ImageIO
  *
  * Unlike [WindowLocator], this needs Screen Recording permission (granted to the app, or to the
  * terminal during dev). Returns null off macOS, without permission, if Arena isn't on screen,
- * or on any error — callers fall back to a geometric guess.
+ * or on any error; the overlay then simply shows no grades for that frame (there is no
+ * capture-free fallback — the main FirstPick window remains the source of truth).
  *
  * The captured frame is in physical pixels (Retina = 2x the window's points), so detected
  * coordinates must be scaled by windowPoints / capturePixels to land in the overlay.

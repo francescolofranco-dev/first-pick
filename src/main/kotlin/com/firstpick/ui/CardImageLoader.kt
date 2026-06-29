@@ -45,7 +45,13 @@ object CardImageLoader {
         withContext(Dispatchers.IO) {
             if (url.isBlank()) return@withContext null
             val bytes = cachedBytes(url, cacheDir) ?: return@withContext null
-            runCatching { javax.imageio.ImageIO.read(java.io.ByteArrayInputStream(bytes)) }.getOrNull()
+            // Log failures (ImageIO returns null for unsupported/corrupt data without throwing),
+            // so a card silently missing its overlay grade is diagnosable.
+            val img = runCatching { javax.imageio.ImageIO.read(java.io.ByteArrayInputStream(bytes)) }
+                .onFailure { com.firstpick.core.Log.warn("CardImageLoader", "decode failed for $url: $it") }
+                .getOrNull()
+            if (img == null) com.firstpick.core.Log.warn("CardImageLoader", "no image decoded for $url")
+            img
         }
 
     private fun cachedBytes(url: String, cacheDir: Path): ByteArray? {
