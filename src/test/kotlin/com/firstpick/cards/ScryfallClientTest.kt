@@ -79,19 +79,14 @@ class ScryfallClientTest {
 
     @Test
     fun hybridPipsAreExtractedAndCanonicallyOrdered() {
-        // {4}{U/W} -- one hybrid pip, order-normalized to WUBRG regardless of cost order.
         assertEquals(listOf("WU"), ScryfallClient.hybridGroupsOf("{4}{U/W}"))
         assertEquals(listOf("WU"), ScryfallClient.hybridGroupsOf("{4}{W/U}"))
-        // Two distinct hybrid pips.
         assertEquals(listOf("WU", "BR"), ScryfallClient.hybridGroupsOf("{W/U}{1}{B/R}"))
-        // Repeated identical pip collapses to one group.
         assertEquals(listOf("WU"), ScryfallClient.hybridGroupsOf("{U/W}{U/W}"))
     }
 
     @Test
     fun nonColorHybridAndPhyrexianPipsAreNotHybridGroups() {
-        // {2/W} is generic-or-white, not a second color; {U/P} is Phyrexian (mana or life),
-        // not a real alternate color. Neither should be treated as a color-flexible group.
         assertTrue(ScryfallClient.hybridGroupsOf("{2/W}").isEmpty())
         assertTrue(ScryfallClient.hybridGroupsOf("{U/P}").isEmpty())
         assertTrue(ScryfallClient.hybridGroupsOf("{3}{U}").isEmpty())

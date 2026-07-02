@@ -67,8 +67,6 @@ class ScryfallClient(
         val finisher: Boolean,
         val evasion: Boolean,
         val draw: Boolean,
-        // Each entry is a canonical (WUBRG-ordered) 2-letter hybrid pip group, e.g. "WU" for
-        // {W/U}. Absent on old cache files (pre-hybrid), which decodes to the empty-list default.
         val hybridGroups: List<String> = emptyList(),
     )
 
@@ -231,10 +229,6 @@ class ScryfallClient(
         private val LIST_SERIALIZER = ListSerializer(MetaDto.serializer())
         private val EVASION_RE = Regex("flying|menace|can't be blocked|skulk|shadow|intimidate|horsemanship")
 
-        // Two-color hybrid pips only, e.g. {U/W}: the card is castable with EITHER color, so
-        // these aren't a real color commitment to both. Deliberately excludes generic-hybrid
-        // ({2/W}) and Phyrexian ({U/P}) pips — neither offers a second WUBRG color to pay with,
-        // so they should still count as a plain requirement for their one color.
         private val HYBRID_RE = Regex("\\{([WUBRG])/([WUBRG])\\}")
 
         /** Canonical (WUBRG-ordered) 2-letter hybrid pip groups in [manaCost], e.g. ["WU"]. */

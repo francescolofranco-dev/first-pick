@@ -87,8 +87,6 @@ class AdvisorEngineTest {
 
     @Test
     fun hybridManaCardIsNotOffColorPenalizedWhenOneHybridColorMatchesTheLane() {
-        // Reproduces the reported bug: a {4}{U/W} card scored an off-color penalty in a
-        // Simic (UG) lane, even though the hybrid pip is fully payable with U alone.
         val pool = List(6) { card(100 + it, "SimicGuy$it", 0.58, if (it % 2 == 0) "U" else "G") }
         val hybridMeta: (String) -> CardMeta? = { name ->
             if (name == "Seedpod Squire") CardMeta("Seedpod Squire", cmc = 5, isCreature = true, isLand = false, hybridColorGroups = listOf(setOf('U', 'W')))
