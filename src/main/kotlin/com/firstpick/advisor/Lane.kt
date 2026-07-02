@@ -69,6 +69,22 @@ object LaneDetector {
     fun colorsOf(card: RankedCard): Set<Char> =
         card.rating?.color.orEmpty().filter { it in WUBRG }.toSet()
 
+    /**
+     * Colors in [colors] that [available] cannot pay. Each of [hybridGroups] (MTG hybrid mana
+     * pips, e.g. {U/W}) is an OR — satisfied by EITHER color, so it only counts as uncastable
+     * when [available] has NEITHER of its colors. When a hybrid group IS satisfied, none of its
+     * colors count as a requirement at all, so a hybrid card doesn't skew color-commitment
+     * ratios toward a color it doesn't actually need (e.g. a {4}{U/W} card is fully on-color in
+     * a UG lane via U alone — it should not be penalized for the W it never needs to cast).
+     */
+    fun uncastableColors(colors: Set<Char>, available: Set<Char>, hybridGroups: List<Set<Char>> = emptyList()): Set<Char> {
+        if (hybridGroups.isEmpty()) return colors - available
+        val hybridColors = hybridGroups.flatten().toSet()
+        val offPure = (colors - hybridColors) - available
+        val offHybrid = hybridGroups.filter { group -> group.none { it in available } }.flatten().toSet()
+        return offPure + offHybrid
+    }
+
     private fun poolFit(pool: List<RankedCard>, metrics: SetMetrics, pair: String): Double {
         val pairSet = pair.toSet()
         val n = pool.size

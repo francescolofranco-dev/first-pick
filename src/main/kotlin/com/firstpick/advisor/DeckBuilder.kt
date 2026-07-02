@@ -79,7 +79,8 @@ object DeckBuilder {
         val pairSet = pair.toSet()
         fun onColor(card: RankedCard): Boolean {
             val colors = LaneDetector.colorsOf(card)
-            return colors.isEmpty() || pairSet.containsAll(colors)
+            val hybridGroups = meta(card.name)?.hybridColorGroups.orEmpty()
+            return colors.isEmpty() || LaneDetector.uncastableColors(colors, pairSet, hybridGroups).isEmpty()
         }
         fun cardScore(card: RankedCard): Double {
             val arch = archetypeRating(card.name, pair)?.gihWr

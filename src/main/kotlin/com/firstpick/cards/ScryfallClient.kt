@@ -53,6 +53,7 @@ class ScryfallClient(
         @SerialName("oracle_text") val oracleText: String = "",
         @SerialName("power") val power: String? = null,
         @SerialName("produced_mana") val producedMana: List<String> = emptyList(),
+        @SerialName("mana_cost") val manaCost: String = "",
     )
 
     @Serializable
@@ -66,6 +67,9 @@ class ScryfallClient(
         val finisher: Boolean,
         val evasion: Boolean,
         val draw: Boolean,
+        // Each entry is a canonical (WUBRG-ordered) 2-letter hybrid pip group, e.g. "WU" for
+        // {W/U}. Absent on old cache files (pre-hybrid), which decodes to the empty-list default.
+        val hybridGroups: List<String> = emptyList(),
     )
 
     suspend fun setMeta(set: String, names: Collection<String> = emptyList()): Map<String, CardMeta> = withContext(Dispatchers.IO) {
@@ -91,6 +95,7 @@ class ScryfallClient(
         name = name, cmc = cmc, isCreature = creature, isLand = land,
         isRemoval = removal, isFixing = fixing, isFinisher = finisher,
         isEvasion = evasion, isCardDraw = draw,
+        hybridColorGroups = hybridGroups.map { it.toSet() },
     )
 
     private fun build(set: String, names: Collection<String>): List<MetaDto>? {
@@ -161,7 +166,7 @@ class ScryfallClient(
             evasionTagged = name in evasionNames,
             drawTagged = name in drawNames,
         )
-        return MetaDto(name, cmc, r.creature, r.land, r.removal, r.fixing, r.finisher, r.evasion, r.draw)
+        return MetaDto(name, cmc, r.creature, r.land, r.removal, r.fixing, r.finisher, r.evasion, r.draw, hybridGroupsOf(c.manaCost))
     }
 
     private fun searchCards(query: String): List<Card>? {
@@ -225,6 +230,19 @@ class ScryfallClient(
         private const val COLLECTION_BATCH = 75
         private val LIST_SERIALIZER = ListSerializer(MetaDto.serializer())
         private val EVASION_RE = Regex("flying|menace|can't be blocked|skulk|shadow|intimidate|horsemanship")
+
+        // Two-color hybrid pips only, e.g. {U/W}: the card is castable with EITHER color, so
+        // these aren't a real color commitment to both. Deliberately excludes generic-hybrid
+        // ({2/W}) and Phyrexian ({U/P}) pips — neither offers a second WUBRG color to pay with,
+        // so they should still count as a plain requirement for their one color.
+        private val HYBRID_RE = Regex("\\{([WUBRG])/([WUBRG])\\}")
+
+        /** Canonical (WUBRG-ordered) 2-letter hybrid pip groups in [manaCost], e.g. ["WU"]. */
+        internal fun hybridGroupsOf(manaCost: String): List<String> =
+            HYBRID_RE.findAll(manaCost)
+                .map { m -> listOf(m.groupValues[1][0], m.groupValues[2][0]).sortedBy { "WUBRG".indexOf(it) }.joinToString("") }
+                .distinct()
+                .toList()
 
         private val REMOVAL_RE = Regex(
             "(destroy|exile) target (creature|permanent|artifact|enchantment|planeswalker|nonland)" +

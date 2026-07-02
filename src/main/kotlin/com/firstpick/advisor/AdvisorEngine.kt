@@ -85,7 +85,8 @@ class AdvisorEngine(
         val synergyPts = synergyBonus(card, globalWr, archWr, archSamples, reasons)
 
         val colors = LaneDetector.colorsOf(card)
-        val offColors = if (lane.isEstablished) colors - lane.colors else emptySet()
+        val hybridGroups = meta(card.name)?.hybridColorGroups.orEmpty()
+        val offColors = if (lane.isEstablished) LaneDetector.uncastableColors(colors, lane.colors, hybridGroups) else emptySet()
         val onColor = colors.isNotEmpty() && lane.isEstablished && offColors.isEmpty()
         val splashable = offColors.size <= 1 || needs.fixing > 0
         val penaltyScale = when {

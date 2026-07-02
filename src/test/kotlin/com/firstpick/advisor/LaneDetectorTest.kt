@@ -65,4 +65,45 @@ class LaneDetectorTest {
         val lane = LaneDetector.detect(pool, metrics)
         assertTrue('W' in lane.colors, "Recent white commitment should be in the lane")
     }
+
+    @Test
+    fun hybridPipSatisfiedByOneLaneColorIsNotUncastable() {
+        // {4}{U/W} in a Simic (UG) lane: the hybrid pip is payable with U alone, so W should
+        // never surface as a missing color — this is the exact bug reported against the
+        // pick-score breakdown (a UW-hybrid card wrongly took a color penalty in a UG lane).
+        val uncastable = LaneDetector.uncastableColors(
+            colors = setOf('U', 'W'),
+            available = setOf('U', 'G'),
+            hybridGroups = listOf(setOf('U', 'W')),
+        )
+        assertEquals(emptySet(), uncastable)
+    }
+
+    @Test
+    fun hybridPipUnsatisfiedByEitherLaneColorIsFullyUncastable() {
+        val uncastable = LaneDetector.uncastableColors(
+            colors = setOf('U', 'W'),
+            available = setOf('B', 'G'),
+            hybridGroups = listOf(setOf('U', 'W')),
+        )
+        assertEquals(setOf('U', 'W'), uncastable)
+    }
+
+    @Test
+    fun hybridSatisfiedPipDoesNotMaskAGenuineOffColorPip() {
+        // {1}{R}{U/W} in a UG lane: the hybrid U/W pip is satisfied via U, but the plain R
+        // pip is still a real, uncovered requirement.
+        val uncastable = LaneDetector.uncastableColors(
+            colors = setOf('R', 'U', 'W'),
+            available = setOf('U', 'G'),
+            hybridGroups = listOf(setOf('U', 'W')),
+        )
+        assertEquals(setOf('R'), uncastable)
+    }
+
+    @Test
+    fun noHybridGroupsBehavesLikePlainSetDifference() {
+        val uncastable = LaneDetector.uncastableColors(colors = setOf('U', 'R'), available = setOf('U', 'G'))
+        assertEquals(setOf('R'), uncastable)
+    }
 }

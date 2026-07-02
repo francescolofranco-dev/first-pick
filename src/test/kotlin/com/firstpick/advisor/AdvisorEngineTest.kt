@@ -86,6 +86,36 @@ class AdvisorEngineTest {
     }
 
     @Test
+    fun hybridManaCardIsNotOffColorPenalizedWhenOneHybridColorMatchesTheLane() {
+        // Reproduces the reported bug: a {4}{U/W} card scored an off-color penalty in a
+        // Simic (UG) lane, even though the hybrid pip is fully payable with U alone.
+        val pool = List(6) { card(100 + it, "SimicGuy$it", 0.58, if (it % 2 == 0) "U" else "G") }
+        val hybridMeta: (String) -> CardMeta? = { name ->
+            if (name == "Seedpod Squire") CardMeta("Seedpod Squire", cmc = 5, isCreature = true, isLand = false, hybridColorGroups = listOf(setOf('U', 'W')))
+            else null
+        }
+        val pack = listOf(card(1, "Seedpod Squire", 0.56, "UW"))
+        val result = run(pack, pool, packNumber = 2, pickNumber = 5, meta = hybridMeta)
+        val scored = scoreOf(result, "Seedpod Squire")
+        assertTrue("On-color" in scored.reasons, "expected On-color, got ${scored.reasons}")
+        assertFalse(scored.reasons.any { it.startsWith("Off-color") })
+        assertEquals(0.0, scored.breakdown!!.penalty, 0.001)
+    }
+
+    @Test
+    fun hybridManaCardIsStillPenalizedWhenNeitherHybridColorMatchesTheLane() {
+        val pool = List(6) { card(100 + it, "BlackGuy$it", 0.58, "B") }
+        val hybridMeta: (String) -> CardMeta? = { name ->
+            if (name == "Seedpod Squire") CardMeta("Seedpod Squire", cmc = 5, isCreature = true, isLand = false, hybridColorGroups = listOf(setOf('U', 'W')))
+            else null
+        }
+        val pack = listOf(card(1, "Seedpod Squire", 0.56, "UW"))
+        val result = run(pack, pool, packNumber = 2, pickNumber = 5, meta = hybridMeta)
+        val scored = scoreOf(result, "Seedpod Squire")
+        assertTrue(scored.reasons.any { it.startsWith("Off-color") }, "expected an off-color penalty, got ${scored.reasons}")
+    }
+
+    @Test
     fun colorlessCardsAreNeverPenalized() {
         val pool = List(6) { card(100 + it, "BlueGuy$it", 0.58, "U") }
         val pack = listOf(card(1, "Artifact", 0.55, color = ""))

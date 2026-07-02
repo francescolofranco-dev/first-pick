@@ -45,6 +45,28 @@ class DeckBuilderTest {
     }
 
     @Test
+    fun hybridManaCardIsEligibleAsBaseColorWithoutNeedingASplash() {
+        // {4}{U/W}: castable in a UG deck via U alone. It should be treated as fully on-color
+        // — included as a normal UG card, not routed through the splash path — so the deck's
+        // declared color identity stays UG and never picks up W.
+        val hybridMeta: (String) -> CardMeta? = { name ->
+            if (name == "HybridGuy") CardMeta("HybridGuy", cmc = 5, isCreature = true, isLand = false, hybridColorGroups = listOf(setOf('U', 'W')))
+            else CardMeta(name, cmc = 3, isCreature = true, isLand = false)
+        }
+        val pool = buildList {
+            add(card(1, "HybridGuy", 0.65, "UW")) // strong, so it's a lock for inclusion
+            repeat(11) { add(card(10 + it, "U$it", 0.55, "U")) }
+            repeat(11) { add(card(30 + it, "G$it", 0.55, "G")) }
+        }
+        val options = DeckBuilder.build(pool, metrics, hybridMeta)
+        val ug = options.firstOrNull { it.basePair == "UG" }
+        assertTrue(ug != null, "expected a UG build: ${options.map { it.colors }}")
+        assertTrue(ug!!.spells.any { it.name == "HybridGuy" }, "hybrid card should be included in the UG deck")
+        assertEquals("UG", ug.colors, "hybrid card should not force a W splash onto the deck identity")
+        assertEquals(null, ug.splash)
+    }
+
+    @Test
     fun skipsPairsWithoutEnoughPlayables() {
         val redOnly = (0 until 8).map { card(it, "R$it", 0.5, "R") }
         assertTrue(DeckBuilder.build(redOnly, metrics, meta).isEmpty())
