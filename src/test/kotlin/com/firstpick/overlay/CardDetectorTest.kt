@@ -74,6 +74,14 @@ class CardDetectorTest {
     }
 
     @Test
+    fun allCardsShareOneUniformWidth() {
+        for ((name, count) in listOf("p1p1-13cards.png" to 13, "msh-p1p1-14cards.jpg" to 14)) {
+            val cards = CardDetector.detect(fixture(name), expectedCount = count)!!.cards(count)
+            assertEquals(1, cards.map { it.w }.distinct().size, "$name: seal sizes derive from rect widths, so widths must be uniform")
+        }
+    }
+
+    @Test
     fun returnsNullForATooSmallImage() {
         assertNull(CardDetector.detect(BufferedImage(64, 64, BufferedImage.TYPE_INT_RGB)))
     }

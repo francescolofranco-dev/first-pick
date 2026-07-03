@@ -68,10 +68,19 @@ object CardDetector {
         for (x in cut until w) colProj[x] = 0f
         // The selected card's highlight glow can bridge the gap between two columns and fuse
         // their projection runs, so runs about k× the typical column width get split back into k.
-        val cols = splitMergedRuns(runsAbove(colProj, COL_THRESH, (COL_MIN_LEN * w).toInt(), (COL_MAX_GAP * w).toInt()))
-        Log.debug(TAG, "cols=${cols.map { "${it.first}..${it.last}" }} expected=${minOf(MAX_COLS, expectedCount)}")
-        if (cols.isEmpty() || cols.size > MAX_COLS) return null
-        if (expectedCount > 0 && cols.size != minOf(MAX_COLS, expectedCount)) return null
+        val rawCols = splitMergedRuns(runsAbove(colProj, COL_THRESH, (COL_MIN_LEN * w).toInt(), (COL_MAX_GAP * w).toInt()))
+        Log.debug(TAG, "cols=${rawCols.map { "${it.first}..${it.last}" }} expected=${minOf(MAX_COLS, expectedCount)}")
+        if (rawCols.isEmpty() || rawCols.size > MAX_COLS) return null
+        if (expectedCount > 0 && rawCols.size != minOf(MAX_COLS, expectedCount)) return null
+
+        // Arena renders every card the same width; projection runs get ragged edges from
+        // per-card content, so re-center each column on the median width.
+        val colW = rawCols.map { it.last - it.first + 1 }.sorted()[rawCols.size / 2]
+        val cols = rawCols.map { c ->
+            val center = (c.first + c.last) / 2
+            val a = (center - colW / 2).coerceAtLeast(0)
+            a..(a + colW - 1).coerceAtMost(w - 1)
+        }
 
         // Project rows over ALL columns: a single card's dark art or name bar can fragment or
         // shift the band, but averaged across the row some card is always bright.
@@ -91,8 +100,7 @@ object CardDetector {
         Log.debug(TAG, "bands=${bands.map { "${it.first}..${it.last}" }}")
         if (bands.isEmpty()) return null
 
-        val cardW = cols.map { it.last - it.first + 1 }.sorted().let { it[it.size / 2] }
-        val aspectH = (cardW / CARD_ASPECT).toInt()
+        val aspectH = (colW / CARD_ASPECT).toInt()
         // Bright bands anchor to card CONTENT: the bottom (text box → card edge) is stable
         // across frame styles, the top (name bar, art sky) is not. Trust the band's own height
         // only when it matches the card aspect; otherwise anchor at the bottom and use aspect.
