@@ -132,11 +132,13 @@ fun ArenaOverlayTracker(
         focusable = false,
         resizable = false,
     ) {
-        LaunchedEffect(Unit) {
+        LaunchedEffect(visible) {
+            if (!visible) return@LaunchedEffect
             repeat(15) {
                 if (MacOverlay.setClickThrough(TRACKER_TITLE, true)) return@LaunchedEffect
                 delay(200)
             }
+            com.firstpick.core.Log.warn("Overlay", "click-through could not be applied")
         }
         Box(Modifier.fillMaxSize()) {
             for (m in marks) {
