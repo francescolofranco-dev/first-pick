@@ -44,6 +44,7 @@ object DeckBuilder {
     private const val INCOMPLETE_SPELL_PENALTY = 3.0
     private const val UNFIXED_SPLASH_PENALTY = 4.0
     private const val SPLASH_FIXING_REWARD = 1.0
+    private const val SPLASH_UPGRADE_MARGIN = 0.02
 
     // Win-rate-equivalent nudges: enough to flip near-ties toward the pair's theme,
     // never enough to seat a clearly weaker card over a stronger one.
@@ -66,15 +67,17 @@ object DeckBuilder {
         val spells = known.filter { meta(it.name)?.isLand != true }
         val lands = known.filter { meta(it.name)?.isLand == true }
 
-        fun pass(minSpells: Int, lenient: Boolean = false) = COLOR_PAIRS.mapNotNull { pair ->
-            buildForPair(pair, spells, lands, metrics, meta, archetypeRating, strengthFor(pair, pairStrength), minSpells, synergy, lenient)
+        fun pass(minSpells: Int, lenient: Boolean = false, upgrade: Boolean = false) = COLOR_PAIRS.mapNotNull { pair ->
+            buildForPair(pair, spells, lands, metrics, meta, archetypeRating, strengthFor(pair, pairStrength), minSpells, synergy, lenient, upgrade)
         }
 
-        // Proper builds first; if fewer than maxOptions pairs qualify, top up with best-effort
-        // builds so the user always gets a full slate to choose from.
-        val strict = pass(MIN_DECK_SPELLS).sortedByDescending { it.powerScore }
+        // Proper builds plus splash-upgrade variants (a premium off-color card replacing weak
+        // filler); if fewer than maxOptions qualify, top up with best-effort builds so the
+        // user always gets a full slate to choose from.
+        val main = (pass(MIN_DECK_SPELLS) + pass(MIN_DECK_SPELLS, upgrade = true))
+            .sortedByDescending { it.powerScore }
         val fill = pass(0, lenient = true).sortedByDescending { it.powerScore }
-        return (strict + fill)
+        return (main + fill)
             .distinctBy { it.colors }
             .take(maxOptions)
     }
@@ -92,6 +95,7 @@ object DeckBuilder {
         minSpells: Int,
         synergy: SynergyIndex?,
         lenient: Boolean = false,
+        upgrade: Boolean = false,
     ): DeckOption? {
         val pairSet = pair.toSet()
         fun onColor(card: RankedCard): Boolean {
@@ -118,7 +122,15 @@ object DeckBuilder {
 
         val baseFixers = base.count { meta(it.name)?.isFixing == true } +
             lands.count { val c = LaneDetector.colorsOf(it); (c.isEmpty() || pairSet.containsAll(c)) && meta(it.name)?.isFixing == true }
-        val splashedSpells = chooseSplash(spells, pairSet, SPELL_SLOTS - base.size, ::onColor, ::cardScore, meta)
+        var splashedSpells = chooseSplash(spells, pairSet, SPELL_SLOTS - base.size, ::onColor, ::cardScore, meta)
+        if (upgrade) {
+            // Variant pass: only produce an option when a clearly better off-color card can
+            // replace weak filler; anything else is already covered by the plain pass.
+            if (splashedSpells.isNotEmpty()) return null
+            val swap = upgradeSplash(base, spells, pairSet, metrics, ::onColor, ::cardScore, meta) ?: return null
+            for (r in swap.removed) base.remove(r)
+            splashedSpells = swap.added
+        }
         val chosen = base + splashedSpells
         val splashColor = splashedSpells.firstOrNull()
             ?.let { card -> LaneDetector.colorsOf(card).firstOrNull { it !in pairSet } }
@@ -168,6 +180,46 @@ object DeckBuilder {
             removal = removal,
             curve = curveOf(metas),
         )
+    }
+
+    private class SplashUpgrade(val removed: List<RankedCard>, val added: List<RankedCard>)
+
+    /**
+     * A splash is worth opening a third color only for impactful cards (removal, finishers,
+     * clearly above-rate) that beat the deck's weakest filler by a real margin.
+     */
+    private fun upgradeSplash(
+        base: List<RankedCard>,
+        spells: List<RankedCard>,
+        pairSet: Set<Char>,
+        metrics: SetMetrics,
+        onColor: (RankedCard) -> Boolean,
+        cardScore: (RankedCard) -> Double,
+        meta: (String) -> CardMeta?,
+    ): SplashUpgrade? {
+        val byColor = LinkedHashMap<Char, MutableList<RankedCard>>()
+        for (card in spells.filterNot(onColor)) {
+            val extra = LaneDetector.colorsOf(card).filter { it !in pairSet }
+            if (extra.size != 1) continue
+            if (extra.first() in meta(card.name)?.heavyPipColors.orEmpty()) continue
+            val m = meta(card.name)
+            val impactful = m?.isRemoval == true || m?.isFinisher == true ||
+                (card.gihWr ?: 0.0) >= metrics.meanGihWr + metrics.stdDevGihWr
+            if (impactful) byColor.getOrPut(extra.first()) { mutableListOf() }.add(card)
+        }
+        val best = byColor.values.maxByOrNull { cards -> cards.maxOf(cardScore) } ?: return null
+        val candidates = best.sortedByDescending(cardScore)
+        val weakestFirst = base.sortedBy(cardScore)
+        val removed = mutableListOf<RankedCard>()
+        val added = mutableListOf<RankedCard>()
+        for ((i, cand) in candidates.withIndex()) {
+            if (i >= MAX_SPLASH || i >= weakestFirst.size) break
+            if (cardScore(cand) < cardScore(weakestFirst[i]) + SPLASH_UPGRADE_MARGIN) break
+            removed += weakestFirst[i]
+            added += cand
+        }
+        if (added.isEmpty()) return null
+        return SplashUpgrade(removed, added)
     }
 
     private fun chooseSplash(

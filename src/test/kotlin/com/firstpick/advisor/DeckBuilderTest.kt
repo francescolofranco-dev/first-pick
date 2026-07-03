@@ -158,6 +158,37 @@ class DeckBuilderTest {
     }
 
     @Test
+    fun offersASplashVariantWhenPremiumRemovalBeatsWeakFiller() {
+        val metaFix: (String) -> CardMeta? = { name ->
+            if (name == "BlackRemoval") CardMeta(name, cmc = 3, isCreature = false, isLand = false, isRemoval = true)
+            else CardMeta(name, cmc = 3, isCreature = true, isLand = false)
+        }
+        val pool = buildList {
+            repeat(13) { add(card(it, "W$it", 0.56, "W")) }
+            repeat(13) { add(card(100 + it, "U$it", 0.56, "U")) }
+            add(card(200, "BlackRemoval", 0.61, "B"))
+        }
+        val options = DeckBuilder.build(pool, metrics, metaFix)
+        val plain = options.firstOrNull { it.colors == "WU" }
+        val splash = options.firstOrNull { it.colors == "WUB" }
+        assertTrue(plain != null, "the two-color build stays on the slate")
+        assertTrue(splash != null, "a premium off-color card should produce a splash variant: ${options.map { it.colors }}")
+        assertTrue(splash.spells.any { it.name == "BlackRemoval" })
+        assertEquals('B', splash.splash)
+    }
+
+    @Test
+    fun noSplashVariantForMarginalOffColorCards() {
+        val pool = buildList {
+            repeat(13) { add(card(it, "W$it", 0.56, "W")) }
+            repeat(13) { add(card(100 + it, "U$it", 0.56, "U")) }
+            add(card(200, "MehBlack", 0.565, "B"))
+        }
+        val options = DeckBuilder.build(pool, metrics, meta)
+        assertTrue(options.none { it.colors == "WUB" }, "half a point of win rate does not justify a splash")
+    }
+
+    @Test
     fun capsCopiesOfMediocreCards() {
         val pool = buildList {
             repeat(4) { add(card(it, "Dup", 0.56, "W")) }
