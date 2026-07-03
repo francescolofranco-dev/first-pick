@@ -64,9 +64,14 @@ class DeckBuilderTest {
     }
 
     @Test
-    fun skipsPairsWithoutEnoughPlayables() {
+    fun alwaysOffersThreeBuildsEvenFromALopsidedPool() {
         val redOnly = (0 until 8).map { card(it, "R$it", 0.5, "R") }
-        assertTrue(DeckBuilder.build(redOnly, metrics, meta).isEmpty())
+        assertEquals(3, DeckBuilder.build(redOnly, metrics, meta).size, "the user always gets a full slate")
+    }
+
+    @Test
+    fun offersThreeBuildsFromANormalPool() {
+        assertEquals(3, DeckBuilder.build(pool(), metrics, meta).size)
     }
 
     @Test

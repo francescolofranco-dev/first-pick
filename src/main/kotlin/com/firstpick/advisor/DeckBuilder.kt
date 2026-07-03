@@ -63,13 +63,15 @@ object DeckBuilder {
         val spells = pool.filter { meta(it.name)?.isLand != true }
         val lands = pool.filter { meta(it.name)?.isLand == true }
 
-        fun pass(minSpells: Int) = COLOR_PAIRS.mapNotNull { pair ->
-            buildForPair(pair, spells, lands, metrics, meta, archetypeRating, strengthFor(pair, pairStrength), minSpells, synergy)
+        fun pass(minSpells: Int, lenient: Boolean = false) = COLOR_PAIRS.mapNotNull { pair ->
+            buildForPair(pair, spells, lands, metrics, meta, archetypeRating, strengthFor(pair, pairStrength), minSpells, synergy, lenient)
         }
 
-        val options = pass(MIN_DECK_SPELLS).ifEmpty { pass(0) }
-        return options
-            .sortedByDescending { it.powerScore }
+        // Proper builds first; if fewer than maxOptions pairs qualify, top up with best-effort
+        // builds so the user always gets a full slate to choose from.
+        val strict = pass(MIN_DECK_SPELLS).sortedByDescending { it.powerScore }
+        val fill = pass(0, lenient = true).sortedByDescending { it.powerScore }
+        return (strict + fill)
             .distinctBy { it.colors }
             .take(maxOptions)
     }
@@ -86,6 +88,7 @@ object DeckBuilder {
         strength: Double?,
         minSpells: Int,
         synergy: SynergyIndex?,
+        lenient: Boolean = false,
     ): DeckOption? {
         val pairSet = pair.toSet()
         fun onColor(card: RankedCard): Boolean {
@@ -124,7 +127,8 @@ object DeckBuilder {
         for (card in chosen) for (ch in LaneDetector.colorsOf(card)) if (ch in deckColors) pips.merge(ch, 1, Int::plus)
         val totalPips = pips.values.sum()
         val minBasePips = pairSet.minOf { pips[it] ?: 0 }
-        if (totalPips == 0 || minBasePips < MIN_COLOR_PIPS || minBasePips.toDouble() / totalPips < MIN_COLOR_RATIO) return null
+        if (totalPips == 0) return null
+        if (!lenient && (minBasePips < MIN_COLOR_PIPS || minBasePips.toDouble() / totalPips < MIN_COLOR_RATIO)) return null
 
         val onColorLands = lands.filter { card ->
             val colors = LaneDetector.colorsOf(card)
