@@ -82,6 +82,38 @@ class CardDetectorTest {
     }
 
     @Test
+    fun singleRowPackAnchorsToTheCardsNotTheBrightBackdrop() {
+        // Late picks show one row of cards over the animated city backdrop; the backdrop's
+        // bright structures must not hijack the column/row projections.
+        val w = 1554
+        val h = 992
+        val img = BufferedImage(w, h, BufferedImage.TYPE_INT_RGB)
+        val g = img.createGraphics()
+        g.color = java.awt.Color(30, 18, 12)
+        g.fillRect(0, 0, w, h)
+        val cardW = 190
+        val cardH = 304
+        val top = (0.12 * h).toInt()
+        for (i in 0 until 5) {
+            g.color = java.awt.Color(225, 220, 210)
+            g.fillRect(110 + i * 215, top, cardW, cardH)
+        }
+        val rnd = java.util.Random(7)
+        repeat(160) {
+            g.color = java.awt.Color(200 + rnd.nextInt(55), 130 + rnd.nextInt(60), 40)
+            g.fillRect(rnd.nextInt(w - 30), (0.55 * h).toInt() + rnd.nextInt((0.4 * h).toInt()), 8 + rnd.nextInt(40), 8 + rnd.nextInt(60))
+        }
+        g.dispose()
+
+        val grid = CardDetector.detect(img, expectedCount = 5)
+        assertNotNull(grid, "single-row pack must be detected")
+        assertEquals(1, grid.rows.size)
+        val card = grid.cards(5).first()
+        assertTrue(kotlin.math.abs(card.y - top) < 40, "row must anchor at the cards (y=${card.y}, cards at $top)")
+        assertTrue(card.y + card.h < (0.60 * h).toInt(), "rects must not reach into the backdrop")
+    }
+
+    @Test
     fun returnsNullForATooSmallImage() {
         assertNull(CardDetector.detect(BufferedImage(64, 64, BufferedImage.TYPE_INT_RGB)))
     }

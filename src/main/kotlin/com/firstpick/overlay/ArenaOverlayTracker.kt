@@ -50,6 +50,15 @@ data class OverlayCard(val value: Double?, val imageUrl: String?, val name: Stri
 
 private data class Mark(val x: Int, val y: Int, val w: Int, val h: Int, val value: Double?, val number: Int?, val isBest: Boolean, val breakdown: ValueBreakdown? = null)
 
+private const val MARK_JITTER_PT = 3
+
+private fun List<Mark>.approxEquals(other: List<Mark>): Boolean =
+    size == other.size && zip(other).all { (a, b) ->
+        a.value == b.value && a.number == b.number && a.isBest == b.isBest &&
+            kotlin.math.abs(a.x - b.x) <= MARK_JITTER_PT && kotlin.math.abs(a.y - b.y) <= MARK_JITTER_PT &&
+            kotlin.math.abs(a.w - b.w) <= MARK_JITTER_PT && kotlin.math.abs(a.h - b.h) <= MARK_JITTER_PT
+    }
+
 @Composable
 fun ArenaOverlayTracker(
     cards: List<OverlayCard> = emptyList(),
@@ -90,8 +99,13 @@ fun ArenaOverlayTracker(
         repeat(MAX_MARK_ATTEMPTS) {
             val next = withContext(Dispatchers.IO) { computeMarks(cap, cards, calibrating, b.w, b.h) }
             if (next.isNotEmpty()) {
+                // A couple of pixels of run jitter between captures (flickering backdrop) is
+                // convergence, not change — and reassigning would make the seals shimmer.
+                if (next.approxEquals(prev)) {
+                    if (!next.approxEquals(marks)) marks = next
+                    return@LaunchedEffect
+                }
                 marks = next
-                if (next == prev) return@LaunchedEffect
             }
             prev = next
             delay(MARK_RETRY_MS)

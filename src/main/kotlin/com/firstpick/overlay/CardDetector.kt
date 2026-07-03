@@ -35,6 +35,7 @@ object CardDetector {
 
     private const val BAND_TOP = 0.20
     private const val BAND_BOTTOM = 0.92
+    private const val ROW_BAND_SPAN = 0.25
     private const val RIGHT_PANEL_CUT = 0.78
     private const val COL_SMOOTH = 0.008
     private const val COL_THRESH = 0.35f
@@ -53,8 +54,12 @@ object CardDetector {
         if (w < 200 || h < 200) return null
         val gray = toGray(img, w, h)
 
+        // Confine the column projection to where the cards can be: with few cards (one or two
+        // rows) the lower half is just the animated city backdrop, whose bright structures
+        // otherwise out-vote the cards and hijack the columns.
+        val expRows = if (expectedCount > 0) ceil(expectedCount.toDouble() / MAX_COLS).toInt() else 3
         val by0 = (BAND_TOP * h).toInt()
-        val by1 = (BAND_BOTTOM * h).toInt()
+        val by1 = (minOf(BAND_BOTTOM, BAND_TOP + expRows * ROW_BAND_SPAN) * h).toInt()
         val colProj = FloatArray(w)
         for (x in 0 until w) {
             var s = 0f
@@ -116,7 +121,7 @@ object CardDetector {
             row0Top = (first.last - aspectH + 1).coerceAtLeast(0)
         }
         val pitchCandidates = bands.map { it.last }.zipWithNext { a, b -> b - a }
-            .filter { it >= (0.9 * cardH).toInt() }
+            .filter { it in (0.9 * cardH).toInt()..(1.5 * cardH).toInt() }
         val pitch = if (pitchCandidates.isNotEmpty()) {
             pitchCandidates.sorted()[pitchCandidates.size / 2]
         } else {
