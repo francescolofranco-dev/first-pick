@@ -60,8 +60,11 @@ object DeckBuilder {
         maxOptions: Int = 3,
         synergy: SynergyIndex? = null,
     ): List<DeckOption> {
-        val spells = pool.filter { meta(it.name)?.isLand != true }
-        val lands = pool.filter { meta(it.name)?.isLand == true }
+        // Cards with neither a rating nor metadata are unresolvable (land-slot basics, tokens)
+        // and must never occupy one of the 23 spell slots.
+        val known = pool.filter { it.rating != null || meta(it.name) != null }
+        val spells = known.filter { meta(it.name)?.isLand != true }
+        val lands = known.filter { meta(it.name)?.isLand == true }
 
         fun pass(minSpells: Int, lenient: Boolean = false) = COLOR_PAIRS.mapNotNull { pair ->
             buildForPair(pair, spells, lands, metrics, meta, archetypeRating, strengthFor(pair, pairStrength), minSpells, synergy, lenient)
@@ -115,7 +118,7 @@ object DeckBuilder {
 
         val baseFixers = base.count { meta(it.name)?.isFixing == true } +
             lands.count { val c = LaneDetector.colorsOf(it); (c.isEmpty() || pairSet.containsAll(c)) && meta(it.name)?.isFixing == true }
-        val splashedSpells = chooseSplash(spells, pairSet, SPELL_SLOTS - base.size, ::onColor, ::cardScore)
+        val splashedSpells = chooseSplash(spells, pairSet, SPELL_SLOTS - base.size, ::onColor, ::cardScore, meta)
         val chosen = base + splashedSpells
         val splashColor = splashedSpells.firstOrNull()
             ?.let { card -> LaneDetector.colorsOf(card).firstOrNull { it !in pairSet } }
@@ -131,8 +134,11 @@ object DeckBuilder {
         if (!lenient && (minBasePips < MIN_COLOR_PIPS || minBasePips.toDouble() / totalPips < MIN_COLOR_RATIO)) return null
 
         val onColorLands = lands.filter { card ->
-            val colors = LaneDetector.colorsOf(card)
-            colors.isEmpty() || deckColors.containsAll(colors)
+            // A nonbasic land belongs in the deck only if what it PRODUCES fits: both halves
+            // of a dual inside the deck's colors, or a land that covers all of them.
+            val produced = meta(card.name)?.producedColors.orEmpty()
+            val identity = produced.ifEmpty { LaneDetector.colorsOf(card) }
+            identity.isEmpty() || deckColors.containsAll(identity) || identity.containsAll(deckColors)
         }
 
         val deckWr = chosen.mapNotNull { it.gihWr }.ifEmpty { listOf(metrics.meanGihWr) }.average()
@@ -170,12 +176,15 @@ object DeckBuilder {
         deficit: Int,
         onColor: (RankedCard) -> Boolean,
         cardScore: (RankedCard) -> Double,
+        meta: (String) -> CardMeta?,
     ): List<RankedCard> {
         if (deficit <= 0) return emptyList()
         val byColor = LinkedHashMap<Char, MutableList<RankedCard>>()
         for (card in spells.filterNot(onColor)) {
             val extra = LaneDetector.colorsOf(card).filter { it !in pairSet }
             if (extra.size != 1) continue
+            // A splash lives off a handful of sources: double pips of the splash color are uncastable.
+            if (extra.first() in meta(card.name)?.heavyPipColors.orEmpty()) continue
             byColor.getOrPut(extra.first()) { mutableListOf() }.add(card)
         }
         val best = byColor.values.maxByOrNull { cards -> cards.maxOf(cardScore) } ?: return emptyList()

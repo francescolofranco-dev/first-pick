@@ -11,4 +11,6 @@ data class CardMeta(
     val isEvasion: Boolean = false,
     val isCardDraw: Boolean = false,
     val hybridColorGroups: List<Set<Char>> = emptyList(),
+    val producedColors: Set<Char> = emptySet(),
+    val heavyPipColors: Set<Char> = emptySet(),
 )

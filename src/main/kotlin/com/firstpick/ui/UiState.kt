@@ -51,7 +51,7 @@ fun deckColorRank(color: String): Int {
 }
 
 val deckSpellOrder: Comparator<DeckSpellUi> =
-    compareBy({ it.cmc }, { deckColorRank(it.color) }, { -(it.gihWr ?: 0.0) })
+    compareBy({ it.cmc }, { deckColorRank(it.color) }, { it.name.lowercase() })
 
 data class DeckOptionUi(
     val colors: String,

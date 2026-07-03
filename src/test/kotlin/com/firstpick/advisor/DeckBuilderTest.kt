@@ -107,6 +107,57 @@ class DeckBuilderTest {
     }
 
     @Test
+    fun suggestsOnlyLandsWhoseProducedColorsFitTheDeck() {
+        val metaMap = mutableMapOf<String, CardMeta>()
+        fun spell(id: Int, name: String, color: String): RankedCard {
+            metaMap[name] = CardMeta(name, cmc = 3, isCreature = true, isLand = false)
+            return card(id, name, 0.57, color)
+        }
+        fun land(id: Int, name: String, produces: String): RankedCard {
+            metaMap[name] = CardMeta(name, cmc = 0, isCreature = false, isLand = true, producedColors = produces.toSet())
+            return card(id, name, 0.56, "")
+        }
+        val pool = buildList {
+            repeat(12) { add(spell(it, "W$it", "W")) }
+            repeat(12) { add(spell(100 + it, "U$it", "U")) }
+            add(land(200, "AzoriusDual", "WU"))
+            add(land(201, "IzzetDual", "UR"))
+            add(land(202, "RainbowTower", "WUBRG"))
+        }
+        val top = DeckBuilder.build(pool, metrics, { metaMap[it] }).first()
+        assertEquals("WU", top.basePair)
+        val landNames = top.nonbasicLands.map { it.name }
+        assertTrue("AzoriusDual" in landNames, "matching dual belongs in the build")
+        assertTrue("IzzetDual" !in landNames, "half-off-color dual must not be suggested")
+        assertTrue("RainbowTower" in landNames, "a land covering all deck colors belongs in the build")
+    }
+
+    @Test
+    fun unresolvableCardsNeverTakeASpellSlot() {
+        val pool = pool() + RankedCard(grpId = 999999, name = "", rating = null)
+        val top = DeckBuilder.build(pool, metrics, meta).first()
+        assertTrue(top.spells.none { it.rating == null }, "a card with no rating and no meta is a land-slot basic or token")
+    }
+
+    @Test
+    fun neverSplashesACardWithDoublePipsOfTheSplashColor() {
+        val metaFix: (String) -> CardMeta? = { name ->
+            if (name == "DoubleWhite") CardMeta(name, cmc = 5, isCreature = true, isLand = false, heavyPipColors = setOf('W'))
+            else CardMeta(name, cmc = 3, isCreature = true, isLand = false)
+        }
+        val pool = buildList {
+            repeat(9) { add(card(it, "U$it", 0.56, "U")) }
+            repeat(9) { add(card(100 + it, "G$it", 0.56, "G")) }
+            add(card(200, "DoubleWhite", 0.70, "W"))
+            add(card(201, "SingleWhite", 0.60, "W"))
+        }
+        val top = DeckBuilder.build(pool, metrics, metaFix).first()
+        val names = top.spells.map { it.name }
+        assertTrue("DoubleWhite" !in names, "WW cards are uncastable off a splash")
+        assertTrue("SingleWhite" in names, "single-pip splash is fine")
+    }
+
+    @Test
     fun capsCopiesOfMediocreCards() {
         val pool = buildList {
             repeat(4) { add(card(it, "Dup", 0.56, "W")) }

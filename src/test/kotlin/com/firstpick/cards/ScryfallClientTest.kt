@@ -91,4 +91,12 @@ class ScryfallClientTest {
         assertTrue(ScryfallClient.hybridGroupsOf("{U/P}").isEmpty())
         assertTrue(ScryfallClient.hybridGroupsOf("{3}{U}").isEmpty())
     }
+
+    @Test
+    fun heavyPipsAreColorsWithTwoOrMorePurePips() {
+        assertEquals("W", ScryfallClient.heavyPipsOf("{3}{W}{W}"))
+        assertEquals("", ScryfallClient.heavyPipsOf("{3}{W}"))
+        assertEquals("WU", ScryfallClient.heavyPipsOf("{W}{W}{U}{U}"))
+        assertEquals("", ScryfallClient.heavyPipsOf("{U/W}{U/W}"), "hybrid pips are payable another way")
+    }
 }

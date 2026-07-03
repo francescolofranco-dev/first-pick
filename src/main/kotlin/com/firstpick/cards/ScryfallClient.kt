@@ -68,11 +68,13 @@ class ScryfallClient(
         val evasion: Boolean,
         val draw: Boolean,
         val hybridGroups: List<String> = emptyList(),
+        val produced: String = "",
+        val heavyPips: String = "",
     )
 
     suspend fun setMeta(set: String, names: Collection<String> = emptyList()): Map<String, CardMeta> = withContext(Dispatchers.IO) {
         Files.createDirectories(cacheDir)
-        val cache = cacheDir.resolve("scryfall5_${set.uppercase()}.json")
+        val cache = cacheDir.resolve("scryfall6_${set.uppercase()}.json")
         val dtos: List<MetaDto> = if (isFresh(cache)) {
             runCatching { json.decodeFromString(LIST_SERIALIZER, Files.readString(cache)) }.getOrDefault(emptyList())
         } else {
@@ -94,6 +96,8 @@ class ScryfallClient(
         isRemoval = removal, isFixing = fixing, isFinisher = finisher,
         isEvasion = evasion, isCardDraw = draw,
         hybridColorGroups = hybridGroups.map { it.toSet() },
+        producedColors = produced.toSet(),
+        heavyPipColors = heavyPips.toSet(),
     )
 
     private fun build(set: String, names: Collection<String>): List<MetaDto>? {
@@ -164,7 +168,11 @@ class ScryfallClient(
             evasionTagged = name in evasionNames,
             drawTagged = name in drawNames,
         )
-        return MetaDto(name, cmc, r.creature, r.land, r.removal, r.fixing, r.finisher, r.evasion, r.draw, hybridGroupsOf(c.manaCost))
+        val produced = "WUBRG".filter { ch -> c.producedMana.any { it.length == 1 && it[0] == ch } }
+        return MetaDto(
+            name, cmc, r.creature, r.land, r.removal, r.fixing, r.finisher, r.evasion, r.draw,
+            hybridGroupsOf(c.manaCost), produced, heavyPipsOf(c.manaCost),
+        )
     }
 
     private fun searchCards(query: String): List<Card>? {
@@ -230,6 +238,14 @@ class ScryfallClient(
         private val EVASION_RE = Regex("flying|menace|can't be blocked|skulk|shadow|intimidate|horsemanship")
 
         private val HYBRID_RE = Regex("\\{([WUBRG])/([WUBRG])\\}")
+        private val PURE_PIP_RE = Regex("\\{([WUBRG])\\}")
+
+        /** Colors with two or more non-hybrid pips in [manaCost] — too demanding to splash. */
+        internal fun heavyPipsOf(manaCost: String): String {
+            val counts = mutableMapOf<Char, Int>()
+            for (m in PURE_PIP_RE.findAll(manaCost)) counts.merge(m.groupValues[1][0], 1, Int::plus)
+            return "WUBRG".filter { (counts[it] ?: 0) >= 2 }
+        }
 
         /** Canonical (WUBRG-ordered) 2-letter hybrid pip groups in [manaCost], e.g. ["WU"]. */
         internal fun hybridGroupsOf(manaCost: String): List<String> =
