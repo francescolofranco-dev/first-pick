@@ -43,6 +43,8 @@ import kotlin.math.roundToInt
 private const val TRACKER_TITLE = "FirstPick Arena Tracker"
 private const val POLL_MS = 300L
 private const val CAPTURE_DEBOUNCE_MS = 350L
+private const val MARK_RETRY_MS = 700L
+private const val MAX_MARK_ATTEMPTS = 10
 
 data class OverlayCard(val value: Double?, val imageUrl: String?, val name: String = "", val breakdown: ValueBreakdown? = null)
 
@@ -77,12 +79,24 @@ fun ArenaOverlayTracker(
 
     var marks by remember { mutableStateOf<List<Mark>>(emptyList()) }
     val packKey = remember(cards) { cards.joinToString("|") { "${it.name}#${it.imageUrl}" } }
-    LaunchedEffect(b.w, b.h, packKey, calibrating) {
-        delay(CAPTURE_DEBOUNCE_MS)
-        marks = withContext(Dispatchers.IO) { computeMarks(cap, cards, calibrating, b.w, b.h) }
-    }
-
     val visible = (b.frontmost || calibrating) && (cards.isNotEmpty() || calibrating)
+
+    // Arena animates for a second or two after a pick; a single capture can land mid-animation
+    // and mis-recognize every card. Keep recapturing until two consecutive frames agree.
+    LaunchedEffect(b.w, b.h, packKey, calibrating, visible) {
+        if (!visible) return@LaunchedEffect
+        delay(CAPTURE_DEBOUNCE_MS)
+        var prev: List<Mark> = emptyList()
+        repeat(MAX_MARK_ATTEMPTS) {
+            val next = withContext(Dispatchers.IO) { computeMarks(cap, cards, calibrating, b.w, b.h) }
+            if (next.isNotEmpty()) {
+                marks = next
+                if (next == prev) return@LaunchedEffect
+            }
+            prev = next
+            delay(MARK_RETRY_MS)
+        }
+    }
 
     var hoveredIndex by remember { mutableStateOf<Int?>(null) }
     LaunchedEffect(visible, b.x, b.y, marks) {
