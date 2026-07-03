@@ -47,6 +47,33 @@ class CardDetectorTest {
     }
 
     @Test
+    fun findsTheGridWhenTheSelectedCardGlowMergesColumns() {
+        // MSH QuickDraft P1P1: Arena pre-selects a card whose highlight glow bridges the gap
+        // between columns 1 and 2, and the dark MSH name bars shift the brightness bands
+        // below the true card tops. 14 cards lay out 5/5/4.
+        val frame = fixture("msh-p1p1-14cards.jpg")
+        val grid = CardDetector.detect(frame, expectedCount = 14)
+        assertNotNull(grid, "glow-merged columns must be split back apart")
+        assertEquals(5, grid.cols.size)
+        assertEquals(3, grid.rows.size)
+
+        val cards = grid.cards(14)
+        assertEquals(14, cards.size)
+        val h = grid.imageH
+        assertTrue(cards[0].y in (0.15 * h).toInt()..(0.25 * h).toInt(), "row 1 must anchor at the card top, not the art top (y=${cards[0].y})")
+        assertTrue(cards[0].h in (0.18 * h).toInt()..(0.25 * h).toInt(), "card height must match the 5:7 aspect (h=${cards[0].h})")
+    }
+
+    @Test
+    fun splitsRunsThatAreMultiplesOfTheTypicalWidth() {
+        val split = CardDetector.splitMergedRuns(listOf(371..867, 898..1123, 1152..1387, 1425..1642))
+        assertEquals(5, split.size)
+        assertEquals(371, split[0].first)
+        assertEquals(867, split[1].last)
+        assertTrue(split[0].last < split[1].first, "split parts must not overlap")
+    }
+
+    @Test
     fun returnsNullForATooSmallImage() {
         assertNull(CardDetector.detect(BufferedImage(64, 64, BufferedImage.TYPE_INT_RGB)))
     }

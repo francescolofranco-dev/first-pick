@@ -1,10 +1,13 @@
 package com.firstpick.overlay
 
+import com.firstpick.core.Log
 import java.awt.image.BufferedImage
 import kotlin.math.ceil
 import kotlin.math.roundToInt
 
 object CardDetector {
+
+    private const val TAG = "CardDetector"
 
     data class CardRect(val index: Int, val x: Int, val y: Int, val w: Int, val h: Int)
 
@@ -63,31 +66,54 @@ object CardDetector {
         normalize(colProj)
         val cut = (RIGHT_PANEL_CUT * w).toInt()
         for (x in cut until w) colProj[x] = 0f
-        val cols = runsAbove(colProj, COL_THRESH, (COL_MIN_LEN * w).toInt(), (COL_MAX_GAP * w).toInt())
+        // The selected card's highlight glow can bridge the gap between two columns and fuse
+        // their projection runs, so runs about k× the typical column width get split back into k.
+        val cols = splitMergedRuns(runsAbove(colProj, COL_THRESH, (COL_MIN_LEN * w).toInt(), (COL_MAX_GAP * w).toInt()))
+        Log.debug(TAG, "cols=${cols.map { "${it.first}..${it.last}" }} expected=${minOf(MAX_COLS, expectedCount)}")
         if (cols.isEmpty() || cols.size > MAX_COLS) return null
         if (expectedCount > 0 && cols.size != minOf(MAX_COLS, expectedCount)) return null
 
-        val c0 = cols.first()
-        val cw = c0.last - c0.first + 1
+        // Project rows over ALL columns: a single card's dark art or name bar can fragment or
+        // shift the band, but averaged across the row some card is always bright.
+        val gridW = cols.sumOf { it.last - it.first + 1 }
         val rowProj = FloatArray(h)
         for (y in 0 until h) {
             var s = 0f
-            var x = c0.first
-            while (x <= c0.last) { s += gray[y * w + x]; x++ }
-            rowProj[y] = s / cw
+            for (c in cols) {
+                var x = c.first
+                while (x <= c.last) { s += gray[y * w + x]; x++ }
+            }
+            rowProj[y] = s / gridW
         }
         smoothInPlace(rowProj, (ROW_SMOOTH * h).toInt())
         normalize(rowProj)
         val bands = runsAbove(rowProj, ROW_THRESH, (ROW_MIN_LEN * h).toInt(), (ROW_MAX_GAP * h).toInt())
+        Log.debug(TAG, "bands=${bands.map { "${it.first}..${it.last}" }}")
         if (bands.isEmpty()) return null
 
         val cardW = cols.map { it.last - it.first + 1 }.sorted().let { it[it.size / 2] }
         val aspectH = (cardW / CARD_ASPECT).toInt()
-        val row0Top = bands.first().first
-        val row0H = bands.first().last - bands.first().first + 1
-        val cardH = if (row0H >= (0.75 * aspectH).toInt()) row0H else aspectH
-        val row1Top = bands.firstOrNull { it.first > row0Top + (0.6 * cardH).toInt() }?.first
-        val pitch = (row1Top?.minus(row0Top)) ?: (cardH * DEFAULT_PITCH_RATIO).toInt()
+        // Bright bands anchor to card CONTENT: the bottom (text box → card edge) is stable
+        // across frame styles, the top (name bar, art sky) is not. Trust the band's own height
+        // only when it matches the card aspect; otherwise anchor at the bottom and use aspect.
+        val first = bands.first()
+        val row0H = first.last - first.first + 1
+        val cardH: Int
+        val row0Top: Int
+        if (row0H >= (0.9 * aspectH).toInt() && row0H <= (1.15 * aspectH).toInt()) {
+            cardH = row0H
+            row0Top = first.first
+        } else {
+            cardH = aspectH
+            row0Top = (first.last - aspectH + 1).coerceAtLeast(0)
+        }
+        val pitchCandidates = bands.map { it.last }.zipWithNext { a, b -> b - a }
+            .filter { it >= (0.9 * cardH).toInt() }
+        val pitch = if (pitchCandidates.isNotEmpty()) {
+            pitchCandidates.sorted()[pitchCandidates.size / 2]
+        } else {
+            (cardH * DEFAULT_PITCH_RATIO).toInt()
+        }
 
         val rowCount = when {
             expectedCount > 0 -> ceil(expectedCount.toDouble() / cols.size).toInt()
@@ -142,6 +168,28 @@ object CardDetector {
             val hi = (i + half + 1).coerceAtMost(n)
             a[i] = (prefix[hi] - prefix[lo]) / (hi - lo)
         }
+    }
+
+    internal fun splitMergedRuns(runs: List<IntRange>): List<IntRange> {
+        if (runs.size < 2) return runs
+        val unit = runs.map { it.last - it.first + 1 }.sorted()[runs.size / 2]
+        if (unit <= 0) return runs
+        val out = ArrayList<IntRange>(runs.size)
+        for (r in runs) {
+            val len = r.last - r.first + 1
+            val k = (len.toDouble() / unit).roundToInt().coerceAtLeast(1)
+            if (k == 1) {
+                out.add(r)
+                continue
+            }
+            val step = len.toDouble() / k
+            for (i in 0 until k) {
+                val a = r.first + (i * step).toInt()
+                val b = if (i == k - 1) r.last else r.first + ((i + 1) * step).toInt() - 1
+                if (b >= a) out.add(a..b)
+            }
+        }
+        return out
     }
 
     private fun runsAbove(p: FloatArray, thresh: Float, minLen: Int, maxGap: Int): List<IntRange> {

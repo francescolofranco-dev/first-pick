@@ -178,9 +178,17 @@ private suspend fun computeMarks(
     winW: Int,
     winH: Int,
 ): List<Mark> {
-    val frame = capturer.capture() ?: return emptyList()
+    val frame = capturer.capture()
+    if (frame == null) {
+        com.firstpick.core.Log.warn("Overlay", "no frame captured — check Screen Recording permission")
+        return emptyList()
+    }
     if (cards.isNotEmpty()) {
-        val grid = CardDetector.detect(frame, cards.size) ?: return emptyList()
+        val grid = CardDetector.detect(frame, cards.size)
+        if (grid == null) {
+            com.firstpick.core.Log.warn("Overlay", "pack grid not found (${cards.size} cards, ${frame.width}x${frame.height})")
+            return emptyList()
+        }
         val rects = grid.cards(cards.size)
         val refs = cards.map { c -> c.imageUrl?.let { CardImageLoader.loadBufferedImage(it) }?.let { CardRecognizer.ofCard(it) } }
         val assign = CardRecognizer.match(frame, rects, refs)

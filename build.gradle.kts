@@ -104,6 +104,17 @@ tasks.register<JavaExec>("evalHarness") {
     args(a)
 }
 
+tasks.register<JavaExec>("overlayDebug") {
+    group = "verification"
+    description = "Run the overlay capture→detect→recognize pipeline once and report each stage."
+    mainClass.set("com.firstpick.tools.OverlayDebugKt")
+    classpath = sourceSets["main"].runtimeClasspath
+    val a = mutableListOf<String>()
+    a.add(project.findProperty("frame")?.toString() ?: "")
+    project.findProperty("format")?.let { a.add(it.toString()) }
+    args(a)
+}
+
 tasks.register("printEvalClasspath") {
     val out = layout.buildDirectory.file("eval-classpath.txt")
     val cp = sourceSets["main"].runtimeClasspath
