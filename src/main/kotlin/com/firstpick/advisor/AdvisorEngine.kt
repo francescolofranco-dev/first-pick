@@ -4,6 +4,7 @@ import com.firstpick.cards.CardMeta
 import com.firstpick.cards.CardRating
 import com.firstpick.cards.RankedCard
 import com.firstpick.cards.SetMetrics
+import com.firstpick.cards.SynergyIndex
 
 class AdvisorEngine(
     private val config: Config = Config(),
@@ -33,6 +34,11 @@ class AdvisorEngine(
         val glueMult: Double = 2.0,
         val synergyMult: Double = 1.2,
         val synergyCapPts: Double = 5.0,
+        val themeCapPts: Double = 6.0,
+        val themeFuelCap: Double = 6.0,
+        val comboPts: Double = 2.0,
+        val comboCapPts: Double = 4.0,
+        val synergyTotalCapPts: Double = 8.0,
         val penaltyRampStart: Double = 0.15,
         val penaltyMax: Double = 3.0,
         val needsRampStart: Double = 0.25,
@@ -48,14 +54,16 @@ class AdvisorEngine(
         lane: Lane,
         archetypeRating: (String, String) -> CardRating? = { _, _ -> null },
         meta: (String) -> CardMeta? = { null },
+        synergy: SynergyIndex? = null,
     ): List<ScoredCard> {
         val poolMetas = pool.mapNotNull { meta(it.name) }
         val needs = PoolNeeds.analyze(poolMetas, pool.size)
         val picksTaken = (packNumber - 1) * config.picksPerPack + (pickNumber - 1)
         val progress = (picksTaken.toDouble() / config.totalPicks).coerceIn(0.0, 1.0)
+        val theme = synergy?.let { ThemeSynergy(it, pool) }
 
         return pack.map { card ->
-            evaluate(card, lane, metrics, archetypeRating, meta, progress, needs)
+            evaluate(card, lane, metrics, archetypeRating, meta, progress, needs, theme)
         }.sortedWith(compareByDescending<ScoredCard> { it.rawValue }.thenBy { it.card.displayName })
     }
 
@@ -67,6 +75,7 @@ class AdvisorEngine(
         meta: (String) -> CardMeta?,
         progress: Double,
         needs: PoolNeeds,
+        theme: ThemeSynergy?,
     ): ScoredCard {
         val reasons = mutableListOf<String>()
         val globalWr = card.gihWr
@@ -82,7 +91,18 @@ class AdvisorEngine(
         val archSamples = archCard?.everDrawnGameCount ?: 0
         val archShiftZ = archetypeShiftZ(globalWr, archWr, archSamples, progress, metrics)
         val blendedZ = baseZ + archShiftZ
-        val synergyPts = synergyBonus(card, globalWr, archWr, archSamples, reasons)
+        val statSynergyPts = synergyBonus(card, globalWr, archWr, archSamples, reasons)
+
+        val themeResult = theme?.evaluate(card, config) ?: ThemeSynergy.Result.NONE
+        // The shared cap only engages when theme points exist, so a profile-less run is
+        // byte-identical to the old engine under any knob combination.
+        val totalSynergyPts = if (themeResult.points > 0.0) {
+            (statSynergyPts + themeResult.points).coerceAtMost(config.synergyTotalCapPts)
+        } else {
+            statSynergyPts
+        }
+        val themePts = totalSynergyPts - statSynergyPts
+        if (themePts > 0.0) reasons += themeResult.reasons
 
         val colors = LaneDetector.colorsOf(card)
         val hybridGroups = meta(card.name)?.hybridColorGroups.orEmpty()
@@ -117,13 +137,14 @@ class AdvisorEngine(
         }
 
         val rawValue = config.valueMidpoint + config.valuePerZ * (blendedZ - penalty) +
-            synergyPts + needsPts - wheelPts
+            totalSynergyPts + needsPts - wheelPts
         val value = rawValue.coerceIn(0.0, 100.0)
 
         val breakdown = ValueBreakdown(
             baseScore = config.valueMidpoint + config.valuePerZ * baseZ,
             archetypeShift = config.valuePerZ * archShiftZ,
-            synergyBonus = synergyPts,
+            synergyBonus = statSynergyPts,
+            themeBonus = themePts,
             penalty = -config.valuePerZ * penalty,
             needsPoints = needsPts,
             finalScore = value,

@@ -1,0 +1,548 @@
+{
+ "set": "MSH",
+ "setName": "Marvel Super Heroes",
+ "generated": "2026-07-02",
+ "mechanics": [
+  {
+   "name": "Power-up",
+   "summary": "One-shot activated ability granting +1/+1 counters (plus riders); costs the card's mana cost less if activated the turn it entered."
+  },
+  {
+   "name": "Teamwork",
+   "summary": "Optional additional cost on instants/sorceries: tap creatures with total power N for an upgraded effect."
+  },
+  {
+   "name": "Connive",
+   "summary": "Draw a card, then discard a card; if you discarded a nonland card, put a +1/+1 counter on the creature."
+  },
+  {
+   "name": "Plan",
+   "summary": "Enchantment subtype: repeatable trigger adds plan counters; the Nth counter sacrifices it for a large one-shot payoff."
+  },
+  {
+   "name": "Hero/Villain typal",
+   "summary": "Hero is W-centered (allies G/U), Villain is B-centered (allies R/U); ~50 cards reference one of the two types."
+  }
+ ],
+ "archetypes": [
+  {
+   "pair": "WU",
+   "name": "Teamwork tempo",
+   "playstyle": "Best-cards tempo: fliers and cheap Equipment with tap synergies \u2014 Teamwork spells and Vehicles convert a wide board into free value.",
+   "speed": "midrange",
+   "signposts": [
+    "Captain America, Living Legend",
+    "Spider-Woman, Secret Agent"
+   ],
+   "payoffs": [
+    "Agent Maria Hill",
+    "Captain America's Shield",
+    "The Wondrous Wasp"
+   ],
+   "enablers": [
+    "Helicarrier Strike",
+    "Murdock's Crusade",
+    "We Say Thee Nay!",
+    "Atlantis Attacks",
+    "S.H.I.E.L.D. Helicarrier",
+    "Dependable Quinjet"
+   ],
+   "keyCards": [
+    "S.H.I.E.L.D. Helicarrier",
+    "Ultron Drone",
+    "Super Villain Lockup",
+    "Super Suit",
+    "Aerial Doombot",
+    "Falcon's Wing Harness",
+    "U.S.Agent, John Walker",
+    "Justice, Vance Astrovik"
+   ]
+  },
+  {
+   "pair": "WB",
+   "name": "Lone-attacker Equipment",
+   "playstyle": "Suit up one evasive attacker and swing alone for cumulative bonuses and drain; Equipment density is the real engine.",
+   "speed": "midrange",
+   "signposts": [
+    "Black Widow, Double Agent",
+    "U.S.Agent, John Walker"
+   ],
+   "payoffs": [
+    "Winter Soldier, Icy Assassin",
+    "Agent 13, Sharon Carter",
+    "Agents of S.H.I.E.L.D.",
+    "Luke Cage, Power Man",
+    "HYDRA Infiltration",
+    "Swordsman, Sharp Scoundrel"
+   ],
+   "enablers": [
+    "S.H.I.E.L.D. Spy Kit",
+    "Stolen Stark Tech",
+    "Captain America's Shield",
+    "Ronin, Shadow Stalker"
+   ],
+   "keyCards": [
+    "Stolen Stark Tech",
+    "Ronin, Shadow Stalker",
+    "Swordsman, Sharp Scoundrel",
+    "HYDRA Infiltration",
+    "Luke Cage, Power Man",
+    "Moonstone, Harsh Mistress",
+    "Ghost, Spectral Saboteur"
+   ]
+  },
+  {
+   "pair": "WR",
+   "name": "Teamwork spells aggro",
+   "playstyle": "Low-curve attackers plus a dense suite of tricks and Teamwork removal; prowess-style payoffs reward casting noncreature spells mid-combat.",
+   "speed": "aggro",
+   "signposts": [
+    "Thor Odinson",
+    "War Machine, Legacy of Iron"
+   ],
+   "payoffs": [
+    "Iron Fist, Living Weapon",
+    "Monica Rambeau // Photon, Living Light",
+    "Crimson Operative",
+    "Hawkeye, Young Avenger"
+   ],
+   "enablers": [
+    "Super Speed",
+    "Blazing Crescendo",
+    "Repulsor Blast",
+    "HULK SMASH!",
+    "Helicarrier Strike",
+    "Murdock's Crusade",
+    "Vision of Love",
+    "Truck Toss"
+   ],
+   "keyCards": [
+    "Super Speed",
+    "Hire a Crew",
+    "Wonder Man, Hollywood Hero",
+    "Repulsor Blast",
+    "Truck Toss",
+    "Human Torch, Johnny Storm",
+    "K'un-Lun Warrior",
+    "HULK SMASH!",
+    "Iron Fist, Living Weapon"
+   ]
+  },
+  {
+   "pair": "WG",
+   "name": "Heroes midrange",
+   "playstyle": "Hero-typal ETB payoffs stacked on big bodies \u2014 the data says go tall with fat creatures and pump, not wide with tokens.",
+   "speed": "midrange",
+   "signposts": [
+    "Black Panther, Vanguard",
+    "Spider-Man, To the Rescue"
+   ],
+   "payoffs": [
+    "Avengers Assemble!",
+    "Captain America, Wings of Freedom",
+    "Agent Phil Coulson",
+    "The Thing, Ben Grimm",
+    "Hulkling, Burgeoning Bruiser",
+    "Wakandan Royal Guard"
+   ],
+   "enablers": [
+    "Hero in Training",
+    "Origin of the Avengers",
+    "Rick Jones, Destined Sidekick",
+    "Pet Avengers",
+    "Guerrilla Gorilla",
+    "Borough Backup"
+   ],
+   "keyCards": [
+    "Mister Hyde, Monster Within",
+    "Guerrilla Gorilla",
+    "Super Strength",
+    "Hulkling, Burgeoning Bruiser",
+    "The Thing, Ben Grimm",
+    "Baxter Building",
+    "Wakandan Royal Guard"
+   ]
+  },
+  {
+   "pair": "UB",
+   "name": "Connive draw-two grind",
+   "playstyle": "Black-heavy Villain attrition: connive and cheap draw trigger second-draw payoffs while the graveyard fuels recursion.",
+   "speed": "control",
+   "signposts": [
+    "Kang, Temporal Tyrant",
+    "Ghost, Spectral Saboteur"
+   ],
+   "payoffs": [
+    "Madame Masque",
+    "Construct a Cosmic Cube",
+    "Roxxon Brutes",
+    "Leader, Super-Genius",
+    "Arnim Zola, Bio-Fanatic",
+    "Grim Reaper, Lethal Legionnaire",
+    "Too Evil to Stay Dead"
+   ],
+   "enablers": [
+    "Red Room Recruit",
+    "A.I.M. Scientists",
+    "Ninja of the Hand",
+    "Visions of Villainy",
+    "Project Deathlok Soldier",
+    "A.I.M. Synthoids",
+    "Baron Strucker, HYDRA Overlord"
+   ],
+   "keyCards": [
+    "Ultron Drone",
+    "Project Deathlok Soldier",
+    "Arnim Zola, Bio-Fanatic",
+    "Ninja of the Hand",
+    "Grim Reaper, Lethal Legionnaire",
+    "Widow's Bite",
+    "Dark Deed",
+    "Madame Masque"
+   ]
+  },
+  {
+   "pair": "UR",
+   "name": "Artifacts matter",
+   "playstyle": "The format's one true build-around: artifact density feeds count- and ETB-payoffs; commit fully or stay out.",
+   "speed": "aggro",
+   "signposts": [
+    "Iron Man, Master of Machines",
+    "Speedball, New Warrior"
+   ],
+   "payoffs": [
+    "Machinesmith Automaton",
+    "HYDRA Assault Robot",
+    "Armor Wars",
+    "Vision Quest",
+    "Shuri, Wakandan Inventor",
+    "Iron Lad, Diverging Destiny"
+   ],
+   "enablers": [
+    "Hydraulic Helper",
+    "Futurist Forge",
+    "Stark Industries Executive",
+    "Ultron Drone",
+    "A.I.M. Synthoids",
+    "Super Suit",
+    "Dependable Quinjet",
+    "Aerial Doombot",
+    "K'un-Lun Warrior"
+   ],
+   "keyCards": [
+    "Hawkeye, Young Avenger",
+    "Stark Industries Executive",
+    "Truck Toss",
+    "Loki Laufeyson",
+    "HYDRA Assault Robot",
+    "Machinesmith Automaton",
+    "Shuri, Wakandan Inventor"
+   ]
+  },
+  {
+   "pair": "UG",
+   "name": "+1/+1 counters",
+   "playstyle": "Every counter source compounds: power-up, connive and draw triggers grow the board while token- and hexproof-payoffs cash them in.",
+   "speed": "midrange",
+   "signposts": [
+    "Ant-Man, Colony Commander",
+    "Beast, Erudite Aerialist"
+   ],
+   "payoffs": [
+    "The Astonishing Ant-Man",
+    "Knight of Wundagore",
+    "Kid Loki",
+    "Training Regimen",
+    "Mister Hyde, Monster Within",
+    "Doc Samson, Super Psychiatrist",
+    "Tigra, Feline Fury"
+   ],
+   "enablers": [
+    "Aerial Doombot",
+    "Ultron Drone",
+    "Pet Avengers",
+    "Go Nuts!",
+    "Viv Vision, Teen Synthezoid",
+    "Hulkling, Burgeoning Bruiser",
+    "Ant-Man's Army"
+   ],
+   "keyCards": [
+    "Viv Vision, Teen Synthezoid",
+    "Tigra, Feline Fury",
+    "Claim the Kingdom",
+    "Ant-Man's Army",
+    "Pym Particles",
+    "Go Nuts!"
+   ]
+  },
+  {
+   "pair": "BR",
+   "name": "Villain token aggro",
+   "playstyle": "Swarm with menace Villain tokens and typal ETB triggers, greasing the wheels with sacrifice and discard; needs a critical mass of Villains.",
+   "speed": "aggro",
+   "signposts": [
+    "Madame Hydra",
+    "Bullseye, Death Dealer"
+   ],
+   "payoffs": [
+    "Baron Strucker, HYDRA Overlord",
+    "Crossbones, Malicious Mercenary",
+    "Yellowjacket, Heartless Marauder",
+    "The Masters of Evil",
+    "Avengers: Under Siege",
+    "HYDRA Assault Robot",
+    "Doom Reigns Supreme",
+    "Evil's Thrall"
+   ],
+   "enablers": [
+    "Agents of HYDRA",
+    "HYDRA Troopers",
+    "Hire a Crew",
+    "Visions of Villainy",
+    "Volcanic Villain",
+    "Ninja of the Hand",
+    "Red Room Recruit",
+    "Roxxon Brutes"
+   ],
+   "keyCards": [
+    "Volcanic Villain",
+    "Baron Strucker, HYDRA Overlord",
+    "Titania, Rugged Rumbler"
+   ]
+  },
+  {
+   "pair": "BG",
+   "name": "Graveyard sacrifice",
+   "playstyle": "Fill the yard with two-plus creature cards to switch on cheap threshold payoffs; recursion turns every trade into value. Wants 16+ creatures.",
+   "speed": "midrange",
+   "signposts": [
+    "Killmonger, Scourge of Wakanda",
+    "Titania, Rugged Rumbler"
+   ],
+   "payoffs": [
+    "Undercover Skrull",
+    "Punishing Punch",
+    "HYDRA Troopers",
+    "Arnim Zola, Bio-Fanatic",
+    "Grim Reaper, Lethal Legionnaire",
+    "Robot Domination",
+    "The Serpent Society",
+    "Too Evil to Stay Dead"
+   ],
+   "enablers": [
+    "A.I.M. Synthoids",
+    "Kingpin's Enforcers",
+    "Decoy Ploy",
+    "Call Damage Control",
+    "Project Deathlok Soldier",
+    "Rick Jones, Destined Sidekick"
+   ],
+   "keyCards": [
+    "Call Damage Control",
+    "Grim Reaper, Lethal Legionnaire",
+    "Decoy Ploy",
+    "Kingpin's Enforcers",
+    "Bullseye, Death Dealer",
+    "Project Deathlok Soldier",
+    "A.I.M. Synthoids",
+    "Roxxon Brutes"
+   ]
+  },
+  {
+   "pair": "RG",
+   "name": "Power-up stompy",
+   "playstyle": "Oversized bodies with one-shot Power-up abilities, backed by burn and rummage; the data favors the spell-velocity half over pure ramp.",
+   "speed": "midrange",
+   "signposts": [
+    "Hulk, Gamma Goliath",
+    "Abomination, Terrifying Titan"
+   ],
+   "payoffs": [
+    "Wonder Man, Hollywood Hero",
+    "Doc Samson, Super Psychiatrist",
+    "Red Hulk",
+    "Wolverine, Fierce Fighter"
+   ],
+   "enablers": [
+    "Volcanic Villain",
+    "Pet Avengers",
+    "Ultron Drone",
+    "Viv Vision, Teen Synthezoid",
+    "Human Torch, Johnny Storm",
+    "Go Nuts!",
+    "HULK SMASH!"
+   ],
+   "keyCards": [
+    "Dependable Quinjet",
+    "Red Hulk",
+    "Photon Blast Barrage",
+    "Blazing Crescendo",
+    "Truck Toss",
+    "Misty Knight, Hero for Hire"
+   ]
+  }
+ ],
+ "combos": [
+  {
+   "cards": [
+    "Agent Maria Hill",
+    "Helicarrier Strike"
+   ],
+   "note": "Tapping Maria Hill to pay the teamwork cost draws a card and grows her"
+  },
+  {
+   "cards": [
+    "Agent Maria Hill",
+    "Murdock's Crusade"
+   ],
+   "note": "Tapping Maria Hill to pay the teamwork cost draws a card and grows her"
+  },
+  {
+   "cards": [
+    "Agent Maria Hill",
+    "We Say Thee Nay!"
+   ],
+   "note": "Tapping Maria Hill to pay the teamwork cost draws a card and grows her"
+  },
+  {
+   "cards": [
+    "Captain America, Living Legend",
+    "S.H.I.E.L.D. Helicarrier"
+   ],
+   "note": "Crewing taps creatures for the first time \u2014 Captain America untaps them all"
+  },
+  {
+   "cards": [
+    "Captain America, Living Legend",
+    "Dependable Quinjet"
+   ],
+   "note": "Crewing taps creatures for the first time \u2014 Captain America untaps them"
+  },
+  {
+   "cards": [
+    "Baron Strucker, HYDRA Overlord",
+    "Agents of HYDRA"
+   ],
+   "note": "Discounted Villain spells that connive on entry"
+  },
+  {
+   "cards": [
+    "Baron Strucker, HYDRA Overlord",
+    "HYDRA Troopers"
+   ],
+   "note": "Discounted Villain spells that connive on entry"
+  },
+  {
+   "cards": [
+    "Madame Hydra",
+    "Agents of HYDRA"
+   ],
+   "note": "Every Villain spell cast becomes an extra 2/1 menace token"
+  },
+  {
+   "cards": [
+    "Killmonger, Scourge of Wakanda",
+    "Decoy Ploy"
+   ],
+   "note": "Sacrifice for removal, then regrow the Villain from the graveyard"
+  },
+  {
+   "cards": [
+    "Killmonger, Scourge of Wakanda",
+    "Agents of HYDRA"
+   ],
+   "note": "Sacrificing it to Killmonger leaves a token and feeds the graveyard count"
+  },
+  {
+   "cards": [
+    "The Astonishing Ant-Man",
+    "Ant-Man, Colony Commander"
+   ],
+   "note": "Draw-triggered counters also trigger Colony Commander's Insect token"
+  },
+  {
+   "cards": [
+    "Visions of Villainy",
+    "Madame Masque"
+   ],
+   "note": "Instant-speed draw two triggers the second-draw Villain token"
+  },
+  {
+   "cards": [
+    "Visions of Villainy",
+    "Construct a Cosmic Cube"
+   ],
+   "note": "Instant-speed draw two adds a token and a plan counter"
+  },
+  {
+   "cards": [
+    "Iron Man, Master of Machines",
+    "Machinesmith Automaton"
+   ],
+   "note": "Every artifact entering grows both the count and the counters"
+  },
+  {
+   "cards": [
+    "Winter Soldier, Icy Assassin",
+    "S.H.I.E.L.D. Spy Kit"
+   ],
+   "note": "+2/+0 per Equipment; the Spy Kit untaps him after solo attacks"
+  },
+  {
+   "cards": [
+    "Swordsman, Sharp Scoundrel",
+    "Stolen Stark Tech"
+   ],
+   "note": "Flash Equipment re-attaches on Villain entry and connives on attack"
+  },
+  {
+   "cards": [
+    "Black Widow, Double Agent",
+    "Luke Cage, Power Man"
+   ],
+   "note": "Two lone-attacker payoffs stacking first strike, menace and indestructible"
+  },
+  {
+   "cards": [
+    "Agent 13, Sharon Carter",
+    "S.H.I.E.L.D. Spy Kit"
+   ],
+   "note": "Solo attack investigates, untaps the attacker and scrys"
+  },
+  {
+   "cards": [
+    "Hulk, Gamma Goliath",
+    "Volcanic Villain"
+   ],
+   "note": "Power-up discounted by {3} turns commons into late-game engines"
+  },
+  {
+   "cards": [
+    "Hulk, Gamma Goliath",
+    "Ultron Drone"
+   ],
+   "note": "Power-up discounted by {3} turns commons into late-game engines"
+  },
+  {
+   "cards": [
+    "Truck Toss",
+    "Dependable Quinjet"
+   ],
+   "note": "Controlling a Vehicle makes Truck Toss a 2-mana Bolt for 4"
+  },
+  {
+   "cards": [
+    "Tigra, Feline Fury",
+    "Ant-Man's Army"
+   ],
+   "note": "Food token lifegain converts into +1/+1 counters"
+  },
+  {
+   "cards": [
+    "Leader, Super-Genius",
+    "Red Room Recruit"
+   ],
+   "note": "Every connive draws an extra card first"
+  }
+ ]
+}

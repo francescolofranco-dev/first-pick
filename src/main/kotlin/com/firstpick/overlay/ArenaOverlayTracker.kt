@@ -153,7 +153,7 @@ fun ArenaOverlayTracker(
                     val cy = m.y + m.h - (d * 0.72f).roundToInt()
 
                     val tooltipW = 205
-                    val tooltipH = 150
+                    val tooltipH = 170
 
                     var tooltipX = cx + d / 2 - tooltipW / 2
                     var tooltipY = cy - tooltipH - 8

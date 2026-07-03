@@ -202,7 +202,7 @@ private fun DeckHelperView(
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 PipRow(opt.colors.toList())
                                 Spacer(Modifier.width(6.dp))
-                                Text(opt.title, fontWeight = FontWeight.Bold, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface)
+                                Text(opt.title, fontWeight = FontWeight.Bold, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis)
                             }
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Box(

@@ -160,7 +160,7 @@ private fun OptionCard(opt: DeckOptionUi, selected: Boolean, onClick: () -> Unit
         Row(verticalAlignment = Alignment.CenterVertically) {
             PipRow(opt.colors.toList())
             Spacer(Modifier.width(6.dp))
-            Text(opt.title, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+            Text(opt.title, fontWeight = FontWeight.Bold, fontSize = 13.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
         }
         Row(verticalAlignment = Alignment.CenterVertically) {
             TierBadge(opt.tier)

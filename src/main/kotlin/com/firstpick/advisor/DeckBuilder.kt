@@ -4,11 +4,14 @@ import com.firstpick.cards.CardMeta
 import com.firstpick.cards.CardRating
 import com.firstpick.cards.RankedCard
 import com.firstpick.cards.SetMetrics
+import com.firstpick.cards.SynergyIndex
+import com.firstpick.cards.SynergyRole
 
 data class DeckOption(
     val colors: String,
     val basePair: String,
     val splash: Char?,
+    val theme: String? = null,
     val powerScore: Double,
     val tier: String,
     val type: String,
@@ -42,6 +45,12 @@ object DeckBuilder {
     private const val UNFIXED_SPLASH_PENALTY = 4.0
     private const val SPLASH_FIXING_REWARD = 1.0
 
+    // Win-rate-equivalent nudges: enough to flip near-ties toward the pair's theme,
+    // never enough to seat a clearly weaker card over a stronger one.
+    private const val SIGNPOST_NUDGE = 0.010
+    private const val THEME_NUDGE = 0.008
+    private const val KEY_NUDGE = 0.005
+
     fun build(
         pool: List<RankedCard>,
         metrics: SetMetrics,
@@ -49,12 +58,13 @@ object DeckBuilder {
         archetypeRating: (String, String) -> CardRating? = { _, _ -> null },
         pairStrength: Map<String, Double> = emptyMap(),
         maxOptions: Int = 3,
+        synergy: SynergyIndex? = null,
     ): List<DeckOption> {
         val spells = pool.filter { meta(it.name)?.isLand != true }
         val lands = pool.filter { meta(it.name)?.isLand == true }
 
         fun pass(minSpells: Int) = COLOR_PAIRS.mapNotNull { pair ->
-            buildForPair(pair, spells, lands, metrics, meta, archetypeRating, strengthFor(pair, pairStrength), minSpells)
+            buildForPair(pair, spells, lands, metrics, meta, archetypeRating, strengthFor(pair, pairStrength), minSpells, synergy)
         }
 
         val options = pass(MIN_DECK_SPELLS).ifEmpty { pass(0) }
@@ -75,6 +85,7 @@ object DeckBuilder {
         archetypeRating: (String, String) -> CardRating?,
         strength: Double?,
         minSpells: Int,
+        synergy: SynergyIndex?,
     ): DeckOption? {
         val pairSet = pair.toSet()
         fun onColor(card: RankedCard): Boolean {
@@ -82,13 +93,22 @@ object DeckBuilder {
             val hybridGroups = meta(card.name)?.hybridColorGroups.orEmpty()
             return colors.isEmpty() || LaneDetector.uncastableColors(colors, pairSet, hybridGroups).isEmpty()
         }
-        fun cardScore(card: RankedCard): Double {
+        fun themeNudge(card: RankedCard): Double {
+            val tag = synergy?.tags(card.name)?.firstOrNull { it.pair == pair } ?: return 0.0
+            return when (tag.role) {
+                SynergyRole.SIGNPOST -> SIGNPOST_NUDGE
+                SynergyRole.PAYOFF, SynergyRole.ENABLER -> THEME_NUDGE
+                SynergyRole.KEY -> KEY_NUDGE
+            }
+        }
+        fun rawScore(card: RankedCard): Double {
             val arch = archetypeRating(card.name, pair)?.gihWr
             return arch ?: card.gihWr ?: (metrics.meanGihWr - 0.02)
         }
+        fun cardScore(card: RankedCard): Double = rawScore(card) + themeNudge(card)
 
         val eligible = spells.filter(::onColor)
-        val base = selectSpells(eligible, metrics, meta, ::cardScore).toMutableList()
+        val base = selectSpells(eligible, metrics, meta, ::cardScore, ::rawScore).toMutableList()
 
         val baseFixers = base.count { meta(it.name)?.isFixing == true } +
             lands.count { val c = LaneDetector.colorsOf(it); (c.isEmpty() || pairSet.containsAll(c)) && meta(it.name)?.isFixing == true }
@@ -125,6 +145,7 @@ object DeckBuilder {
             colors = "WUBRG".filter { it in deckColors },
             basePair = "WUBRG".filter { it in pairSet },
             splash = splashColor,
+            theme = synergy?.archetype(pair)?.name,
             powerScore = power,
             tier = tierOf(power),
             type = typeOf(avgCmc, twoDrops, removal),
@@ -169,11 +190,14 @@ object DeckBuilder {
         metrics: SetMetrics,
         meta: (String) -> CardMeta?,
         cardScore: (RankedCard) -> Double,
+        capScore: (RankedCard) -> Double = cardScore,
     ): List<RankedCard> {
         val candidates = eligible
             .groupBy { it.name }
             .flatMap { (_, copies) ->
-                val cap = copyCap(metrics.z(cardScore(copies.first())) ?: 0.0)
+                // Copy caps come from the un-nudged score: theme bonuses break ties in
+                // ordering but must not promote below-average cards to extra copies.
+                val cap = copyCap(metrics.z(capScore(copies.first())) ?: 0.0)
                 copies.sortedByDescending { it.gihWr ?: 0.0 }.take(cap)
             }
             .map { card ->

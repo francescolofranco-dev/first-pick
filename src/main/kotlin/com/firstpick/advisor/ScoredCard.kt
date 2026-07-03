@@ -18,5 +18,6 @@ data class ValueBreakdown(
     val synergyBonus: Double,
     val penalty: Double,
     val needsPoints: Double,
-    val finalScore: Double
+    val finalScore: Double,
+    val themeBonus: Double = 0.0,
 )

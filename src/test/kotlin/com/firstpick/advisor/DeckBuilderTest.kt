@@ -160,6 +160,32 @@ class DeckBuilderTest {
     }
 
     @Test
+    fun synergyProfileLabelsTheDeckAndBreaksNearTies() {
+        val index = com.firstpick.cards.SynergyIndex(
+            com.firstpick.cards.SetSynergyProfile(
+                set = "TST",
+                archetypes = listOf(
+                    com.firstpick.cards.SynergyArchetype(
+                        pair = "WU",
+                        name = "Fliers tempo",
+                        payoffs = listOf("OnTheme"),
+                    ),
+                ),
+            ),
+        )
+        val pool = buildList {
+            add(card(1, "OnTheme", 0.560, "U"))
+            add(card(2, "OffTheme", 0.563, "U"))
+            repeat(12) { add(card(10 + it, "W$it", 0.56, "W")) }
+            repeat(11) { add(card(40 + it, "U$it", 0.56, "U")) }
+        }
+        val top = DeckBuilder.build(pool, metrics, meta, synergy = index).first()
+        assertEquals("Fliers tempo", top.theme)
+        val names = top.spells.map { it.name }
+        assertTrue("OnTheme" in names, "near-tied on-theme card should make the deck over filler")
+    }
+
+    @Test
     fun keepsTheDeckCreatureDenseDespiteHighWinRateSpells() {
         val metaMap = mutableMapOf<String, CardMeta>()
         fun mk(id: Int, name: String, gih: Double, color: String, cmc: Int, creature: Boolean): RankedCard {

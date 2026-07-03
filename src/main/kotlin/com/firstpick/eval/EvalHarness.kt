@@ -8,6 +8,7 @@ import com.firstpick.cards.ArchetypeRepository
 import com.firstpick.cards.CardMetaRepository
 import com.firstpick.cards.CardRepository
 import com.firstpick.cards.RankedCard
+import com.firstpick.cards.SynergyRepository
 import kotlinx.coroutines.runBlocking
 import java.nio.file.Files
 import java.nio.file.Path
@@ -24,7 +25,10 @@ fun main(args: Array<String>) = runBlocking {
     val archRepo = ArchetypeRepository().apply { loadStrengths(set, format) }
     for (p in COLOR_PAIRS) runCatching { archRepo.ensurePair(set, format, p) }
     val metaRepo = CardMetaRepository().apply { runCatching { load(set, repo.cardNames) } }
-    println("done.")
+    val synergyRepo = SynergyRepository().apply { runCatching { load(set) } }
+    val synergyOn = System.getProperty("firstpick.synergy") != "off"
+    val synergyIndex = if (synergyOn) synergyRepo.index else null
+    println("done. (synergy profile: ${if (synergyIndex != null) "${synergyIndex.profile.archetypes.size} archetypes" else "none"})")
 
     val drafts = LinkedHashMap<String, MutableList<PickRow>>()
     var rows = 0
@@ -61,6 +65,11 @@ fun main(args: Array<String>) = runBlocking {
         glueMult = sysD("firstpick.glueMult", base.glueMult),
         synergyMult = sysD("firstpick.synergyMult", base.synergyMult),
         synergyCapPts = sysD("firstpick.synergyCapPts", base.synergyCapPts),
+        themeCapPts = sysD("firstpick.themeCapPts", base.themeCapPts),
+        themeFuelCap = sysD("firstpick.themeFuelCap", base.themeFuelCap),
+        comboPts = sysD("firstpick.comboPts", base.comboPts),
+        comboCapPts = sysD("firstpick.comboCapPts", base.comboCapPts),
+        synergyTotalCapPts = sysD("firstpick.synergyTotalCapPts", base.synergyTotalCapPts),
         penaltyRampStart = sysD("firstpick.penaltyRampStart", base.penaltyRampStart),
         penaltyMax = sysD("firstpick.penaltyMax", base.penaltyMax),
         needsRampStart = sysD("firstpick.needsRampStart", base.needsRampStart),
@@ -79,7 +88,7 @@ fun main(args: Array<String>) = runBlocking {
             seen[(row.pack + 1) to (row.pick + 1)] = pack
             val signals = SignalsEngine.openLanesResolved(seen)
             val lane = LaneDetector.detect(pool, repo.setMetrics, archRepo.strengthMap(), signals)
-            val scored = engine.score(pack, pool, row.pack + 1, row.pick + 1, repo.setMetrics, lane, archRepo::archetypeRating, metaRepo::meta)
+            val scored = engine.score(pack, pool, row.pack + 1, row.pick + 1, repo.setMetrics, lane, archRepo::archetypeRating, metaRepo::meta, synergyIndex)
             scored.firstOrNull()?.let { topPick ->
                 m.record(
                     agreeTop1 = topPick.card.name == row.pickedName,

@@ -57,6 +57,7 @@ data class DeckOptionUi(
     val colors: String,
     val basePair: String,
     val splash: Char? = null,
+    val theme: String? = null,
     val tier: String,
     val type: String,
     val outlook: String,
@@ -68,7 +69,10 @@ data class DeckOptionUi(
     val lands: List<DeckSpellUi> = emptyList(),
 ) {
     val title: String
-        get() = guildName(basePair).ifBlank { basePair } + (splash?.let { " · splash $it" } ?: "")
+        get() {
+            val base = guildName(basePair).ifBlank { basePair } + (splash?.let { " · splash $it" } ?: "")
+            return theme?.let { "$base · $it" } ?: base
+        }
 }
 
 fun guildName(pair: String): String = when (pair) {

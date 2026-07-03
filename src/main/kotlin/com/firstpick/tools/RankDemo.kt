@@ -7,6 +7,7 @@ import com.firstpick.advisor.PoolNeeds
 import com.firstpick.cards.ArchetypeRepository
 import com.firstpick.cards.CardMetaRepository
 import com.firstpick.cards.CardRepository
+import com.firstpick.cards.SynergyRepository
 import com.firstpick.draft.DraftTracker
 import com.firstpick.model.DraftPhase
 import kotlinx.coroutines.runBlocking
@@ -50,6 +51,10 @@ fun main(args: Array<String>) = runBlocking {
 
     val metaRepo = CardMetaRepository()
     metaRepo.load(set, repo.cardNames)
+    val synergyRepo = SynergyRepository()
+    synergyRepo.load(set)
+    val synergy = synergyRepo.index
+    println("Synergy profile: " + (synergy?.let { "${it.profile.setName} — ${it.profile.archetypes.size} archetypes" } ?: "none"))
 
     val pack = repo.resolvePack(state.packCards)
     val pool = state.pool.map(repo::resolve)
@@ -59,27 +64,32 @@ fun main(args: Array<String>) = runBlocking {
         archRepo.rankedPairs().take(3).joinToString { "${it.pair} ${"%.1f".format(it.winRate * 100)}%" })
     val poolNeeds = PoolNeeds.analyze(pool.mapNotNull { metaRepo.meta(it.name) }, pool.size)
     println("Deck needs: " + (poolNeeds.activeNeeds(45).ifEmpty { listOf("solid backbone") }.joinToString(", ")))
-    val scored = AdvisorEngine().score(pack, pool, state.pack, state.pick, repo.setMetrics, lane, archRepo::archetypeRating, metaRepo::meta)
+    val scored = AdvisorEngine().score(pack, pool, state.pack, state.pick, repo.setMetrics, lane, archRepo::archetypeRating, metaRepo::meta, synergy)
+    val plain = AdvisorEngine().score(pack, pool, state.pack, state.pick, repo.setMetrics, lane, archRepo::archetypeRating, metaRepo::meta)
+    val plainValue = plain.associate { it.card.grpId to it.value }
 
-    println("  VALUE  GIH%   ALSA  Card / reasons")
-    println("  -----  -----  ----  --------------")
+    println("  VALUE   Δsyn  GIH%   ALSA  Card / reasons")
+    println("  -----  -----  -----  ----  --------------")
     for (s in scored) {
         val r = s.card.rating
         val value = "%.0f".format(s.value)
+        val delta = s.value - (plainValue[s.card.grpId] ?: s.value)
+        val deltaStr = if (delta != 0.0) "%+.1f".format(delta) else "    "
         val gih = r?.gihWr?.let { "%.1f".format(it * 100) } ?: "  -"
         val alsa = r?.alsa?.let { "%.1f".format(it) } ?: " - "
         val star = if (s.isBomb) "★" else " "
         val reasons = if (s.reasons.isNotEmpty()) "  (${s.reasons.joinToString(", ")})" else ""
-        println("  ${value.padStart(5)}  ${gih.padStart(5)}  ${alsa.padStart(4)}  $star ${s.card.displayName}$reasons")
+        println("  ${value.padStart(5)}  ${deltaStr.padStart(5)}  ${gih.padStart(5)}  ${alsa.padStart(4)}  $star ${s.card.displayName}$reasons")
     }
 
     if (pool.size >= 20) {
         println("\n=== Deck builder (from ${pool.size} pool cards) ===")
-        val options = DeckBuilder.build(pool, repo.setMetrics, metaRepo::meta, archRepo::archetypeRating, archRepo.strengthMap())
+        val options = DeckBuilder.build(pool, repo.setMetrics, metaRepo::meta, archRepo::archetypeRating, archRepo.strengthMap(), synergy = synergy)
         for (o in options) {
             val splash = o.splash?.let { " splash $it" } ?: ""
+            val theme = o.theme?.let { " · $it" } ?: ""
             println(
-                "${o.colors} (${o.basePair}$splash)  tier ${o.tier}  power ${"%.0f".format(o.powerScore)}  ${o.type}  " +
+                "${o.colors} (${o.basePair}$splash)$theme  tier ${o.tier}  power ${"%.0f".format(o.powerScore)}  ${o.type}  " +
                     "${o.spells.size}sp/${o.landCount}ln  ${o.creatures}cr/${o.removal}rem  — ${o.outlook}",
             )
         }

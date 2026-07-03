@@ -246,6 +246,7 @@ fun BreakdownTooltip(b: ValueBreakdown) {
             BreakdownRow("Base power", String.format("%.1f", b.baseScore))
             if (b.archetypeShift != 0.0) BreakdownRow("Archetype shift", String.format("%+.1f", b.archetypeShift))
             if (b.synergyBonus != 0.0) BreakdownRow("Synergy bonus", String.format("%+.1f", b.synergyBonus))
+            if (b.themeBonus != 0.0) BreakdownRow("Theme synergy", String.format("%+.1f", b.themeBonus))
             if (b.penalty != 0.0) BreakdownRow("Color penalty", String.format("%+.1f", b.penalty))
             if (b.needsPoints != 0.0) BreakdownRow("Deck needs", String.format("%+.1f", b.needsPoints))
             Spacer(Modifier.height(4.dp))

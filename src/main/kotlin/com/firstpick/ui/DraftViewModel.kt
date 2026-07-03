@@ -13,6 +13,7 @@ import com.firstpick.cards.ArchetypeRepository
 import com.firstpick.cards.CardMeta
 import com.firstpick.cards.CardMetaRepository
 import com.firstpick.cards.CardRepository
+import com.firstpick.cards.SynergyRepository
 import com.firstpick.cards.DataUnavailableException
 import com.firstpick.cards.FetchFailure
 import com.firstpick.core.AppPaths
@@ -41,6 +42,7 @@ class DraftViewModel(
     private val repo: CardRepository = CardRepository(),
     private val metaRepo: CardMetaRepository = CardMetaRepository(),
     private val archetypeRepo: ArchetypeRepository = ArchetypeRepository(),
+    private val synergyRepo: SynergyRepository = SynergyRepository(),
     private val advisor: AdvisorEngine = AdvisorEngine(),
     private val simulator: DraftSimulator = DraftSimulator(),
 ) {
@@ -140,6 +142,7 @@ class DraftViewModel(
         scope.launch {
             runCatching { metaRepo.load(set, repo.cardNames) }
             runCatching { archetypeRepo.loadStrengths(set, format) }
+            runCatching { synergyRepo.load(set) }
             publish()
         }
     }
@@ -175,6 +178,7 @@ class DraftViewModel(
                 lane = lane,
                 archetypeRating = archetypeRepo::archetypeRating,
                 meta = metaRepo::meta,
+                synergy = synergyRepo.index,
             ).toRows(state.packCards)
         } else {
             emptyList()
@@ -196,6 +200,7 @@ class DraftViewModel(
                     meta = metaRepo::meta,
                     archetypeRating = archetypeRepo::archetypeRating,
                     pairStrength = archetypeRepo.strengthMap(),
+                    synergy = synergyRepo.index,
                 ).map { it.toUi() }
             }.getOrElse { Log.warn(TAG, "deck build failed: $it"); emptyList() }
         } else {
@@ -241,6 +246,7 @@ class DraftViewModel(
             colors = colors,
             basePair = basePair,
             splash = splash,
+            theme = theme,
             tier = tier,
             type = type,
             outlook = outlook,
