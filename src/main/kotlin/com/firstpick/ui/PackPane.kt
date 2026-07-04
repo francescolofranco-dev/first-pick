@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -65,6 +66,9 @@ internal fun PackPane(state: DraftUiState, onSimulate: (String) -> Unit = {}) = 
                     DraftSimulator.SETS.forEach { set -> DemoSetButton(set) { onSimulate(set) } }
                 }
             }
+            if (state.phase == DraftPhase.IDLE && state.researchedSets.isNotEmpty()) {
+                SynergyCoverage(state.researchedSets, state.groundedSets)
+            }
         }
     }
 
@@ -76,6 +80,30 @@ internal fun PackPane(state: DraftUiState, onSimulate: (String) -> Unit = {}) = 
             verticalArrangement = Arrangement.spacedBy(5.dp),
         ) {
             items(state.packCards, key = { "${it.grpId}#${it.rank}" }) { PackRow(it) }
+        }
+    }
+}
+
+@Composable
+private fun SynergyCoverage(researched: List<String>, grounded: List<String>) {
+    Column(
+        Modifier.widthIn(max = 460.dp).clip(RoundedCornerShape(10.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)).padding(14.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Text("Set coverage", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            SynergyTierBadge("researched")
+            Text(researched.joinToString("  "), fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+        }
+        Text("Full archetype + combo synergy on these sets.", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
+        if (grounded.isNotEmpty()) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                SynergyTierBadge("data")
+                Text(grounded.joinToString("  "), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
+            }
+            Text("Ratings-driven picks; lighter synergy signal.", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
         }
     }
 }

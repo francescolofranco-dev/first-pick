@@ -13,7 +13,9 @@ import com.firstpick.cards.ArchetypeRepository
 import com.firstpick.cards.CardMeta
 import com.firstpick.cards.CardMetaRepository
 import com.firstpick.cards.CardRepository
+import com.firstpick.cards.StandardSets
 import com.firstpick.cards.SynergyRepository
+import com.firstpick.cards.SynergyTierLevel
 import com.firstpick.cards.DataUnavailableException
 import com.firstpick.cards.FetchFailure
 import com.firstpick.core.AppPaths
@@ -231,6 +233,15 @@ class DraftViewModel(
             ratingsFormatChoice = formatChoice,
             simulating = simulating,
             simPaused = simPaused.value,
+            synergyTier = state.setCode?.let {
+                when (StandardSets.tier(it)) {
+                    SynergyTierLevel.RESEARCHED -> "researched"
+                    SynergyTierLevel.DATA -> "data"
+                    SynergyTierLevel.NONE -> null
+                }
+            },
+            researchedSets = StandardSets.researched(),
+            groundedSets = StandardSets.grounded(),
         )
     }
 

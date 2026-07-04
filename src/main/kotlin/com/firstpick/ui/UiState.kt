@@ -113,6 +113,9 @@ data class DraftUiState(
     val ratingsFormatChoice: String = RatingsFormat.PREMIER,
     val simulating: Boolean = false,
     val simPaused: Boolean = false,
+    val synergyTier: String? = null,
+    val researchedSets: List<String> = emptyList(),
+    val groundedSets: List<String> = emptyList(),
 ) {
     val headline: String
         get() = when (phase) {

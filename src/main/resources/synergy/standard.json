@@ -1,70 +1,86 @@
 {
  "checked": "2026-07-04",
- "note": "Standard-legal sets with 17Lands draft data and a bundled synergy profile. Drop a set when it rotates out of Standard (see ./gradlew auditSets).",
+ "note": "Standard-legal sets with 17Lands draft data and a bundled synergy profile. tier: researched=deeply verified archetypes+combos, data=grounded from 17Lands overperformance. Drop a set when it rotates out of Standard (./gradlew auditSets).",
  "sets": [
   {
    "code": "MSH",
-   "rotatesYear": 2028
+   "rotatesYear": 2028,
+   "tier": "researched"
   },
   {
    "code": "SOS",
-   "rotatesYear": 2028
+   "rotatesYear": 2028,
+   "tier": "researched"
   },
   {
    "code": "TMT",
-   "rotatesYear": 2028
+   "rotatesYear": 2028,
+   "tier": "researched"
   },
   {
    "code": "ECL",
-   "rotatesYear": 2029
+   "rotatesYear": 2029,
+   "tier": "researched"
   },
   {
    "code": "TLA",
-   "rotatesYear": 2028
+   "rotatesYear": 2028,
+   "tier": "data"
   },
   {
    "code": "EOE",
-   "rotatesYear": 2028
+   "rotatesYear": 2028,
+   "tier": "data"
   },
   {
    "code": "FIN",
-   "rotatesYear": 2028
+   "rotatesYear": 2028,
+   "tier": "data"
   },
   {
    "code": "DFT",
-   "rotatesYear": 2028
+   "rotatesYear": 2028,
+   "tier": "data"
   },
   {
    "code": "TDM",
-   "rotatesYear": 2028
+   "rotatesYear": 2028,
+   "tier": "data"
   },
   {
    "code": "FDN",
-   "rotatesYear": 2027
+   "rotatesYear": 2027,
+   "tier": "data"
   },
   {
    "code": "DSK",
-   "rotatesYear": 2027
+   "rotatesYear": 2027,
+   "tier": "data"
   },
   {
    "code": "BLB",
-   "rotatesYear": 2027
+   "rotatesYear": 2027,
+   "tier": "data"
   },
   {
    "code": "OTJ",
-   "rotatesYear": 2027
+   "rotatesYear": 2027,
+   "tier": "data"
   },
   {
    "code": "MKM",
-   "rotatesYear": 2027
+   "rotatesYear": 2027,
+   "tier": "data"
   },
   {
    "code": "LCI",
-   "rotatesYear": 2026
+   "rotatesYear": 2026,
+   "tier": "data"
   },
   {
    "code": "WOE",
-   "rotatesYear": 2026
+   "rotatesYear": 2026,
+   "tier": "data"
   }
  ]
 }

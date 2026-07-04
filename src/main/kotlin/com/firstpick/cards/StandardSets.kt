@@ -5,7 +5,9 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
 @Serializable
-data class StandardSet(val code: String, val rotatesYear: Int? = null)
+data class StandardSet(val code: String, val rotatesYear: Int? = null, val tier: String = "data")
+
+enum class SynergyTierLevel { RESEARCHED, DATA, NONE }
 
 @Serializable
 data class StandardManifest(
@@ -35,6 +37,17 @@ object StandardSets {
     val codes: Set<String> get() = manifest.sets.mapTo(mutableSetOf()) { it.code.uppercase() }
 
     fun isSupported(setCode: String): Boolean = setCode.uppercase() in codes
+
+    fun tier(setCode: String): SynergyTierLevel =
+        when (manifest.sets.firstOrNull { it.code.equals(setCode, ignoreCase = true) }?.tier) {
+            "researched" -> SynergyTierLevel.RESEARCHED
+            "data" -> SynergyTierLevel.DATA
+            else -> SynergyTierLevel.NONE
+        }
+
+    /** Supported sets grouped by tier, each list in manifest order. */
+    fun researched(): List<String> = manifest.sets.filter { it.tier == "researched" }.map { it.code.uppercase() }
+    fun grounded(): List<String> = manifest.sets.filter { it.tier != "researched" }.map { it.code.uppercase() }
 
     private const val TAG = "StandardSets"
 }

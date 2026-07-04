@@ -99,6 +99,19 @@ fun App(
 }
 
 @Composable
+internal fun SynergyTierBadge(tier: String) {
+    val researched = tier == "researched"
+    val accent = if (researched) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
+    val label = if (researched) "✦ Deep synergy" else "• Data synergy"
+    Box(
+        Modifier.clip(RoundedCornerShape(6.dp)).background(accent.copy(alpha = 0.18f))
+            .padding(horizontal = 8.dp, vertical = 3.dp),
+    ) {
+        Text(label, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = accent)
+    }
+}
+
+@Composable
 private fun Header(
     state: DraftUiState,
     isOverlayOpen: Boolean,
@@ -117,6 +130,10 @@ private fun Header(
                 Text("FirstPick", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                 Spacer(Modifier.width(10.dp))
                 if (state.laneColors.isNotEmpty()) PipRow(state.laneColors)
+                state.synergyTier?.let {
+                    Spacer(Modifier.width(10.dp))
+                    SynergyTierBadge(it)
+                }
             }
             Spacer(Modifier.height(2.dp))
             Text(state.headline, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
