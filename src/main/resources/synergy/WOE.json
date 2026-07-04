@@ -1,0 +1,430 @@
+{
+ "set": "WOE",
+ "setName": "Wilds of Eldraine",
+ "generated": "2026-07-04",
+ "mechanics": [
+  {
+   "name": "Role token",
+   "summary": ""
+  },
+  {
+   "name": "Food",
+   "summary": ""
+  },
+  {
+   "name": "Bargain",
+   "summary": ""
+  },
+  {
+   "name": "Celebration",
+   "summary": ""
+  },
+  {
+   "name": "Treasure",
+   "summary": ""
+  }
+ ],
+ "archetypes": [
+  {
+   "pair": "WU",
+   "name": "Flyers tempo",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Sharae of Numbing Depths"
+   ],
+   "payoffs": [
+    "Woodland Acolyte // Mend the Wilds",
+    "Icewrought Sentry",
+    "Threadbind Clique // Rip the Seams",
+    "Chancellor of Tales",
+    "Frostbridge Guard",
+    "Armory Mice"
+   ],
+   "enablers": [
+    "Kellan's Lightblades",
+    "Solitary Sanctuary",
+    "Succumb to the Cold",
+    "Prophetic Prism",
+    "Hopeful Vigil"
+   ],
+   "keyCards": [
+    "Plunge into Winter",
+    "Freeze in Place",
+    "Scarecrow Guide",
+    "Moment of Valor",
+    "Candy Trail",
+    "Savior of the Sleeping",
+    "Unassuming Sage",
+    "Stockpiling Celebrant",
+    "Discerning Financier",
+    "Dutiful Griffin",
+    "Break the Spell",
+    "Glass Casket",
+    "Gallant Pie-Wielder",
+    "Archive Dragon"
+   ]
+  },
+  {
+   "pair": "WB",
+   "name": "Wicked lifedrain",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Neva, Stalked by Nightmares"
+   ],
+   "payoffs": [
+    "Shrouded Shepherd // Cleave Shadows",
+    "Savior of the Sleeping",
+    "Stockpiling Celebrant",
+    "Knight of Doves",
+    "Slumbering Keepguard",
+    "Woodland Acolyte // Mend the Wilds"
+   ],
+   "enablers": [
+    "Eriette's Tempting Apple",
+    "Solitary Sanctuary",
+    "Break the Spell",
+    "Cooped Up",
+    "Hopeless Nightmare"
+   ],
+   "keyCards": [
+    "Rimefur Reindeer",
+    "Charmed Clothier",
+    "High Fae Negotiator",
+    "Unassuming Sage",
+    "Protective Parents",
+    "Ashiok's Reaper",
+    "Discerning Financier",
+    "Rowan's Grim Search",
+    "Besotted Knight // Betroth the Beast",
+    "Tuinvale Guide",
+    "Eriette's Whisper",
+    "Warehouse Tabby",
+    "Candy Trail",
+    "Dutiful Griffin"
+   ]
+  },
+  {
+   "pair": "WR",
+   "name": "Prowess aggro",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Ash, Party Crasher"
+   ],
+   "payoffs": [
+    "Imodane's Recruiter // Train Troops",
+    "Frostbridge Guard",
+    "Woodland Acolyte // Mend the Wilds",
+    "Cheeky House-Mouse // Squeak By",
+    "Slumbering Keepguard",
+    "Gallant Pie-Wielder"
+   ],
+   "enablers": [
+    "Solitary Sanctuary",
+    "The Princess Takes Flight",
+    "Return Triumphant",
+    "Eriette's Tempting Apple",
+    "Cooped Up"
+   ],
+   "keyCards": [
+    "Glass Casket",
+    "Gingerbrute",
+    "Protective Parents",
+    "Discerning Financier",
+    "Monstrous Rage",
+    "Archon's Glory",
+    "Armory Mice",
+    "Unassuming Sage",
+    "Besotted Knight // Betroth the Beast",
+    "Charmed Clothier",
+    "Hopeful Vigil",
+    "Rimefur Reindeer",
+    "Merry Bards",
+    "Belligerent of the Ball"
+   ]
+  },
+  {
+   "pair": "WG",
+   "name": "Go-wide tokens",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Syr Armont, the Redeemer"
+   ],
+   "payoffs": [
+    "Cursed Courtier",
+    "Tuinvale Guide",
+    "Rimefur Reindeer",
+    "Charmed Clothier",
+    "Discerning Financier",
+    "Tanglespan Lookout"
+   ],
+   "enablers": [
+    "Plunge into Winter",
+    "The Princess Takes Flight",
+    "Collector's Vault",
+    "Moment of Valor",
+    "Break the Spell"
+   ],
+   "keyCards": [
+    "Dutiful Griffin",
+    "Stroke of Midnight",
+    "Besotted Knight // Betroth the Beast",
+    "Bestial Bloodline",
+    "Redtooth Genealogist",
+    "Glass Casket",
+    "Knight of Doves",
+    "Return Triumphant",
+    "Welcome to Sweettooth",
+    "Hopeful Vigil",
+    "Curse of the Werefox",
+    "Kellan's Lightblades",
+    "Archon's Glory",
+    "Unassuming Sage"
+   ]
+  },
+  {
+   "pair": "UB",
+   "name": "Faeries",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Obyra, Dreaming Duelist"
+   ],
+   "payoffs": [
+    "Barrow Naughty",
+    "Diminisher Witch",
+    "Picklock Prankster // Free the Fae",
+    "Tenacious Tomeseeker",
+    "Splashy Spellcaster",
+    "Merfolk Coralsmith"
+   ],
+   "enablers": [
+    "Faerie Fencing",
+    "Candy Trail",
+    "Edgewall Inn",
+    "Water Wings",
+    "Quick Study"
+   ],
+   "keyCards": [
+    "Evolving Wilds",
+    "Candy Grapple",
+    "Feed the Cauldron",
+    "Sweettooth Witch",
+    "Snaremaster Sprite",
+    "Prophetic Prism",
+    "Conceited Witch // Price of Beauty",
+    "Spellscorn Coven // Take It Back",
+    "Mintstrosity",
+    "Bitter Chill",
+    "Ego Drain",
+    "Collector's Vault",
+    "Hopeless Nightmare",
+    "Three Bowls of Porridge"
+   ]
+  },
+  {
+   "pair": "UR",
+   "name": "Spellslinger",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Johann, Apprentice Sorcerer"
+   ],
+   "payoffs": [
+    "Skewer Slinger",
+    "Merfolk Coralsmith",
+    "Frolicking Familiar // Blow Off Steam",
+    "Galvanic Giant // Storm Reading",
+    "Redcap Thief",
+    "Vantress Transmuter // Croaking Curse"
+   ],
+   "enablers": [
+    "Gadwick's First Duel",
+    "Frantic Firebolt",
+    "Crystal Grotto",
+    "Water Wings",
+    "Freeze in Place"
+   ],
+   "keyCards": [
+    "Flick a Coin",
+    "Mocking Sprite",
+    "Bitter Chill",
+    "Evolving Wilds",
+    "Snaremaster Sprite",
+    "Aquatic Alchemist // Bubble Up",
+    "Torch the Tower",
+    "Scarecrow Guide",
+    "Stormkeld Prowler",
+    "Prophetic Prism",
+    "Sleight of Hand",
+    "Into the Fae Court",
+    "Collector's Vault",
+    "Grabby Giant // That's Mine"
+   ]
+  },
+  {
+   "pair": "UG",
+   "name": "Bargain ramp",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Troyan, Gutsy Explorer"
+   ],
+   "payoffs": [
+    "Skybeast Tracker",
+    "Troublemaker Ouphe",
+    "Archive Dragon",
+    "Territorial Witchstalker",
+    "Rootrider Faun",
+    "Beanstalk Wurm // Plant Beans"
+   ],
+   "enablers": [
+    "Commune with Nature",
+    "Return from the Wilds",
+    "Three Bowls of Porridge",
+    "Misleading Motes",
+    "Curse of the Werefox"
+   ],
+   "keyCards": [
+    "Crystal Grotto",
+    "Obyra's Attendants // Desperate Parry",
+    "Leaping Ambush",
+    "Redtooth Vanguard",
+    "Beluna's Gatekeeper // Entry Denied",
+    "Royal Treatment",
+    "Disdainful Stroke",
+    "Tempest Hart // Scan the Clouds",
+    "Candy Trail",
+    "Hamlet Glutton",
+    "Galvanic Giant // Storm Reading",
+    "Stormkeld Prowler",
+    "Hollow Scavenger // Bakery Raid",
+    "Howling Galefang"
+   ]
+  },
+  {
+   "pair": "BR",
+   "name": "Sacrifice",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Totentanz, Swarm Piper"
+   ],
+   "payoffs": [
+    "Twisted Sewer-Witch",
+    "Wicked Visitor",
+    "Faerie Dreamthief",
+    "Stingblade Assassin",
+    "Callous Sell-Sword // Burn Together",
+    "Lord Skitter's Butcher"
+   ],
+   "enablers": [
+    "Eriette's Tempting Apple",
+    "Sugar Rush",
+    "Twisted Fealty",
+    "Cut In",
+    "Not Dead After All"
+   ],
+   "keyCards": [
+    "Warehouse Tabby",
+    "Voracious Vermin",
+    "Gingerbrute",
+    "Harried Spearguard",
+    "Mintstrosity",
+    "Crystal Grotto",
+    "Rat Out",
+    "Edgewall Pack",
+    "Scarecrow Guide",
+    "Gnawing Crescendo",
+    "Ratcatcher Trainee // Pest Problem",
+    "Back for Seconds",
+    "Boundary Lands Ranger",
+    "Kindled Heroism"
+   ]
+  },
+  {
+   "pair": "BG",
+   "name": "Food",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Greta, Sweettooth Scourge"
+   ],
+   "payoffs": [
+    "Toadstool Admirer",
+    "Gingerbread Hunter // Puny Snack",
+    "Scream Puff",
+    "Hamlet Glutton",
+    "Agatha's Champion",
+    "Fell Horseman // Deathly Ride"
+   ],
+   "enablers": [
+    "Three Bowls of Porridge",
+    "Eriette's Whisper",
+    "Up the Beanstalk",
+    "Taken by Nightmares",
+    "Spider Food"
+   ],
+   "keyCards": [
+    "Night of the Sweets' Revenge",
+    "Not Dead After All",
+    "Stormkeld Vanguard // Bear Down",
+    "Ashiok's Reaper",
+    "Redtooth Vanguard",
+    "Bestial Bloodline",
+    "Graceful Takedown",
+    "Tanglespan Lookout",
+    "Welcome to Sweettooth",
+    "Tempest Hart // Scan the Clouds",
+    "Shatter the Oath",
+    "Brave the Wilds",
+    "Troublemaker Ouphe",
+    "Tough Cookie"
+   ]
+  },
+  {
+   "pair": "RG",
+   "name": "Adventure midrange",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Ruby, Daring Tracker"
+   ],
+   "payoffs": [
+    "Two-Headed Hunter // Twice the Rage",
+    "Picnic Ruiner // Stolen Goodies",
+    "Toadstool Admirer",
+    "Verdant Outrider",
+    "Howling Galefang",
+    "Bellowing Bruiser // Beat a Path"
+   ],
+   "enablers": [
+    "Titanic Growth",
+    "Spider Food",
+    "Korvold and the Noble Thief",
+    "Leaping Ambush",
+    "Edgewall Inn"
+   ],
+   "keyCards": [
+    "Commune with Nature",
+    "Ferocious Werefox // Guard Change",
+    "Bestial Bloodline",
+    "Tempest Hart // Scan the Clouds",
+    "Evolving Wilds",
+    "Minecart Daredevil // Ride the Rails",
+    "Grabby Giant // That's Mine",
+    "Graceful Takedown",
+    "Royal Treatment",
+    "Stonesplitter Bolt",
+    "Hollow Scavenger // Bakery Raid",
+    "Territorial Witchstalker",
+    "Boundary Lands Ranger",
+    "Tough Cookie"
+   ]
+  }
+ ],
+ "combos": []
+}

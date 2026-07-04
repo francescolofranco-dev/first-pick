@@ -1,0 +1,440 @@
+{
+ "set": "DSK",
+ "setName": "Duskmourn: House of Horror",
+ "generated": "2026-07-04",
+ "mechanics": [
+  {
+   "name": "Manifest",
+   "summary": ""
+  },
+  {
+   "name": "Manifest dread",
+   "summary": ""
+  },
+  {
+   "name": "Delirium",
+   "summary": ""
+  },
+  {
+   "name": "Eerie",
+   "summary": ""
+  },
+  {
+   "name": "Survival",
+   "summary": ""
+  }
+ ],
+ "archetypes": [
+  {
+   "pair": "WU",
+   "name": "Survival flyers",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Gremlin Tamer",
+    "Inquisitive Glimmer"
+   ],
+   "payoffs": [
+    "Optimistic Scavenger",
+    "Erratic Apparition",
+    "Unwilling Vessel",
+    "Scrabbling Skullcrab",
+    "Fear of Isolation",
+    "Lionheart Glimmer"
+   ],
+   "enablers": [
+    "Surgical Suite // Hospital Room",
+    "Ethereal Armor",
+    "Grand Entryway // Elegant Rotunda",
+    "Unwanted Remake",
+    "Bottomless Pool // Locker Room"
+   ],
+   "keyCards": [
+    "Meat Locker // Drowned Diner",
+    "Shardmage's Rescue",
+    "Etched Cornfield",
+    "Cult Healer",
+    "Sheltered by Ghosts",
+    "Underwater Tunnel // Slimy Aquarium",
+    "Clammy Prowler",
+    "Fear of Abduction",
+    "Piranha Fly",
+    "Fear of Impostors",
+    "Trapped in the Screen",
+    "Glimmerlight",
+    "Abandoned Campground",
+    "Fear of Falling"
+   ]
+  },
+  {
+   "pair": "WB",
+   "name": "Rooms lifedrain",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Rite of the Moth",
+    "Shroudstomper"
+   ],
+   "payoffs": [
+    "Spectral Snatcher",
+    "Dashing Bloodsucker",
+    "Fanatic of the Harrowing",
+    "Possessed Goat",
+    "Splitskin Doll",
+    "Cynical Loner"
+   ],
+   "enablers": [
+    "Etched Cornfield",
+    "Derelict Attic // Widow's Walk",
+    "Haunted Screen",
+    "Commune with Evil",
+    "Neglected Manor"
+   ],
+   "keyCards": [
+    "Emerge from the Cocoon",
+    "Give In to Violence",
+    "Killer's Mask",
+    "Unsettling Twins",
+    "Shepherding Spirits",
+    "Valgavoth's Faithful",
+    "Vile Mutilator",
+    "Appendage Amalgam",
+    "Murky Sewer",
+    "Balemurk Leech",
+    "Live or Die",
+    "Found Footage",
+    "Seized from Slumber",
+    "Miasma Demon"
+   ]
+  },
+  {
+   "pair": "WR",
+   "name": "Aggro",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Midnight Mayhem",
+    "Arabella, Abandoned Doll"
+   ],
+   "payoffs": [
+    "Veteran Survivor",
+    "Hardened Escort",
+    "Attack-in-the-Box",
+    "Friendly Ghost",
+    "Irreverent Gremlin",
+    "Patched Plaything"
+   ],
+   "enablers": [
+    "Painter's Studio // Defaced Gallery",
+    "Trial of Agony",
+    "Sheltered by Ghosts",
+    "Untimely Malfunction",
+    "Raucous Carnival"
+   ],
+   "keyCards": [
+    "Most Valuable Slayer",
+    "Acrobatic Cheerleader",
+    "Orphans of the Wheat",
+    "Ragged Playmate",
+    "Glimmerlight",
+    "Norin, Swift Survivalist",
+    "Infernal Phantom",
+    "Vicious Clown",
+    "Unsettling Twins",
+    "Glimmer Seeker",
+    "Conductive Machete",
+    "Exorcise",
+    "Jump Scare",
+    "Terramorphic Expanse"
+   ]
+  },
+  {
+   "pair": "WG",
+   "name": "Survival midrange",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Baseball Bat",
+    "Shrewd Storyteller"
+   ],
+   "payoffs": [
+    "Defiant Survivor",
+    "Savior of the Small",
+    "Fear of Abduction",
+    "Rootwise Survivor",
+    "Cautious Survivor",
+    "Fear of Exposure"
+   ],
+   "enablers": [
+    "Frantic Strength",
+    "Sheltered by Ghosts",
+    "Etched Cornfield",
+    "Bleeding Woods",
+    "Unwanted Remake"
+   ],
+   "keyCards": [
+    "Exorcise",
+    "Neglected Manor",
+    "Orphans of the Wheat",
+    "Friendly Teddy",
+    "Shardmage's Rescue",
+    "Flesh Burrower",
+    "Horrid Vigor",
+    "Veteran Survivor",
+    "Shepherding Spirits",
+    "Trapped in the Screen",
+    "Glimmer Seeker",
+    "Jump Scare",
+    "Coordinated Clobbering",
+    "Friendly Ghost"
+   ]
+  },
+  {
+   "pair": "UB",
+   "name": "Delirium",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Fear of Infinity",
+    "Skullsnap Nuisance"
+   ],
+   "payoffs": [
+    "Malevolent Chandelier",
+    "Fear of Failed Tests",
+    "Balemurk Leech",
+    "Dashing Bloodsucker",
+    "Tunnel Surveyor",
+    "Cackling Slasher"
+   ],
+   "enablers": [
+    "Strangled Cemetery",
+    "Found Footage",
+    "Murky Sewer",
+    "Nowhere to Run",
+    "Cracked Skull"
+   ],
+   "keyCards": [
+    "Duskmourn's Domination",
+    "Keys to the House",
+    "Appendage Amalgam",
+    "Defiled Crypt // Cadaver Lab",
+    "Spectral Snatcher",
+    "Glimmerlight",
+    "Daggermaw Megalodon",
+    "Sporogenic Infection",
+    "Fear of the Dark",
+    "Lakeside Shack",
+    "Derelict Attic // Widow's Walk",
+    "Cynical Loner",
+    "Don't Make a Sound",
+    "Popular Egotist"
+   ]
+  },
+  {
+   "pair": "UR",
+   "name": "Spells",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Smoky Lounge // Misty Salon",
+    "Intruding Soulrager"
+   ],
+   "payoffs": [
+    "Rampaging Soulrager",
+    "Creeping Peeper",
+    "Stalked Researcher",
+    "Bedhead Beastie",
+    "Fear of Isolation",
+    "Ghostly Keybearer"
+   ],
+   "enablers": [
+    "Pyroclasm",
+    "Enter the Enigma",
+    "Peculiar Lighthouse",
+    "Glassworks // Shattered Yard",
+    "Get Out"
+   ],
+   "keyCards": [
+    "Grab the Prize",
+    "Keys to the House",
+    "Floodpits Drowner",
+    "Underwater Tunnel // Slimy Aquarium",
+    "Ripchain Razorkin",
+    "Ticket Booth // Tunnel of Hate",
+    "Norin, Swift Survivalist",
+    "Piggy Bank",
+    "Friendly Teddy",
+    "Glimmerlight",
+    "Piranha Fly",
+    "Bleeding Woods",
+    "Fear of Failed Tests",
+    "Unwilling Vessel"
+   ]
+  },
+  {
+   "pair": "UG",
+   "name": "Survival ramp",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Oblivious Bookworm",
+    "Growing Dread"
+   ],
+   "payoffs": [
+    "Anthropede",
+    "Malevolent Chandelier",
+    "Insidious Fungus",
+    "Daggermaw Megalodon",
+    "Floodpits Drowner",
+    "Overgrown Zealot"
+   ],
+   "enablers": [
+    "Bear Trap",
+    "Murky Sewer",
+    "Cathartic Parting",
+    "Conductive Machete",
+    "Peculiar Lighthouse"
+   ],
+   "keyCards": [
+    "Strangled Cemetery",
+    "Vanish from Sight",
+    "Cursed Windbreaker",
+    "Unnerving Grasp",
+    "Monstrous Emergence",
+    "Keys to the House",
+    "Horrid Vigor",
+    "Etched Cornfield",
+    "Don't Make a Sound",
+    "Duskmourn's Domination",
+    "Bleeding Woods",
+    "Slavering Branchsnapper",
+    "Coordinated Clobbering",
+    "Threats Around Every Corner"
+   ]
+  },
+  {
+   "pair": "BR",
+   "name": "Sacrifice",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Disturbing Mirth",
+    "Sawblade Skinripper"
+   ],
+   "payoffs": [
+    "Fear of Lost Teeth",
+    "Innocuous Rat",
+    "Boilerbilges Ripper",
+    "Balemurk Leech",
+    "Diversion Specialist",
+    "Popular Egotist"
+   ],
+   "enablers": [
+    "Final Vengeance",
+    "Glassworks // Shattered Yard",
+    "Vengeful Possession",
+    "Cracked Skull",
+    "Derelict Attic // Widow's Walk"
+   ],
+   "keyCards": [
+    "Infernal Phantom",
+    "Sporogenic Infection",
+    "Razortrap Gorge",
+    "Defiled Crypt // Cadaver Lab",
+    "Nowhere to Run",
+    "Peculiar Lighthouse",
+    "Saw",
+    "Betrayer's Bargain",
+    "Withering Torment",
+    "Ticket Booth // Tunnel of Hate",
+    "Dashing Bloodsucker",
+    "Terramorphic Expanse",
+    "Resurrected Cultist",
+    "Clockwork Percussionist"
+   ]
+  },
+  {
+   "pair": "BG",
+   "name": "Delirium graveyard",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Broodspinner",
+    "Drag to the Roots"
+   ],
+   "payoffs": [
+    "Miasma Demon",
+    "Vile Mutilator",
+    "Cackling Slasher",
+    "Valgavoth's Faithful",
+    "Osseous Sticktwister",
+    "Appendage Amalgam"
+   ],
+   "enablers": [
+    "Etched Cornfield",
+    "Let's Play a Game",
+    "Bear Trap",
+    "Live or Die",
+    "Withering Torment"
+   ],
+   "keyCards": [
+    "Murder",
+    "Defiled Crypt // Cadaver Lab",
+    "Give In to Violence",
+    "Winter's Intervention",
+    "Killer's Mask",
+    "Haunted Screen",
+    "Found Footage",
+    "Fear of the Dark",
+    "House Cartographer",
+    "Say Its Name",
+    "Attack-in-the-Box",
+    "Moldering Gym // Weight Room",
+    "Bashful Beastie",
+    "Altanak, the Thrice-Called"
+   ]
+  },
+  {
+   "pair": "RG",
+   "name": "Rooms aggro",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Wildfire Wickerfolk",
+    "Beastie Beatdown"
+   ],
+   "payoffs": [
+    "Patchwork Beastie",
+    "Fear of Burning Alive",
+    "Bedhead Beastie",
+    "Ripchain Razorkin",
+    "Wary Watchdog",
+    "Wickerfolk Thresher"
+   ],
+   "enablers": [
+    "Peculiar Lighthouse",
+    "Violent Urge",
+    "Impossible Inferno",
+    "Scorching Dragonfire",
+    "Frantic Strength"
+   ],
+   "keyCards": [
+    "Terramorphic Expanse",
+    "Conductive Machete",
+    "Rootwise Survivor",
+    "Defiant Survivor",
+    "Grasping Longneck",
+    "Manifest Dread",
+    "Say Its Name",
+    "Betrayer's Bargain",
+    "Found Footage",
+    "Ticket Booth // Tunnel of Hate",
+    "Friendly Teddy",
+    "Cautious Survivor",
+    "Flesh Burrower",
+    "Fear of Being Hunted"
+   ]
+  }
+ ],
+ "combos": []
+}

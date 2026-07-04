@@ -1,0 +1,263 @@
+{
+ "set": "SOS",
+ "setName": "Secrets of Strixhaven",
+ "generated": "2026-07-04",
+ "mechanics": [
+  {
+   "name": "Prepared",
+   "summary": "A creature-front DFC that lets you cast a free copy of its back-face spell while prepared."
+  },
+  {
+   "name": "Repartee",
+   "summary": "Triggers when you cast an instant/sorcery targeting a creature \u2014 the Silverquill counters engine."
+  },
+  {
+   "name": "Infusion",
+   "summary": "Bonus when you gained life this turn \u2014 the Witherbloom lifegain payoff."
+  },
+  {
+   "name": "Opus",
+   "summary": "Rewards casting instants/sorceries, with a bonus if five or more mana was spent."
+  },
+  {
+   "name": "Increment",
+   "summary": "Put a +1/+1 counter whenever a spell's mana spent exceeds this creature's power or toughness."
+  },
+  {
+   "name": "Flashback",
+   "summary": "Cast from the graveyard, then exile \u2014 feeds Lorehold's graveyard-leaves payoffs."
+  }
+ ],
+ "archetypes": [
+  {
+   "pair": "WB",
+   "name": "Silverquill drain",
+   "playstyle": "Cheap creature-targeting spells double as Repartee fuel while drain bodies close.",
+   "speed": "aggro",
+   "signposts": [
+    "Abigale, Poet Laureate // Heroic Stanza",
+    "Silverquill Charm"
+   ],
+   "payoffs": [
+    "Scolding Administrator",
+    "Snooping Page",
+    "Melancholic Poet",
+    "Graduation Day",
+    "Inkling Mascot",
+    "Informed Inkwright"
+   ],
+   "enablers": [
+    "Dissection Practice",
+    "Killian's Confidence",
+    "Last Gasp",
+    "Dig Site Inventory",
+    "Wander Off"
+   ],
+   "keyCards": [
+    "Biblioplex Tomekeeper",
+    "Skycoach Waypoint",
+    "Arnyn, Deathbloom Botanist",
+    "Burrog Banemaker",
+    "Adventurous Eater // Have a Bite",
+    "Foolish Fate",
+    "Rabid Attack",
+    "Honorbound Page // Forum's Favor"
+   ]
+  },
+  {
+   "pair": "WR",
+   "name": "Lorehold graveyard",
+   "playstyle": "Fill the graveyard, then make cards leave it to fire the payoffs while Spirits go wide.",
+   "speed": "midrange",
+   "signposts": [
+    "Kirol, History Buff // Pack a Punch",
+    "Lorehold Charm"
+   ],
+   "payoffs": [
+    "Owlin Historian",
+    "Garrison Excavator",
+    "Living History",
+    "Spirit Mascot",
+    "Primary Research",
+    "Antiquities on the Loose"
+   ],
+   "enablers": [
+    "Rubble Rouser",
+    "Practiced Scrollsmith",
+    "Startled Relic Sloth",
+    "Charging Strifeknight",
+    "Group Project",
+    "Duel Tactics",
+    "Molten Note"
+   ],
+   "keyCards": [
+    "Paradox Gardens",
+    "Rancorous Archaic",
+    "Skycoach Waypoint",
+    "Strixhaven Skycoach",
+    "Mage Tower Referee",
+    "Terramorphic Expanse",
+    "Ennis, Debate Moderator",
+    "Impractical Joke"
+   ]
+  },
+  {
+   "pair": "UR",
+   "name": "Prismari spells",
+   "playstyle": "Chain instants and sorceries with ritual mana to pay the Opus five-mana kickers.",
+   "speed": "control",
+   "signposts": [
+    "Sanar, Unfinished Genius // Wild Idea",
+    "Prismari Charm"
+   ],
+   "payoffs": [
+    "Spectacular Skywhale",
+    "Thunderdrum Soloist",
+    "Elemental Mascot",
+    "Molten-Core Maestro",
+    "Deluge Virtuoso",
+    "Expressive Firedancer"
+   ],
+   "enablers": [
+    "Abstract Paintmage",
+    "Rapturous Moment",
+    "Tablet of Discovery",
+    "Stress Dream",
+    "Vibrant Outburst"
+   ],
+   "keyCards": [
+    "Titan's Grave",
+    "Paradox Gardens",
+    "Forum of Amity",
+    "Skycoach Waypoint",
+    "Diary of Dreams",
+    "Terramorphic Expanse",
+    "Fractal Anomaly",
+    "Potioner's Trove"
+   ]
+  },
+  {
+   "pair": "UG",
+   "name": "Quandrix counters",
+   "playstyle": "Ramp so every spell overspends its cost, snowballing Increment and Fractal counters.",
+   "speed": "midrange",
+   "signposts": [
+    "Tam, Observant Sequencer // Deep Sight",
+    "Quandrix Charm"
+   ],
+   "payoffs": [
+    "Cuboid Colony",
+    "Fractal Tender",
+    "Hungry Graffalon",
+    "Pensive Professor",
+    "Transcendent Archaic",
+    "Sundering Archaic"
+   ],
+   "enablers": [
+    "Topiary Lecturer",
+    "Noxious Newt",
+    "Paradox Surveyor",
+    "Growth Curve",
+    "Chelonian Tackle",
+    "Spellbook Seeker // Careful Study"
+   ],
+   "keyCards": [
+    "Infirmary Healer // Stream of Life",
+    "Fractalize",
+    "Orysa, Tide Choreographer",
+    "Burrog Barrage",
+    "Encouraging Aviator // Jump",
+    "Titan's Grave",
+    "Additive Evolution",
+    "Studious First-Year // Rampant Growth"
+   ]
+  },
+  {
+   "pair": "BG",
+   "name": "Witherbloom lifegain",
+   "playstyle": "Gain life every turn with Pest tokens and ETB drains to switch on the Infusion payoffs.",
+   "speed": "midrange",
+   "signposts": [
+    "Lluwen, Exchange Student // Pest Friend",
+    "Witherbloom Charm"
+   ],
+   "payoffs": [
+    "Essenceknit Scholar",
+    "Old-Growth Educator",
+    "Efflorescence",
+    "Poisoner's Apprentice",
+    "Thornfist Striker",
+    "Pest Mascot",
+    "Follow the Lumarets"
+   ],
+   "enablers": [
+    "Bogwater Lumaret",
+    "Teacher's Pest",
+    "Oracle's Restoration",
+    "Root Manipulation",
+    "Cheerful Osteomancer // Raise Dead"
+   ],
+   "keyCards": [
+    "Lumaret's Favor",
+    "Pestbrood Sloth",
+    "Ulna Alley Shopkeep",
+    "Pull from the Grave",
+    "Eternal Student",
+    "Additive Evolution",
+    "Leech Collector // Bloodletting",
+    "Shopkeeper's Bane"
+   ]
+  }
+ ],
+ "combos": [
+  {
+   "cards": [
+    "Dissection Practice",
+    "Scolding Administrator"
+   ],
+   "note": "A cheap creature-targeting spell triggers Repartee counters"
+  },
+  {
+   "cards": [
+    "Rubble Rouser",
+    "Owlin Historian"
+   ],
+   "note": "Exiling a card from your graveyard for mana fires graveyard-leaves payoffs"
+  },
+  {
+   "cards": [
+    "Bogwater Lumaret",
+    "Old-Growth Educator"
+   ],
+   "note": "Incidental lifegain turns on Infusion"
+  },
+  {
+   "cards": [
+    "Bogwater Lumaret",
+    "Efflorescence"
+   ],
+   "note": "Gaining life makes the Infusion trample/indestructible live"
+  },
+  {
+   "cards": [
+    "Abstract Paintmage",
+    "Spectacular Skywhale"
+   ],
+   "note": "Ritual mana pushes the Opus five-mana kicker"
+  },
+  {
+   "cards": [
+    "Topiary Lecturer",
+    "Hungry Graffalon"
+   ],
+   "note": "Ramp makes each spell overspend and grow Increment"
+  },
+  {
+   "cards": [
+    "Teacher's Pest",
+    "Pest Mascot"
+   ],
+   "note": "Attacking Pests gain life that becomes counters"
+  }
+ ]
+}

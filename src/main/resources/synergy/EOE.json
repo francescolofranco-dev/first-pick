@@ -1,0 +1,430 @@
+{
+ "set": "EOE",
+ "setName": "Edge of Eternities",
+ "generated": "2026-07-04",
+ "mechanics": [
+  {
+   "name": "Warp",
+   "summary": ""
+  },
+  {
+   "name": "Station",
+   "summary": ""
+  },
+  {
+   "name": "Void",
+   "summary": ""
+  },
+  {
+   "name": "Landfall",
+   "summary": ""
+  },
+  {
+   "name": "Surveil",
+   "summary": ""
+  }
+ ],
+ "archetypes": [
+  {
+   "pair": "WU",
+   "name": "Spacecraft tempo",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Station Monitor"
+   ],
+   "payoffs": [
+    "Sinister Cryologist",
+    "Exosuit Savior",
+    "Illvoi Infiltrator",
+    "Flight-Deck Coordinator",
+    "Illvoi Galeblade",
+    "Brightspear Zealot"
+   ],
+   "enablers": [
+    "Wurmwall Sweeper",
+    "Atomic Microsizer",
+    "Zealous Display",
+    "Mental Modulation",
+    "Scout for Survivors"
+   ],
+   "keyCards": [
+    "Squire's Lightblade",
+    "Dawnstrike Vanguard",
+    "Seam Rip",
+    "Uthros Scanship",
+    "Starfighter Pilot",
+    "Uthros Psionicist",
+    "Cloudsculpt Technician",
+    "Codecracker Hound",
+    "Gigastorm Titan",
+    "Rescue Skiff",
+    "Illvoi Operative",
+    "Weftblade Enhancer",
+    "Mechan Navigator",
+    "Banishing Light"
+   ]
+  },
+  {
+   "pair": "WB",
+   "name": "Void lifedrain",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Syr Vondam, the Lucent"
+   ],
+   "payoffs": [
+    "Insatiable Skittermaw",
+    "Rayblade Trooper",
+    "Knight Luminary",
+    "Honored Knight-Captain",
+    "Blade of the Swarm",
+    "Susurian Voidborn"
+   ],
+   "enablers": [
+    "Thaumaton Torpedo",
+    "Fell Gravship",
+    "Hylderblade",
+    "Susurian Dirgecraft",
+    "Wurmwall Sweeper"
+   ],
+   "keyCards": [
+    "Vote Out",
+    "Dubious Delicacy",
+    "All-Fates Stalker",
+    "Timeline Culler",
+    "Auxiliary Boosters",
+    "Dark Endurance",
+    "Perigee Beckoner",
+    "Faller's Faithful",
+    "Temporal Intervention",
+    "Sunstar Expansionist",
+    "Umbral Collar Zealot",
+    "Banishing Light",
+    "Rescue Skiff",
+    "Voidforged Titan"
+   ]
+  },
+  {
+   "pair": "WR",
+   "name": "Aggro",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Sami, Ship's Engineer"
+   ],
+   "payoffs": [
+    "Frontline War-Rager",
+    "Molecular Modifier",
+    "Memorial Team Leader",
+    "Kavaron Harrier",
+    "Kavaron Turbodrone",
+    "Brightspear Zealot"
+   ],
+   "enablers": [
+    "Wurmwall Sweeper",
+    "Rig for War",
+    "Full Bore",
+    "Drill Too Deep",
+    "Emergency Eject"
+   ],
+   "keyCards": [
+    "Galvanizing Sawship",
+    "Cut Propulsion",
+    "Wedgelight Rammer",
+    "Bombard",
+    "Luxknight Breacher",
+    "Red Tiger Mechan",
+    "Debris Field Crusher",
+    "Dual-Sun Adepts",
+    "Pulsar Squadron Ace",
+    "Dawnstrike Vanguard",
+    "Reroute Systems",
+    "Starfield Shepherd",
+    "Zookeeper Mechan",
+    "Chrome Companion"
+   ]
+  },
+  {
+   "pair": "WG",
+   "name": "Planets ramp",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Haliya, Ascendant Cadet"
+   ],
+   "payoffs": [
+    "Hemosymbic Mite",
+    "Meltstrider Eulogist",
+    "Drix Fatemaker",
+    "Broodguard Elite",
+    "Dawnstrike Vanguard",
+    "Dockworker Drone"
+   ],
+   "enablers": [
+    "Atmospheric Greenhouse",
+    "Dual-Sun Technique",
+    "Auxiliary Boosters",
+    "Wurmwall Sweeper",
+    "Meltstrider's Resolve"
+   ],
+   "keyCards": [
+    "Rescue Skiff",
+    "Honor",
+    "Emergency Eject",
+    "Reroute Systems",
+    "Intrepid Tenderfoot",
+    "Biosynthic Burst",
+    "Sunstar Lightsmith",
+    "Larval Scoutlander",
+    "Focus Fire",
+    "Close Encounter",
+    "Meltstrider's Gear",
+    "Starfield Shepherd",
+    "Pinnacle Kill-Ship",
+    "Wedgelight Rammer"
+   ]
+  },
+  {
+   "pair": "UB",
+   "name": "Void control",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Alpharael, Dreaming Acolyte"
+   ],
+   "payoffs": [
+    "Dauntless Scrapbot",
+    "Chrome Companion",
+    "Mechan Assembler",
+    "Virus Beetle",
+    "Beamsaw Prospector",
+    "Comet Crawler"
+   ],
+   "enablers": [
+    "Scour for Scrap",
+    "Nutrient Block",
+    "Dark Endurance",
+    "Thaumaton Torpedo",
+    "Cryogen Relic"
+   ],
+   "keyCards": [
+    "Tragic Trajectory",
+    "Mechan Shieldmate",
+    "Virulent Silencer",
+    "Unravel",
+    "Scrounge for Eternity",
+    "Desculpting Blast",
+    "Hullcarver",
+    "Cloudsculpt Technician",
+    "Monoist Sentry",
+    "Cerebral Download",
+    "Embrace Oblivion",
+    "Illvoi Infiltrator",
+    "Faller's Faithful",
+    "Gravblade Heavy"
+   ]
+  },
+  {
+   "pair": "UR",
+   "name": "Spacecraft spells",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Mm'menon, Uthros Exile"
+   ],
+   "payoffs": [
+    "Oreplate Pangolin",
+    "Virulent Silencer",
+    "Mechan Shieldmate",
+    "Kavaron Skywarden",
+    "Kavaron Harrier",
+    "Nanoform Sentinel"
+   ],
+   "enablers": [
+    "Lithobraking",
+    "Plasma Bolt",
+    "Full Bore",
+    "Illvoi Light Jammer",
+    "Debris Field Crusher"
+   ],
+   "keyCards": [
+    "Zookeeper Mechan",
+    "Mechan Assembler",
+    "Red Tiger Mechan",
+    "Kavaron Turbodrone",
+    "Selfcraft Mechan",
+    "Steelswarm Operator",
+    "Slagdrill Scrapper",
+    "Terrapact Intimidator",
+    "Annul",
+    "Melded Moxite",
+    "Mechanozoa",
+    "Uthros Psionicist",
+    "Drill Too Deep",
+    "Orbital Plunge"
+   ]
+  },
+  {
+   "pair": "UG",
+   "name": "Station ramp",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Biomechan Engineer"
+   ],
+   "payoffs": [
+    "Tapestry Warden",
+    "Survey Mechan",
+    "Eumidian Terrabotanist",
+    "Galactic Wayfarer",
+    "Lashwhip Predator",
+    "Gene Pollinator"
+   ],
+   "enablers": [
+    "Meltstrider's Gear",
+    "Command Bridge",
+    "Thaumaton Torpedo",
+    "Pinnacle Kill-Ship",
+    "Sami's Curiosity"
+   ],
+   "keyCards": [
+    "Divert Disaster",
+    "Specimen Freighter",
+    "Diplomatic Relations",
+    "Seedship Impact",
+    "Fungal Colossus",
+    "Dauntless Scrapbot",
+    "Edge Rover",
+    "Skystinger",
+    "Illvoi Light Jammer",
+    "Mouth of the Storm",
+    "Close Encounter",
+    "Germinating Wurm",
+    "Larval Scoutlander",
+    "Meltstrider's Resolve"
+   ]
+  },
+  {
+   "pair": "BR",
+   "name": "Sacrifice",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Interceptor Mechan"
+   ],
+   "payoffs": [
+    "Red Tiger Mechan",
+    "Terrapact Intimidator",
+    "Weftstalker Ardent",
+    "Roving Actuator",
+    "Dauntless Scrapbot",
+    "Blade of the Swarm"
+   ],
+   "enablers": [
+    "Systems Override",
+    "Melded Moxite",
+    "Drill Too Deep",
+    "Invasive Maneuvers",
+    "Orbital Plunge"
+   ],
+   "keyCards": [
+    "Kav Landseeker",
+    "Molecular Modifier",
+    "Comet Crawler",
+    "Slagdrill Scrapper",
+    "Umbral Collar Zealot",
+    "Decode Transmissions",
+    "Monoist Circuit-Feeder",
+    "Virulent Silencer",
+    "Swarm Culler",
+    "Cut Propulsion",
+    "Vaultguard Trooper",
+    "Kavaron Turbodrone",
+    "Plasma Bolt",
+    "Chrome Companion"
+   ]
+  },
+  {
+   "pair": "BG",
+   "name": "Void midrange",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Seedship Broodtender"
+   ],
+   "payoffs": [
+    "Broodguard Elite",
+    "Monoist Circuit-Feeder",
+    "Chrome Companion",
+    "Thawbringer",
+    "Voidforged Titan",
+    "Monoist Sentry"
+   ],
+   "enablers": [
+    "Temporal Intervention",
+    "Pull Through the Weft",
+    "Pinnacle Kill-Ship",
+    "Command Bridge",
+    "All-Fates Scroll"
+   ],
+   "keyCards": [
+    "Galactic Wayfarer",
+    "Survey Mechan",
+    "Gravkill",
+    "Germinating Wurm",
+    "Hymn of the Faller",
+    "Shattered Wings",
+    "Close Encounter",
+    "Harmonious Grovestrider",
+    "Depressurize",
+    "Meltstrider Eulogist",
+    "Lashwhip Predator",
+    "Seedship Agrarian",
+    "Scrounge for Eternity",
+    "Susurian Dirgecraft"
+   ]
+  },
+  {
+   "pair": "RG",
+   "name": "Big aggro",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Tannuk, Memorial Ensign"
+   ],
+   "payoffs": [
+    "Territorial Bruntar",
+    "Nebula Dragon",
+    "Glacier Godmaw",
+    "Remnant Elemental",
+    "Kavaron Skywarden",
+    "Vaultguard Trooper"
+   ],
+   "enablers": [
+    "Pull Through the Weft",
+    "Pinnacle Kill-Ship",
+    "Meltstrider's Gear",
+    "Debris Field Crusher",
+    "Eusocial Engineering"
+   ],
+   "keyCards": [
+    "Bombard",
+    "Command Bridge",
+    "Frontline War-Rager",
+    "Survey Mechan",
+    "Lithobraking",
+    "Cut Propulsion",
+    "Galvanizing Sawship",
+    "Seedship Agrarian",
+    "Orbital Plunge",
+    "Biosynthic Burst",
+    "Icecave Crasher",
+    "Rig for War",
+    "Terrapact Intimidator",
+    "Harmonious Grovestrider"
+   ]
+  }
+ ],
+ "combos": []
+}

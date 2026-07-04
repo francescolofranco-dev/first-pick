@@ -1,0 +1,237 @@
+{
+ "set": "TMT",
+ "setName": "Teenage Mutant Ninja Turtles",
+ "generated": "2026-07-04",
+ "mechanics": [
+  {
+   "name": "Sneak",
+   "summary": "Cast cheaper by returning an unblocked attacker; creatures enter tapped and attacking."
+  },
+  {
+   "name": "Alliance",
+   "summary": "Triggers whenever another creature you control enters \u2014 rewards go-wide token streams."
+  },
+  {
+   "name": "Disappear",
+   "summary": "End-step reward if a permanent left the battlefield under your control this turn."
+  },
+  {
+   "name": "Mutagen",
+   "summary": "A token that sacrifices for a +1/+1 counter \u2014 the green/blue counters engine."
+  },
+  {
+   "name": "Food",
+   "summary": "Sacrificial artifacts (the pizza cycle) that fuel lifegain and Disappear."
+  }
+ ],
+ "archetypes": [
+  {
+   "pair": "WB",
+   "name": "Sneak Ninja aggro",
+   "playstyle": "Connect with evasive Ninjas, replay Sneak-returned ETBs, and grind value.",
+   "speed": "aggro",
+   "signposts": [
+    "Karai, Future of the Foot",
+    "Karai's Technique"
+   ],
+   "payoffs": [
+    "Splinter, Hamato Yoshi",
+    "Oroku Saki, Shredder Rising",
+    "Dream Beavers",
+    "Quintessential Katana"
+   ],
+   "enablers": [
+    "Foot Elite",
+    "Foot Ninjas",
+    "April O'Neil, Kunoichi Trainee",
+    "Skateboard",
+    "Hamato Guardian Stance",
+    "Leonardo, Leader in Blue"
+   ],
+   "keyCards": [
+    "Turtle Lair",
+    "Pain 101",
+    "Shredder, Unrelenting",
+    "Mighty Mutanimals",
+    "Tunnel Rats",
+    "Uneasy Alliance",
+    "Leonardo, Big Brother",
+    "Koya, Death from Above"
+   ]
+  },
+  {
+   "pair": "WR",
+   "name": "Alliance go-wide",
+   "playstyle": "Stream creature ETBs to fire Alliance payoffs and swarm wide.",
+   "speed": "aggro",
+   "signposts": [
+    "The Neutrinos",
+    "Go Ninja Go"
+   ],
+   "payoffs": [
+    "EPF Point Squad",
+    "Wingnut, Bat on the Belfry",
+    "Mutant Town Musicians",
+    "Raphael, Most Attitude",
+    "Raphael, Tough Turtle"
+   ],
+   "enablers": [
+    "Old Hob, Alleycat Blues",
+    "Zog, Triceraton Castaway",
+    "Null Group Biological Assets"
+   ],
+   "keyCards": [
+    "Hard-Won Jitte",
+    "Mouser Attack!",
+    "East Wind Avatar",
+    "The Last Ronin's Technique",
+    "Mighty Mutanimals",
+    "Mechanized Ninja Cavalry",
+    "Dimensional Exile",
+    "Purple Dragon Punks"
+   ]
+  },
+  {
+   "pair": "UR",
+   "name": "Artifacts tempo",
+   "playstyle": "Cheap artifacts and Robots feed artifact-count checks behind premium red removal.",
+   "speed": "aggro",
+   "signposts": [
+    "Baxter Stockman",
+    "Brilliance Unleashed"
+   ],
+   "payoffs": [
+    "Fugitive Droid",
+    "Mouser Mark III",
+    "Metalhead",
+    "Henchbots"
+   ],
+   "enablers": [
+    "Skateboard",
+    "Rock Soldiers",
+    "Bot Bashing Time",
+    "Nobody",
+    "Manhole Missile",
+    "Buzz Bots"
+   ],
+   "keyCards": [
+    "Dimension X",
+    "Raphael, Tough Turtle",
+    "Jennika's Technique",
+    "Spicy Oatmeal Pizza",
+    "Mutant Town",
+    "Negate",
+    "Omni-Cheese Pizza",
+    "Mouser Foundry"
+   ]
+  },
+  {
+   "pair": "UG",
+   "name": "Mutagen counters",
+   "playstyle": "Mutant ETBs make Mutagen tokens that snowball +1/+1 counters; splash removal.",
+   "speed": "midrange",
+   "signposts": [
+    "Genghis Frog",
+    "Lessons from Life"
+   ],
+   "payoffs": [
+    "Michelangelo, Mutant BFF",
+    "Mikey & Leo, Chaos & Order",
+    "Saved by the Shell"
+   ],
+   "enablers": [
+    "Slithering Cryptid",
+    "Punk Frogs",
+    "Ice Cream Kitty",
+    "Everything Pizza",
+    "Escape Tunnel",
+    "Crustacean Commando"
+   ],
+   "keyCards": [
+    "Foot Headquarters",
+    "Dimension X",
+    "TCRI Building",
+    "Illegitimate Business",
+    "Henchbots",
+    "Frog Butler",
+    "Tenderize",
+    "Novel Nunchaku"
+   ]
+  },
+  {
+   "pair": "BG",
+   "name": "Food sacrifice",
+   "playstyle": "Expendable Foods, tokens and Mutagens leave the battlefield to switch on Disappear.",
+   "speed": "midrange",
+   "signposts": [
+    "Pizza Face, Gastromancer",
+    "Tainted Treats"
+   ],
+   "payoffs": [
+    "Putrid Pals",
+    "Insectoid Exterminator",
+    "Michelangelo, Mutant BFF"
+   ],
+   "enablers": [
+    "Ice Cream Kitty",
+    "Turtle Blimp",
+    "Mutant Chain Reaction",
+    "New Generation's Technique"
+   ],
+   "keyCards": [
+    "Dimension X",
+    "Foot Headquarters",
+    "Punk Frogs",
+    "Shredder's Revenge",
+    "TCRI Building",
+    "Bebop, Warthog Warrior",
+    "Zoo Escapees",
+    "Lord Dregg, Insect Invader"
+   ]
+  }
+ ],
+ "combos": [
+  {
+   "cards": [
+    "Genghis Frog",
+    "Michelangelo, Mutant BFF"
+   ],
+   "note": "Mutagen tokens become counters that make Mutants unblockable"
+  },
+  {
+   "cards": [
+    "Karai, Future of the Foot",
+    "Dream Beavers"
+   ],
+   "note": "Sneak re-buys the flying drain ETB"
+  },
+  {
+   "cards": [
+    "The Neutrinos",
+    "Old Hob, Alleycat Blues"
+   ],
+   "note": "A hasty token every combat keeps Alliance firing"
+  },
+  {
+   "cards": [
+    "Baxter Stockman",
+    "Fugitive Droid"
+   ],
+   "note": "The Robot token turns on artifact-count and unblockable"
+  },
+  {
+   "cards": [
+    "Pizza Face, Gastromancer",
+    "Ice Cream Kitty"
+   ],
+   "note": "Sacrifice fodder leaves the battlefield for Disappear"
+  },
+  {
+   "cards": [
+    "Quintessential Katana",
+    "Splinter, Hamato Yoshi"
+   ],
+   "note": "The Katana auto-equips each entering Ninja under the lord"
+  }
+ ]
+}

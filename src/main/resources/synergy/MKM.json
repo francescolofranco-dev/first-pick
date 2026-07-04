@@ -1,0 +1,438 @@
+{
+ "set": "MKM",
+ "setName": "Murders at Karlov Manor",
+ "generated": "2026-07-04",
+ "mechanics": [
+  {
+   "name": "Investigate",
+   "summary": ""
+  },
+  {
+   "name": "Disguise",
+   "summary": ""
+  },
+  {
+   "name": "Surveil",
+   "summary": ""
+  },
+  {
+   "name": "Collect evidence",
+   "summary": ""
+  },
+  {
+   "name": "Suspect",
+   "summary": ""
+  }
+ ],
+ "archetypes": [
+  {
+   "pair": "WU",
+   "name": "Clues/disguise",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Private Eye",
+    "No More Lies"
+   ],
+   "payoffs": [
+    "Perimeter Enforcer",
+    "Mistway Spy",
+    "Absolving Lammasu",
+    "Crimestopper Sprite",
+    "Marketwatch Phantom",
+    "Granite Witness"
+   ],
+   "enablers": [
+    "Case of the Pilfered Proof",
+    "Behind the Mask",
+    "Thinking Cap",
+    "Scene of the Crime",
+    "Escape Tunnel"
+   ],
+   "keyCards": [
+    "Fae Flight",
+    "Call a Surprise Witness",
+    "Burden of Proof",
+    "Not on My Watch",
+    "Agency Outfitter",
+    "Curious Inquiry",
+    "Jaded Analyst",
+    "Cold Case Cracker",
+    "Projektor Inspector",
+    "Griffnaut Tracker",
+    "Wrench",
+    "Branch of Vitu-Ghazi",
+    "Dramatic Accusation",
+    "Novice Inspector"
+   ]
+  },
+  {
+   "pair": "WB",
+   "name": "Investigate",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Wispdrinker Vampire",
+    "Soul Search"
+   ],
+   "payoffs": [
+    "Snarling Gorehound",
+    "Festerleech",
+    "Slimy Dualleech",
+    "Sanguine Savior",
+    "Unscrupulous Agent",
+    "Leering Onlooker"
+   ],
+   "enablers": [
+    "Cerebral Confiscation",
+    "Lead Pipe",
+    "Thinking Cap",
+    "Presumed Dead",
+    "Macabre Reconstruction"
+   ],
+   "keyCards": [
+    "Case of the Gorgon's Kiss",
+    "Scene of the Crime",
+    "Clandestine Meddler",
+    "Repeat Offender",
+    "Nightdrinker Moroii",
+    "Haazda Vigilante",
+    "Slice from the Shadows",
+    "Fuss // Bother",
+    "Call a Surprise Witness",
+    "Branch of Vitu-Ghazi",
+    "Forum Familiar",
+    "Inside Source"
+   ]
+  },
+  {
+   "pair": "WR",
+   "name": "Aggro",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Lightning Helix",
+    "Meddling Youths"
+   ],
+   "payoffs": [
+    "Lumbering Laundry",
+    "Dog Walker",
+    "Goblin Maskmaker",
+    "Karlov Watchdog",
+    "Neighborhood Guardian",
+    "Frantic Scapegoat"
+   ],
+   "enablers": [
+    "Caught Red-Handed",
+    "Branch of Vitu-Ghazi",
+    "Case of the Gateway Express",
+    "Fuss // Bother",
+    "Case of the Burning Masks"
+   ],
+   "keyCards": [
+    "Person of Interest",
+    "Forum Familiar",
+    "Harried Dronesmith",
+    "Push // Pull",
+    "Reckless Detective",
+    "Inside Source",
+    "Knife",
+    "Hustle // Bustle",
+    "Convenient Target",
+    "On the Job",
+    "Krovod Haunch",
+    "Vengeful Tracker",
+    "Makeshift Binding",
+    "Red Herring"
+   ]
+  },
+  {
+   "pair": "WG",
+   "name": "Convoke tokens",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Sumala Sentry",
+    "Buried in the Garden"
+   ],
+   "payoffs": [
+    "Essence of Antiquity",
+    "Case File Auditor",
+    "Sanctuary Wall",
+    "Crowd-Control Warden",
+    "Forum Familiar",
+    "Greenbelt Radical"
+   ],
+   "enablers": [
+    "Fuss // Bother",
+    "Pick Your Poison",
+    "Case of the Trampled Garden",
+    "Rope",
+    "Not on My Watch"
+   ],
+   "keyCards": [
+    "Get a Leg Up",
+    "Fanatical Strength",
+    "Branch of Vitu-Ghazi",
+    "A Killer Among Us",
+    "Tunnel Tipster",
+    "Make Your Move",
+    "Hard-Hitting Question",
+    "Defenestrated Phantom",
+    "Scene of the Crime",
+    "Vengeful Creeper",
+    "Airtight Alibi",
+    "Rubblebelt Maverick",
+    "Museum Nightwatch",
+    "Sanitation Automaton"
+   ]
+  },
+  {
+   "pair": "UB",
+   "name": "Mill/surveil",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Curious Cadaver",
+    "Coerced to Kill"
+   ],
+   "payoffs": [
+    "Persuasive Interrogators",
+    "Living Conundrum",
+    "Agency Coroner",
+    "Undercity Eliminator",
+    "Alley Assailant",
+    "Festerleech"
+   ],
+   "enablers": [
+    "Scene of the Crime",
+    "Cerebral Confiscation",
+    "Public Thoroughfare",
+    "Push // Pull",
+    "Fae Flight"
+   ],
+   "keyCards": [
+    "Murder",
+    "Agency Outfitter",
+    "Soul Enervation",
+    "It Doesn't Add Up",
+    "Cold Case Cracker",
+    "Unscrupulous Agent",
+    "Rot Farm Mortipede",
+    "Long Goodbye",
+    "Leering Onlooker",
+    "Sanitation Automaton",
+    "Bubble Smuggler",
+    "Repeat Offender",
+    "Eliminate the Impossible",
+    "Faerie Snoop"
+   ]
+  },
+  {
+   "pair": "UR",
+   "name": "Spells",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Gleaming Geardrake",
+    "Detective's Satchel"
+   ],
+   "payoffs": [
+    "Crime Novelist",
+    "Magnetic Snuffler",
+    "Cornered Crook",
+    "Furtive Courier",
+    "Benthic Criminologists",
+    "Rubblebelt Braggart"
+   ],
+   "enablers": [
+    "Candlestick",
+    "Suspicious Detonation",
+    "Case of the Filched Falcon",
+    "Curious Inquiry",
+    "Galvanize"
+   ],
+   "keyCards": [
+    "Branch of Vitu-Ghazi",
+    "Demand Answers",
+    "Magnifying Glass",
+    "Sudden Setback",
+    "Scene of the Crime",
+    "Out Cold",
+    "Harried Dronesmith",
+    "Burden of Proof",
+    "Gearbane Orangutan",
+    "Dramatic Accusation",
+    "Agency Outfitter",
+    "Torch the Witness",
+    "Shock",
+    "Deduce"
+   ]
+  },
+  {
+   "pair": "UG",
+   "name": "Clues ramp",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Evidence Examiner",
+    "Repulsive Mutation"
+   ],
+   "payoffs": [
+    "Flourishing Bloom-Kin",
+    "Hotshot Investigators",
+    "Topiary Panther",
+    "Glint Weaver",
+    "Forensic Researcher",
+    "Vitu-Ghazi Inspector"
+   ],
+   "enablers": [
+    "Sudden Setback",
+    "Flotsam // Jetsam",
+    "Unauthorized Exit",
+    "Slime Against Humanity",
+    "They Went This Way"
+   ],
+   "keyCards": [
+    "Hustle // Bustle",
+    "Surveillance Monitor",
+    "Magnifying Glass",
+    "Airtight Alibi",
+    "Bite Down on Crime",
+    "Projektor Inspector",
+    "Scene of the Crime",
+    "Tunnel Tipster",
+    "Bubble Smuggler",
+    "Greenbelt Radical",
+    "Cold Case Cracker",
+    "Benthic Criminologists",
+    "Fae Flight",
+    "Deduce"
+   ]
+  },
+  {
+   "pair": "BR",
+   "name": "Sacrifice",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Deadly Complication",
+    "Rune-Brand Juggler"
+   ],
+   "payoffs": [
+    "Clandestine Meddler",
+    "Alley Assailant",
+    "Slimy Dualleech",
+    "Festerleech",
+    "Shady Informant",
+    "Repeat Offender"
+   ],
+   "enablers": [
+    "Case of the Gorgon's Kiss",
+    "Lead Pipe",
+    "Presumed Dead",
+    "Toxin Analysis",
+    "Extract a Confession"
+   ],
+   "keyCards": [
+    "Nightdrinker Moroii",
+    "Snarling Gorehound",
+    "Persuasive Interrogators",
+    "Offender at Large",
+    "Polygraph Orb",
+    "Person of Interest",
+    "Long Goodbye",
+    "Unscrupulous Agent",
+    "Branch of Vitu-Ghazi",
+    "Leering Onlooker",
+    "Slice from the Shadows",
+    "Bolrac-Clan Basher",
+    "Gearbane Orangutan",
+    "Murder"
+   ]
+  },
+  {
+   "pair": "BG",
+   "name": "Graveyard",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Kraul Whipcracker",
+    "Insidious Roots"
+   ],
+   "payoffs": [
+    "Agency Coroner",
+    "Undercity Eliminator",
+    "Basilica Stalker",
+    "Nightdrinker Moroii",
+    "Rakish Scoundrel",
+    "Culvert Ambusher"
+   ],
+   "enablers": [
+    "It Doesn't Add Up",
+    "Polygraph Orb",
+    "Soul Enervation",
+    "Push // Pull",
+    "Murder"
+   ],
+   "keyCards": [
+    "Flotsam // Jetsam",
+    "Case of the Gorgon's Kiss",
+    "Long Goodbye",
+    "Macabre Reconstruction",
+    "Toxin Analysis",
+    "Case of the Shattered Pact",
+    "Pompous Gadabout",
+    "Rot Farm Mortipede",
+    "Branch of Vitu-Ghazi",
+    "Leering Onlooker",
+    "Alley Assailant",
+    "Extract a Confession",
+    "Slice from the Shadows",
+    "They Went This Way"
+   ]
+  },
+  {
+   "pair": "RG",
+   "name": "Aggro",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Tin Street Gossip",
+    "Break Out"
+   ],
+   "payoffs": [
+    "Pompous Gadabout",
+    "Riftburst Hellion",
+    "Bolrac-Clan Basher",
+    "Culvert Ambusher",
+    "Vengeful Tracker",
+    "Rubblebelt Braggart"
+   ],
+   "enablers": [
+    "Expose the Culprit",
+    "Slime Against Humanity",
+    "Cease // Desist",
+    "Pick Your Poison",
+    "Torch the Witness"
+   ],
+   "keyCards": [
+    "Hustle // Bustle",
+    "Rope",
+    "Fanatical Strength",
+    "Get a Leg Up",
+    "Airtight Alibi",
+    "Sample Collector",
+    "Offender at Large",
+    "Sanitation Automaton",
+    "Case of the Trampled Garden",
+    "Concealed Weapon",
+    "Case of the Shattered Pact",
+    "Vengeful Creeper",
+    "Shock",
+    "Branch of Vitu-Ghazi"
+   ]
+  }
+ ],
+ "combos": []
+}

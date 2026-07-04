@@ -1,0 +1,440 @@
+{
+ "set": "FIN",
+ "setName": "Final Fantasy",
+ "generated": "2026-07-04",
+ "mechanics": [
+  {
+   "name": "Transform",
+   "summary": ""
+  },
+  {
+   "name": "Job select",
+   "summary": ""
+  },
+  {
+   "name": "Flashback",
+   "summary": ""
+  },
+  {
+   "name": "Surveil",
+   "summary": ""
+  },
+  {
+   "name": "Landfall",
+   "summary": ""
+  }
+ ],
+ "archetypes": [
+  {
+   "pair": "WU",
+   "name": "Towns tempo",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Tidus, Blitzball Star",
+    "Cid, Timeless Artificer"
+   ],
+   "payoffs": [
+    "Valkyrie Aerial Unit",
+    "Rook Turret",
+    "Iron Giant",
+    "Ambrosia Whiteheart",
+    "Zack Fair",
+    "Summon: Shiva"
+   ],
+   "enablers": [
+    "Cargo Ship",
+    "Sage's Nouliths",
+    "Adventurer's Airship",
+    "White Auracite",
+    "Monk's Fist"
+   ],
+   "keyCards": [
+    "Restoration Magic",
+    "Fate of the Sun-Cryst",
+    "Sharlayan, Nation of Scholars",
+    "Thief's Knife",
+    "Auron's Inspiration",
+    "Eden, Seat of the Sanctum",
+    "Lion Heart",
+    "Capital City",
+    "Slash of Light",
+    "The Crystal's Chosen",
+    "Summon: Primal Garuda",
+    "Ring of the Lucii",
+    "Magitek Armor",
+    "You're Not Alone"
+   ]
+  },
+  {
+   "pair": "WB",
+   "name": "Lifegain sagas",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Rufus Shinra",
+    "Judge Magister Gabranth"
+   ],
+   "payoffs": [
+    "G'raha Tia",
+    "Relentless X-ATM092",
+    "Al Bhed Salvagers",
+    "Ashe, Princess of Dalmasca",
+    "Cloudbound Moogle",
+    "Tonberry"
+   ],
+   "enablers": [
+    "The Gold Saucer",
+    "Dark Knight's Greatsword",
+    "Phantom Train",
+    "Lunatic Pandora",
+    "Sidequest: Catch a Fish // Cooking Campsite"
+   ],
+   "keyCards": [
+    "Aerith Rescue Mission",
+    "Auron's Inspiration",
+    "Adventurer's Airship",
+    "Insomnia, Crown City",
+    "Black Mage's Rod",
+    "Ring of the Lucii",
+    "Eden, Seat of the Sanctum",
+    "Phoenix Down",
+    "The Crystal's Chosen",
+    "Snow Villiers",
+    "Magitek Armor",
+    "Summon: Primal Garuda",
+    "Monk's Fist",
+    "Ahriman"
+   ]
+  },
+  {
+   "pair": "WR",
+   "name": "Aggro",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Zidane, Tantalus Thief",
+    "Giott, King of the Dwarves"
+   ],
+   "payoffs": [
+    "Freya Crescent",
+    "Item Shopkeep",
+    "Barret Wallace",
+    "Relentless X-ATM092",
+    "Crystal Fragments // Summon: Alexander",
+    "Adelbert Steiner"
+   ],
+   "enablers": [
+    "Adventurer's Airship",
+    "Samurai's Katana",
+    "Sidequest: Play Blitzball // World Champion, Celestial Weapon",
+    "Dragoon's Lance",
+    "Lion Heart"
+   ],
+   "keyCards": [
+    "Coral Sword",
+    "Rabanastre, Royal City",
+    "Unexpected Request",
+    "Battle Menu",
+    "Slash of Light",
+    "White Mage's Staff",
+    "Sidequest: Catch a Fish // Cooking Campsite",
+    "Monk's Fist",
+    "Sabotender",
+    "Ambrosia Whiteheart",
+    "Hill Gigas",
+    "Paladin's Arms",
+    "Weapons Vendor",
+    "Opera Love Song"
+   ]
+  },
+  {
+   "pair": "WG",
+   "name": "Tap/towns",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Garnet, Princess of Alexandria",
+    "Rinoa Heartilly"
+   ],
+   "payoffs": [
+    "Loporrit Scout",
+    "Cactuar",
+    "Sidequest: Raise a Chocobo // Black Chocobo",
+    "Summon: Choco/Mog",
+    "Quina, Qu Gourmet",
+    "Summon: Primal Garuda"
+   ],
+   "enablers": [
+    "Bard's Bow",
+    "Blitzball Shot",
+    "Ride the Shoopuf",
+    "Gongaga, Reactor Town",
+    "Sidequest: Catch a Fish // Cooking Campsite"
+   ],
+   "keyCards": [
+    "Commune with Beavers",
+    "Windurst, Federation Center",
+    "Summon: Fat Chocobo",
+    "Monk's Fist",
+    "Sharlayan, Nation of Scholars",
+    "Weapons Vendor",
+    "Aerith Rescue Mission",
+    "Relentless X-ATM092",
+    "Phoenix Down",
+    "Rydia's Return",
+    "The Crystal's Chosen",
+    "Snow Villiers",
+    "Adventurer's Airship",
+    "Dragoon's Lance"
+   ]
+  },
+  {
+   "pair": "UB",
+   "name": "Mill control",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Locke Cole",
+    "Ultimecia, Time Sorceress // Ultimecia, Omnipotent"
+   ],
+   "payoffs": [
+    "Demon Wall",
+    "Malboro",
+    "Hecteyes",
+    "Undercity Dire Rat",
+    "Namazu Trader",
+    "Shambling Cie'th"
+   ],
+   "enablers": [
+    "Windurst, Federation Center",
+    "The Gold Saucer",
+    "Vector, Imperial Capital",
+    "Treno, Dark City",
+    "Baron, Airship Kingdom"
+   ],
+   "keyCards": [
+    "Crossroads Village",
+    "Sephiroth's Intervention",
+    "Circle of Power",
+    "World Map",
+    "Vayne's Treachery",
+    "Overkill",
+    "Swallowed by Leviathan",
+    "Gongaga, Reactor Town",
+    "Sidequest: Card Collection // Magicked Card",
+    "Instant Ramen",
+    "Combat Tutorial",
+    "Lion Heart",
+    "Insomnia, Crown City",
+    "Quistis Trepe"
+   ]
+  },
+  {
+   "pair": "UR",
+   "name": "Spells",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Shantotto, Tactician Magician",
+    "The Emperor of Palamecia // The Lord Master of Hell"
+   ],
+   "payoffs": [
+    "Prompto Argentum",
+    "Ultros, Obnoxious Octopus",
+    "Sabotender",
+    "Sahagin",
+    "Blazing Bomb",
+    "Scorpion Sentinel"
+   ],
+   "enablers": [
+    "Adventurer's Inn",
+    "Light of Judgment",
+    "Choco-Comet",
+    "Thunder Magic",
+    "Call the Mountain Chocobo"
+   ],
+   "keyCards": [
+    "Eject",
+    "Retrieve the Esper",
+    "Ice Magic",
+    "Ring of the Lucii",
+    "Suplex",
+    "Relm's Sketching",
+    "World Map",
+    "Warrior's Sword",
+    "Ether",
+    "Dreams of Laguna",
+    "Fire Magic",
+    "Laughing Mad",
+    "Vector, Imperial Capital",
+    "Syncopate"
+   ]
+  },
+  {
+   "pair": "UG",
+   "name": "Landfall ramp",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Omega, Heartless Evolution",
+    "Ignis Scientia"
+   ],
+   "payoffs": [
+    "Iron Giant",
+    "PuPu UFO",
+    "Magic Pot",
+    "Gran Pulse Ochu",
+    "Qiqirn Merchant",
+    "Summon: Shiva"
+   ],
+   "enablers": [
+    "Chocobo Racetrack",
+    "Reach the Horizon",
+    "The Gold Saucer",
+    "Travel the Overworld",
+    "Clash of the Eikons"
+   ],
+   "keyCards": [
+    "Blitzball",
+    "Gongaga, Reactor Town",
+    "Sharlayan, Nation of Scholars",
+    "Eden, Seat of the Sanctum",
+    "Windurst, Federation Center",
+    "Adventurer's Inn",
+    "Rydia's Return",
+    "Tifa's Limit Break",
+    "Ride the Shoopuf",
+    "Capital City",
+    "Gysahl Greens",
+    "Prishe's Wanderings",
+    "Insomnia, Crown City",
+    "Crossroads Village"
+   ]
+  },
+  {
+   "pair": "BR",
+   "name": "Sacrifice",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Black Waltz No. 3",
+    "Garland, Knight of Cornelia // Chaos, the Endless"
+   ],
+   "payoffs": [
+    "Summon: Esper Ramuh",
+    "Mysidian Elder",
+    "Tonberry",
+    "Queen Brahne",
+    "Hill Gigas",
+    "Sandworm"
+   ],
+   "enablers": [
+    "Instant Ramen",
+    "Haste Magic",
+    "Cornered by Black Mages",
+    "Circle of Power",
+    "Red Mage's Rapier"
+   ],
+   "keyCards": [
+    "Unexpected Request",
+    "Self-Destruct",
+    "Sorceress's Schemes",
+    "World Map",
+    "Opera Love Song",
+    "Black Mage's Rod",
+    "Sephiroth's Intervention",
+    "Sidequest: Play Blitzball // World Champion, Celestial Weapon",
+    "Overkill",
+    "Resentful Revelation",
+    "Vincent's Limit Break",
+    "Sidequest: Hunt the Mark // Yiazmat, Ultimate Mark",
+    "Blitzball",
+    "Vayne's Treachery"
+   ]
+  },
+  {
+   "pair": "BG",
+   "name": "Job select value",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Cloud of Darkness",
+    "Ragnarok, Divine Deliverance"
+   ],
+   "payoffs": [
+    "Relentless X-ATM092",
+    "Fang, Fearless l'Cie",
+    "Gaius van Baelsar",
+    "Coliseum Behemoth",
+    "Diamond Weapon",
+    "Town Greeter"
+   ],
+   "enablers": [
+    "Lunatic Pandora",
+    "Fight On!",
+    "Evil Reawakened",
+    "Commune with Beavers",
+    "The Final Days"
+   ],
+   "keyCards": [
+    "Adventurer's Inn",
+    "Qutrub Forayer",
+    "Demon Wall",
+    "Namazu Trader",
+    "Tifa's Limit Break",
+    "Gigantoad",
+    "Summon: Anima",
+    "Ring of the Lucii",
+    "Balamb T-Rexaur",
+    "Resentful Revelation",
+    "Capital City",
+    "Gongaga, Reactor Town",
+    "Shinra Reinforcements",
+    "Instant Ramen"
+   ]
+  },
+  {
+   "pair": "RG",
+   "name": "Aggro",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Rydia, Summoner of Mist",
+    "Gladiolus Amicitia"
+   ],
+   "payoffs": [
+    "Iron Giant",
+    "Barret Wallace",
+    "Sandworm",
+    "Summon: G.F. Ifrit",
+    "Cactuar",
+    "Sidequest: Raise a Chocobo // Black Chocobo"
+   ],
+   "enablers": [
+    "Random Encounter",
+    "Galuf's Final Act",
+    "Self-Destruct",
+    "Chocobo Racetrack",
+    "Gysahl Greens"
+   ],
+   "keyCards": [
+    "Ride the Shoopuf",
+    "Tifa's Limit Break",
+    "Eden, Seat of the Sanctum",
+    "Sidequest: Play Blitzball // World Champion, Celestial Weapon",
+    "Adventurer's Inn",
+    "Blitzball Shot",
+    "Summon: Fat Chocobo",
+    "Sazh's Chocobo",
+    "Quina, Qu Gourmet",
+    "Clash of the Eikons",
+    "Sabotender",
+    "Summon: Fenrir",
+    "World Map",
+    "Goobbue Gardener"
+   ]
+  }
+ ],
+ "combos": []
+}

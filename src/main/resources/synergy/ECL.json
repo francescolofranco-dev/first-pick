@@ -1,0 +1,433 @@
+{
+ "set": "ECL",
+ "setName": "Lorwyn Eclipsed",
+ "generated": "2026-07-04",
+ "mechanics": [
+  {
+   "name": "Blight",
+   "summary": "Pay a cost by putting a -1/-1 counter on a creature you control; enables removal and value triggers."
+  },
+  {
+   "name": "Changeling",
+   "summary": "This card is every creature type \u2014 universal typal glue."
+  },
+  {
+   "name": "Convoke",
+   "summary": "Tap creatures to help pay for a spell; concentrated in blue/white Merfolk."
+  },
+  {
+   "name": "Vivid",
+   "summary": "Effects scale with the number of colors among permanents you control."
+  },
+  {
+   "name": "Behold",
+   "summary": "Reveal or control a creature of a type as an additional cost, on the typal-lord cycle."
+  },
+  {
+   "name": "Evoke",
+   "summary": "Cast for a cheaper cost, sacrificing the creature on entry \u2014 the five gold Incarnations."
+  }
+ ],
+ "archetypes": [
+  {
+   "pair": "WU",
+   "name": "Merfolk convoke-tempo",
+   "playstyle": "Cheap fliers and tap-synergy artifacts turn a wide board into convoke value and untap tricks.",
+   "speed": "midrange",
+   "signposts": [
+    "Deepchannel Duelist",
+    "Eclipsed Merrow"
+   ],
+   "payoffs": [
+    "Merrow Skyswimmer",
+    "Glamermite",
+    "Glamer Gifter",
+    "Wanderwine Farewell",
+    "Unexpected Assistance",
+    "Sun-Dappled Celebrant"
+   ],
+   "enablers": [
+    "Springleaf Drum",
+    "Stalactite Dagger",
+    "Bark of Doran",
+    "Aquitect's Defenses",
+    "Lofty Dreams"
+   ],
+   "keyCards": [
+    "Glister Bairn",
+    "Feisty Spikeling",
+    "Evolving Wilds",
+    "Foraging Wickermaw",
+    "Keep Out",
+    "Pestered Wellguard",
+    "Changeling Wayfinder",
+    "Encumbered Reejerey"
+   ]
+  },
+  {
+   "pair": "WB",
+   "name": "Counters attrition",
+   "playstyle": "Blight your own creatures as fuel and profit as the -1/-1 counters are placed, removed and recurred.",
+   "speed": "midrange",
+   "signposts": [
+    "Emptiness",
+    "Prideful Feastling"
+   ],
+   "payoffs": [
+    "Reaping Willow",
+    "Blighted Blackthorn",
+    "Darkness Descends",
+    "Retched Wretch"
+   ],
+   "enablers": [
+    "Barbed Bloodletter",
+    "Requiting Hex",
+    "Foraging Wickermaw",
+    "Chaos Spewer",
+    "Dream Seizer",
+    "Moonlit Lamenter",
+    "Gnarlbark Elm"
+   ],
+   "keyCards": [
+    "Gutsplitter Gang",
+    "Nightmare Sower",
+    "Changeling Wayfinder",
+    "Liminal Hold",
+    "Burdened Stoneback",
+    "Stoic Grove-Guide",
+    "Shore Lurker",
+    "Spiral into Solitude"
+   ]
+  },
+  {
+   "pair": "WR",
+   "name": "Giants counter-aggro",
+   "playstyle": "Giants enter with -1/-1 counters and convert them into combat swings and evasion.",
+   "speed": "aggro",
+   "signposts": [
+    "Catharsis",
+    "Feisty Spikeling"
+   ],
+   "payoffs": [
+    "Boldwyr Aggressor",
+    "Hovel Hurler",
+    "Brambleback Brute",
+    "Squawkroaster"
+   ],
+   "enablers": [
+    "Reckless Ransacking",
+    "Moonlit Lamenter",
+    "Sun-Dappled Celebrant",
+    "Burdened Stoneback"
+   ],
+   "keyCards": [
+    "Gristle Glutton",
+    "Reluctant Dounguard",
+    "Reaping Willow",
+    "Warren Torchmaster",
+    "Changeling Wayfinder",
+    "Liminal Hold",
+    "Sizzling Changeling",
+    "Chaos Spewer"
+   ]
+  },
+  {
+   "pair": "WG",
+   "name": "Kithkin go-wide",
+   "playstyle": "Count Kithkin and creatures entering each turn for cumulative anthems and trample.",
+   "speed": "aggro",
+   "signposts": [
+    "Eclipsed Kithkin",
+    "Thoughtweft Lieutenant"
+   ],
+   "payoffs": [
+    "Bristlebane Outrider",
+    "Mistmeadow Council",
+    "Crossroads Watcher",
+    "Burdened Stoneback"
+   ],
+   "enablers": [
+    "Gangly Stompling",
+    "Wary Farmer",
+    "Prideful Feastling",
+    "Evershrike's Gift",
+    "Dundoolin Weaver"
+   ],
+   "keyCards": [
+    "Hovel Hurler",
+    "Riverguard's Reflexes",
+    "Thoughtweft Imbuer",
+    "Reluctant Dounguard",
+    "Kinsbaile Aspirant",
+    "Pummeler for Hire",
+    "Spiral into Solitude",
+    "Flock Impostor"
+   ]
+  },
+  {
+   "pair": "UB",
+   "name": "Faerie flash",
+   "playstyle": "Do everything at instant speed and cash in the cast-on-opponent's-turn payoffs.",
+   "speed": "control",
+   "signposts": [
+    "Deceit",
+    "Mischievous Sneakling"
+   ],
+   "payoffs": [
+    "Voracious Tome-Skimmer",
+    "Nightmare Sower",
+    "Unwelcome Sprite"
+   ],
+   "enablers": [
+    "Illusion Spinners",
+    "Glamermite",
+    "Barbed Bloodletter",
+    "Wild Unraveling",
+    "Requiting Hex",
+    "Aquitect's Defenses",
+    "Thirst for Identity"
+   ],
+   "keyCards": [
+    "Chaos Spewer",
+    "Changeling Wayfinder",
+    "Chitinous Graspling",
+    "Noggle the Mind",
+    "Shimmercreep",
+    "Rooftop Percher",
+    "Foraging Wickermaw",
+    "Graveshifter"
+   ]
+  },
+  {
+   "pair": "UR",
+   "name": "Elementals tempo",
+   "playstyle": "Stack Elemental ETB and triggered abilities, doubled by Twinflame Travelers, behind premium red removal.",
+   "speed": "midrange",
+   "signposts": [
+    "Twinflame Travelers",
+    "Eclipsed Flamekin"
+   ],
+   "payoffs": [
+    "Champion of the Path",
+    "Soulbright Seeker",
+    "Squawkroaster"
+   ],
+   "enablers": [
+    "Kindle the Inner Flame",
+    "Gathering Stone",
+    "Springleaf Drum",
+    "Feed the Flames",
+    "Cinder Strike"
+   ],
+   "keyCards": [
+    "Spell Snare",
+    "Mischievous Sneakling",
+    "Impolite Entrance",
+    "Eclipsed Realms",
+    "Elder Auntie",
+    "Tweeze",
+    "Boulder Dash",
+    "Sear"
+   ]
+  },
+  {
+   "pair": "UG",
+   "name": "Vivid ramp",
+   "playstyle": "Accumulate colors among your permanents and fixing to power the Vivid scaling payoffs.",
+   "speed": "midrange",
+   "signposts": [
+    "Wistfulness",
+    "Chitinous Graspling"
+   ],
+   "payoffs": [
+    "Glister Bairn",
+    "Wildvine Pummeler",
+    "Puca's Eye",
+    "Tend the Sprigs"
+   ],
+   "enablers": [
+    "Shimmerwilds Growth",
+    "Great Forest Druid",
+    "Firdoch Core",
+    "Foraging Wickermaw",
+    "Wild Unraveling",
+    "Wary Farmer"
+   ],
+   "keyCards": [
+    "Mischievous Sneakling",
+    "Rime Chill",
+    "Changeling Wayfinder",
+    "Omni-Changeling",
+    "Unwelcome Sprite",
+    "Pummeler for Hire",
+    "Noggle the Mind",
+    "Prismabasher"
+   ]
+  },
+  {
+   "pair": "BR",
+   "name": "Goblins sacrifice",
+   "playstyle": "Goblins die profitably and blight fuels the death-and-drain engine.",
+   "speed": "aggro",
+   "signposts": [
+    "Boggart Cursecrafter",
+    "Eclipsed Boggart"
+   ],
+   "payoffs": [
+    "Boggart Mischief",
+    "Mudbutton Cursetosser",
+    "Warren Torchmaster",
+    "Boggart Prankster"
+   ],
+   "enablers": [
+    "Bile-Vial Boggart",
+    "Retched Wretch",
+    "Goatnap",
+    "Heirloom Auntie",
+    "Lasting Tarfire",
+    "Gutsplitter Gang"
+   ],
+   "keyCards": [
+    "Dream Seizer",
+    "Reaping Willow",
+    "Impolite Entrance",
+    "Boneclub Berserker",
+    "Sting-Slinger",
+    "Gristle Glutton",
+    "Chaos Spewer",
+    "Burning Curiosity"
+   ]
+  },
+  {
+   "pair": "BG",
+   "name": "Elves midrange",
+   "playstyle": "Efficient interaction and typal recursion out-value the opponent with an Elf shell.",
+   "speed": "midrange",
+   "signposts": [
+    "Eclipsed Elf",
+    "Morcant's Loyalist"
+   ],
+   "payoffs": [
+    "Dawn-Blessed Pennant",
+    "Graveshifter",
+    "Unbury"
+   ],
+   "enablers": [
+    "Nameless Inversion",
+    "Requiting Hex",
+    "Blight Rot",
+    "Darkness Descends",
+    "Bogslither's Embrace",
+    "Auntie's Sentence"
+   ],
+   "keyCards": [
+    "Eclipsed Realms",
+    "Pitiless Fists",
+    "Assert Perfection",
+    "Evolving Wilds",
+    "Barbed Bloodletter",
+    "Chomping Changeling",
+    "Dose of Dawnglow",
+    "Perfect Intimidation"
+   ]
+  },
+  {
+   "pair": "RG",
+   "name": "Giants ramp",
+   "playstyle": "Treasure and ramp into oversized Giants with fight and power-matters removal.",
+   "speed": "midrange",
+   "signposts": [
+    "Vibrance",
+    "Gangly Stompling"
+   ],
+   "payoffs": [
+    "Boldwyr Aggressor",
+    "Wildvine Pummeler",
+    "Giantfall",
+    "Brambleback Brute"
+   ],
+   "enablers": [
+    "Noggle Robber",
+    "Reckless Ransacking",
+    "Surly Farrier",
+    "Stoic Grove-Guide",
+    "Sourbread Auntie"
+   ],
+   "keyCards": [
+    "Puca's Eye",
+    "Luminollusk",
+    "Blossoming Defense",
+    "Glister Bairn",
+    "Burning Curiosity",
+    "Elder Auntie",
+    "Chaos Spewer",
+    "Pummeler for Hire"
+   ]
+  }
+ ],
+ "combos": [
+  {
+   "cards": [
+    "Springleaf Drum",
+    "Deepchannel Duelist"
+   ],
+   "note": "Tap for mana, untap at end step for a second use"
+  },
+  {
+   "cards": [
+    "Bile-Vial Boggart",
+    "Retched Wretch"
+   ],
+   "note": "A -1/-1 counter turns Retched Wretch's death into a return"
+  },
+  {
+   "cards": [
+    "Lasting Tarfire",
+    "Blighted Blackthorn"
+   ],
+   "note": "Placing any counter pings each opponent for 2"
+  },
+  {
+   "cards": [
+    "Boggart Cursecrafter",
+    "Bile-Vial Boggart"
+   ],
+   "note": "Goblin deaths drain and place counters"
+  },
+  {
+   "cards": [
+    "Twinflame Travelers",
+    "Champion of the Path"
+   ],
+   "note": "Elemental ETB damage triggers twice"
+  },
+  {
+   "cards": [
+    "Twinflame Travelers",
+    "Soulbright Seeker"
+   ],
+   "note": "Every Elemental trigger fires an additional time"
+  },
+  {
+   "cards": [
+    "Shimmerwilds Growth",
+    "Glister Bairn"
+   ],
+   "note": "Extra colors among permanents scale the Vivid pump"
+  },
+  {
+   "cards": [
+    "Boggart Mischief",
+    "Goatnap"
+   ],
+   "note": "Sacrificed Goblins each drain an opponent"
+  },
+  {
+   "cards": [
+    "Reaping Willow",
+    "Moonlit Lamenter"
+   ],
+   "note": "Remove -1/-1 counters to reanimate the cheap counter-bearers"
+  }
+ ]
+}

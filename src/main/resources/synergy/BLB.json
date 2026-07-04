@@ -1,0 +1,430 @@
+{
+ "set": "BLB",
+ "setName": "Bloomburrow",
+ "generated": "2026-07-04",
+ "mechanics": [
+  {
+   "name": "Gift",
+   "summary": ""
+  },
+  {
+   "name": "Offspring",
+   "summary": ""
+  },
+  {
+   "name": "Surveil",
+   "summary": ""
+  },
+  {
+   "name": "Food",
+   "summary": ""
+  },
+  {
+   "name": "Valiant",
+   "summary": ""
+  }
+ ],
+ "archetypes": [
+  {
+   "pair": "WU",
+   "name": "Birds flyers",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Plumecreed Mentor"
+   ],
+   "payoffs": [
+    "Mouse Trapper",
+    "Knightfisher",
+    "Shrike Force",
+    "Finch Formation",
+    "Brightblade Stoat",
+    "Seedpod Squire"
+   ],
+   "enablers": [
+    "Short Bow",
+    "Bumbleflower's Sharepot",
+    "Builder's Talent",
+    "Fountainport Bell",
+    "Parting Gust"
+   ],
+   "keyCards": [
+    "Crumb and Get It",
+    "Jolly Gerbils",
+    "Dazzling Denial",
+    "Thistledown Players",
+    "Nettle Guard",
+    "Banishing Light",
+    "Warren Elder",
+    "Carrot Cake",
+    "Three Tree Mascot",
+    "Flowerfoot Swordmaster",
+    "Rabbit Response",
+    "Patchwork Banner",
+    "Pileated Provisioner",
+    "Plumecreed Escort"
+   ]
+  },
+  {
+   "pair": "WB",
+   "name": "Bats lifedrain",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Starseer Mentor"
+   ],
+   "payoffs": [
+    "Lifecreed Duo",
+    "Brightblade Stoat",
+    "Moonrise Cleric",
+    "Driftgloom Coyote",
+    "Thistledown Players",
+    "Starscape Cleric"
+   ],
+   "enablers": [
+    "Sonar Strike",
+    "Parting Gust",
+    "Uncharted Haven",
+    "Builder's Talent",
+    "Hidden Grotto"
+   ],
+   "keyCards": [
+    "Moonstone Harbinger",
+    "Nettle Guard",
+    "Star Charter",
+    "Jolly Gerbils",
+    "Lupinflower Village",
+    "Starlit Soothsayer",
+    "Sinister Monolith",
+    "Tangle Tumbler",
+    "Starforged Sword",
+    "Wax-Wane Witness",
+    "Harvestrite Host",
+    "Thought-Stalker Warlock",
+    "Banishing Light",
+    "Head of the Homestead"
+   ]
+  },
+  {
+   "pair": "WR",
+   "name": "Mice aggro",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Seedglaive Mentor"
+   ],
+   "payoffs": [
+    "Seedpod Squire",
+    "Heartfire Hero",
+    "Pileated Provisioner",
+    "Whiskerquill Scribe",
+    "Veteran Guardmouse",
+    "Roughshod Duo"
+   ],
+   "enablers": [
+    "Short Bow",
+    "Valley Rally",
+    "Starforged Sword",
+    "Rockface Village",
+    "Feather of Flight"
+   ],
+   "keyCards": [
+    "Brambleguard Captain",
+    "Raccoon Rallier",
+    "Blacksmith's Talent",
+    "Mabel's Mettle",
+    "Flowerfoot Swordmaster",
+    "Brave-Kin Duo",
+    "Thistledown Players",
+    "Might of the Meek",
+    "Mouse Trapper",
+    "Rabid Gnaw",
+    "War Squeak",
+    "Quaketusk Boar",
+    "Nettle Guard",
+    "Crumb and Get It"
+   ]
+  },
+  {
+   "pair": "WG",
+   "name": "Rabbits go-wide",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Burrowguard Mentor"
+   ],
+   "payoffs": [
+    "Jolly Gerbils",
+    "Intrepid Rabbit",
+    "Druid of the Spade",
+    "Hazardroot Herbalist",
+    "Head of the Homestead",
+    "Pileated Provisioner"
+   ],
+   "enablers": [
+    "Patchwork Banner",
+    "Heirloom Epic",
+    "Dewdrop Cure",
+    "Hop to It",
+    "Lupinflower Village"
+   ],
+   "keyCards": [
+    "Peerless Recycling",
+    "Carrot Cake",
+    "Bumbleflower's Sharepot",
+    "Tangle Tumbler",
+    "Rabbit Response",
+    "Shrike Force",
+    "Seasoned Warrenguard",
+    "Seedpod Squire",
+    "Harvestrite Host",
+    "Driftgloom Coyote",
+    "Banishing Light",
+    "Warren Elder",
+    "Repel Calamity",
+    "Feather of Flight"
+   ]
+  },
+  {
+   "pair": "UB",
+   "name": "Threshold",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Tidecaller Mentor"
+   ],
+   "payoffs": [
+    "Shoreline Looter",
+    "Persistent Marshstalker",
+    "Cindering Cutthroat",
+    "Plumecreed Escort",
+    "Lightshell Duo",
+    "Tempest Angler"
+   ],
+   "enablers": [
+    "Long River's Pull",
+    "Psychic Whorl",
+    "Dazzling Denial",
+    "Spellgyre",
+    "Hidden Grotto"
+   ],
+   "keyCards": [
+    "Savor",
+    "Uncharted Haven",
+    "Fountainport Bell",
+    "Pearl of Wisdom",
+    "Fell",
+    "Barkform Harvester",
+    "Sugar Coat",
+    "Daring Waverider",
+    "Mind Spiral",
+    "Daggerfang Duo",
+    "Eddymurk Crab",
+    "Ruthless Negotiation",
+    "Bandit's Talent",
+    "Nightwhorl Hermit"
+   ]
+  },
+  {
+   "pair": "UR",
+   "name": "Otters spells",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Stormcatch Mentor"
+   ],
+   "payoffs": [
+    "Coruscation Mage",
+    "Harnesser of Storms",
+    "Eddymurk Crab",
+    "Tempest Angler",
+    "Barkform Harvester",
+    "Brazen Collector"
+   ],
+   "enablers": [
+    "Sazacap's Brew",
+    "Wildfire Howl",
+    "Fountainport Bell",
+    "Might of the Meek",
+    "Into the Flood Maw"
+   ],
+   "keyCards": [
+    "Playful Shove",
+    "Rabid Gnaw",
+    "Agate Assault",
+    "Otterball Antics",
+    "Pearl of Wisdom",
+    "Take Out the Trash",
+    "Blooming Blast",
+    "Conduct Electricity",
+    "Calamitous Tide",
+    "Kindlespark Duo",
+    "Mind Drill Assailant",
+    "Dire Downdraft",
+    "Shore Up",
+    "Mind Spiral"
+   ]
+  },
+  {
+   "pair": "UG",
+   "name": "Frogs/valiant",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Lilysplash Mentor"
+   ],
+   "payoffs": [
+    "Barkform Harvester",
+    "Brambleguard Veteran",
+    "Pond Prophet",
+    "Sunshower Druid",
+    "Clifftop Lookout",
+    "Long River Lurker"
+   ],
+   "enablers": [
+    "Gossip's Talent",
+    "Run Away Together",
+    "Lilypad Village",
+    "Polliwallop",
+    "Patchwork Banner"
+   ],
+   "keyCards": [
+    "Splash Portal",
+    "Stocking the Pantry",
+    "Three Tree Scribe",
+    "Stickytongue Sentinel",
+    "Peerless Recycling",
+    "Galewind Moose",
+    "Finch Formation",
+    "Knightfisher",
+    "High Stride",
+    "Treeguard Duo",
+    "Longstalk Brawl",
+    "Skyskipper Duo",
+    "Rust-Shield Rampager",
+    "Splash Lasher"
+   ]
+  },
+  {
+   "pair": "BR",
+   "name": "Lizards sacrifice",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Fireglass Mentor"
+   ],
+   "payoffs": [
+    "Reptilian Recruiter",
+    "Kindlespark Duo",
+    "Steampath Charger",
+    "Alania's Pathmaker",
+    "Teapot Slinger",
+    "Starscape Cleric"
+   ],
+   "enablers": [
+    "War Squeak",
+    "Scales of Shale",
+    "Agate Assault",
+    "Rockface Village",
+    "Blacksmith's Talent"
+   ],
+   "keyCards": [
+    "Brazen Collector",
+    "Frilled Sparkshooter",
+    "Flamecache Gecko",
+    "Raccoon Rallier",
+    "Ravine Raider",
+    "Agate-Blade Assassin",
+    "Cindering Cutthroat",
+    "Quaketusk Boar",
+    "Take Out the Trash",
+    "Starforged Sword",
+    "Three Tree Mascot",
+    "Thornplate Intimidator",
+    "Playful Shove",
+    "Blooming Blast"
+   ]
+  },
+  {
+   "pair": "BG",
+   "name": "Squirrels food",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Vinereap Mentor"
+   ],
+   "payoffs": [
+    "Huskburster Swarm",
+    "Three Tree Mascot",
+    "Hivespine Wolverine",
+    "Bakersbane Duo",
+    "Bushy Bodyguard",
+    "Wick's Patrol"
+   ],
+   "enablers": [
+    "Heaped Harvest",
+    "Hunter's Talent",
+    "Hidden Grotto",
+    "Longstalk Brawl",
+    "Cache Grab"
+   ],
+   "keyCards": [
+    "Barkform Harvester",
+    "Stargaze",
+    "High Stride",
+    "Pawpatch Formation",
+    "Uncharted Haven",
+    "Honored Dreyleader",
+    "Early Winter",
+    "Fell",
+    "Corpseberry Cultivator",
+    "Galewind Moose",
+    "Hazel's Nocturne",
+    "Feed the Cycle",
+    "Junkblade Bruiser",
+    "Fountainport Bell"
+   ]
+  },
+  {
+   "pair": "RG",
+   "name": "Raccoons expend",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Wandertale Mentor"
+   ],
+   "payoffs": [
+    "Teapot Slinger",
+    "Veteran Guardmouse",
+    "Alania's Pathmaker",
+    "Quaketusk Boar",
+    "Junkblade Bruiser",
+    "Brambleguard Veteran"
+   ],
+   "enablers": [
+    "Hoarder's Overflow",
+    "Conduct Electricity",
+    "Blacksmith's Talent",
+    "Short Bow",
+    "Rabid Gnaw"
+   ],
+   "keyCards": [
+    "Brambleguard Captain",
+    "Blooming Blast",
+    "Take Out the Trash",
+    "Roughshod Duo",
+    "Heartfire Hero",
+    "Rust-Shield Rampager",
+    "Raccoon Rallier",
+    "Starforged Sword",
+    "Brazen Collector",
+    "Agate Assault",
+    "War Squeak",
+    "Overprotect",
+    "Sazacap's Brew",
+    "Hunter's Talent"
+   ]
+  }
+ ],
+ "combos": []
+}

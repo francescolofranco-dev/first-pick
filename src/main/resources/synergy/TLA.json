@@ -1,0 +1,440 @@
+{
+ "set": "TLA",
+ "setName": "Avatar: The Last Airbender",
+ "generated": "2026-07-04",
+ "mechanics": [
+  {
+   "name": "Earthbend",
+   "summary": ""
+  },
+  {
+   "name": "Waterbend",
+   "summary": ""
+  },
+  {
+   "name": "Firebending",
+   "summary": ""
+  },
+  {
+   "name": "Airbend",
+   "summary": ""
+  },
+  {
+   "name": "Transform",
+   "summary": ""
+  }
+ ],
+ "archetypes": [
+  {
+   "pair": "WU",
+   "name": "Air tempo",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Sokka, Lateral Strategist",
+    "Air Nomad Legacy"
+   ],
+   "payoffs": [
+    "Iguana Parrot",
+    "Benevolent River Spirit",
+    "Aang, the Last Airbender",
+    "Rowdy Snowballers",
+    "Earth Kingdom Soldier",
+    "Earth Kingdom Protectors"
+   ],
+   "enablers": [
+    "Airbender's Reversal",
+    "Meditation Pools",
+    "Razor Rings",
+    "Kyoshi Village",
+    "Invasion Submersible"
+   ],
+   "keyCards": [
+    "Kyoshi Battle Fan",
+    "Airbending Lesson",
+    "Curious Farm Animals",
+    "Jeong Jeong's Deserters",
+    "Sun-Blessed Peak",
+    "Momo, Playful Pet",
+    "Teo, Spirited Glider",
+    "Fire Nation Warship",
+    "Cat-Owl",
+    "North Pole Gates",
+    "Earth Kingdom Jailer",
+    "Zuko's Exile",
+    "Compassionate Healer",
+    "Honest Work"
+   ]
+  },
+  {
+   "pair": "WB",
+   "name": "Bending control",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Hei Bai, Spirit of Balance",
+    "Tolls of War"
+   ],
+   "payoffs": [
+    "Zhao, Ruthless Admiral",
+    "Fire Navy Trebuchet",
+    "Long Feng, Grand Secretariat",
+    "Curious Farm Animals",
+    "Callous Inspector",
+    "Fire Nation Engineer"
+   ],
+   "enablers": [
+    "Destined Confrontation",
+    "North Pole Gates",
+    "Misty Palms Oasis",
+    "Kyoshi Village",
+    "Tundra Tank"
+   ],
+   "keyCards": [
+    "Fire Nation Warship",
+    "Joo Dee, One of Many",
+    "Sokka, Lateral Strategist",
+    "Meteor Sword",
+    "Enter the Avatar State",
+    "Vengeful Villagers",
+    "Deadly Precision",
+    "Messenger Hawk",
+    "Pretending Poxbearers",
+    "June, Bounty Hunter",
+    "Master Piandao",
+    "Ozai's Cruelty",
+    "Wandering Musicians",
+    "Path to Redemption"
+   ]
+  },
+  {
+   "pair": "WR",
+   "name": "Fire aggro",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Sun Warriors",
+    "Jet, Freedom Fighter"
+   ],
+   "payoffs": [
+    "Ty Lee, Artful Acrobat",
+    "Rough Rhino Cavalry",
+    "Deserter's Disciple",
+    "Jeong Jeong, the Deserter",
+    "Vindictive Warden",
+    "Treetop Freedom Fighters"
+   ],
+   "enablers": [
+    "How to Start a Riot",
+    "Twin Blades",
+    "Fancy Footwork",
+    "Sun-Blessed Peak",
+    "Team Avatar"
+   ],
+   "keyCards": [
+    "Water Tribe Rallier",
+    "Fire Sages",
+    "War Balloon",
+    "Glider Staff",
+    "Zuko, Exiled Prince",
+    "Cunning Maneuver",
+    "Sandbenders' Storm",
+    "Mongoose Lizard",
+    "Fire Nation Cadets",
+    "Lightning Strike",
+    "Fire Nation Raider",
+    "Combustion Man",
+    "Mai, Jaded Edge",
+    "Airbending Lesson"
+   ]
+  },
+  {
+   "pair": "WG",
+   "name": "Earth midrange",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Suki, Kyoshi Warrior",
+    "White Lotus Reinforcements"
+   ],
+   "payoffs": [
+    "Haru, Hidden Talent",
+    "Appa, Loyal Sky Bison",
+    "Earth Rumble Wrestlers",
+    "Water Tribe Rallier",
+    "Flopsie, Bumi's Buddy",
+    "Foggy Swamp Vinebender"
+   ],
+   "enablers": [
+    "Kyoshi Village",
+    "Glider Staff",
+    "Sun-Blessed Peak",
+    "Team Avatar",
+    "White Lotus Hideout"
+   ],
+   "keyCards": [
+    "Invasion Tactics",
+    "Meteor Sword",
+    "Earth Kingdom Protectors",
+    "Rebellious Captives",
+    "Omashu City",
+    "Wandering Musicians",
+    "Seismic Sense",
+    "Master Piandao",
+    "Jet, Freedom Fighter",
+    "Allies at Last",
+    "Badgermole",
+    "Rumble Arena",
+    "Vengeful Villagers",
+    "Kyoshi Warriors"
+   ]
+  },
+  {
+   "pair": "UB",
+   "name": "Control",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Hama, the Bloodbender",
+    "Foggy Swamp Spirit Keeper"
+   ],
+   "payoffs": [
+    "Earth Village Ruffians",
+    "Platypus-Bear",
+    "Hog-Monkey",
+    "Zhao, Ruthless Admiral",
+    "Forecasting Fortune Teller",
+    "Corrupt Court Official"
+   ],
+   "enablers": [
+    "Kyoshi Battle Fan",
+    "Misty Palms Oasis",
+    "North Pole Gates",
+    "Zuko's Conviction",
+    "Ruinous Waterbending"
+   ],
+   "keyCards": [
+    "Boiling Rock Prison",
+    "Dai Li Indoctrination",
+    "Airship Engine Room",
+    "Pretending Poxbearers",
+    "Foggy Bottom Swamp",
+    "Katara, Bending Prodigy",
+    "White Lotus Hideout",
+    "Cat-Gator",
+    "Lo and Li, Twin Tutors",
+    "Professor Zei, Anthropologist",
+    "Bender's Waterskin",
+    "Merchant of Many Hats",
+    "Honest Work",
+    "Gran-Gran"
+   ]
+  },
+  {
+   "pair": "UR",
+   "name": "Spells",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Professor Zei, Anthropologist",
+    "Dragonfly Swarm"
+   ],
+   "payoffs": [
+    "Guru Pathik",
+    "Mongoose Lizard",
+    "Boar-q-pine",
+    "Fire Nation Cadets",
+    "Jeong Jeong, the Deserter",
+    "Uncle Iroh"
+   ],
+   "enablers": [
+    "Sun-Blessed Peak",
+    "Energybending",
+    "Combustion Technique",
+    "Firebending Lesson",
+    "Accumulate Wisdom"
+   ],
+   "keyCards": [
+    "Iroh's Demonstration",
+    "The Cave of Two Lovers",
+    "Meditation Pools",
+    "Omashu City",
+    "Fire Nation Attacks",
+    "Boomerang Basics",
+    "Abandon Attachments",
+    "Aang's Journey",
+    "Zuko's Exile",
+    "Lightning Strike",
+    "Cunning Maneuver",
+    "Bender's Waterskin",
+    "Crashing Wave",
+    "Bumi Bash"
+   ]
+  },
+  {
+   "pair": "UG",
+   "name": "Waterbending",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Hermitic Herbalist",
+    "Guru Pathik"
+   ],
+   "payoffs": [
+    "Bumi, King of Three Trials",
+    "Turtle-Duck",
+    "North Pole Patrol",
+    "Unlucky Cabbage Merchant",
+    "Flopsie, Bumi's Buddy",
+    "Saber-Tooth Moose-Lion"
+   ],
+   "enablers": [
+    "Crashing Wave",
+    "True Ancestry",
+    "Kyoshi Island Plaza",
+    "Zuko's Exile",
+    "Barrels of Blasting Jelly"
+   ],
+   "keyCards": [
+    "Kyoshi Village",
+    "Cycle of Renewal",
+    "Fire Nation Warship",
+    "Aang's Journey",
+    "Rocky Rebuke",
+    "Omashu City",
+    "North Pole Gates",
+    "Sun-Blessed Peak",
+    "Allies at Last",
+    "Airship Engine Room",
+    "Ember Island Production",
+    "Shared Roots",
+    "Lost Days",
+    "Walltop Sentries"
+   ]
+  },
+  {
+   "pair": "BR",
+   "name": "Aggro",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Cruel Administrator",
+    "Zhao, Ruthless Admiral"
+   ],
+   "payoffs": [
+    "Mai, Jaded Edge",
+    "Combustion Man",
+    "Lo and Li, Twin Tutors",
+    "Vindictive Warden",
+    "Rough Rhino Cavalry",
+    "Zuko, Exiled Prince"
+   ],
+   "enablers": [
+    "Jet's Brainwashing",
+    "Boiling Rock Prison",
+    "Solstice Revelations",
+    "War Balloon",
+    "Tundra Tank"
+   ],
+   "keyCards": [
+    "Yuyan Archers",
+    "Fire Nation Raider",
+    "Wolfbat",
+    "Treetop Freedom Fighters",
+    "Ty Lee, Artful Acrobat",
+    "Fire Nation Attacks",
+    "Mongoose Lizard",
+    "Fire Sages",
+    "Azula Always Lies",
+    "How to Start a Riot",
+    "Jeong Jeong, the Deserter",
+    "Dai Li Indoctrination",
+    "The Cave of Two Lovers",
+    "Earth Village Ruffians"
+   ]
+  },
+  {
+   "pair": "BG",
+   "name": "Earth value",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Dai Li Agents",
+    "Long Feng, Grand Secretariat"
+   ],
+   "payoffs": [
+    "Saber-Tooth Moose-Lion",
+    "Earth Kingdom General",
+    "Buzzard-Wasp Colony",
+    "Raucous Audience",
+    "Earth Rumble Wrestlers",
+    "Flopsie, Bumi's Buddy"
+   ],
+   "enablers": [
+    "Leaves from the Vine",
+    "Omashu City",
+    "Rumble Arena",
+    "Boiling Rock Prison",
+    "Ozai's Cruelty"
+   ],
+   "keyCards": [
+    "Rebellious Captives",
+    "Zuko's Conviction",
+    "Epic Downfall",
+    "Toph, the Blind Bandit",
+    "Hog-Monkey",
+    "Fire Nation Warship",
+    "Pillar Launch",
+    "Ostrich-Horse",
+    "The Boulder, Ready to Rumble",
+    "Unlucky Cabbage Merchant",
+    "Turtle-Duck",
+    "Meteor Sword",
+    "Rocky Rebuke",
+    "Walltop Sentries"
+   ]
+  },
+  {
+   "pair": "RG",
+   "name": "Aggro",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Bitter Work",
+    "Uncle Iroh"
+   ],
+   "payoffs": [
+    "Tiger-Dillo",
+    "Fire Nation Raider",
+    "Combustion Man",
+    "Earth Kingdom Soldier",
+    "Vindictive Warden",
+    "Raucous Audience"
+   ],
+   "enablers": [
+    "Boiling Rock Prison",
+    "Earthbending Lesson",
+    "Twin Blades",
+    "Rumble Arena",
+    "War Balloon"
+   ],
+   "keyCards": [
+    "Bumi Bash",
+    "The Cave of Two Lovers",
+    "Origin of Metalbending",
+    "Earth Rumble",
+    "Mongoose Lizard",
+    "The Boulder, Ready to Rumble",
+    "Jet, Freedom Fighter",
+    "Pillar Launch",
+    "Toph, the Blind Bandit",
+    "Ty Lee, Artful Acrobat",
+    "Ostrich-Horse",
+    "Cycle of Renewal",
+    "Zuko's Exile",
+    "Platypus-Bear"
+   ]
+  }
+ ],
+ "combos": []
+}

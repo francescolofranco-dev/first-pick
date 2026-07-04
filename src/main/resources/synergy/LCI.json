@@ -1,0 +1,430 @@
+{
+ "set": "LCI",
+ "setName": "The Lost Caverns of Ixalan",
+ "generated": "2026-07-04",
+ "mechanics": [
+  {
+   "name": "Transform",
+   "summary": ""
+  },
+  {
+   "name": "Explore",
+   "summary": ""
+  },
+  {
+   "name": "Discover",
+   "summary": ""
+  },
+  {
+   "name": "Craft",
+   "summary": ""
+  },
+  {
+   "name": "Descend",
+   "summary": ""
+  }
+ ],
+ "archetypes": [
+  {
+   "pair": "WU",
+   "name": "Explore artifacts",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Master's Guide-Mural // Master's Manufactory"
+   ],
+   "payoffs": [
+    "Disruptor Wanderglyph",
+    "Cartographer's Companion",
+    "Guardian of the Great Door",
+    "Sinuous Benthisaur",
+    "Adaptive Gemguard",
+    "Market Gnome"
+   ],
+   "enablers": [
+    "Runaway Boulder",
+    "Forgotten Monument",
+    "Hurl into History",
+    "Spring-Loaded Sawblades // Bladewheel Chariot",
+    "Careening Mine Cart"
+   ],
+   "keyCards": [
+    "Hidden Courtyard",
+    "Might of the Ancestors",
+    "Clay-Fired Bricks // Cosmium Kiln",
+    "Helping Hand",
+    "Out of Air",
+    "Dusk Rose Reliquary",
+    "Chart a Course",
+    "Hunter's Blowgun",
+    "Cosmium Blast",
+    "Cavernous Maw",
+    "Hidden Cataract",
+    "Scampering Surveyor",
+    "Waterwind Scout",
+    "Petrify"
+   ]
+  },
+  {
+   "pair": "WB",
+   "name": "Lifegain midrange",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Bartolom\u00e9 del Presidio"
+   ],
+   "payoffs": [
+    "Synapse Necromage",
+    "Scampering Surveyor",
+    "Sunbird Standard // Sunbird Effigy",
+    "Acolyte of Aclazotz",
+    "Vito's Inquisitor",
+    "Skullcap Snail"
+   ],
+   "enablers": [
+    "Bloodthorn Flail",
+    "Mephitic Draught",
+    "Fanatical Offering",
+    "Hidden Volcano",
+    "Fungal Fortitude"
+   ],
+   "keyCards": [
+    "Tithing Blade // Consuming Sepulcher",
+    "Screaming Phantom",
+    "Hoverstone Pilgrim",
+    "Bat Colony",
+    "Another Chance",
+    "Greedy Freebooter",
+    "Visage of Dread // Dread Osseosaur",
+    "Soaring Sandwing",
+    "Canonized in Blood",
+    "Promising Vein",
+    "Runaway Boulder",
+    "Mischievous Pup",
+    "Family Reunion",
+    "Glorifier of Suffering"
+   ]
+  },
+  {
+   "pair": "WR",
+   "name": "Aggro",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Caparocti Sunborn"
+   ],
+   "payoffs": [
+    "Curator of Sun's Creation",
+    "Disruptor Wanderglyph",
+    "Sunshot Militia",
+    "Thousand Moons Infantry",
+    "Child of the Volcano",
+    "Sunbird Standard // Sunbird Effigy"
+   ],
+   "enablers": [
+    "Diamond Pick-Axe",
+    "Runaway Boulder",
+    "Volatile Fault",
+    "Idol of the Deep King // Sovereign's Macuahuitl",
+    "Buried Treasure"
+   ],
+   "keyCards": [
+    "Thousand Moons Crackshot",
+    "Miner's Guidewing",
+    "Enterprising Scallywag",
+    "Vanguard of the Rose",
+    "Etali's Favor",
+    "Oteclan Landmark // Oteclan Levitator",
+    "Family Reunion",
+    "Digsite Conservator",
+    "Acrobatic Leap",
+    "Ruin-Lurker Bat",
+    "Goldfury Strider",
+    "Attentive Sunscribe",
+    "Petrify",
+    "Brazen Blademaster"
+   ]
+  },
+  {
+   "pair": "WG",
+   "name": "Go-wide",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Kutzil, Malamet Exemplar"
+   ],
+   "payoffs": [
+    "Hoverstone Pilgrim",
+    "Seeker of Sunlight",
+    "Kaslem's Stonetree // Kaslem's Strider",
+    "Malamet Brawler",
+    "Jade Seedstones // Jadeheart Attendant",
+    "Soaring Sandwing"
+   ],
+   "enablers": [
+    "Hunter's Blowgun",
+    "Glowcap Lantern",
+    "Explorer's Cache",
+    "Malamet Scythe",
+    "Acrobatic Leap"
+   ],
+   "keyCards": [
+    "Buried Treasure",
+    "Family Reunion",
+    "Malamet Veteran",
+    "Twists and Turns // Mycoid Maze",
+    "Over the Edge",
+    "Envoy of Okinec Ahau",
+    "Dauntless Dismantler",
+    "Oltec Archaeologists",
+    "Ruin-Lurker Bat",
+    "River Herald Guide",
+    "Cenote Scout",
+    "Compass Gnome",
+    "Cosmium Blast",
+    "Hidden Nursery"
+   ]
+  },
+  {
+   "pair": "UB",
+   "name": "Artifacts/mill",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Uchbenbak, the Great Mistake"
+   ],
+   "payoffs": [
+    "Scampering Surveyor",
+    "Sage of Days",
+    "Marauding Brinefang",
+    "Chupacabra Echo",
+    "Abyssal Gorestalker",
+    "Hoverstone Pilgrim"
+   ],
+   "enablers": [
+    "Canonized in Blood",
+    "Volatile Fault",
+    "Promising Vein",
+    "Malicious Eclipse",
+    "Song of Stupefaction"
+   ],
+   "keyCards": [
+    "Waterlogged Hulk // Watertight Gondola",
+    "Forgotten Monument",
+    "Council of Echoes",
+    "Stinging Cave Crawler",
+    "Cavernous Maw",
+    "Self-Reflection",
+    "Sunbird Standard // Sunbird Effigy",
+    "Acolyte of Aclazotz",
+    "Echo of Dusk",
+    "Digsite Conservator",
+    "Sinuous Benthisaur",
+    "Broodrage Mycoid",
+    "Hidden Volcano",
+    "Tithing Blade // Consuming Sepulcher"
+   ]
+  },
+  {
+   "pair": "UR",
+   "name": "Discover spells",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Captain Storm, Cosmium Raider"
+   ],
+   "payoffs": [
+    "Goblin Tomb Raider",
+    "Goldfury Strider",
+    "Spyglass Siren",
+    "Disruptor Wanderglyph",
+    "Cartographer's Companion",
+    "Compass Gnome"
+   ],
+   "enablers": [
+    "Idol of the Deep King // Sovereign's Macuahuitl",
+    "Careening Mine Cart",
+    "Dowsing Device // Geode Grotto",
+    "Lodestone Needle // Guidestone Compass",
+    "Diamond Pick-Axe"
+   ],
+   "keyCards": [
+    "Dreadmaw's Ire",
+    "Sunfire Torch",
+    "Ancestors' Aid",
+    "Etali's Favor",
+    "Self-Reflection",
+    "Hotfoot Gnome",
+    "Brazen Blademaster",
+    "Volatile Wanderglyph",
+    "Dinotomaton",
+    "Sunshot Militia",
+    "Oaken Siren",
+    "Zoetic Glyph",
+    "Cogwork Wrestler",
+    "Geological Appraiser"
+   ]
+  },
+  {
+   "pair": "UG",
+   "name": "Explore ramp",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Nicanzil, Current Conductor"
+   ],
+   "payoffs": [
+    "Merfolk Cave-Diver",
+    "Hoverstone Pilgrim",
+    "Malamet Veteran",
+    "Sunbird Standard // Sunbird Effigy",
+    "Frilled Cave-Wurm",
+    "Jade Seedstones // Jadeheart Attendant"
+   ],
+   "enablers": [
+    "Glowcap Lantern",
+    "Hidden Volcano",
+    "Over the Edge",
+    "Ancestral Reminiscence",
+    "Hidden Necropolis"
+   ],
+   "keyCards": [
+    "Explorer's Cache",
+    "Malamet Scythe",
+    "Confounding Riddle",
+    "Unlucky Drop",
+    "Careening Mine Cart",
+    "River Herald Scout",
+    "Council of Echoes",
+    "Earthshaker Dreadmaw",
+    "Captivating Cave",
+    "Cenote Scout",
+    "Walk with the Ancestors",
+    "Seeker of Sunlight",
+    "Eaten by Piranhas",
+    "Marauding Brinefang"
+   ]
+  },
+  {
+   "pair": "BR",
+   "name": "Sacrifice descend",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Zoyowa Lava-Tongue"
+   ],
+   "payoffs": [
+    "Digsite Conservator",
+    "Deep Goblin Skulltaker",
+    "Broodrage Mycoid",
+    "Vito's Inquisitor",
+    "Deep-Cavern Bat",
+    "Child of the Volcano"
+   ],
+   "enablers": [
+    "Calamitous Cave-In",
+    "Buried Treasure",
+    "Bitter Triumph",
+    "Pit of Offerings",
+    "Promising Vein"
+   ],
+   "keyCards": [
+    "Screaming Phantom",
+    "Seismic Monstrosaur",
+    "Geological Appraiser",
+    "Gargantuan Leech",
+    "Volatile Wanderglyph",
+    "Tithing Blade // Consuming Sepulcher",
+    "Hidden Necropolis",
+    "Acolyte of Aclazotz",
+    "Malicious Eclipse",
+    "Synapse Necromage",
+    "Hidden Volcano",
+    "Another Chance",
+    "Hoverstone Pilgrim",
+    "Primordial Gnawer"
+   ]
+  },
+  {
+   "pair": "BG",
+   "name": "Explore midrange",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Akawalli, the Seething Tower"
+   ],
+   "payoffs": [
+    "Mineshaft Spider",
+    "Kaslem's Stonetree // Kaslem's Strider",
+    "Rampaging Spiketail",
+    "Soulcoil Viper",
+    "Digsite Conservator",
+    "Nurturing Bristleback"
+   ],
+   "enablers": [
+    "In the Presence of Ages",
+    "Promising Vein",
+    "Grasping Shadows // Shadows' Lair",
+    "Ray of Ruin",
+    "Defossilize"
+   ],
+   "keyCards": [
+    "Spelunking",
+    "Bitter Triumph",
+    "Primordial Gnawer",
+    "Captivating Cave",
+    "Buried Treasure",
+    "Pit of Offerings",
+    "Coati Scavenger",
+    "Sunbird Standard // Sunbird Effigy",
+    "Deathcap Marionette",
+    "Join the Dead",
+    "Hidden Necropolis",
+    "Scampering Surveyor",
+    "Basking Capybara",
+    "Abyssal Gorestalker"
+   ]
+  },
+  {
+   "pair": "RG",
+   "name": "Dinosaurs",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Itzquinth, Firstborn of Gishath"
+   ],
+   "payoffs": [
+    "Rampaging Ceratops",
+    "Curator of Sun's Creation",
+    "Scytheclaw Raptor",
+    "Belligerent Yearling",
+    "Panicked Altisaur",
+    "Seeker of Sunlight"
+   ],
+   "enablers": [
+    "Zoyowa's Justice",
+    "Triumphant Chomp",
+    "Rumbling Rockslide",
+    "Buried Treasure",
+    "Abrade"
+   ],
+   "keyCards": [
+    "Seismic Monstrosaur",
+    "Daring Discovery",
+    "Saheeli's Lattice // Mastercraft Raptor",
+    "Hidden Volcano",
+    "Cavern Stomper",
+    "Pathfinding Axejaw",
+    "Tendril of the Mycotyrant",
+    "Huatli's Final Strike",
+    "Burning Sun Cavalry",
+    "Cenote Scout",
+    "Poison Dart Frog",
+    "River Herald Guide",
+    "Malamet Battle Glyph",
+    "Walk with the Ancestors"
+   ]
+  }
+ ],
+ "combos": []
+}

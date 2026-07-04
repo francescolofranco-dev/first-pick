@@ -1,0 +1,310 @@
+{
+ "set": "TDM",
+ "setName": "Tarkir: Dragonstorm",
+ "generated": "2026-07-04",
+ "mechanics": [
+  {
+   "name": "Mobilize",
+   "summary": ""
+  },
+  {
+   "name": "Renew",
+   "summary": ""
+  },
+  {
+   "name": "Endure",
+   "summary": ""
+  },
+  {
+   "name": "Flurry",
+   "summary": ""
+  },
+  {
+   "name": "Harmonize",
+   "summary": ""
+  }
+ ],
+ "archetypes": [
+  {
+   "pair": "WU",
+   "name": "Jeskai flurry",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [],
+   "payoffs": [
+    "Humbling Elder",
+    "Bearer of Glory",
+    "Salt Road Packbeast",
+    "Fortress Kin-Guard",
+    "Poised Practitioner",
+    "Riling Dawnbreaker // Signaling Roar"
+   ],
+   "enablers": [
+    "Static Snare",
+    "Swiftwater Cliffs",
+    "Teeming Dragonstorm",
+    "Osseous Exhale",
+    "Roiling Dragonstorm"
+   ],
+   "keyCards": [
+    "Mardu Devotee",
+    "Coordinated Maneuver",
+    "Agent of Kotis",
+    "Kishla Trawlers",
+    "Tempest Hawk"
+   ]
+  },
+  {
+   "pair": "WB",
+   "name": "Mardu warriors",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Hardened Tactician",
+    "Marshal of the Lost"
+   ],
+   "payoffs": [
+    "Nightblade Brigade",
+    "Krumar Initiate",
+    "Venerated Stormsinger",
+    "Kin-Tree Nurturer",
+    "Unrooted Ancestor",
+    "Riling Dawnbreaker // Signaling Roar"
+   ],
+   "enablers": [
+    "Alesha's Legacy",
+    "Teeming Dragonstorm",
+    "Desperate Measures",
+    "Worthy Cost",
+    "Salt Road Skirmish"
+   ],
+   "keyCards": [
+    "Fortress Kin-Guard",
+    "Loxodon Battle Priest",
+    "Sandskitter Outrider",
+    "Bearer of Glory",
+    "Sunpearl Kirin",
+    "Descendant of Storms",
+    "Lightfoot Technique",
+    "Alchemist's Assistant",
+    "Abzan Devotee",
+    "Osseous Exhale",
+    "Salt Road Packbeast",
+    "Cruel Truths",
+    "Arashin Sunshield",
+    "Purging Stormbrood // Absorb Essence"
+   ]
+  },
+  {
+   "pair": "WR",
+   "name": "Mardu aggro",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Frontline Rush",
+    "Cori Mountain Stalwart"
+   ],
+   "payoffs": [
+    "Dalkovan Packbeasts",
+    "Fleeting Effigy",
+    "Wayspeaker Bodyguard",
+    "Descendant of Storms",
+    "Salt Road Packbeast",
+    "Tempest Hawk"
+   ],
+   "enablers": [
+    "Duty Beyond Death",
+    "Static Snare",
+    "Rally the Monastery",
+    "War Effort",
+    "Coordinated Maneuver"
+   ],
+   "keyCards": [
+    "Unsparing Boltcaster",
+    "Devoted Duelist",
+    "Shocking Sharpshooter",
+    "Starry-Eyed Skyrider",
+    "Wild Ride",
+    "Shock Brigade",
+    "Sunpearl Kirin",
+    "Channeled Dragonfire",
+    "Stormplain Detainment",
+    "Reverberating Summons",
+    "Rebellious Strike",
+    "Bearer of Glory",
+    "Fire-Rim Form",
+    "Underfoot Underdogs"
+   ]
+  },
+  {
+   "pair": "WG",
+   "name": "Abzan endure",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [],
+   "payoffs": [
+    "Undergrowth Leopard",
+    "Furious Forebear",
+    "Champion of Dusan",
+    "Riling Dawnbreaker // Signaling Roar",
+    "Bearer of Glory",
+    "Formation Breaker"
+   ],
+   "enablers": [
+    "Synchronized Charge",
+    "Stormplain Detainment",
+    "Knockout Maneuver",
+    "Sarkhan's Resolve"
+   ],
+   "keyCards": [
+    "Trade Route Envoy",
+    "Sultai Devotee",
+    "Tempest Hawk",
+    "Ainok Wayfarer"
+   ]
+  },
+  {
+   "pair": "UR",
+   "name": "Jeskai spells",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Effortless Master",
+    "Glacial Dragonhunt"
+   ],
+   "payoffs": [
+    "Highspire Bell-Ringer",
+    "Rescue Leopard",
+    "Sunset Strikemaster",
+    "Veteran Ice Climber",
+    "Agent of Kotis",
+    "Meticulous Artisan"
+   ],
+   "enablers": [
+    "Wingspan Stride",
+    "Ringing Strike Mastery",
+    "Reverberating Summons",
+    "Mystic Monastery",
+    "Roiling Dragonstorm"
+   ],
+   "keyCards": [
+    "Snowmelt Stag",
+    "Temur Monument",
+    "Dirgur Island Dragon // Skimming Strike",
+    "Tranquil Cove",
+    "Nomad Outpost",
+    "Boulderborn Dragon",
+    "Thornwood Falls",
+    "Embermouth Sentinel",
+    "Aegis Sculptor",
+    "Narset's Rebuke",
+    "Equilibrium Adept",
+    "Wingblade Disciple",
+    "Kishla Trawlers",
+    "Runescale Stormbrood // Chilling Screech"
+   ]
+  },
+  {
+   "pair": "UG",
+   "name": "Temur behold",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Kishla Skimmer",
+    "Auroral Procession"
+   ],
+   "payoffs": [
+    "Veteran Ice Climber",
+    "Attuned Hunter",
+    "Krotiq Nestguard",
+    "Dragon Sniper",
+    "Snowmelt Stag",
+    "Whirlwing Stormbrood // Dynamic Soar"
+   ],
+   "enablers": [
+    "Rite of Renewal",
+    "Synchronized Charge",
+    "Tranquil Cove",
+    "Sarkhan's Resolve",
+    "Frontier Bivouac"
+   ],
+   "keyCards": [
+    "Inspirited Vanguard",
+    "Jade-Cast Sentinel",
+    "Dusyut Earthcarver",
+    "Disruptive Stormbrood // Petty Revenge",
+    "Snakeskin Veil",
+    "Watcher of the Wayside",
+    "Opulent Palace",
+    "Rainveil Rejuvenator",
+    "Aegis Sculptor",
+    "Formation Breaker",
+    "Champion of Dusan",
+    "Piercing Exhale",
+    "Sage of the Fang",
+    "Knockout Maneuver"
+   ]
+  },
+  {
+   "pair": "BG",
+   "name": "Abzan/Sultai counters",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Stalwart Successor",
+    "Host of the Hereafter"
+   ],
+   "payoffs": [
+    "Gurmag Rakshasa",
+    "Delta Bloodflies",
+    "Yathan Tombguard",
+    "Formation Breaker",
+    "Hundred-Battle Veteran",
+    "Sage of the Fang"
+   ],
+   "enablers": [
+    "Synchronized Charge",
+    "Knockout Maneuver",
+    "Desperate Measures",
+    "Aggressive Negotiations",
+    "Snakeskin Veil"
+   ],
+   "keyCards": [
+    "Trade Route Envoy",
+    "Attuned Hunter",
+    "Cruel Truths",
+    "Feral Deathgorger // Dusk Sight",
+    "Krumar Initiate",
+    "Abzan Devotee",
+    "Kin-Tree Nurturer",
+    "Sarkhan's Resolve",
+    "Unburied Earthcarver",
+    "Alchemist's Assistant",
+    "Wail of War",
+    "Dragon's Prey",
+    "Alesha's Legacy",
+    "Adorned Crocodile"
+   ]
+  },
+  {
+   "pair": "RG",
+   "name": "Temur mobilize",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [],
+   "payoffs": [
+    "Rescue Leopard",
+    "Sagu Wildling // Roost Seek",
+    "Stormshriek Feral // Flush Out",
+    "Undergrowth Leopard"
+   ],
+   "enablers": [
+    "Piercing Exhale"
+   ],
+   "keyCards": [
+    "Trade Route Envoy"
+   ]
+  }
+ ],
+ "combos": []
+}

@@ -1,0 +1,440 @@
+{
+ "set": "DFT",
+ "setName": "Aetherdrift",
+ "generated": "2026-07-04",
+ "mechanics": [
+  {
+   "name": "Start your engines!",
+   "summary": ""
+  },
+  {
+   "name": "Max speed",
+   "summary": ""
+  },
+  {
+   "name": "Cycling",
+   "summary": ""
+  },
+  {
+   "name": "Exhaust",
+   "summary": ""
+  },
+  {
+   "name": "Saddle",
+   "summary": ""
+  }
+ ],
+ "archetypes": [
+  {
+   "pair": "WU",
+   "name": "Vehicles tempo",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Guidelight Pathmaker",
+    "Voyage Home"
+   ],
+   "payoffs": [
+    "Interface Ace",
+    "Voyager Quickwelder",
+    "Guidelight Synergist",
+    "Memory Guardian",
+    "Ticket Tortoise",
+    "Aetherjacket"
+   ],
+   "enablers": [
+    "Wind-Scarred Crag",
+    "Alacrian Armory",
+    "Starting Column",
+    "Guidelight Matrix",
+    "Country Roads"
+   ],
+   "keyCards": [
+    "Aether Syphon",
+    "Broadcast Rambler",
+    "Spotcycle Scouter",
+    "Glitch Ghost Surveyor",
+    "Ride's End",
+    "Detention Chariot",
+    "Night Market",
+    "Tune Up",
+    "Collision Course",
+    "Marshals' Pathcruiser",
+    "Hulldrifter",
+    "Sundial, Dawn Tyrant",
+    "Gallant Strike",
+    "Diversion Unit"
+   ]
+  },
+  {
+   "pair": "WB",
+   "name": "Midrange",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Embalmed Ascendant",
+    "Dune Drifter"
+   ],
+   "payoffs": [
+    "Nesting Bot",
+    "Pride of the Road",
+    "Leonin Surveyor",
+    "Swiftwing Assailant",
+    "Streaking Oilgorger",
+    "Walking Sarcophagus"
+   ],
+   "enablers": [
+    "Amonkhet Raceway",
+    "Lightwheel Enhancements",
+    "Bloodfell Caves",
+    "Spotcycle Scouter",
+    "Wind-Scarred Crag"
+   ],
+   "keyCards": [
+    "Avishkar Raceway",
+    "Alacrian Armory",
+    "Risky Shortcut",
+    "Starting Column",
+    "Air Response Unit",
+    "Gallant Strike",
+    "Wickerfolk Indomitable",
+    "Wreckage Wickerfolk",
+    "Detention Chariot",
+    "Broadcast Rambler",
+    "Unswerving Sloth",
+    "Hour of Victory",
+    "Lotusguard Disciple",
+    "Guidelight Synergist"
+   ]
+  },
+  {
+   "pair": "WR",
+   "name": "Max speed aggro",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Cloudspire Skycycle",
+    "Cloudspire Coordinator"
+   ],
+   "payoffs": [
+    "Reckless Velocitaur",
+    "Brightfield Glider",
+    "Cloudspire Captain",
+    "Dracosaur Auxiliary",
+    "Unswerving Sloth",
+    "Gloryheath Lynx"
+   ],
+   "enablers": [
+    "Spire Mechcycle",
+    "Skybox Ferry",
+    "Air Response Unit",
+    "Marshals' Pathcruiser",
+    "Burner Rocket"
+   ],
+   "keyCards": [
+    "Rocky Roads",
+    "Road Rage",
+    "Rover Blades",
+    "Daring Mechanic",
+    "Lotusguard Disciple",
+    "Endrider Spikespitter",
+    "Wind-Scarred Crag",
+    "Canyon Vaulter",
+    "Brightfield Mustang",
+    "Push the Limit",
+    "Pedal to the Metal",
+    "Gilded Ghoda",
+    "Sundial, Dawn Tyrant",
+    "Lightshield Parry"
+   ]
+  },
+  {
+   "pair": "WG",
+   "name": "Vehicles",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Lagorin, Soul of Alacria",
+    "Veteran Beastrider"
+   ],
+   "payoffs": [
+    "Canyon Vaulter",
+    "Cloudspire Captain",
+    "Daring Mechanic",
+    "Brightfield Glider",
+    "Lotusguard Disciple",
+    "Alacrian Jaguar"
+   ],
+   "enablers": [
+    "Marshals' Pathcruiser",
+    "Skybox Ferry",
+    "Silken Strength",
+    "Roadside Assistance",
+    "Lightshield Parry"
+   ],
+   "keyCards": [
+    "Lightwheel Enhancements",
+    "Amonkhet Raceway",
+    "Gloryheath Lynx",
+    "Unswerving Sloth",
+    "Bestow Greatness",
+    "Wind-Scarred Crag",
+    "Collision Course",
+    "Ride's End",
+    "Brightfield Mustang",
+    "Rise from the Wreck",
+    "Air Response Unit",
+    "Country Roads",
+    "Gallant Strike",
+    "Leonin Surveyor"
+   ]
+  },
+  {
+   "pair": "UB",
+   "name": "Exhaust control",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Haunt the Network",
+    "Haunted Hellride"
+   ],
+   "payoffs": [
+    "Ticket Tortoise",
+    "Camera Launcher",
+    "Slick Imitator",
+    "Aetherjacket",
+    "Walking Sarcophagus",
+    "Memory Guardian"
+   ],
+   "enablers": [
+    "Guidelight Matrix",
+    "Bloodfell Caves",
+    "Aether Syphon",
+    "Starting Column",
+    "Thornwood Falls"
+   ],
+   "keyCards": [
+    "Pactdoll Terror",
+    "Avishkar Raceway",
+    "Transit Mage",
+    "Guidelight Optimizer",
+    "Tranquil Cove",
+    "Trade the Helm",
+    "Gearseeker Serpent",
+    "Caelorna, Coral Tyrant",
+    "Wreck Remover",
+    "Hellish Sideswipe",
+    "Hulldrifter",
+    "Scoured Barrens",
+    "Ripclaw Wrangler",
+    "Midnight Mangler"
+   ]
+  },
+  {
+   "pair": "UR",
+   "name": "Artifacts/energy",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Boosted Sloop",
+    "Broadside Barrage"
+   ],
+   "payoffs": [
+    "Dynamite Diver",
+    "Scrounging Skyray",
+    "Marauding Mako",
+    "Gastal Blockbuster",
+    "Magmakin Artillerist",
+    "Pacesetter Paragon"
+   ],
+   "enablers": [
+    "Push the Limit",
+    "Skybox Ferry",
+    "Skycrash",
+    "Clamorous Ironclad",
+    "Rocky Roads"
+   ],
+   "keyCards": [
+    "Spell Pierce",
+    "Stall Out",
+    "Tyrox, Saurid Tyrant",
+    "Kickoff Celebrations",
+    "Wreck Remover",
+    "Thunderhead Gunner",
+    "Gilded Ghoda",
+    "Fuel the Flames",
+    "Greasewrench Goblin",
+    "Spire Mechcycle",
+    "Endrider Catalyzer",
+    "Rugged Highlands",
+    "Avishkar Raceway",
+    "Howler's Heavy"
+   ]
+  },
+  {
+   "pair": "UG",
+   "name": "Energy ramp",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Skyserpent Seeker",
+    "Rangers' Aetherhive"
+   ],
+   "payoffs": [
+    "Pit Automaton",
+    "Sabotage Strategist",
+    "Elvish Refueler",
+    "Spikeshell Harrier",
+    "Skystreak Engineer",
+    "Stampeding Scurryfoot"
+   ],
+   "enablers": [
+    "Spell Pierce",
+    "Rugged Highlands",
+    "Rangers' Refueler",
+    "Trip Up",
+    "Point the Way"
+   ],
+   "keyCards": [
+    "Rover Blades",
+    "Defend the Rider",
+    "Scrap Compactor",
+    "Flood the Engine",
+    "Blossoming Sands",
+    "Spectral Interference",
+    "Avishkar Raceway",
+    "Bounce Off",
+    "Night Market",
+    "Stall Out",
+    "Broken Wings",
+    "Migrating Ketradon",
+    "Tranquil Cove",
+    "Keen Buccaneer"
+   ]
+  },
+  {
+   "pair": "BR",
+   "name": "Sacrifice",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Gastal Thrillseeker",
+    "Apocalypse Runner"
+   ],
+   "payoffs": [
+    "Endrider Spikespitter",
+    "Endrider Catalyzer",
+    "Goblin Surveyor",
+    "Dynamite Diver",
+    "Greasewrench Goblin",
+    "Risen Necroregent"
+   ],
+   "enablers": [
+    "Outpace Oblivion",
+    "Wind-Scarred Crag",
+    "Hour of Victory",
+    "Burner Rocket",
+    "Crash and Burn"
+   ],
+   "keyCards": [
+    "Adrenaline Jockey",
+    "Prowcatcher Specialist",
+    "Streaking Oilgorger",
+    "Tyrox, Saurid Tyrant",
+    "Gastal Blockbuster",
+    "Pacesetter Paragon",
+    "Gilded Ghoda",
+    "Lightning Strike",
+    "Grim Javelineer",
+    "Road Rage",
+    "Mutant Surveyor",
+    "Dracosaur Auxiliary",
+    "Walking Sarcophagus",
+    "Risky Shortcut"
+   ]
+  },
+  {
+   "pair": "BG",
+   "name": "Exhaust value",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Thundering Broodwagon",
+    "Broodheart Engine"
+   ],
+   "payoffs": [
+    "Shefet Archfiend",
+    "Chitin Gravestalker",
+    "Pothole Mole",
+    "Ooze Patrol",
+    "Molt Tender",
+    "Hazard of the Dunes"
+   ],
+   "enablers": [
+    "Back on Track",
+    "Syphon Fuel",
+    "Rover Blades",
+    "Blossoming Sands",
+    "Bloodfell Caves"
+   ],
+   "keyCards": [
+    "Spin Out",
+    "Veloheart Bike",
+    "Intimidation Tactics",
+    "Dismal Backwater",
+    "Plow Through",
+    "Kalakscion, Hunger Tyrant",
+    "Foul Roads",
+    "Loxodon Surveyor",
+    "Migrating Ketradon",
+    "Locust Spray",
+    "Dredger's Insight",
+    "Autarch Mammoth",
+    "Alacrian Jaguar",
+    "Earthrumbler"
+   ]
+  },
+  {
+   "pair": "RG",
+   "name": "Vehicles aggro",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Boom Scholar",
+    "Rocketeer Boostbuggy"
+   ],
+   "payoffs": [
+    "Adrenaline Jockey",
+    "Pacesetter Paragon",
+    "Prowcatcher Specialist",
+    "Dracosaur Auxiliary",
+    "Reckless Velocitaur",
+    "Tyrox, Saurid Tyrant"
+   ],
+   "enablers": [
+    "Skybox Ferry",
+    "Pedal to the Metal",
+    "Rover Blades",
+    "Road Rage",
+    "Crash and Burn"
+   ],
+   "keyCards": [
+    "Lightning Strike",
+    "Outpace Oblivion",
+    "Burner Rocket",
+    "Spire Mechcycle",
+    "Fuel the Flames",
+    "Gastal Blockbuster",
+    "Wind-Scarred Crag",
+    "Skycrash",
+    "Gilded Ghoda",
+    "Scrap Compactor",
+    "Point the Way",
+    "Bestow Greatness",
+    "Jibbirik Omnivore",
+    "Amonkhet Raceway"
+   ]
+  }
+ ],
+ "combos": []
+}

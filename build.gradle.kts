@@ -115,6 +115,13 @@ tasks.register<JavaExec>("overlayDebug") {
     args(a)
 }
 
+tasks.register<JavaExec>("auditSets") {
+    group = "verification"
+    description = "Check bundled synergy profiles against live Standard legality; flag rotated sets to drop."
+    mainClass.set("com.firstpick.tools.AuditSetsKt")
+    classpath = sourceSets["main"].runtimeClasspath
+}
+
 tasks.register("printEvalClasspath") {
     val out = layout.buildDirectory.file("eval-classpath.txt")
     val cp = sourceSets["main"].runtimeClasspath

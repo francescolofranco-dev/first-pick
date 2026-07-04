@@ -1,0 +1,440 @@
+{
+ "set": "OTJ",
+ "setName": "Outlaws of Thunder Junction",
+ "generated": "2026-07-04",
+ "mechanics": [
+  {
+   "name": "Plot",
+   "summary": ""
+  },
+  {
+   "name": "Spree",
+   "summary": ""
+  },
+  {
+   "name": "Saddle",
+   "summary": ""
+  },
+  {
+   "name": "Treasure",
+   "summary": ""
+  },
+  {
+   "name": "Surveil",
+   "summary": ""
+  }
+ ],
+ "archetypes": [
+  {
+   "pair": "WU",
+   "name": "Plot tempo",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Jem Lightfoote, Sky Explorer",
+    "Wrangler of the Damned"
+   ],
+   "payoffs": [
+    "Geyser Drake",
+    "Armored Armadillo",
+    "Daring Thunder-Thief",
+    "Silver Deputy",
+    "Visage Bandit",
+    "Nurturing Pixie"
+   ],
+   "enablers": [
+    "Shifting Grift",
+    "Emergent Haunting",
+    "Bovine Intervention",
+    "Fleeting Reflection",
+    "Eriette's Lullaby"
+   ],
+   "keyCards": [
+    "Peerless Ropemaster",
+    "Deepmuck Desperado",
+    "Djinn of Fool's Fall",
+    "Bandit's Haul",
+    "Nimble Brigand",
+    "Slickshot Vault-Buster",
+    "Canyon Crab",
+    "Lush Oasis",
+    "Loan Shark",
+    "Omenport Vigilante",
+    "Metamorphic Blast",
+    "Outlaw Stitcher",
+    "Marauding Sphinx",
+    "Oasis Gardener"
+   ]
+  },
+  {
+   "pair": "WB",
+   "name": "Mercenaries",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Ruthless Lawbringer",
+    "Baron Bertram Graywater"
+   ],
+   "payoffs": [
+    "Forsaken Miner",
+    "Outlaw Medic",
+    "Nezumi Linkbreaker",
+    "Unscrupulous Contractor",
+    "Wanted Griffin",
+    "Boneyard Desecrator"
+   ],
+   "enablers": [
+    "Rakish Crew",
+    "Luxurious Locomotive",
+    "Gold Pan",
+    "Fake Your Own Death",
+    "Lively Dirge"
+   ],
+   "keyCards": [
+    "Hollow Marauder",
+    "Nurturing Pixie",
+    "Omenport Vigilante",
+    "Vault Plunderer",
+    "Corrupted Conviction",
+    "Abraded Bluffs",
+    "Mourner's Surprise",
+    "Rictus Robber",
+    "Eriette's Lullaby",
+    "Lassoed by the Law",
+    "Arid Archway",
+    "Neutralize the Guards",
+    "Mobile Homestead",
+    "Forlorn Flats"
+   ]
+  },
+  {
+   "pair": "WR",
+   "name": "Aggro",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Ertha Jo, Frontier Mentor",
+    "Form a Posse"
+   ],
+   "payoffs": [
+    "Prickly Pair",
+    "Scalestorm Summoner",
+    "Reckless Lackey",
+    "Mine Raider",
+    "Resilient Roadrunner",
+    "Irascible Wolverine"
+   ],
+   "enablers": [
+    "Outlaws' Fury",
+    "Demonic Ruckus",
+    "Requisition Raid",
+    "Quick Draw",
+    "Take for a Ride"
+   ],
+   "keyCards": [
+    "Gila Courser",
+    "Hellspur Brute",
+    "Cunning Coyote",
+    "Lavaspur Boots",
+    "Discerning Peddler",
+    "Longhorn Sharpshooter",
+    "Sheriff of Safe Passage",
+    "Abraded Bluffs",
+    "Thunder Lasso",
+    "Ferocification",
+    "Explosive Derailment",
+    "Omenport Vigilante",
+    "Magebane Lizard",
+    "Bristling Backwoods"
+   ]
+  },
+  {
+   "pair": "WG",
+   "name": "Tokens",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Congregation Gryff",
+    "Miriam, Herd Whisperer"
+   ],
+   "payoffs": [
+    "Shepherd of the Clouds",
+    "Rambling Possum",
+    "Bounding Felidar",
+    "Frontier Seeker",
+    "Drover Grizzly",
+    "Giant Beaver"
+   ],
+   "enablers": [
+    "Luxurious Locomotive",
+    "Lavaspur Boots",
+    "Sandstorm Verge",
+    "Reach for the Sky",
+    "Gold Pan"
+   ],
+   "keyCards": [
+    "Rustler Rampage",
+    "Gold Rush",
+    "Thunder Lasso",
+    "Arid Archway",
+    "Trash the Town",
+    "Bucolic Ranch",
+    "Bristling Backwoods",
+    "Mobile Homestead",
+    "Conduit Pylons",
+    "Creosote Heath",
+    "Abraded Bluffs",
+    "Lassoed by the Law",
+    "Full Steam Ahead",
+    "Prosperity Tycoon"
+   ]
+  },
+  {
+   "pair": "UB",
+   "name": "Crime control",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Lazav, Familiar Stranger",
+    "Intimidation Campaign"
+   ],
+   "payoffs": [
+    "Tomb Trawler",
+    "Slickshot Lockpicker",
+    "Harrier Strix",
+    "Raven of Fell Omens",
+    "Deepmuck Desperado",
+    "Spring Splasher"
+   ],
+   "enablers": [
+    "Jagged Barrens",
+    "Eroded Canyon",
+    "Lonely Arroyo",
+    "Bandit's Haul",
+    "Abraded Bluffs"
+   ],
+   "keyCards": [
+    "Mirage Mesa",
+    "Take the Fall",
+    "Plan the Heist",
+    "Soured Springs",
+    "Lush Oasis",
+    "Seize the Secrets",
+    "Loan Shark",
+    "Phantom Interference",
+    "Forlorn Flats",
+    "Fleeting Reflection",
+    "Marauding Sphinx",
+    "Jailbreak Scheme",
+    "Servant of the Stinger",
+    "Stop Cold"
+   ]
+  },
+  {
+   "pair": "UR",
+   "name": "Spells/plot",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Kraum, Violent Cacophony",
+    "Slick Sequence"
+   ],
+   "payoffs": [
+    "Razzle-Dazzler",
+    "Rodeo Pyromancers",
+    "Cunning Coyote",
+    "Shackle Slinger",
+    "Irascible Wolverine",
+    "Harrier Strix"
+   ],
+   "enablers": [
+    "Brimstone Roundup",
+    "Highway Robbery",
+    "Demonic Ruckus",
+    "Scorching Shot",
+    "Caught in the Crossfire"
+   ],
+   "keyCards": [
+    "Return the Favor",
+    "Thunder Salvo",
+    "Resilient Roadrunner",
+    "Outlaw Stitcher",
+    "Prickly Pair",
+    "Iron-Fist Pulverizer",
+    "Canyon Crab",
+    "Failed Fording",
+    "Spring Splasher",
+    "Deadeye Duelist",
+    "Slickshot Vault-Buster",
+    "Bandit's Haul",
+    "Emergent Haunting",
+    "Nimble Brigand"
+   ]
+  },
+  {
+   "pair": "UG",
+   "name": "Ramp",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Doc Aurlock, Grizzled Genius",
+    "Make Your Own Luck"
+   ],
+   "payoffs": [
+    "Djinn of Fool's Fall",
+    "Visage Bandit",
+    "Redrock Sentinel",
+    "Marauding Sphinx",
+    "Oasis Gardener",
+    "Ankle Biter"
+   ],
+   "enablers": [
+    "Fleeting Reflection",
+    "Shifting Grift",
+    "Abraded Bluffs",
+    "This Town Ain't Big Enough",
+    "Failed Fording"
+   ],
+   "keyCards": [
+    "Bristling Backwoods",
+    "Metamorphic Blast",
+    "Plan the Heist",
+    "Eroded Canyon",
+    "Stop Cold",
+    "Jailbreak Scheme",
+    "Phantom Interference",
+    "Dance of the Tumbleweeds",
+    "Lonely Arroyo",
+    "Emergent Haunting",
+    "Mirage Mesa",
+    "Sandstorm Verge",
+    "Hardbristle Bandit",
+    "Daring Thunder-Thief"
+   ]
+  },
+  {
+   "pair": "BR",
+   "name": "Outlaws sacrifice",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Vial Smasher, Gleeful Grenadier",
+    "At Knifepoint"
+   ],
+   "payoffs": [
+    "Deadeye Duelist",
+    "Hellspur Brute",
+    "Mine Raider",
+    "Forsaken Miner",
+    "Rodeo Pyromancers",
+    "Discerning Peddler"
+   ],
+   "enablers": [
+    "Take for a Ride",
+    "Rakish Crew",
+    "Quick Draw",
+    "Scorching Shot",
+    "Ferocification"
+   ],
+   "keyCards": [
+    "Corrupted Conviction",
+    "Reckless Lackey",
+    "Explosive Derailment",
+    "Return the Favor",
+    "Rictus Robber",
+    "Caught in the Crossfire",
+    "Prickly Pair",
+    "Longhorn Sharpshooter",
+    "Skulduggery",
+    "Outlaws' Fury",
+    "Thunder Salvo",
+    "Boneyard Desecrator",
+    "Irascible Wolverine",
+    "Resilient Roadrunner"
+   ]
+  },
+  {
+   "pair": "BG",
+   "name": "Graveyard",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Honest Rutstein",
+    "Badlands Revival"
+   ],
+   "payoffs": [
+    "Overzealous Muscle",
+    "Spinewoods Armadillo",
+    "Hollow Marauder",
+    "Patient Naturalist",
+    "Oasis Gardener",
+    "Blood Hustler"
+   ],
+   "enablers": [
+    "Boom Box",
+    "Arid Archway",
+    "Map the Frontier",
+    "Rise of the Varmints",
+    "Lush Oasis"
+   ],
+   "keyCards": [
+    "Abraded Bluffs",
+    "Conduit Pylons",
+    "Festering Gulch",
+    "Bristling Backwoods",
+    "Forlorn Flats",
+    "Jagged Barrens",
+    "Cactarantula",
+    "Sandstorm Verge",
+    "Lonely Arroyo",
+    "Rattleback Apothecary",
+    "Voracious Varmint",
+    "Neutralize the Guards",
+    "Betrayal at the Vault",
+    "Bucolic Ranch"
+   ]
+  },
+  {
+   "pair": "RG",
+   "name": "Saddle aggro",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Cactusfolk Sureshot",
+    "Jolene, Plundering Pugilist"
+   ],
+   "payoffs": [
+    "Magebane Lizard",
+    "Iron-Fist Pulverizer",
+    "Quilled Charger",
+    "Scalestorm Summoner",
+    "Gila Courser",
+    "Rodeo Pyromancers"
+   ],
+   "enablers": [
+    "Return the Favor",
+    "Lavaspur Boots",
+    "Sandstorm Verge",
+    "Ferocification",
+    "Demonic Ruckus"
+   ],
+   "keyCards": [
+    "Trick Shot",
+    "Luxurious Locomotive",
+    "Caught in the Crossfire",
+    "Quick Draw",
+    "Thunder Salvo",
+    "Explosive Derailment",
+    "Take for a Ride",
+    "Cunning Coyote",
+    "Resilient Roadrunner",
+    "Hellspur Brute",
+    "Scorching Shot",
+    "Highway Robbery",
+    "Bristling Backwoods",
+    "Reckless Lackey"
+   ]
+  }
+ ],
+ "combos": []
+}

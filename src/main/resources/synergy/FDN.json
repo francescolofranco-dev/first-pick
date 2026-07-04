@@ -1,0 +1,439 @@
+{
+ "set": "FDN",
+ "setName": "Foundations",
+ "generated": "2026-07-04",
+ "mechanics": [
+  {
+   "name": "Raid",
+   "summary": ""
+  },
+  {
+   "name": "Kicker",
+   "summary": ""
+  },
+  {
+   "name": "Landfall",
+   "summary": ""
+  },
+  {
+   "name": "Treasure",
+   "summary": ""
+  },
+  {
+   "name": "Flashback",
+   "summary": ""
+  }
+ ],
+ "archetypes": [
+  {
+   "pair": "WU",
+   "name": "Flyers tempo",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Empyrean Eagle",
+    "Cloudblazer"
+   ],
+   "payoffs": [
+    "Cathar Commando",
+    "Healer's Hawk",
+    "Mocking Sprite",
+    "Rune-Sealed Wall",
+    "Youthful Valkyrie",
+    "Felidar Savior"
+   ],
+   "enablers": [
+    "An Offer You Can't Refuse",
+    "Goldvein Pick",
+    "Blossoming Sands",
+    "Heraldic Banner",
+    "Run Away Together"
+   ],
+   "keyCards": [
+    "Thornwood Falls",
+    "Self-Reflection",
+    "Evolving Wilds",
+    "Make Your Move",
+    "Stroke of Midnight",
+    "Witness Protection",
+    "Luminous Rebuke",
+    "Fleeting Flight",
+    "Joust Through",
+    "Aetherize",
+    "Imprisoned in the Moon",
+    "Cephalid Inkmage",
+    "Helpful Hunter",
+    "Tranquil Cove"
+   ]
+  },
+  {
+   "pair": "WB",
+   "name": "Lifegain",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Fiendish Panda",
+    "Mortify"
+   ],
+   "payoffs": [
+    "Cat Collector",
+    "Gleaming Barrier",
+    "Arbiter of Woe",
+    "Mischievous Pup",
+    "Armasaur Guide",
+    "Guarded Heir"
+   ],
+   "enablers": [
+    "Fishing Pole",
+    "Wind-Scarred Crag",
+    "Quick-Draw Katana",
+    "Exsanguinate",
+    "Stroke of Midnight"
+   ],
+   "keyCards": [
+    "Midnight Snack",
+    "Revenge of the Rats",
+    "Vengeful Bloodwitch",
+    "Blossoming Sands",
+    "Squad Rallier",
+    "Vampire Soulcaller",
+    "Prideful Parent",
+    "Meteor Golem",
+    "Eaten Alive",
+    "Macabre Waltz",
+    "Sanguine Syphoner",
+    "Sun-Blessed Healer",
+    "Scoured Barrens",
+    "Juggernaut"
+   ]
+  },
+  {
+   "pair": "WR",
+   "name": "Aggro",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Heroic Reinforcements",
+    "Boros Charm"
+   ],
+   "payoffs": [
+    "Hare Apparent",
+    "Inspiring Paladin",
+    "Spitfire Lagac",
+    "Frenzied Goblin",
+    "Savannah Lions",
+    "Resolute Reinforcements"
+   ],
+   "enablers": [
+    "Boltwave",
+    "Hidetsugu's Second Rite",
+    "Adventuring Gear",
+    "Quick-Draw Katana",
+    "Twinblade Blessing"
+   ],
+   "keyCards": [
+    "Goblin Surprise",
+    "Divine Resilience",
+    "Dauntless Veteran",
+    "Sure Strike",
+    "Battlesong Berserker",
+    "Wind-Scarred Crag",
+    "Claws Out",
+    "Sun-Blessed Healer",
+    "Heraldic Banner",
+    "Firespitter Whelp",
+    "Firebrand Archer",
+    "Goldvein Pick",
+    "Fiery Annihilation",
+    "Bloodfell Caves"
+   ]
+  },
+  {
+   "pair": "WG",
+   "name": "Go-wide",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Good-Fortune Unicorn",
+    "Dryad Militant"
+   ],
+   "payoffs": [
+    "Wildwood Scourge",
+    "Treetop Snarespinner",
+    "Apothecary Stomper",
+    "Armasaur Guide",
+    "Elfsworn Giant",
+    "Ajani's Pridemate"
+   ],
+   "enablers": [
+    "Overrun",
+    "Rogue's Passage",
+    "Blossoming Sands",
+    "Snakeskin Veil",
+    "Giant Growth"
+   ],
+   "keyCards": [
+    "Elvish Regrower",
+    "Wary Thespian",
+    "Gnarlid Colony",
+    "Reclamation Sage",
+    "Inspiring Paladin",
+    "Felling Blow",
+    "Serra Angel",
+    "Llanowar Elves",
+    "Bushwhack",
+    "Quakestrider Ceratops",
+    "Dauntless Veteran",
+    "Goldvein Pick",
+    "Beast-Kin Ranger",
+    "Bite Down"
+   ]
+  },
+  {
+   "pair": "UB",
+   "name": "Control",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Dreadwing Scavenger"
+   ],
+   "payoffs": [
+    "Gleaming Barrier",
+    "Campus Guide",
+    "Meteor Golem",
+    "Micromancer",
+    "Tolarian Terror",
+    "Aegis Turtle"
+   ],
+   "enablers": [
+    "Jungle Hollow",
+    "Zombify",
+    "Thornwood Falls",
+    "Swiftwater Cliffs",
+    "Evolving Wilds"
+   ],
+   "keyCards": [
+    "Pilfer",
+    "Stab",
+    "Brineborn Cutthroat",
+    "Elementalist Adept",
+    "Stromkirk Bloodthief",
+    "Reassembling Skeleton",
+    "Inspiration from Beyond",
+    "Bloodfell Caves",
+    "Clinquant Skymage",
+    "Skyship Buccaneer",
+    "Bigfin Bouncer",
+    "Erudite Wizard",
+    "Seeker's Folly",
+    "Think Twice"
+   ]
+  },
+  {
+   "pair": "UR",
+   "name": "Spells",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Balmor, Battlemage Captain",
+    "Enigma Drake"
+   ],
+   "payoffs": [
+    "Meteor Golem",
+    "Crackling Cyclops",
+    "Campus Guide",
+    "Firespitter Whelp",
+    "Fanatical Firebrand",
+    "Firebrand Archer"
+   ],
+   "enablers": [
+    "Bulk Up",
+    "Seismic Rupture",
+    "Thrill of Possibility",
+    "Fiery Annihilation",
+    "Abrade"
+   ],
+   "keyCards": [
+    "Burst Lightning",
+    "Thornwood Falls",
+    "Goblin Surprise",
+    "Boltwave",
+    "Goblin Negotiation",
+    "Rugged Highlands",
+    "Sure Strike",
+    "Swiftwater Cliffs",
+    "Fleeting Distraction",
+    "Incinerating Blast",
+    "Faebloom Trick",
+    "Self-Reflection",
+    "Evolving Wilds",
+    "Tolarian Terror"
+   ]
+  },
+  {
+   "pair": "UG",
+   "name": "Ramp",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Tatyova, Benthic Druid",
+    "Trygon Predator"
+   ],
+   "payoffs": [
+    "Burnished Hart",
+    "Affectionate Indrik",
+    "Llanowar Elves",
+    "Dwynen, Gilt-Leaf Daen",
+    "Mild-Mannered Librarian",
+    "Elfsworn Giant"
+   ],
+   "enablers": [
+    "Inspiring Call",
+    "Broken Wings",
+    "Jungle Hollow",
+    "Grow from the Ashes",
+    "Swiftwater Cliffs"
+   ],
+   "keyCards": [
+    "Bushwhack",
+    "Bite Down",
+    "Felling Blow",
+    "Giant Growth",
+    "Thornwood Falls",
+    "Aetherize",
+    "Wary Thespian",
+    "Ambush Wolf",
+    "Reclamation Sage",
+    "Treetop Snarespinner",
+    "Grappling Kraken",
+    "Tranquil Cove",
+    "Beast-Kin Ranger",
+    "Heraldic Banner"
+   ]
+  },
+  {
+   "pair": "BR",
+   "name": "Sacrifice",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Perforating Artist",
+    "Garna, Bloodfist of Keld"
+   ],
+   "payoffs": [
+    "Burnished Hart",
+    "Hungry Ghoul",
+    "Brazen Scourge",
+    "Juggernaut",
+    "Spitfire Lagac",
+    "Dragon Trainer"
+   ],
+   "enablers": [
+    "Goblin Negotiation",
+    "Ravenous Amulet",
+    "Swiftfoot Boots",
+    "Involuntary Employment",
+    "Hidetsugu's Second Rite"
+   ],
+   "keyCards": [
+    "Fanatical Firebrand",
+    "Shivan Dragon",
+    "Heraldic Banner",
+    "Vampire Gourmand",
+    "Strongbox Raider",
+    "Crypt Feaster",
+    "Campus Guide",
+    "Heartfire Immolator",
+    "Bloodfell Caves",
+    "Soul-Shackled Zombie",
+    "Incinerating Blast",
+    "Slumbering Cerberus",
+    "Battlesong Berserker",
+    "Axgard Cavalry"
+   ]
+  },
+  {
+   "pair": "BG",
+   "name": "Midrange",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Wardens of the Cycle",
+    "Deadly Brew"
+   ],
+   "payoffs": [
+    "Dwynen's Elite",
+    "Treetop Snarespinner",
+    "Dwynen, Gilt-Leaf Daen",
+    "Elvish Regrower",
+    "Stromkirk Bloodthief",
+    "Mild-Mannered Librarian"
+   ],
+   "enablers": [
+    "Jungle Hollow",
+    "Bushwhack",
+    "Grow from the Ashes",
+    "Snakeskin Veil",
+    "Revenge of the Rats"
+   ],
+   "keyCards": [
+    "Affectionate Indrik",
+    "Apothecary Stomper",
+    "Crypt Feaster",
+    "Gnarlid Colony",
+    "Reclamation Sage",
+    "Campus Guide",
+    "Needletooth Pack",
+    "Wary Thespian",
+    "Gleaming Barrier",
+    "Vampire Nighthawk",
+    "Billowing Shriekmass",
+    "Garruk's Uprising",
+    "Elfsworn Giant",
+    "Gutless Plunderer"
+   ]
+  },
+  {
+   "pair": "RG",
+   "name": "Aggro",
+   "playstyle": "",
+   "speed": "",
+   "signposts": [
+    "Ruby, Daring Tracker",
+    "Savage Ventmaw"
+   ],
+   "payoffs": [
+    "Cackling Prowler",
+    "Slumbering Cerberus",
+    "Eager Trufflesnout",
+    "Sower of Chaos",
+    "Shivan Dragon",
+    "Needletooth Pack"
+   ],
+   "enablers": [
+    "Quick-Draw Katana",
+    "Swiftfoot Boots",
+    "Felling Blow",
+    "Snakeskin Veil",
+    "Rogue's Passage"
+   ],
+   "keyCards": [
+    "Apothecary Stomper",
+    "Ambush Wolf",
+    "Nessian Hornbeetle",
+    "Bulk Up",
+    "Garruk's Uprising",
+    "Courageous Goblin",
+    "Rugged Highlands",
+    "Juggernaut",
+    "Goblin Boarders",
+    "Frenzied Goblin",
+    "Bite Down",
+    "Sure Strike",
+    "Elvish Regrower",
+    "Mild-Mannered Librarian"
+   ]
+  }
+ ],
+ "combos": []
+}
