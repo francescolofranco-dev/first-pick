@@ -52,6 +52,8 @@ private data class Mark(val x: Int, val y: Int, val w: Int, val h: Int, val valu
 
 private const val MARK_JITTER_PT = 3
 
+private data class MarkAttempt(val marks: List<Mark>, val failure: String? = null)
+
 private fun List<Mark>.approxEquals(other: List<Mark>): Boolean =
     size == other.size && zip(other).all { (a, b) ->
         a.value == b.value && a.number == b.number && a.isBest == b.isBest &&
@@ -96,9 +98,14 @@ fun ArenaOverlayTracker(
         if (!visible) return@LaunchedEffect
         delay(CAPTURE_DEBOUNCE_MS)
         var prev: List<Mark> = emptyList()
+        var sawMarks = false
+        var lastFailure: String? = null
         repeat(MAX_MARK_ATTEMPTS) {
-            val next = withContext(Dispatchers.IO) { computeMarks(cap, cards, calibrating, b.w, b.h) }
+            val attempt = withContext(Dispatchers.IO) { computeMarks(cap, cards, calibrating, b.w, b.h) }
+            val next = attempt.marks
+            if (attempt.failure != null) lastFailure = attempt.failure
             if (next.isNotEmpty()) {
+                sawMarks = true
                 // A couple of pixels of run jitter between captures (flickering backdrop) is
                 // convergence, not change — and reassigning would make the seals shimmer.
                 if (next.approxEquals(prev)) {
@@ -109,6 +116,9 @@ fun ArenaOverlayTracker(
             }
             prev = next
             delay(MARK_RETRY_MS)
+        }
+        if (!sawMarks) {
+            lastFailure?.let { com.firstpick.core.Log.warn("Overlay", "$it after $MAX_MARK_ATTEMPTS attempts") }
         }
     }
 
@@ -207,17 +217,15 @@ private suspend fun computeMarks(
     calibrating: Boolean,
     winW: Int,
     winH: Int,
-): List<Mark> {
+): MarkAttempt {
     val frame = capturer.capture()
     if (frame == null) {
-        com.firstpick.core.Log.warn("Overlay", "no frame captured — check Screen Recording permission")
-        return emptyList()
+        return MarkAttempt(emptyList(), "no frame captured — check Screen Recording permission")
     }
     if (cards.isNotEmpty()) {
         val grid = CardDetector.detect(frame, cards.size)
         if (grid == null) {
-            com.firstpick.core.Log.warn("Overlay", "pack grid not found (${cards.size} cards, ${frame.width}x${frame.height})")
-            return emptyList()
+            return MarkAttempt(emptyList(), "pack grid not found (${cards.size} cards, ${frame.width}x${frame.height})")
         }
         val rects = grid.cards(cards.size)
         val refs = cards.map { c -> c.imageUrl?.let { CardImageLoader.loadBufferedImage(it) }?.let { CardRecognizer.ofCard(it) } }
@@ -225,20 +233,20 @@ private suspend fun computeMarks(
         val best = cards.indices.maxByOrNull { cards[it].value ?: Double.NEGATIVE_INFINITY }
         val sx = winW.toFloat() / grid.imageW
         val sy = winH.toFloat() / grid.imageH
-        return rects.mapNotNull { r ->
+        return MarkAttempt(rects.mapNotNull { r ->
             val ci = assign[r.index] ?: return@mapNotNull null
             Mark((r.x * sx).roundToInt(), (r.y * sy).roundToInt(), (r.w * sx).roundToInt(), (r.h * sy).roundToInt(), cards[ci].value, null, ci == best, cards[ci].breakdown)
-        }
+        })
     }
     if (calibrating) {
-        val grid = CardDetector.detect(frame, 15) ?: return emptyList()
+        val grid = CardDetector.detect(frame, 15) ?: return MarkAttempt(emptyList())
         val sx = winW.toFloat() / grid.imageW
         val sy = winH.toFloat() / grid.imageH
-        return grid.cards(15).map { r ->
+        return MarkAttempt(grid.cards(15).map { r ->
             Mark((r.x * sx).roundToInt(), (r.y * sy).roundToInt(), (r.w * sx).roundToInt(), (r.h * sy).roundToInt(), null, r.index + 1, false, null)
-        }
+        })
     }
-    return emptyList()
+    return MarkAttempt(emptyList())
 }
 
 @Composable
