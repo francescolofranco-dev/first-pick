@@ -114,6 +114,26 @@ class CardDetectorTest {
     }
 
     @Test
+    fun rejectsAHoveredMagnifiedFrameWhereRowsFuseAndTheGridShiftsDown() {
+        // MTGA's magnified card preview + tooltip fill the gap between the two card rows, fusing
+        // them into one tall bright band. The detector then bottom-anchors the grid far too low
+        // (row 0 landing near mid-screen). Such a frame must be rejected so the overlay keeps its
+        // last clean detection instead of painting seals at the bottom of the window.
+        val w = 2560
+        val h = 1496
+        val img = BufferedImage(w, h, BufferedImage.TYPE_INT_RGB)
+        val g = img.createGraphics()
+        g.color = java.awt.Color(20, 15, 12)
+        g.fillRect(0, 0, w, h)
+        // five columns, but one continuous tall lit region (fused rows) whose bottom sits low
+        g.color = java.awt.Color(230, 225, 215)
+        for (i in 0 until 5) g.fillRect(380 + i * 260, 460, 220, 514)
+        g.dispose()
+
+        assertNull(CardDetector.detect(img, expectedCount = 8))
+    }
+
+    @Test
     fun returnsNullForATooSmallImage() {
         assertNull(CardDetector.detect(BufferedImage(64, 64, BufferedImage.TYPE_INT_RGB)))
     }

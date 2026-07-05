@@ -47,6 +47,7 @@ object CardDetector {
     private const val ROW_MAX_GAP = 0.005
     private const val CARD_ASPECT = 0.714
     private const val DEFAULT_PITCH_RATIO = 1.1
+    private const val MAX_ROW0_TOP = 0.35
 
     fun detect(img: BufferedImage, expectedCount: Int = 0): Grid? {
         val w = img.width
@@ -119,6 +120,14 @@ object CardDetector {
         } else {
             cardH = aspectH
             row0Top = (first.last - aspectH + 1).coerceAtLeast(0)
+        }
+        // When a card is hovered, MTGA's magnified preview + tooltip fuse the row gaps into one
+        // tall band, and the grid bottom-anchors far too low. A real pack's top row always sits
+        // in the upper part of the window, so reject a shifted-down grid rather than paint seals
+        // in the wrong place; the overlay keeps its last clean detection.
+        if (row0Top > (MAX_ROW0_TOP * h)) {
+            Log.debug(TAG, "reject: row0Top $row0Top past ${(MAX_ROW0_TOP * h).toInt()} (hovered/magnified frame)")
+            return null
         }
         val pitchCandidates = bands.map { it.last }.zipWithNext { a, b -> b - a }
             .filter { it in (0.9 * cardH).toInt()..(1.5 * cardH).toInt() }
