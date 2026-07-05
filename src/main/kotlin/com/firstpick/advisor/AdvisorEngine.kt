@@ -27,9 +27,12 @@ class AdvisorEngine(
         val alsaZMax: Double = 0.8,
         val minArchSamples: Int = 200,
         val archWeightBase: Double = 0.0,
-        val archWeightSlope: Double = 1.0,
-        val archWeightMax: Double = 0.9,
-        val archWeightRampStart: Double = 0.12,
+        // Once a lane is committed, a card's win rate WITHIN that lane predicts better than its
+        // global rate, so the archetype shift ramps to full trust by late pack 1 (validated
+        // neutral on human-agreement, slightly better winner-alignment, on the FIN backtest).
+        val archWeightSlope: Double = 2.0,
+        val archWeightMax: Double = 1.0,
+        val archWeightRampStart: Double = 0.06,
         val synergyDeltaPct: Double = 1.0,
         val glueMult: Double = 2.0,
         val synergyMult: Double = 1.2,
