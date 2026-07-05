@@ -20,4 +20,5 @@ data class ValueBreakdown(
     val needsPoints: Double,
     val finalScore: Double,
     val themeBonus: Double = 0.0,
+    val duplicatePenalty: Double = 0.0,
 )

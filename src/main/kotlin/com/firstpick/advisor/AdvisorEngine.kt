@@ -46,6 +46,13 @@ class AdvisorEngine(
         val penaltyMax: Double = 3.0,
         val needsRampStart: Double = 0.25,
         val needsRampSpan: Double = 0.55,
+        // Diminishing returns for extra copies already in the pool. Noncreature spells (removal,
+        // tricks) get redundant faster than creatures; lands are exempt (you want many).
+        val dupSpellPts: Double = 5.0,
+        val dupSpellFree: Int = 1,
+        val dupCreaturePts: Double = 2.0,
+        val dupCreatureFree: Int = 2,
+        val dupCapPts: Double = 12.0,
     )
 
     fun score(
@@ -64,9 +71,10 @@ class AdvisorEngine(
         val picksTaken = (packNumber - 1) * config.picksPerPack + (pickNumber - 1)
         val progress = (picksTaken.toDouble() / config.totalPicks).coerceIn(0.0, 1.0)
         val theme = synergy?.let { ThemeSynergy(it, pool) }
+        val poolCounts = pool.groupingBy { it.name }.eachCount()
 
         return pack.map { card ->
-            evaluate(card, lane, metrics, archetypeRating, meta, progress, needs, theme)
+            evaluate(card, lane, metrics, archetypeRating, meta, progress, needs, theme, poolCounts[card.name] ?: 0)
         }.sortedWith(compareByDescending<ScoredCard> { it.rawValue }.thenBy { it.card.displayName })
     }
 
@@ -79,6 +87,7 @@ class AdvisorEngine(
         progress: Double,
         needs: PoolNeeds,
         theme: ThemeSynergy?,
+        copiesInPool: Int,
     ): ScoredCard {
         val reasons = mutableListOf<String>()
         val globalWr = card.gihWr
@@ -158,8 +167,11 @@ class AdvisorEngine(
             wheelPts = config.wheelPenaltyPts
         }
 
+        val dupPts = duplicatePenalty(copiesInPool, cardMeta)
+        if (dupPts >= DUP_REASON_THRESHOLD) reasons += "${copiesInPool + 1}th copy — diminishing"
+
         val rawValue = config.valueMidpoint + config.valuePerZ * (blendedZ - penalty) +
-            totalSynergyPts + needsPts - wheelPts
+            totalSynergyPts + needsPts - wheelPts - dupPts
         val value = rawValue.coerceIn(0.0, 100.0)
 
         val breakdown = ValueBreakdown(
@@ -170,6 +182,7 @@ class AdvisorEngine(
             penalty = -config.valuePerZ * penalty,
             needsPoints = needsPts,
             finalScore = value,
+            duplicatePenalty = -dupPts,
         )
 
         return ScoredCard(card, value, blendedZ, isBomb, reasons.take(MAX_REASONS), breakdown, rawValue)
@@ -225,6 +238,15 @@ class AdvisorEngine(
         return pts
     }
 
+    private fun duplicatePenalty(copiesInPool: Int, meta: CardMeta?): Double {
+        if (copiesInPool <= 0 || meta?.isLand == true) return 0.0
+        val creature = meta?.isCreature == true
+        val free = if (creature) config.dupCreatureFree else config.dupSpellFree
+        val per = if (creature) config.dupCreaturePts else config.dupSpellPts
+        val extra = (copiesInPool - free).coerceAtLeast(0)
+        return (per * extra).coerceAtMost(config.dupCapPts)
+    }
+
     private fun needsWeight(progress: Double): Double =
         ((progress - config.needsRampStart) / config.needsRampSpan).coerceIn(0.0, 1.0)
 
@@ -235,6 +257,7 @@ class AdvisorEngine(
 
     companion object {
         private const val PENALTY_REASON_THRESHOLD = 0.1
+        private const val DUP_REASON_THRESHOLD = 1.0
         private const val MAX_REASONS = 3
     }
 }

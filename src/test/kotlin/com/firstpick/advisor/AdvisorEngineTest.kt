@@ -152,6 +152,47 @@ class AdvisorEngineTest {
     }
 
     @Test
+    fun extraCopiesOfTheSameSpellLoseValueButAFreshEqualCardDoesNot() {
+        val meta: (String) -> CardMeta? = { name ->
+            when {
+                name.startsWith("Removal") -> CardMeta(name, cmc = 3, isCreature = false, isLand = false, isRemoval = true)
+                else -> CardMeta(name, cmc = 3, isCreature = true, isLand = false)
+            }
+        }
+        // Lane is UB; pool already holds three copies of the same removal spell.
+        val pool = List(3) { card(200, "RemovalA", 0.57, "U") } + List(4) { card(100 + it, "Guy$it", 0.57, "U") }
+        val pack = listOf(card(1, "RemovalA", 0.57, "U"), card(2, "RemovalB", 0.57, "U"))
+        val result = run(pack, pool, packNumber = 3, pickNumber = 1, meta = meta)
+        val fourth = scoreOf(result, "RemovalA")
+        val fresh = scoreOf(result, "RemovalB")
+        assertTrue(fresh.value > fourth.value, "a 4th copy must rank below a fresh equal card (${fresh.value} vs ${fourth.value})")
+        assertTrue(fourth.reasons.any { it.contains("copy") }, "the redundant copy should be flagged: ${fourth.reasons}")
+        assertTrue(fourth.breakdown!!.duplicatePenalty < 0.0)
+        assertEquals(0.0, fresh.breakdown!!.duplicatePenalty, 0.001)
+    }
+
+    @Test
+    fun twoCopiesOfARemovalSpellAreNotPenalized() {
+        val meta: (String) -> CardMeta? = { CardMeta(it, cmc = 3, isCreature = false, isLand = false, isRemoval = true) }
+        val pool = List(1) { card(200, "RemovalA", 0.57, "U") } + List(5) { card(100 + it, "Guy$it", 0.57, "U") }
+        val pack = listOf(card(1, "RemovalA", 0.57, "U"))
+        val result = run(pack, pool, packNumber = 2, pickNumber = 5, meta = meta)
+        assertEquals(0.0, scoreOf(result, "RemovalA").breakdown!!.duplicatePenalty, 0.001, "the 2nd copy of removal is fine")
+    }
+
+    @Test
+    fun duplicateCreaturesArePenalizedLessThanSpells() {
+        val spellMeta: (String) -> CardMeta? = { CardMeta(it, cmc = 3, isCreature = false, isLand = false) }
+        val creatureMeta: (String) -> CardMeta? = { CardMeta(it, cmc = 3, isCreature = true, isLand = false) }
+        val pool = List(3) { card(200, "Dup", 0.57, "U") } + List(4) { card(100 + it, "Guy$it", 0.57, "U") }
+        val pack = listOf(card(1, "Dup", 0.57, "U"))
+        val asSpell = scoreOf(run(pack, pool, 3, 1, meta = spellMeta), "Dup").breakdown!!.duplicatePenalty
+        val asCreature = scoreOf(run(pack, pool, 3, 1, meta = creatureMeta), "Dup").breakdown!!.duplicatePenalty
+        assertTrue(asCreature > asSpell, "a 4th creature is penalized less than a 4th spell ($asCreature vs $asSpell)")
+        assertTrue(asCreature < 0.0)
+    }
+
+    @Test
     fun curveBoostsCheapCreatureWhenPoolLacksTwoDrops() {
         val meta: (String) -> CardMeta? = { name ->
             when (name) {

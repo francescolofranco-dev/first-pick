@@ -74,6 +74,8 @@ fun main(args: Array<String>) = runBlocking {
         penaltyMax = sysD("firstpick.penaltyMax", base.penaltyMax),
         needsRampStart = sysD("firstpick.needsRampStart", base.needsRampStart),
         needsRampSpan = sysD("firstpick.needsRampSpan", base.needsRampSpan),
+        dupSpellPts = sysD("firstpick.dupSpellPts", base.dupSpellPts),
+        dupCreaturePts = sysD("firstpick.dupCreaturePts", base.dupCreaturePts),
     )
     val engine = AdvisorEngine(cfg)
     println("Replaying $rows picks across ${drafts.size} drafts ($picksPerPack picks/pack); penaltyMax=${cfg.penaltyMax} needsRampStart=${cfg.needsRampStart} synergyCap=${cfg.synergyCapPts}")
