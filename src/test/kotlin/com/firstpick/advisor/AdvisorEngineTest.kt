@@ -152,6 +152,38 @@ class AdvisorEngineTest {
     }
 
     @Test
+    fun fixingLandForACommittedSplashIsNotPenalized() {
+        // BG lane that has committed a white splash (2 white cards in the pool). A W/B tapland
+        // taps for a main color (B) AND the splash (W), so it's premium fixing, not off-color.
+        val meta: (String) -> CardMeta? = { name ->
+            when (name) {
+                "OrzhovDual" -> CardMeta(name, cmc = 0, isCreature = false, isLand = true, producedColors = setOf('W', 'B'))
+                else -> null
+            }
+        }
+        val pool = List(8) { card(100 + it, "Guy$it", 0.58, if (it % 2 == 0) "B" else "G") } +
+            listOf(card(200, "WhiteA", 0.57, "W"), card(201, "WhiteB", 0.57, "W"))
+        val pack = listOf(card(1, "OrzhovDual", 0.57, color = ""))
+        val result = run(pack, pool, packNumber = 3, pickNumber = 4, meta = meta)
+        val land = scoreOf(result, "OrzhovDual")
+        assertEquals(0.0, land.breakdown!!.penalty, 0.001, "a W/B land that fixes main + splash should not be penalized")
+        assertTrue(land.reasons.any { it.contains("splash") }, "should note it fixes the splash: ${land.reasons}")
+    }
+
+    @Test
+    fun fixingLandForAColorYouAreNotPlayingIsStillPenalized() {
+        // Same W/B land, but the pool has no white cards — white is wasted, so keep the penalty.
+        val meta: (String) -> CardMeta? = { name ->
+            if (name == "OrzhovDual") CardMeta(name, cmc = 0, isCreature = false, isLand = true, producedColors = setOf('W', 'B')) else null
+        }
+        val pool = List(6) { card(100 + it, "Guy$it", 0.58, if (it % 2 == 0) "B" else "G") }
+        val pack = listOf(card(1, "OrzhovDual", 0.57, color = ""))
+        val result = run(pack, pool, packNumber = 3, pickNumber = 4, meta = meta)
+        val land = scoreOf(result, "OrzhovDual")
+        assertTrue(land.breakdown!!.penalty < 0.0, "an unused off-color pip should still be penalized: ${land.breakdown}")
+    }
+
+    @Test
     fun extraCopiesOfTheSameSpellLoseValueButAFreshEqualCardDoesNot() {
         val meta: (String) -> CardMeta? = { name ->
             when {

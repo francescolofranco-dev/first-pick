@@ -53,6 +53,9 @@ class AdvisorEngine(
         val dupCreaturePts: Double = 2.0,
         val dupCreatureFree: Int = 2,
         val dupCapPts: Double = 12.0,
+        // A color the pool commits this many playable cards to (beyond the main pair) is a real
+        // splash — fixing that taps for it is doing useful work, not wasting a pip.
+        val splashMinCards: Int = 2,
     )
 
     fun score(
@@ -72,9 +75,10 @@ class AdvisorEngine(
         val progress = (picksTaken.toDouble() / config.totalPicks).coerceIn(0.0, 1.0)
         val theme = synergy?.let { ThemeSynergy(it, pool) }
         val poolCounts = pool.groupingBy { it.name }.eachCount()
+        val splashColors = splashColorsOf(pool, lane, meta)
 
         return pack.map { card ->
-            evaluate(card, lane, metrics, archetypeRating, meta, progress, needs, theme, poolCounts[card.name] ?: 0)
+            evaluate(card, lane, metrics, archetypeRating, meta, progress, needs, theme, poolCounts[card.name] ?: 0, splashColors)
         }.sortedWith(compareByDescending<ScoredCard> { it.rawValue }.thenBy { it.card.displayName })
     }
 
@@ -88,6 +92,7 @@ class AdvisorEngine(
         needs: PoolNeeds,
         theme: ThemeSynergy?,
         copiesInPool: Int,
+        splashColors: Set<Char>,
     ): ScoredCard {
         val reasons = mutableListOf<String>()
         val globalWr = card.gihWr
@@ -130,7 +135,9 @@ class AdvisorEngine(
             offColors = when {
                 !lane.isEstablished -> emptySet()
                 produced.containsAll(lane.colors) -> emptySet() // taps for all your colors → good fixing
-                else -> produced - lane.colors
+                // A produced color you're actually splashing isn't wasted — it's the fixing you
+                // committed to when you took those off-color cards. Only truly unused pips count.
+                else -> produced - lane.colors - splashColors
             }
             colorDenom = produced.size
         } else {
@@ -149,11 +156,14 @@ class AdvisorEngine(
             penalty = penaltyZ(progress) * (offColors.size.toDouble() / colorDenom) * penaltyScale
         }
 
+        val splashFixed = if (isFixingLand) produced.intersect(splashColors) else emptySet()
         when {
             isBomb -> reasons.add(0, "Bomb")
             onColor -> reasons.add(0, "On-color")
             penalty >= PENALTY_REASON_THRESHOLD ->
                 reasons.add(0, if (isFixingLand) "Off-color fixing (${lane.pair} lane)" else "Off-color (${lane.pair} lane)")
+            splashFixed.isNotEmpty() ->
+                reasons.add(0, "Fixes ${splashFixed.sortedBy { "WUBRG".indexOf(it) }.joinToString("")} splash")
         }
 
         val needsResult = DeckNeeds.evaluateCard(cardMeta, needs, config.totalPicks)
@@ -236,6 +246,24 @@ class AdvisorEngine(
         val pts = (deltaPct * if (glue) config.glueMult else config.synergyMult).coerceAtMost(config.synergyCapPts)
         if (pts > 1.0) reasons += if (glue) "Archetype glue" else "Archetype synergy"
         return pts
+    }
+
+    // Colors the pool is meaningfully splashing (playable, off the main pair, at least
+    // splashMinCards deep). Fixing that taps for one of these is real fixing, not a wasted pip.
+    private fun splashColorsOf(
+        pool: List<RankedCard>,
+        lane: Lane,
+        meta: (String) -> CardMeta?,
+    ): Set<Char> {
+        if (!lane.isEstablished) return emptySet()
+        val counts = HashMap<Char, Int>()
+        for (card in pool) {
+            if (meta(card.name)?.isLand == true) continue
+            for (ch in LaneDetector.colorsOf(card)) {
+                if (ch !in lane.colors) counts.merge(ch, 1, Int::plus)
+            }
+        }
+        return counts.filterValues { it >= config.splashMinCards }.keys
     }
 
     private fun duplicatePenalty(copiesInPool: Int, meta: CardMeta?): Double {
