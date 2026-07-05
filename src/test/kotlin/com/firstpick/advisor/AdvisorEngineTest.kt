@@ -122,6 +122,36 @@ class AdvisorEngineTest {
     }
 
     @Test
+    fun nonbasicLandIsJudgedByProducedColorsNotItsBlankColor() {
+        // BG lane. A B/G dual is premium fixing; a G/W dual only taps for green here and must
+        // not outrank the on-lane dual on its splash-inflated win rate; a mono-B tapland is fine.
+        val pool = List(6) { card(100 + it, "Guy$it", 0.58, if (it % 2 == 0) "B" else "G") }
+        val meta: (String) -> CardMeta? = { name ->
+            when (name) {
+                "GolgariDual" -> CardMeta(name, cmc = 0, isCreature = false, isLand = true, producedColors = setOf('B', 'G'))
+                "SelesnyaDual" -> CardMeta(name, cmc = 0, isCreature = false, isLand = true, producedColors = setOf('G', 'W'))
+                "SwampTap" -> CardMeta(name, cmc = 0, isCreature = false, isLand = true, producedColors = setOf('B'))
+                "RainbowLand" -> CardMeta(name, cmc = 0, isCreature = false, isLand = true, producedColors = setOf('W', 'U', 'B', 'R', 'G'))
+                else -> null
+            }
+        }
+        val pack = listOf(
+            card(1, "GolgariDual", 0.57, color = ""),
+            card(2, "SelesnyaDual", 0.57, color = ""),
+            card(3, "SwampTap", 0.57, color = ""),
+            card(4, "RainbowLand", 0.57, color = ""),
+        )
+        val result = run(pack, pool, packNumber = 2, pickNumber = 7, meta = meta)
+        val golgari = scoreOf(result, "GolgariDual")
+        val selesnya = scoreOf(result, "SelesnyaDual")
+        assertTrue(golgari.value > selesnya.value, "on-lane dual must beat the wrong dual")
+        assertTrue(selesnya.reasons.any { it.contains("Off-color fixing") }, "wrong dual should be flagged: ${selesnya.reasons}")
+        assertEquals(0.0, golgari.breakdown!!.penalty, 0.001, "a B/G dual is not penalized in BG")
+        assertEquals(0.0, scoreOf(result, "SwampTap").breakdown!!.penalty, 0.001, "on-color tapland is fine")
+        assertEquals(0.0, scoreOf(result, "RainbowLand").breakdown!!.penalty, 0.001, "a land that makes both your colors is premium fixing")
+    }
+
+    @Test
     fun curveBoostsCheapCreatureWhenPoolLacksTwoDrops() {
         val meta: (String) -> CardMeta? = { name ->
             when (name) {

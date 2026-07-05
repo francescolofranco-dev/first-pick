@@ -104,9 +104,27 @@ class AdvisorEngine(
         val themePts = totalSynergyPts - statSynergyPts
         if (themePts > 0.0) reasons += themeResult.reasons
 
+        val cardMeta = meta(card.name)
         val colors = LaneDetector.colorsOf(card)
-        val hybridGroups = meta(card.name)?.hybridColorGroups.orEmpty()
-        val offColors = if (lane.isEstablished) LaneDetector.uncastableColors(colors, lane.colors, hybridGroups) else emptySet()
+        val hybridGroups = cardMeta?.hybridColorGroups.orEmpty()
+        // A mana-producing nonbasic land is judged by what it TAPS FOR, not its (blank) color:
+        // a land that covers your lane's colors is premium fixing, one that wastes production on
+        // off-colors (e.g. a Selesnya dual in a Golgari deck) is a wrong dual, not a top pick.
+        val produced = cardMeta?.producedColors.orEmpty()
+        val isFixingLand = cardMeta?.isLand == true && produced.isNotEmpty()
+        val offColors: Set<Char>
+        val colorDenom: Int
+        if (isFixingLand) {
+            offColors = when {
+                !lane.isEstablished -> emptySet()
+                produced.containsAll(lane.colors) -> emptySet() // taps for all your colors → good fixing
+                else -> produced - lane.colors
+            }
+            colorDenom = produced.size
+        } else {
+            offColors = if (lane.isEstablished) LaneDetector.uncastableColors(colors, lane.colors, hybridGroups) else emptySet()
+            colorDenom = colors.size
+        }
         val onColor = colors.isNotEmpty() && lane.isEstablished && offColors.isEmpty()
         val splashable = offColors.size <= 1 || needs.fixing > 0
         val penaltyScale = when {
@@ -115,17 +133,18 @@ class AdvisorEngine(
             else -> config.bombUnsplashablePenaltyScale
         }
         var penalty = 0.0
-        if (colors.isNotEmpty() && offColors.isNotEmpty()) {
-            penalty = penaltyZ(progress) * (offColors.size.toDouble() / colors.size) * penaltyScale
+        if (colorDenom > 0 && offColors.isNotEmpty()) {
+            penalty = penaltyZ(progress) * (offColors.size.toDouble() / colorDenom) * penaltyScale
         }
 
         when {
             isBomb -> reasons.add(0, "Bomb")
             onColor -> reasons.add(0, "On-color")
-            penalty >= PENALTY_REASON_THRESHOLD -> reasons.add(0, "Off-color (${lane.pair} lane)")
+            penalty >= PENALTY_REASON_THRESHOLD ->
+                reasons.add(0, if (isFixingLand) "Off-color fixing (${lane.pair} lane)" else "Off-color (${lane.pair} lane)")
         }
 
-        val needsResult = DeckNeeds.evaluateCard(meta(card.name), needs, config.totalPicks)
+        val needsResult = DeckNeeds.evaluateCard(cardMeta, needs, config.totalPicks)
         val needsPts = needsResult.points * needsWeight(progress)
         reasons += needsResult.reasons
 
