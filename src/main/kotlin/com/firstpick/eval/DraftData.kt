@@ -6,6 +6,8 @@ data class PickRow(
     val pick: Int,
     val pickedName: String,
     val wins: Int,
+    val losses: Int,
+    val rank: String,
     val packCards: List<String>,
 )
 
@@ -40,6 +42,8 @@ class DraftReader(header: List<String>) {
     private val idxPick = header.indexOf("pick_number")
     private val idxPicked = header.indexOf("pick")
     private val idxWins = header.indexOf("event_match_wins")
+    private val idxLosses = header.indexOf("event_match_losses")
+    private val idxRank = header.indexOf("rank")
     private val packCardCols: List<Pair<Int, String>> =
         header.withIndex()
             .filter { it.value.startsWith(PACK_CARD_PREFIX) }
@@ -53,13 +57,15 @@ class DraftReader(header: List<String>) {
         val pick = fields.getOrNull(idxPick)?.toIntOrNull() ?: return null
         val picked = fields.getOrNull(idxPicked)?.takeIf { it.isNotBlank() } ?: return null
         val wins = fields.getOrNull(idxWins)?.toIntOrNull() ?: 0
+        val losses = if (idxLosses >= 0) fields.getOrNull(idxLosses)?.toIntOrNull() ?: 0 else 0
+        val rank = if (idxRank >= 0) fields.getOrNull(idxRank).orEmpty() else ""
         val packCards = ArrayList<String>(16)
         for ((col, name) in packCardCols) {
             val count = fields.getOrNull(col)?.toIntOrNull() ?: 0
             repeat(count) { packCards.add(name) }
         }
         if (packCards.isEmpty()) return null
-        return PickRow(fields[idxDraftId], pack, pick, picked, wins, packCards)
+        return PickRow(fields[idxDraftId], pack, pick, picked, wins, losses, rank, packCards)
     }
 
     companion object {
