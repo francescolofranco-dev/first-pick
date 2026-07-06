@@ -30,6 +30,15 @@ object DeckFeatures {
 
     fun project(x: DoubleArray, keep: IntArray): DoubleArray = DoubleArray(keep.size) { x[keep[it]] }
 
+    /** Append all pairwise products of the non-intercept features — turns the linear estimator
+     *  into a quadratic one, so we can tell whether structure matters through interactions
+     *  (e.g. curve only matters for aggro) rather than additively. */
+    fun expandInteractions(x: DoubleArray): DoubleArray {
+        val extra = ArrayList<Double>()
+        for (i in 1 until x.size) for (j in i until x.size) extra.add(x[i] * x[j])
+        return DoubleArray(x.size + extra.size) { if (it < x.size) x[it] else extra[it - x.size] }
+    }
+
     // A rough limited curve template (23 spells): a few 1s, heavy 2s/3s, tapering top-end.
     private val CURVE_TEMPLATE = doubleArrayOf(1.0, 6.0, 6.0, 4.0, 3.0, 3.0)
 

@@ -172,22 +172,26 @@ fun main(args: Array<String>) = runBlocking {
     println("\n=== HONEST EVAL — $set $format (held-out ${samples.count { it.test }}/${samples.size} drafts, ${cmp.size} self-drafted) ===")
     println("Estimators trained on REAL match outcomes (rank-controlled, held-out validation):")
 
-    fun variant(label: String, keep: IntArray) {
+    fun variant(label: String, keep: IntArray, interactions: Boolean = false) {
+        fun feat(f: DoubleArray): DoubleArray {
+            val p = DeckFeatures.project(f, keep)
+            return if (interactions) DeckFeatures.expandInteractions(p) else p
+        }
         val model = DeckStrengthTrainer.train(
-            train.map { DeckFeatures.project(it.features, keep) },
+            train.map { feat(it.features) },
             DoubleArray(train.size) { train[it].winRate },
             DoubleArray(train.size) { train[it].matches.toDouble() },
         )
         val actual = DoubleArray(valid.size) { valid[it].winRate }
         val w = DoubleArray(valid.size) { valid[it].matches.toDouble() }
-        val preds = DoubleArray(valid.size) { model.predict(DeckFeatures.project(valid[it].features, keep)) }
+        val preds = DoubleArray(valid.size) { model.predict(feat(valid[it].features)) }
         val corr = weightedCorr(preds, actual, w)
         val rmseM = weightedRmse(preds, actual, w)
         val rmseB = weightedRmse(DoubleArray(valid.size) { weightedMean(actual, w) }, actual, w)
         var e = 0.0; var h = 0.0; var wins = 0
         for ((ef, hf) in cmp) {
-            val ep = model.predict(DeckFeatures.project(ef, keep))
-            val hp = model.predict(DeckFeatures.project(hf, keep))
+            val ep = model.predict(feat(ef))
+            val hp = model.predict(feat(hf))
             e += ep; h += hp; if (ep >= hp) wins++
         }
         val n = cmp.size.coerceAtLeast(1)
@@ -205,6 +209,8 @@ fun main(args: Array<String>) = runBlocking {
 
     variant("card-quality + structure (all features)", DeckFeatures.KEEP_ALL)
     variant("structure only (curve/colors/roles, GIH removed)", DeckFeatures.KEEP_STRUCTURAL)
+    variant("all features + interactions (quadratic)", DeckFeatures.KEEP_ALL, interactions = true)
+    variant("structure only + interactions (quadratic)", DeckFeatures.KEEP_STRUCTURAL, interactions = true)
 
     println("Structural profile — where the engine's pools diverge from humans (means):")
     for (name in listOf("creatures", "removal", "twoDrops", "avgCmc", "topEnd", "colorCount", "colorConc", "minColorShare", "curveDev", "shortfall")) {
