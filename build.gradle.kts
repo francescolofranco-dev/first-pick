@@ -119,6 +119,17 @@ tasks.register<JavaExec>("overlayDebug") {
     args(a)
 }
 
+tasks.register<JavaExec>("coldStartProbe") {
+    group = "verification"
+    description = "Test whether a new set's card quality can be imputed from functional analogs (cold-start)."
+    mainClass.set("com.firstpick.tools.ColdStartProbeKt")
+    classpath = sourceSets["main"].runtimeClasspath
+    val a = mutableListOf<String>()
+    a.add(project.findProperty("set")?.toString() ?: "FIN")
+    project.findProperty("format")?.let { a.add(it.toString()) }
+    args(a)
+}
+
 tasks.register<JavaExec>("auditSets") {
     group = "verification"
     description = "Check bundled synergy profiles against live Standard legality; flag rotated sets to drop."
