@@ -56,6 +56,11 @@ class AdvisorEngine(
         // A color the pool commits this many playable cards to (beyond the main pair) is a real
         // splash — fixing that taps for it is doing useful work, not wasting a pip.
         val splashMinCards: Int = 2,
+        // Greedy win-rate drafting under-picks creatures and lands creature-light (~10.6 vs a
+        // human's ~12.9), and creature count is an outcome-validated deck-strength driver. This
+        // adds pull toward creatures while the pool projects below creatureFloorTarget.
+        val creatureFloorPts: Double = 0.0,
+        val creatureFloorTarget: Double = 15.0,
     )
 
     fun score(
@@ -167,8 +172,15 @@ class AdvisorEngine(
         }
 
         val needsResult = DeckNeeds.evaluateCard(cardMeta, needs, config.totalPicks)
-        val needsPts = needsResult.points * needsWeight(progress)
+        var needsPts = needsResult.points * needsWeight(progress)
         reasons += needsResult.reasons
+        if (config.creatureFloorPts > 0.0 && cardMeta?.isCreature == true) {
+            val projected = needs.projected(needs.creatures, config.totalPicks, config.creatureFloorTarget)
+            if (projected < config.creatureFloorTarget) {
+                val deficit = ((config.creatureFloorTarget - projected) / config.creatureFloorTarget).coerceIn(0.0, 1.0)
+                needsPts += config.creatureFloorPts * needsWeight(progress) * deficit
+            }
+        }
 
         var wheelPts = 0.0
         val alsa = card.rating?.alsa

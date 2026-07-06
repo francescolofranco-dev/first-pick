@@ -80,6 +80,8 @@ fun main(args: Array<String>) = runBlocking {
         needsRampSpan = sysD("firstpick.needsRampSpan", base.needsRampSpan),
         dupSpellPts = sysD("firstpick.dupSpellPts", base.dupSpellPts),
         dupCreaturePts = sysD("firstpick.dupCreaturePts", base.dupCreaturePts),
+        creatureFloorPts = sysD("firstpick.creatureFloorPts", base.creatureFloorPts),
+        creatureFloorTarget = sysD("firstpick.creatureFloorTarget", base.creatureFloorTarget),
     )
     val engine = AdvisorEngine(cfg)
     println("Replaying $rows picks across ${drafts.size} drafts ($picksPerPack picks/pack)")
@@ -141,6 +143,8 @@ fun main(args: Array<String>) = runBlocking {
 
     // ---- Pass 2: engine self-draft on the TEST split; collect engine vs human deck features.
     val cmp = ArrayList<Pair<DoubleArray, DoubleArray>>()
+    fun poolCreatures(pool: List<RankedCard>) = pool.count { meta(it.name)?.isCreature == true }
+    var engPoolCr = 0.0; var humPoolCr = 0.0; var poolN = 0
     for ((id, picks) in drafts) {
         if (!isTest(id)) continue
         picks.sortWith(compareBy({ it.pack }, { it.pick }))
@@ -157,9 +161,11 @@ fun main(args: Array<String>) = runBlocking {
         val humanPool = picks.map { repo.resolveName(it.pickedName) }
         val engDeck = buildDeck(enginePool) ?: continue
         val humDeck = buildDeck(humanPool) ?: continue
+        engPoolCr += poolCreatures(enginePool); humPoolCr += poolCreatures(humanPool); poolN++
         cmp += DeckFeatures.of(engDeck, repo.setMetrics, meta, referenceRank) to
             DeckFeatures.of(humDeck, repo.setMetrics, meta, referenceRank)
     }
+    if (poolN > 0) println("[pool creatures — engine %.2f vs human %.2f]".format(engPoolCr / poolN, humPoolCr / poolN))
 
     // ---- Report: honest headline first, GIH agreement demoted to diagnostics.
     fun wr(x: Double) = "%.1f%%".format(x * 100)
@@ -199,6 +205,14 @@ fun main(args: Array<String>) = runBlocking {
 
     variant("card-quality + structure (all features)", DeckFeatures.KEEP_ALL)
     variant("structure only (curve/colors/roles, GIH removed)", DeckFeatures.KEEP_STRUCTURAL)
+
+    println("Structural profile — where the engine's pools diverge from humans (means):")
+    for (name in listOf("creatures", "removal", "twoDrops", "avgCmc", "topEnd", "colorCount", "colorConc", "minColorShare", "curveDev", "shortfall")) {
+        val i = DeckFeatures.NAMES.indexOf(name)
+        val e = cmp.map { it.first[i] }.average()
+        val h = cmp.map { it.second[i] }.average()
+        println("    %-14s engine %.2f  human %.2f  (%+.2f)".format(name, e, h, e - h))
+    }
 
     println("\n--- diagnostics (GIH-based; circular vs 17Lands, not ground truth) ---")
     diag.print(set, format)
