@@ -15,7 +15,8 @@ import kotlin.math.sqrt
 object DeckFeatures {
     val NAMES = listOf(
         "intercept", "deckZ", "topZ", "removal", "creatures", "twoDrops",
-        "avgCmc", "bombs", "fixers", "shortfall", "colorConc", "rank",
+        "avgCmc", "bombs", "fixers", "shortfall", "colorConc",
+        "curveDev", "colorCount", "minColorShare", "topEnd", "rank",
     )
     val RANK_INDEX = NAMES.indexOf("rank")
     val DIM = NAMES.size
@@ -29,28 +30,48 @@ object DeckFeatures {
 
     fun project(x: DoubleArray, keep: IntArray): DoubleArray = DoubleArray(keep.size) { x[keep[it]] }
 
+    // A rough limited curve template (23 spells): a few 1s, heavy 2s/3s, tapering top-end.
+    private val CURVE_TEMPLATE = doubleArrayOf(1.0, 6.0, 6.0, 4.0, 3.0, 3.0)
+
     fun of(deck: DeckOption, metrics: SetMetrics, meta: (String) -> CardMeta?, rankOrdinal: Double): DoubleArray {
         val spells = deck.spells
+        val metas = spells.map { meta(it.name) }
         val zs = spells.mapNotNull { it.gihWr }.map { metrics.z(it) ?: 0.0 }
         val deckZ = if (zs.isEmpty()) 0.0 else zs.average()
         val topZ = zs.sortedDescending().take(10).let { if (it.isEmpty()) 0.0 else it.average() }
-        val metas = spells.map { meta(it.name) }
         val removal = metas.count { it?.isRemoval == true }.toDouble()
         val creatures = deck.creatures.toDouble()
         val twoDrops = metas.count { it != null && it.isCreature && it.cmc in 1..2 }.toDouble()
-        val avgCmc = metas.mapNotNull { it?.cmc }.ifEmpty { listOf(3) }.average()
+        val cmcs = metas.mapNotNull { it?.cmc }
+        val avgCmc = cmcs.ifEmpty { listOf(3) }.average()
         val bombs = zs.count { it > 1.0 }.toDouble()
         val fixers = (deck.nonbasicLands.count { meta(it.name)?.isFixing == true } +
             spells.count { meta(it.name)?.isFixing == true }).toDouble()
         // How far the pool fell short of a full 23-spell deck — thin pools win less.
         val shortfall = (23 - spells.size).coerceAtLeast(0).toDouble()
+
+        // Color spread: concentration (max share), balance (min share), and how many colors the
+        // deck actually leans on — a proxy for mana consistency vs. greedy splashing.
         val pips = HashMap<Char, Int>()
         for (c in spells) for (ch in LaneDetector.colorsOf(c)) pips.merge(ch, 1, Int::plus)
         val totalPips = pips.values.sum().coerceAtLeast(1)
         val colorConc = (pips.values.maxOrNull() ?: 0).toDouble() / totalPips
+        val minColorShare = if (pips.isEmpty()) 0.0 else pips.values.min().toDouble() / totalPips
+        val colorCount = pips.count { it.value.toDouble() / totalPips >= 0.10 }.toDouble()
+
+        // Curve deviation: L1 distance between the deck's cmc distribution and the template.
+        val hist = IntArray(6)
+        for (c in cmcs) hist[c.coerceIn(1, 6) - 1]++
+        val n = cmcs.size.coerceAtLeast(1)
+        val templSum = CURVE_TEMPLATE.sum()
+        var curveDev = 0.0
+        for (i in 0 until 6) curveDev += kotlin.math.abs(hist[i].toDouble() / n - CURVE_TEMPLATE[i] / templSum)
+        val topEnd = cmcs.count { it >= 5 }.toDouble()
+
         return doubleArrayOf(
             1.0, deckZ, topZ, removal, creatures, twoDrops,
-            avgCmc, bombs, fixers, shortfall, colorConc, rankOrdinal,
+            avgCmc, bombs, fixers, shortfall, colorConc,
+            curveDev, colorCount, minColorShare, topEnd, rankOrdinal,
         )
     }
 }
@@ -94,7 +115,7 @@ class DeckStrengthModel(
         return predict(c)
     }
 
-    fun coefficients(): Map<String, Double> = DeckFeatures.NAMES.indices.associate { DeckFeatures.NAMES[it] to beta[it] }
+    fun beta(): DoubleArray = beta.copyOf()
 }
 
 /** Weighted ridge regression via the normal equations, solved with Gaussian elimination. */

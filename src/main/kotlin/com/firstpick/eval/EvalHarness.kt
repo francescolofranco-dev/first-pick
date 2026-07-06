@@ -187,8 +187,13 @@ fun main(args: Array<String>) = runBlocking {
         val n = cmp.size.coerceAtLeast(1)
         val uplift = "%+.2f".format((e - h) / n * 100)
         val geq = "%.0f%%".format(wins.toDouble() / n * 100)
+        val names = keep.map { DeckFeatures.NAMES[it] }
+        val beta = model.beta()
+        val coefs = names.indices.filter { names[it] != "intercept" }
+            .sortedByDescending { kotlin.math.abs(beta[it]) }.take(5).joinToString(", ") { "%s %+.3f".format(names[it], beta[it]) }
         println("• $label")
         println("    validity: corr=%.3f, RMSE %.3f vs baseline %.3f (%+.1f%% err reduction)".format(corr, rmseM, rmseB, if (rmseB > 0) (1 - rmseM / rmseB) * 100 else 0.0))
+        println("    top drivers: $coefs")
         println("    engine deck ${wr(e / n)} vs human ${wr(h / n)}  → uplift $uplift pts, engine≥human $geq")
     }
 
