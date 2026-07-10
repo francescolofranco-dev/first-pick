@@ -82,6 +82,15 @@ becomes a measured answer.
 3. Add value + confidence calibration plots.
 4. Add the `Config` sweep + held-out validation.
 
+## Layer 3 — Learned pick model (PickNet)
+
+`training/train_picker.py` trains a per-set MLP on the same 17Lands draft CSVs
+(picks by high-win-rate drafters only), exported as `.fpnet` and scored in-app by
+`com.firstpick.model.PickNet`. Pass `-Pnet=<path>.fpnet` to `evalHarness` to
+report its top-1/top-3 agreement next to the heuristic engine on identical picks;
+train/eval never share drafts (`hashCode(draft_id) % 5` holdout). See
+`training/README.md`.
+
 ## Ongoing, cheap sanity (no harness needed)
 
 - **Differential test** our top pick vs. 17Lands' own card ordering / Arena Tutor /

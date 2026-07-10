@@ -100,6 +100,8 @@ tasks.register<JavaExec>("evalHarness") {
     System.getProperties().forEach { (k, v) ->
         if (k.toString().startsWith("firstpick.")) systemProperty(k.toString(), v.toString())
     }
+    // -Pnet=<path/to/.fpnet> scores picks with the learned model alongside the engine.
+    project.findProperty("net")?.let { systemProperty("firstpick.net", it.toString()) }
     val a = mutableListOf<String>()
     a.add(project.findProperty("data")?.toString() ?: "")
     a.add(project.findProperty("set")?.toString() ?: "MKM")

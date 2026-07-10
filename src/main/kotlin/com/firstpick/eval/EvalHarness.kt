@@ -12,6 +12,7 @@ import com.firstpick.cards.CardMetaRepository
 import com.firstpick.cards.CardRepository
 import com.firstpick.cards.RankedCard
 import com.firstpick.cards.SynergyRepository
+import com.firstpick.model.PickNet
 import kotlinx.coroutines.runBlocking
 import java.nio.file.Files
 import java.nio.file.Path
@@ -84,6 +85,9 @@ fun main(args: Array<String>) = runBlocking {
         creatureFloorTarget = sysD("firstpick.creatureFloorTarget", base.creatureFloorTarget),
     )
     val engine = AdvisorEngine(cfg)
+    val netPath = System.getProperty("firstpick.net")
+    val net = netPath?.let { PickNet.load(Path.of(it)) }
+    if (net != null) println("PickNet loaded: ${net.set} ${net.format}, ${net.cards.size} cards")
     println("Replaying $rows picks across ${drafts.size} drafts ($picksPerPack picks/pack)")
 
     val meta: (String) -> CardMeta? = metaRepo::meta
@@ -95,11 +99,13 @@ fun main(args: Array<String>) = runBlocking {
     // ---- Pass 1: per-draft human pool + agreement diagnostics; assemble estimator training data.
     fun isTest(id: String) = (id.hashCode() and 0x7fffffff) % 5 == 0
     val diag = Metrics()
+    val netDiag = Metrics()
     val samples = ArrayList<DeckSample>()
     var rankSum = 0.0; var rankN = 0
     for ((id, picks) in drafts) {
         picks.sortWith(compareBy({ it.pack }, { it.pick }))
         val pool = ArrayList<RankedCard>()
+        val rawPool = ArrayList<String>()
         val seen = LinkedHashMap<Pair<Int, Int>, List<RankedCard>>()
         for (row in picks) {
             val pack = row.packCards.map(repo::resolveName)
@@ -118,7 +124,19 @@ fun main(args: Array<String>) = runBlocking {
                 )
                 for (s in scored) s.card.gihWr?.let { diag.calibrate(s.value, it) }
             }
+            if (net != null) {
+                val ranked = net.score(rawPool, row.packCards)
+                netDiag.record(
+                    agreeTop1 = ranked.firstOrNull()?.first == row.pickedName,
+                    agreeTop3 = ranked.take(3).any { it.first == row.pickedName },
+                    wins = row.wins,
+                    ourGih = ranked.firstOrNull()?.let { repo.resolveName(it.first).gihWr },
+                    humanGih = repo.resolveName(row.pickedName).gihWr,
+                    oracleGih = pack.mapNotNull { it.gihWr }.maxOrNull(),
+                )
+            }
             pool.add(repo.resolveName(row.pickedName))
+            rawPool.add(row.pickedName)
         }
         val head = picks.first()
         rankSum += DraftRank.ordinal(head.rank); rankN++
@@ -138,7 +156,12 @@ fun main(args: Array<String>) = runBlocking {
     val valid = samples.filter { it.test && it.matches > 0 }
     if (train.size < 50 || valid.isEmpty()) {
         println("\nToo few outcome-bearing drafts (train=${train.size}); diagnostics only.")
-        diag.print(set, format); return@runBlocking
+        diag.print(set, format)
+        if (net != null) {
+            println("\n--- PickNet (learned model: $netPath) ---")
+            netDiag.print(set, format)
+        }
+        return@runBlocking
     }
 
     // ---- Pass 2: engine self-draft on the TEST split; collect engine vs human deck features.
@@ -222,6 +245,10 @@ fun main(args: Array<String>) = runBlocking {
 
     println("\n--- diagnostics (GIH-based; circular vs 17Lands, not ground truth) ---")
     diag.print(set, format)
+    if (net != null) {
+        println("\n--- PickNet (learned model: $netPath) ---")
+        netDiag.print(set, format)
+    }
 }
 
 private class DeckSample(val features: DoubleArray, val winRate: Double, val matches: Int, val test: Boolean)

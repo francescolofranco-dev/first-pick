@@ -24,3 +24,8 @@ local.properties
 
 # Eclipse/stray compiled output
 /bin/
+
+# Pick-model training: env, downloaded 17Lands data, and local artifacts stay out.
+/training/.venv/
+/training/data/
+/training/out/
