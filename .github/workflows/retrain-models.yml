@@ -1,0 +1,142 @@
+name: Retrain pick models
+
+# Retrains the learned pick models (training/train_picker.py) and opens a PR
+# updating the bundled .fpnet files. Free on this public repo.
+#
+# - Weekly cron: auto mode — retrains sets whose 17Lands data is newer than
+#   the bundled model (i.e. sets people are still drafting) or that have no
+#   model yet. Mature sets go static on S3 and drop out on their own.
+# - Manual dispatch: pass explicit set codes, or leave "auto".
+#
+# One-time repo setting for the PR step: Settings → Actions → General →
+# "Allow GitHub Actions to create and approve pull requests".
+
+on:
+  workflow_dispatch:
+    inputs:
+      sets:
+        description: 'Set codes (e.g. "MSH SOS"), or "auto"'
+        required: false
+        default: 'auto'
+  schedule:
+    - cron: '0 5 * * 1' # Mondays 05:00 UTC
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: retrain-models
+  cancel-in-progress: false
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      sets: ${{ steps.select.outputs.sets }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # git log dates for bundled models need history
+
+      - name: Select sets to retrain
+        id: select
+        run: |
+          MODE='${{ github.event.inputs.sets || 'auto' }}'
+          if [ "$MODE" = "auto" ]; then
+            SETS=$(python3 training/ci_retrain.py select --auto)
+          else
+            SETS=$(python3 training/ci_retrain.py select --sets "$MODE")
+          fi
+          echo "sets=$SETS" >> "$GITHUB_OUTPUT"
+          echo "Retraining: $SETS"
+
+  train:
+    needs: plan
+    if: needs.plan.outputs.sets != '[]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    strategy:
+      fail-fast: false
+      matrix:
+        set: ${{ fromJSON(needs.plan.outputs.sets) }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: .github/workflows/retrain-models.yml
+
+      - name: Install torch (CPU) + numpy
+        run: pip install --quiet torch --index-url https://download.pytorch.org/whl/cpu && pip install --quiet numpy
+
+      - name: Download 17Lands data
+        run: |
+          mkdir -p training/data
+          curl -sf -o training/data/${{ matrix.set }}.csv.gz \
+            "https://17lands-public.s3.amazonaws.com/analysis_data/draft_data/draft_data_public.${{ matrix.set }}.PremierDraft.csv.gz"
+
+      - name: Train
+        run: |
+          python training/train_picker.py --set ${{ matrix.set }} --fmt PremierDraft \
+            --data training/data/${{ matrix.set }}.csv.gz --out training/out
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: model-${{ matrix.set }}
+          path: training/out/${{ matrix.set }}_PremierDraft.fpnet
+          if-no-files-found: error
+
+  pull-request:
+    needs: train
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: model-*
+          merge-multiple: true
+          path: fresh-models
+
+      - name: Summarize retrained models
+        id: summary
+        run: |
+          python3 - <<'EOF' >> "$GITHUB_OUTPUT"
+          import json, glob
+          lines = []
+          for p in sorted(glob.glob('fresh-models/*.fpnet')):
+              h = json.loads(open(p, 'rb').readline())
+              lines.append(f"| {h['set']} | {h.get('valTop1', 0):.1%} | {len(h['cards'])} |")
+          print("table<<TABLE")
+          print("\n".join(lines))
+          print("TABLE")
+          EOF
+
+      - name: Stage into resources
+        run: cp fresh-models/*.fpnet src/main/resources/picknet/ && rm -rf fresh-models
+
+      - name: Open PR
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: ci/retrain-models
+          commit-message: |
+            Models: CI retrain
+
+            Co-Authored-By: github-actions <github-actions@github.com>
+          title: 'Models: CI retrain'
+          body: |
+            Automated pick-model retrain (`.github/workflows/retrain-models.yml`).
+
+            | Set | val top-1 (vs skilled drafters) | cards |
+            |---|---|---|
+            ${{ steps.summary.outputs.table }}
+
+            Before merging, spot-check a set locally against the heuristic baseline:
+            ```
+            ./gradlew evalHarness -Pdata=training/out/<SET>_PremierDraft_holdout.csv \
+              -Pset=<SET> -Pnet=src/main/resources/picknet/<SET>_PremierDraft.fpnet
+            ```
+          delete-branch: true
