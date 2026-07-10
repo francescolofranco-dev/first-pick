@@ -116,6 +116,8 @@ data class DraftUiState(
     val synergyTier: String? = null,
     val researchedSets: List<String> = emptyList(),
     val groundedSets: List<String> = emptyList(),
+    val pickModelActive: Boolean = false,
+    val modelSets: List<String> = emptyList(),
 ) {
     val headline: String
         get() = when (phase) {

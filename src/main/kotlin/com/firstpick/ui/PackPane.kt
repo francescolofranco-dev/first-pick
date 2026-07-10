@@ -67,7 +67,7 @@ internal fun PackPane(state: DraftUiState, onSimulate: (String) -> Unit = {}) = 
                 }
             }
             if (state.phase == DraftPhase.IDLE && state.researchedSets.isNotEmpty()) {
-                SynergyCoverage(state.researchedSets, state.groundedSets)
+                SynergyCoverage(state.researchedSets, state.groundedSets, state.modelSets)
             }
         }
     }
@@ -85,7 +85,7 @@ internal fun PackPane(state: DraftUiState, onSimulate: (String) -> Unit = {}) = 
 }
 
 @Composable
-private fun SynergyCoverage(researched: List<String>, grounded: List<String>) {
+private fun SynergyCoverage(researched: List<String>, grounded: List<String>, modelSets: List<String> = emptyList()) {
     Column(
         Modifier.widthIn(max = 460.dp).clip(RoundedCornerShape(10.dp))
             .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)).padding(14.dp),
@@ -104,6 +104,13 @@ private fun SynergyCoverage(researched: List<String>, grounded: List<String>) {
                 Text(grounded.joinToString("  "), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
             }
             Text("Ratings-driven picks; lighter synergy signal.", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
+        }
+        if (modelSets.isNotEmpty()) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                SynergyTierBadge("model")
+                Text(modelSets.joinToString("  "), fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+            }
+            Text("Learned pick model — ranks trained on winning drafters.", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
         }
     }
 }

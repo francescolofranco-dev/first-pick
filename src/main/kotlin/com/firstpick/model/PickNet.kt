@@ -31,7 +31,15 @@ class PickNet private constructor(
     private val w3: FloatArray,
     private val b3: FloatArray,
 ) {
-    private val index: Map<String, Int> = cards.withIndex().associate { (i, c) -> c to i }
+    // Exact 17Lands names, plus front faces of split/double-faced names ("A // B" → "A")
+    // so Arena-log names still resolve. Exact entries always win.
+    private val index: Map<String, Int> = buildMap {
+        for ((i, c) in cards.withIndex()) {
+            val front = c.substringBefore(" // ")
+            if (front != c) putIfAbsent(front, i)
+        }
+        for ((i, c) in cards.withIndex()) put(c, i)
+    }
 
     fun knows(card: String): Boolean = card in index
 
@@ -78,10 +86,11 @@ class PickNet private constructor(
 
         private val json = Json { ignoreUnknownKeys = true }
 
-        fun load(path: Path): PickNet {
-            val bytes = Files.readAllBytes(path)
+        fun load(path: Path): PickNet = parse(Files.readAllBytes(path), path.toString())
+
+        fun parse(bytes: ByteArray, source: String): PickNet {
             val nl = bytes.indexOf('\n'.code.toByte())
-            require(nl > 0) { "not a .fpnet file: $path" }
+            require(nl > 0) { "not a .fpnet file: $source" }
             val header = json.decodeFromString<Header>(String(bytes, 0, nl, Charsets.UTF_8))
             require(header.v == 1) { "unsupported .fpnet version ${header.v}" }
             val n = header.cards.size
@@ -94,7 +103,7 @@ class PickNet private constructor(
                 w2 = floats(h * h), b2 = floats(h),
                 w3 = floats(n * h), b3 = floats(n),
             )
-            require(!buf.hasRemaining()) { "trailing bytes in $path — dims mismatch" }
+            require(!buf.hasRemaining()) { "trailing bytes in $source — dims mismatch" }
             return net
         }
 

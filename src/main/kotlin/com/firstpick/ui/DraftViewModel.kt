@@ -5,6 +5,7 @@ import com.firstpick.advisor.DeckBuilder
 import com.firstpick.advisor.DeckOption
 import com.firstpick.advisor.Lane
 import com.firstpick.advisor.LaneDetector
+import com.firstpick.advisor.PickNetRanker
 import com.firstpick.advisor.PoolNeeds
 import com.firstpick.advisor.ScoredCard
 import com.firstpick.advisor.WUBRG
@@ -23,6 +24,7 @@ import com.firstpick.core.Log
 import com.firstpick.draft.DraftTracker
 import com.firstpick.log.LogWatcher
 import com.firstpick.model.DraftState
+import com.firstpick.model.PickNetRepository
 import com.firstpick.signals.SignalsEngine
 import com.firstpick.sim.DraftSimulator
 import kotlinx.coroutines.CoroutineScope
@@ -45,6 +47,7 @@ class DraftViewModel(
     private val metaRepo: CardMetaRepository = CardMetaRepository(),
     private val archetypeRepo: ArchetypeRepository = ArchetypeRepository(),
     private val synergyRepo: SynergyRepository = SynergyRepository(),
+    private val pickNetRepo: PickNetRepository = PickNetRepository(),
     private val advisor: AdvisorEngine = AdvisorEngine(),
     private val simulator: DraftSimulator = DraftSimulator(),
 ) {
@@ -145,6 +148,7 @@ class DraftViewModel(
             runCatching { metaRepo.load(set, repo.cardNames) }
             runCatching { archetypeRepo.loadStrengths(set, format) }
             runCatching { synergyRepo.load(set) }
+            runCatching { pickNetRepo.load(set, format) }
             publish()
         }
     }
@@ -170,8 +174,10 @@ class DraftViewModel(
         }
 
         val poolMetas = pool.mapNotNull { metaRepo.meta(it.name) }
+        val format = RatingsFormat.resolve(formatChoice, state.format)
+        val net = pickNetRepo.netFor(state.setCode, format)
         val rows = if (loaded && state.packCards.isNotEmpty()) {
-            advisor.score(
+            val scored = advisor.score(
                 pack = repo.resolvePack(state.packCards),
                 pool = pool,
                 packNumber = state.pack.coerceAtLeast(1),
@@ -181,7 +187,9 @@ class DraftViewModel(
                 archetypeRating = archetypeRepo::archetypeRating,
                 meta = metaRepo::meta,
                 synergy = synergyRepo.index,
-            ).toRows(state.packCards)
+            )
+            val ranked = net?.let { PickNetRanker.rerank(it, scored, pool.map { c -> c.name }) } ?: scored
+            ranked.toRows(state.packCards)
         } else {
             emptyList()
         }
@@ -242,6 +250,8 @@ class DraftViewModel(
             },
             researchedSets = StandardSets.researched(),
             groundedSets = StandardSets.grounded(),
+            pickModelActive = net != null,
+            modelSets = pickNetRepo.bundledSets(StandardSets.codes, format),
         )
     }
 
