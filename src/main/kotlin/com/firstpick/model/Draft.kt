@@ -125,7 +125,9 @@ data class DraftState(
                 pack = if (event.pack > 0) event.pack else pack,
                 pick = if (event.pick > 0) event.pick else pick,
                 pool = newPool,
-                packCards = if (isLastPickOfDraft) emptyList() else packCards
+                // The pack leaves the screen the moment the pick is made; keeping it around
+                // left the overlay showing the previous pack's grades until the next one arrived.
+                packCards = emptyList()
             )
         }
     }

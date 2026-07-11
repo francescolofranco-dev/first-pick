@@ -351,7 +351,9 @@ class DraftViewModel(
     private fun List<ScoredCard>.toRows(originalPackIds: List<Int>): List<PackCardUi> {
         val usedIndices = mutableSetOf<Int>()
         return mapIndexed { i, s ->
-            val origIdx = originalPackIds.indexOfFirst { it == s.card.grpId && it !in usedIndices }.takeIf { it >= 0 } ?: 0
+            val origIdx = originalPackIds.withIndex()
+                .firstOrNull { (idx, id) -> id == s.card.grpId && idx !in usedIndices }
+                ?.index ?: 0
             usedIndices.add(origIdx)
             PackCardUi(
                 grpId = s.card.grpId,

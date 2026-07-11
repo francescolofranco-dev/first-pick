@@ -89,6 +89,25 @@ class DraftTrackerTest {
     }
 
     @Test
+    fun aPickClearsThePackUntilTheNextOneArrives() {
+        // The pack leaves Arena's screen the instant the pick is made; the overlay must not keep
+        // sealing the old pack while the next one is in transit.
+        val tracker = DraftTracker()
+        tracker.onLine("[UnityCrossThreadLogger]==> Event.Join {\"EventName\":\"PremierDraft_MKM_20240206\"}")
+        tracker.onLine("[UnityCrossThreadLogger]==> Draft.Notify {\"SelfPack\":1,\"SelfPick\":1,\"PackCards\":\"100,200,300\"}")
+        assertEquals(listOf(100, 200, 300), tracker.state.value.packCards)
+
+        tracker.onLine("[UnityCrossThreadLogger]==> PlayerDraftMakePick {\"request\":\"{\\\"GrpIds\\\":[\\\"200\\\"],\\\"PackNumber\\\":0,\\\"PickNumber\\\":0}\"}")
+        val s = tracker.state.value
+        assertTrue(s.packCards.isEmpty(), "pack must clear on pick, was ${s.packCards}")
+        assertEquals(listOf(200), s.pool)
+        assertEquals(DraftPhase.DRAFTING, s.phase)
+
+        tracker.onLine("[UnityCrossThreadLogger]==> Draft.Notify {\"SelfPack\":1,\"SelfPick\":2,\"PackCards\":\"101,201\"}")
+        assertEquals(listOf(101, 201), tracker.state.value.packCards)
+    }
+
+    @Test
     fun ignoresLinesWithoutDraftEvents() {
         val tracker = DraftTracker()
         assertTrue(!tracker.onLine("just a log line"))
