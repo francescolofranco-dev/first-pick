@@ -121,6 +121,14 @@ tasks.register<JavaExec>("overlayDebug") {
     args(a)
 }
 
+tasks.register<JavaExec>("clickThroughProbe") {
+    group = "verification"
+    description = "Verify overlay click-through end-to-end on a real window; -Pstay=1 keeps it up for manual clicks."
+    mainClass.set("com.firstpick.tools.ClickThroughProbeKt")
+    classpath = sourceSets["main"].runtimeClasspath
+    if (project.findProperty("stay") != null) args("stay")
+}
+
 tasks.register<JavaExec>("coldStartProbe") {
     group = "verification"
     description = "Test whether a new set's card quality can be imputed from functional analogs (cold-start)."

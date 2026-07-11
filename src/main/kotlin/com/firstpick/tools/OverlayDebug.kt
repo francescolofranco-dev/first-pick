@@ -4,6 +4,7 @@ import com.firstpick.cards.CardRepository
 import com.firstpick.draft.DraftTracker
 import com.firstpick.overlay.CardDetector
 import com.firstpick.overlay.CardRecognizer
+import com.firstpick.overlay.PackGeometry
 import com.firstpick.overlay.WindowCapture
 import com.firstpick.ui.CardImageLoader
 import kotlinx.coroutines.runBlocking
@@ -11,8 +12,14 @@ import java.io.File
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import javax.imageio.ImageIO
+import kotlin.math.abs
 
-/** Runs the overlay's capture→detect→recognize pipeline once and reports each stage. */
+/**
+ * Runs the overlay pipeline against a frame and the live Player.log, and — the important part —
+ * cross-checks the two placement sources: geometry+log-order (what the overlay ships) versus
+ * CV detection+art recognition (ground truth for the frame). A clean run confirms Arena renders
+ * the pack in log order on the calibrated grid.
+ */
 fun main(args: Array<String>) = runBlocking {
     val framePath = args.getOrNull(0)?.takeIf { it.isNotBlank() }
     val format = args.getOrNull(1)?.takeIf { it.isNotBlank() } ?: "PremierDraft"
@@ -36,16 +43,29 @@ fun main(args: Array<String>) = runBlocking {
     val repo = CardRepository()
     repo.load(set, format)
     val pack = repo.resolvePack(state.packCards)
-    for (c in pack) println("  ${c.grpId}  ${c.displayName}  img=${if (c.rating?.imageUrl.isNullOrBlank()) "NONE" else "ok"}")
+    for ((i, c) in pack.withIndex()) println("  slot#$i  ${c.grpId}  ${c.displayName}  img=${if (c.rating?.imageUrl.isNullOrBlank()) "NONE" else "ok"}")
 
+    println()
+    println("GEOMETRY (what the overlay places, log order + default fractions):")
+    val predicted = PackGeometry.rects(PackGeometry.DEFAULT, frame.width, frame.height, pack.size)
+    for (r in predicted) println("  slot#${r.index}  x=${r.x} y=${r.y} w=${r.w} h=${r.h}  -> ${pack[r.index].displayName}")
+
+    println()
     val grid = CardDetector.detect(frame, pack.size)
     if (grid == null) {
-        println("DETECT: FAILED — no grid found for expectedCount=${pack.size}")
+        println("DETECT: no grid in this frame (hovered/animated frames are rejected by design)")
+        println("        geometry placement above is unaffected — nothing to cross-check")
         return@runBlocking
     }
     val rects = grid.cards(pack.size)
-    println("DETECT: ok — imageW=${grid.imageW} imageH=${grid.imageH} rects=${rects.size}")
-    for (r in rects) println("  rect#${r.index}  x=${r.x} y=${r.y} w=${r.w} h=${r.h}")
+    println("DETECT: ok — ${rects.size} rects; measured fractions = ${PackGeometry.fromGrid(grid)}")
+    var worstDx = 0.0
+    var worstDy = 0.0
+    for ((d, p) in rects.zip(predicted)) {
+        worstDx = maxOf(worstDx, abs(d.x - p.x).toDouble() / frame.width)
+        worstDy = maxOf(worstDy, abs(d.y - p.y).toDouble() / frame.height)
+    }
+    println("  vs geometry: worst dx=${"%.4f".format(worstDx)}w  dy=${"%.4f".format(worstDy)}h  (alignment is fine under ~0.012/0.02)")
 
     val refs = pack.map { c ->
         c.rating?.imageUrl?.takeIf { it.isNotBlank() }?.let { CardImageLoader.loadBufferedImage(it) }?.let { CardRecognizer.ofCard(it) }
@@ -53,9 +73,19 @@ fun main(args: Array<String>) = runBlocking {
     println("REFS: ${refs.count { it != null }}/${pack.size} reference signatures")
 
     val assign = CardRecognizer.match(frame, rects, refs)
-    println("MATCH: ${assign.size} assignments")
+    println("RECOGNIZE: ${assign.size} assignments")
+    var mismatches = 0
     for ((rectIdx, cardIdx) in assign.entries.sortedBy { it.key }) {
-        println("  rect#$rectIdx -> ${pack[cardIdx].displayName}")
+        val ok = rectIdx == cardIdx
+        if (!ok) mismatches++
+        println("  rect#$rectIdx -> ${pack[cardIdx].displayName}${if (ok) "" else "   <-- LOG ORDER MISMATCH (log slot $rectIdx holds ${pack[rectIdx].displayName})"}")
     }
-    if (assign.isEmpty()) println("MATCH: FAILED — overlay would render an empty window")
+    println()
+    if (assign.isEmpty()) {
+        println("ORDER CHECK: inconclusive — recognition produced no assignments")
+    } else if (mismatches == 0) {
+        println("ORDER CHECK: PASS — screen order matches the log's pack order (${assign.size} cards)")
+    } else {
+        println("ORDER CHECK: FAIL — $mismatches of ${assign.size} cards render out of log order; overlay placement would mis-grade them")
+    }
 }

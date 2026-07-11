@@ -28,51 +28,73 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberWindowState
-import com.firstpick.ui.CardImageLoader
+import com.firstpick.core.Log
+import com.firstpick.ui.BreakdownTooltip
 import com.firstpick.ui.DevFlags
 import com.firstpick.ui.MacOverlay
 import com.firstpick.ui.letterGrade
 import com.firstpick.ui.valueTierColor
-import com.firstpick.ui.BreakdownTooltip
 import com.firstpick.advisor.ValueBreakdown
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
+import kotlin.math.abs
 import kotlin.math.roundToInt
 
+private const val TAG = "Overlay"
 private const val TRACKER_TITLE = "FirstPick Arena Tracker"
 private const val POLL_MS = 300L
-private const val CAPTURE_DEBOUNCE_MS = 350L
-private const val MARK_RETRY_MS = 700L
-private const val MAX_MARK_ATTEMPTS = 10
+private const val BOUNDS_GRACE_MS = 2_000L
+private const val CLICK_THROUGH_ATTEMPTS = 40
+private const val CLICK_THROUGH_RETRY_MS = 150L
+private const val CALIBRATION_DEBOUNCE_MS = 400L
+private const val CALIBRATION_RETRY_MS = 900L
+private const val MAX_CALIBRATION_ATTEMPTS = 12
+private const val MIN_CALIBRATION_CARDS = 10
 
-data class OverlayCard(val value: Double?, val imageUrl: String?, val name: String = "", val breakdown: ValueBreakdown? = null)
+data class OverlayCard(
+    val value: Double?,
+    val imageUrl: String?,
+    val name: String = "",
+    val breakdown: ValueBreakdown? = null,
+    /** Position of this card in Arena's pack list (the on-screen slot), row-major. */
+    val originalIndex: Int = -1,
+)
 
 private data class Mark(val x: Int, val y: Int, val w: Int, val h: Int, val value: Double?, val number: Int?, val isBest: Boolean, val breakdown: ValueBreakdown? = null)
 
-private const val MARK_JITTER_PT = 3
-
-private data class MarkAttempt(val marks: List<Mark>, val failure: String? = null)
-
-private fun List<Mark>.approxEquals(other: List<Mark>): Boolean =
-    size == other.size && zip(other).all { (a, b) ->
-        a.value == b.value && a.number == b.number && a.isBest == b.isBest &&
-            kotlin.math.abs(a.x - b.x) <= MARK_JITTER_PT && kotlin.math.abs(a.y - b.y) <= MARK_JITTER_PT &&
-            kotlin.math.abs(a.w - b.w) <= MARK_JITTER_PT && kotlin.math.abs(a.h - b.h) <= MARK_JITTER_PT
-    }
-
+/**
+ * Seals are placed from the draft log plus calibrated window geometry: Arena renders the pack in
+ * log order on a fixed grid, so once the grid fractions for this window size are known, placement
+ * needs no screen capture at all. Capture (with the CV detector) runs only in the background to
+ * calibrate a window size the store hasn't seen yet — until then the fractions measured from real
+ * frames serve as the default.
+ */
 @Composable
 fun ArenaOverlayTracker(
     cards: List<OverlayCard> = emptyList(),
     locator: WindowLocator = WindowLocator(),
     capturer: WindowCapture = WindowCapture(),
+    calibrationStore: PackGridCalibrationStore = PackGridCalibrationStore(),
 ) {
     val loc = remember { locator }
     val cap = remember { capturer }
+    val store = remember { calibrationStore }
+
+    // Keep the last known bounds through transient locate failures: tearing the window down and
+    // recreating it made the overlay flicker and dropped its click-through state.
     var bounds by remember { mutableStateOf<WindowBounds?>(null) }
     LaunchedEffect(loc) {
+        var lastSeen = 0L
         while (true) {
-            bounds = withContext(Dispatchers.IO) { loc.locate() }
+            val b = withContext(Dispatchers.IO) { loc.locate() }
+            val now = System.currentTimeMillis()
+            if (b != null) {
+                bounds = b
+                lastSeen = now
+            } else if (now - lastSeen > BOUNDS_GRACE_MS) {
+                bounds = null
+            }
             delay(POLL_MS)
         }
     }
@@ -88,46 +110,66 @@ fun ArenaOverlayTracker(
         wState.size = DpSize(b.w.dp, b.h.dp)
     }
 
-    var marks by remember { mutableStateOf<List<Mark>>(emptyList()) }
-    val packKey = remember(cards) { cards.joinToString("|") { "${it.name}#${it.imageUrl}" } }
-    val visible = (b.frontmost || calibrating) && (cards.isNotEmpty() || calibrating)
+    var calVersion by remember { mutableStateOf(0) }
+    val cal = remember(b.w, b.h, calVersion) { store.get(b.w, b.h) }
 
-    // Arena animates for a second or two after a pick; a single capture can land mid-animation
-    // and mis-recognize every card. Keep recapturing until two consecutive frames agree.
-    LaunchedEffect(b.w, b.h, packKey, calibrating, visible) {
-        if (!visible) return@LaunchedEffect
-        delay(CAPTURE_DEBOUNCE_MS)
-        var prev: List<Mark> = emptyList()
-        var sawMarks = false
-        var lastFailure: String? = null
-        repeat(MAX_MARK_ATTEMPTS) {
-            val attempt = withContext(Dispatchers.IO) { computeMarks(cap, cards, calibrating, b.w, b.h) }
-            val next = attempt.marks
-            if (attempt.failure != null) lastFailure = attempt.failure
-            if (next.isNotEmpty()) {
-                sawMarks = true
-                // A couple of pixels of run jitter between captures (flickering backdrop) is
-                // convergence, not change — and reassigning would make the seals shimmer.
-                if (next.approxEquals(prev)) {
-                    if (!next.approxEquals(marks)) marks = next
+    var devMarks by remember { mutableStateOf<List<Mark>>(emptyList()) }
+    val marks = if (calibrating) devMarks else remember(cards, b.w, b.h, cal) {
+        geometryMarks(cards, cal ?: PackGeometry.DEFAULT, b.w, b.h)
+    }
+
+    var clickThroughFailed by remember { mutableStateOf(false) }
+    val visible = (b.frontmost || calibrating) && (cards.isNotEmpty() || calibrating) && !clickThroughFailed
+
+    // Calibrate window sizes the store hasn't seen, from a rich pack (early picks have enough
+    // cards for a trustworthy grid). Runs behind geometry placement; seals never wait on it.
+    val wantCalibration = !calibrating && visible && cards.size >= MIN_CALIBRATION_CARDS && !store.has(b.w, b.h)
+    LaunchedEffect(wantCalibration, cards.size, b.w, b.h) {
+        if (!wantCalibration) return@LaunchedEffect
+        delay(CALIBRATION_DEBOUNCE_MS)
+        var prev: PackGridCalibration? = null
+        repeat(MAX_CALIBRATION_ATTEMPTS) {
+            val next = withContext(Dispatchers.IO) {
+                cap.capture()?.let { CardDetector.detect(it, cards.size) }?.let { PackGeometry.fromGrid(it) }
+            }
+            // Arena animates for a moment after a pack arrives; require two consecutive captures
+            // to agree so a mid-animation frame can't poison the stored calibration.
+            if (next != null) {
+                if (prev != null && next.approx(prev!!)) {
+                    store.put(b.w, b.h, next)
+                    calVersion++
+                    Log.info(TAG, "calibrated pack grid for ${b.w}x${b.h}")
                     return@LaunchedEffect
                 }
-                marks = next
+                prev = next
             }
-            prev = next
-            delay(MARK_RETRY_MS)
+            delay(CALIBRATION_RETRY_MS)
         }
-        if (!sawMarks) {
-            lastFailure?.let { com.firstpick.core.Log.warn("Overlay", "$it after $MAX_MARK_ATTEMPTS attempts") }
+        Log.warn(TAG, "grid calibration did not converge for ${b.w}x${b.h}; using default fractions")
+    }
+
+    // Dev calibration mode: numbered boxes driven by live detection of a full 15-slot grid.
+    LaunchedEffect(calibrating, b.w, b.h) {
+        if (!calibrating) return@LaunchedEffect
+        while (true) {
+            val grid = withContext(Dispatchers.IO) { cap.capture()?.let { CardDetector.detect(it, 15) } }
+            if (grid != null) {
+                val sx = b.w.toFloat() / grid.imageW
+                val sy = b.h.toFloat() / grid.imageH
+                devMarks = grid.cards(15).map { r ->
+                    Mark((r.x * sx).roundToInt(), (r.y * sy).roundToInt(), (r.w * sx).roundToInt(), (r.h * sy).roundToInt(), null, r.index + 1, false, null)
+                }
+            }
+            delay(CALIBRATION_RETRY_MS)
         }
     }
 
     var hoveredIndex by remember { mutableStateOf<Int?>(null) }
     LaunchedEffect(visible, b.x, b.y, marks) {
-        if (!visible || marks.isEmpty()) {
-            hoveredIndex = null
-            return@LaunchedEffect
-        }
+        // The marks this index pointed into are gone on every restart; without the reset a
+        // tooltip could stay stuck on screen when the pointer is no longer over any seal.
+        hoveredIndex = null
+        if (!visible || marks.isEmpty()) return@LaunchedEffect
         var lastHovered: Int? = null
         while (true) {
             val ptr = withContext(Dispatchers.IO) { java.awt.MouseInfo.getPointerInfo()?.location }
@@ -170,13 +212,26 @@ fun ArenaOverlayTracker(
         focusable = false,
         resizable = false,
     ) {
+        // Apply click-through as soon as the native window exists — an overlay covering Arena
+        // without it steals every click (and activating the app raises the main window over the
+        // game). If it verifiably cannot be applied, hide the overlay rather than block Arena.
+        var applied by remember { mutableStateOf(false) }
         LaunchedEffect(visible) {
-            if (!visible) return@LaunchedEffect
-            repeat(15) {
-                if (MacOverlay.setClickThrough(TRACKER_TITLE, true)) return@LaunchedEffect
-                delay(200)
+            if (applied) return@LaunchedEffect
+            repeat(CLICK_THROUGH_ATTEMPTS) {
+                if (withContext(Dispatchers.IO) { MacOverlay.setClickThrough(window, true) }) {
+                    applied = true
+                    // A transient failure may have latched the fail-safe; a verified apply
+                    // makes the overlay safe to show again.
+                    clickThroughFailed = false
+                    return@LaunchedEffect
+                }
+                delay(CLICK_THROUGH_RETRY_MS)
             }
-            com.firstpick.core.Log.warn("Overlay", "click-through could not be applied")
+            if (visible) {
+                clickThroughFailed = true
+                Log.warn(TAG, "click-through could not be applied — hiding overlay so clicks reach Arena")
+            }
         }
         Box(Modifier.fillMaxSize()) {
             for (m in marks) {
@@ -211,42 +266,23 @@ fun ArenaOverlayTracker(
     }
 }
 
-private suspend fun computeMarks(
-    capturer: WindowCapture,
-    cards: List<OverlayCard>,
-    calibrating: Boolean,
-    winW: Int,
-    winH: Int,
-): MarkAttempt {
-    val frame = capturer.capture()
-    if (frame == null) {
-        return MarkAttempt(emptyList(), "no frame captured — check Screen Recording permission")
+private fun PackGridCalibration.approx(other: PackGridCalibration, eps: Float = 0.004f): Boolean =
+    abs(colX0 - other.colX0) < eps && abs(colPitch - other.colPitch) < eps &&
+        abs(colW - other.colW) < eps && abs(row0Y - other.row0Y) < eps &&
+        abs(rowPitch - other.rowPitch) < eps && abs(cardH - other.cardH) < eps
+
+private fun geometryMarks(cards: List<OverlayCard>, cal: PackGridCalibration, winW: Int, winH: Int): List<Mark> {
+    if (cards.isEmpty()) return emptyList()
+    val rects = PackGeometry.rects(cal, winW, winH, cards.size)
+    // Cards arrive ranked; originalIndex is the on-screen slot. Fall back to list order if the
+    // indices don't form a clean permutation.
+    val byOriginal = cards.all { it.originalIndex in rects.indices } &&
+        cards.map { it.originalIndex }.toSet().size == cards.size
+    val best = cards.indices.maxByOrNull { cards[it].value ?: Double.NEGATIVE_INFINITY }
+    return cards.mapIndexed { i, c ->
+        val r = rects[if (byOriginal) c.originalIndex else i]
+        Mark(r.x, r.y, r.w, r.h, c.value, null, i == best, c.breakdown)
     }
-    if (cards.isNotEmpty()) {
-        val grid = CardDetector.detect(frame, cards.size)
-        if (grid == null) {
-            return MarkAttempt(emptyList(), "pack grid not found (${cards.size} cards, ${frame.width}x${frame.height})")
-        }
-        val rects = grid.cards(cards.size)
-        val refs = cards.map { c -> c.imageUrl?.let { CardImageLoader.loadBufferedImage(it) }?.let { CardRecognizer.ofCard(it) } }
-        val assign = CardRecognizer.match(frame, rects, refs)
-        val best = cards.indices.maxByOrNull { cards[it].value ?: Double.NEGATIVE_INFINITY }
-        val sx = winW.toFloat() / grid.imageW
-        val sy = winH.toFloat() / grid.imageH
-        return MarkAttempt(rects.mapNotNull { r ->
-            val ci = assign[r.index] ?: return@mapNotNull null
-            Mark((r.x * sx).roundToInt(), (r.y * sy).roundToInt(), (r.w * sx).roundToInt(), (r.h * sy).roundToInt(), cards[ci].value, null, ci == best, cards[ci].breakdown)
-        })
-    }
-    if (calibrating) {
-        val grid = CardDetector.detect(frame, 15) ?: return MarkAttempt(emptyList())
-        val sx = winW.toFloat() / grid.imageW
-        val sy = winH.toFloat() / grid.imageH
-        return MarkAttempt(grid.cards(15).map { r ->
-            Mark((r.x * sx).roundToInt(), (r.y * sy).roundToInt(), (r.w * sx).roundToInt(), (r.h * sy).roundToInt(), null, r.index + 1, false, null)
-        })
-    }
-    return MarkAttempt(emptyList())
 }
 
 @Composable
