@@ -35,7 +35,7 @@ jobs:
     outputs:
       sets: ${{ steps.select.outputs.sets }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           fetch-depth: 0 # git log dates for bundled models need history
 
@@ -61,9 +61,9 @@ jobs:
       matrix:
         set: ${{ fromJSON(needs.plan.outputs.sets) }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: '3.11'
           cache: pip
@@ -83,7 +83,7 @@ jobs:
           python training/train_picker.py --set ${{ matrix.set }} --fmt PremierDraft \
             --data training/data/${{ matrix.set }}.csv.gz --out training/out
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: model-${{ matrix.set }}
           path: training/out/${{ matrix.set }}_PremierDraft.fpnet
@@ -93,9 +93,9 @@ jobs:
     needs: train
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           pattern: model-*
           merge-multiple: true
@@ -119,7 +119,7 @@ jobs:
         run: cp fresh-models/*.fpnet src/main/resources/picknet/ && rm -rf fresh-models
 
       - name: Open PR
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@22a9089034f40e5a961c8808d113e2c98fb63676 # v7.0.11
         with:
           branch: ci/retrain-models
           commit-message: |
