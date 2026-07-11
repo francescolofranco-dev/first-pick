@@ -248,6 +248,94 @@ fun main(args: Array<String>) = runBlocking {
     if (net != null) {
         println("\n--- PickNet (learned model: $netPath) ---")
         netDiag.print(set, format)
+        rerankerExperiment(net, drafts, train, referenceRank, repo, meta, ::buildDeck, ::isTest)
+    }
+}
+
+/**
+ * Experiment: outcome re-ranking of the model's near-ties. When the model's top-2
+ * scores sit within [gap] and the pool is at least [minPool] picks deep, build the
+ * deck implied by each candidate and let the outcome-trained estimator break the
+ * tie. Estimator fits on train-split drafts; picks are measured on the test split
+ * only (which the pick model also never trained on — same draft_id hash rule).
+ */
+private fun rerankerExperiment(
+    net: PickNet,
+    drafts: Map<String, MutableList<PickRow>>,
+    trainSamples: List<DeckSample>,
+    referenceRank: Double,
+    repo: CardRepository,
+    meta: (String) -> CardMeta?,
+    buildDeck: (List<RankedCard>) -> DeckOption?,
+    isTest: (String) -> Boolean,
+) {
+    if (trainSamples.size < 50) {
+        println("\n[re-ranker experiment skipped: only ${trainSamples.size} outcome-bearing train drafts]")
+        return
+    }
+    val estimator = DeckStrengthTrainer.train(
+        trainSamples.map { it.features },
+        DoubleArray(trainSamples.size) { trainSamples[it].winRate },
+        DoubleArray(trainSamples.size) { trainSamples[it].matches.toDouble() },
+    )
+
+    data class Cfg(val gap: Double, val minPool: Int) {
+        override fun toString() = if (gap <= 0.0) "pure model (baseline)" else "gap<%.2f pool≥%d".format(gap, minPool)
+    }
+    class Counts {
+        var n = 0; var top1 = 0; var eligible = 0; var flips = 0
+        var winN = 0; var winTop1 = 0; var loseN = 0; var loseTop1 = 0
+    }
+
+    val cfgs = listOf(
+        Cfg(0.0, 0),
+        Cfg(0.25, 15), Cfg(0.5, 15), Cfg(1.0, 15),
+        Cfg(0.5, 25), Cfg(1.0, 25),
+    )
+    val counts = cfgs.associateWith { Counts() }
+
+    for ((id, picks) in drafts) {
+        if (!isTest(id)) continue
+        picks.sortWith(compareBy({ it.pack }, { it.pick }))
+        val pool = ArrayList<RankedCard>()
+        val rawPool = ArrayList<String>()
+        for (row in picks) {
+            val ranked = net.score(rawPool, row.packCards)
+            if (ranked.size >= 2 && ranked[0].second.isFinite() && ranked[1].second.isFinite()) {
+                val gap = (ranked[0].second - ranked[1].second).toDouble()
+                // The estimator's verdict is shared by every config that triggers on this row.
+                val flipToSecond: Boolean by lazy {
+                    val a = buildDeck(pool + repo.resolveName(ranked[0].first))
+                    val b = buildDeck(pool + repo.resolveName(ranked[1].first))
+                    if (a == null || b == null) false
+                    else estimator.predict(DeckFeatures.of(b, repo.setMetrics, meta, referenceRank)) >
+                        estimator.predict(DeckFeatures.of(a, repo.setMetrics, meta, referenceRank))
+                }
+                for ((cfg, c) in counts) {
+                    var choice = ranked[0].first
+                    if (cfg.gap > 0 && gap < cfg.gap && rawPool.size >= cfg.minPool) {
+                        c.eligible++
+                        if (flipToSecond) { choice = ranked[1].first; c.flips++ }
+                    }
+                    c.n++
+                    if (choice == row.pickedName) c.top1++
+                    if (row.wins >= 5) { c.winN++; if (choice == row.pickedName) c.winTop1++ }
+                    else if (row.wins <= 2) { c.loseN++; if (choice == row.pickedName) c.loseTop1++ }
+                }
+            }
+            pool.add(repo.resolveName(row.pickedName))
+            rawPool.add(row.pickedName)
+        }
+    }
+
+    println("\n--- EXPERIMENT: outcome re-ranker on model near-ties (test drafts only) ---")
+    fun pct(a: Int, b: Int) = if (b > 0) a.toDouble() / b * 100 else 0.0
+    for ((cfg, c) in counts) {
+        val wml = pct(c.winTop1, c.winN) - pct(c.loseTop1, c.loseN)
+        println(
+            "• %-24s top-1 %.2f%%  winner-minus-loser %+.1f pts  (re-ranked %.1f%% of picks, flipped %d)"
+                .format(cfg.toString(), pct(c.top1, c.n), wml, pct(c.eligible, c.n), c.flips)
+        )
     }
 }
 
