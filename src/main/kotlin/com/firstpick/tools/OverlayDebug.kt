@@ -15,10 +15,11 @@ import javax.imageio.ImageIO
 import kotlin.math.abs
 
 /**
- * Runs the overlay pipeline against a frame and the live Player.log, and — the important part —
- * cross-checks the two placement sources: geometry+log-order (what the overlay ships) versus
- * CV detection+art recognition (ground truth for the frame). A clean run confirms Arena renders
- * the pack in log order on the calibrated grid.
+ * Runs the overlay pipeline against a frame and the live Player.log. Geometry gives the seal
+ * positions the overlay ships; detection+recognition give the frame's ground truth for both
+ * positions (alignment deltas) and identity. The ORDER CHECK verdict measures how wrong the
+ * log-order fallback would be — historically the log's pack order does NOT match the screen
+ * (live-disproven 2026-06-29), which is why recognition is the shipped identity source.
  */
 fun main(args: Array<String>) = runBlocking {
     val framePath = args.getOrNull(0)?.takeIf { it.isNotBlank() }
@@ -46,9 +47,9 @@ fun main(args: Array<String>) = runBlocking {
     for ((i, c) in pack.withIndex()) println("  slot#$i  ${c.grpId}  ${c.displayName}  img=${if (c.rating?.imageUrl.isNullOrBlank()) "NONE" else "ok"}")
 
     println()
-    println("GEOMETRY (what the overlay places, log order + default fractions):")
+    println("GEOMETRY (seal positions the overlay places, default fractions):")
     val predicted = PackGeometry.rects(PackGeometry.DEFAULT, frame.width, frame.height, pack.size)
-    for (r in predicted) println("  slot#${r.index}  x=${r.x} y=${r.y} w=${r.w} h=${r.h}  -> ${pack[r.index].displayName}")
+    for (r in predicted) println("  slot#${r.index}  x=${r.x} y=${r.y} w=${r.w} h=${r.h}")
 
     println()
     val grid = CardDetector.detect(frame, pack.size)
@@ -84,8 +85,8 @@ fun main(args: Array<String>) = runBlocking {
     if (assign.isEmpty()) {
         println("ORDER CHECK: inconclusive — recognition produced no assignments")
     } else if (mismatches == 0) {
-        println("ORDER CHECK: PASS — screen order matches the log's pack order (${assign.size} cards)")
+        println("ORDER CHECK: log order matches the screen for this pack (${assign.size} cards) — fallback would have been safe")
     } else {
-        println("ORDER CHECK: FAIL — $mismatches of ${assign.size} cards render out of log order; overlay placement would mis-grade them")
+        println("ORDER CHECK: $mismatches of ${assign.size} cards render out of log order — the log-order fallback would mis-grade them (recognition is the shipped source)")
     }
 }

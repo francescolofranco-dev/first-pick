@@ -70,9 +70,9 @@ object PackGeometry {
 }
 
 /**
- * Persisted calibrations keyed by window size in points. A calibration measured at one size is
- * reused for another only when the aspect ratio matches (Arena letterboxes its UI, so fractions
- * shift when the aspect changes but hold when the window merely scales).
+ * Persisted calibrations keyed by exact window size in points. Fractions are NOT reused across
+ * sizes: Arena's title bar is a constant point height and its UI is responsive, so fractions
+ * measured at one size drift at another (confirmed live at 1920x1080 during the Phase 1b spike).
  */
 class PackGridCalibrationStore(
     private val file: Path = AppPaths.appSupport.resolve("overlay-grid.json"),
@@ -81,19 +81,7 @@ class PackGridCalibrationStore(
     private var cache: MutableMap<String, PackGridCalibration>? = null
 
     @Synchronized
-    fun get(w: Int, h: Int): PackGridCalibration? {
-        val all = loadAll()
-        all["${w}x$h"]?.let { return it }
-        val aspect = w.toDouble() / h
-        return all.entries.firstNotNullOfOrNull { (key, cal) ->
-            val parts = key.split("x").mapNotNull { it.toIntOrNull() }
-            if (parts.size == 2 && abs(parts[0].toDouble() / parts[1] - aspect) < ASPECT_TOLERANCE) cal else null
-        }
-    }
-
-    /** True when this exact window size has its own stored calibration. */
-    @Synchronized
-    fun has(w: Int, h: Int): Boolean = loadAll().containsKey("${w}x$h")
+    fun get(w: Int, h: Int): PackGridCalibration? = loadAll()["${w}x$h"]
 
     @Synchronized
     fun put(w: Int, h: Int, cal: PackGridCalibration) {
@@ -116,6 +104,5 @@ class PackGridCalibrationStore(
 
     companion object {
         private const val TAG = "PackGridCalibration"
-        private const val ASPECT_TOLERANCE = 0.015
     }
 }

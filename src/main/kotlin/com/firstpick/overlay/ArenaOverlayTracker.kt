@@ -30,6 +30,7 @@ import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberWindowState
 import com.firstpick.core.Log
 import com.firstpick.ui.BreakdownTooltip
+import com.firstpick.ui.CardImageLoader
 import com.firstpick.ui.DevFlags
 import com.firstpick.ui.MacOverlay
 import com.firstpick.ui.letterGrade
@@ -38,7 +39,6 @@ import com.firstpick.advisor.ValueBreakdown
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
-import kotlin.math.abs
 import kotlin.math.roundToInt
 
 private const val TAG = "Overlay"
@@ -47,9 +47,10 @@ private const val POLL_MS = 300L
 private const val BOUNDS_GRACE_MS = 2_000L
 private const val CLICK_THROUGH_ATTEMPTS = 40
 private const val CLICK_THROUGH_RETRY_MS = 150L
-private const val CALIBRATION_DEBOUNCE_MS = 400L
-private const val CALIBRATION_RETRY_MS = 900L
-private const val MAX_CALIBRATION_ATTEMPTS = 12
+private const val CAPTURE_DEBOUNCE_MS = 350L
+private const val RECOGNITION_RETRY_MS = 700L
+private const val MAX_RECOGNITION_ATTEMPTS = 10
+private const val DEV_DETECT_RETRY_MS = 900L
 private const val MIN_CALIBRATION_CARDS = 10
 
 data class OverlayCard(
@@ -64,11 +65,14 @@ data class OverlayCard(
 private data class Mark(val x: Int, val y: Int, val w: Int, val h: Int, val value: Double?, val number: Int?, val isBest: Boolean, val breakdown: ValueBreakdown? = null)
 
 /**
- * Seals are placed from the draft log plus calibrated window geometry: Arena renders the pack in
- * log order on a fixed grid, so once the grid fractions for this window size are known, placement
- * needs no screen capture at all. Capture (with the CV detector) runs only in the background to
- * calibrate a window size the store hasn't seen yet — until then the fractions measured from real
- * frames serve as the default.
+ * Seal POSITIONS come from calibrated window geometry (Arena's pack grid is deterministic per
+ * window size), so seals appear the instant the log announces a pack — as neutral placeholders.
+ * Card IDENTITY comes from capture + art recognition in the background, because the log's pack
+ * order is NOT the on-screen order (live-disproven 2026-06-29): once two consecutive captures
+ * agree on the assignment, the placeholders fill in with grades. A successful detection also
+ * refreshes this window size's grid calibration as a by-product. Capture failures (hover
+ * preview, animation, permissions) therefore delay grades but never move, hide, or mis-seat
+ * the seals.
  */
 @Composable
 fun ArenaOverlayTracker(
@@ -113,39 +117,72 @@ fun ArenaOverlayTracker(
     var calVersion by remember { mutableStateOf(0) }
     val cal = remember(b.w, b.h, calVersion) { store.get(b.w, b.h) }
 
+    // Slot -> index into cards; null while recognition is still pending for this pack. Keyed on
+    // the pack so a new pack synchronously reverts to placeholders (no one-frame stale grades).
+    val packKey = remember(cards) { cards.joinToString("|") { "${it.name}#${it.imageUrl}" } }
+    val assignmentState = remember(packKey) { mutableStateOf<Map<Int, Int>?>(null) }
+
     var devMarks by remember { mutableStateOf<List<Mark>>(emptyList()) }
-    val marks = if (calibrating) devMarks else remember(cards, b.w, b.h, cal) {
-        geometryMarks(cards, cal ?: PackGeometry.DEFAULT, b.w, b.h)
+    val marks = if (calibrating) devMarks else remember(cards, b.w, b.h, cal, assignmentState.value) {
+        geometryMarks(cards, cal ?: PackGeometry.DEFAULT, b.w, b.h, assignmentState.value)
     }
 
     var clickThroughFailed by remember { mutableStateOf(false) }
     val visible = (b.frontmost || calibrating) && (cards.isNotEmpty() || calibrating) && !clickThroughFailed
 
-    // Calibrate window sizes the store hasn't seen, from a rich pack (early picks have enough
-    // cards for a trustworthy grid). Runs behind geometry placement; seals never wait on it.
-    val wantCalibration = !calibrating && visible && cards.size >= MIN_CALIBRATION_CARDS && !store.has(b.w, b.h)
-    LaunchedEffect(wantCalibration, cards.size, b.w, b.h) {
-        if (!wantCalibration) return@LaunchedEffect
-        delay(CALIBRATION_DEBOUNCE_MS)
-        var prev: PackGridCalibration? = null
-        repeat(MAX_CALIBRATION_ATTEMPTS) {
-            val next = withContext(Dispatchers.IO) {
-                cap.capture()?.let { CardDetector.detect(it, cards.size) }?.let { PackGeometry.fromGrid(it) }
-            }
-            // Arena animates for a moment after a pack arrives; require two consecutive captures
-            // to agree so a mid-animation frame can't poison the stored calibration.
-            if (next != null) {
-                if (prev != null && next.approx(prev!!)) {
-                    store.put(b.w, b.h, next)
-                    calVersion++
-                    Log.info(TAG, "calibrated pack grid for ${b.w}x${b.h}")
-                    return@LaunchedEffect
-                }
-                prev = next
-            }
-            delay(CALIBRATION_RETRY_MS)
+    // Identity pass: capture, detect, recognize — repeats until two consecutive captures agree
+    // on the full assignment (Arena animates after a pack arrives; a single mid-animation frame
+    // could lock in garbage). Detections also refresh the grid calibration for this window size.
+    LaunchedEffect(packKey, visible, b.w, b.h) {
+        if (calibrating || !visible || cards.isEmpty() || assignmentState.value != null) return@LaunchedEffect
+        delay(CAPTURE_DEBOUNCE_MS)
+        val refs = withContext(Dispatchers.IO) {
+            cards.map { c -> c.imageUrl?.let { CardImageLoader.loadBufferedImage(it) }?.let { CardRecognizer.ofCard(it) } }
         }
-        Log.warn(TAG, "grid calibration did not converge for ${b.w}x${b.h}; using default fractions")
+        val expected = refs.count { it != null }
+        if (expected == 0) {
+            Log.warn(TAG, "no card images available for recognition; seals stay ungraded")
+            return@LaunchedEffect
+        }
+        var prev: Map<Int, Int>? = null
+        var lastFailure = "no frame captured — check Screen Recording permission"
+        repeat(MAX_RECOGNITION_ATTEMPTS) {
+            val attempt = withContext(Dispatchers.IO) {
+                val frame = cap.capture() ?: return@withContext null
+                val grid = CardDetector.detect(frame, cards.size)
+                val freshCal = if (cards.size >= MIN_CALIBRATION_CARDS) grid?.let { PackGeometry.fromGrid(it) } else null
+                // Recognize inside detected rects when available; otherwise the calibrated
+                // fractions mapped into the frame still put each art window on its card.
+                val rects = grid?.cards(cards.size)
+                    ?: PackGeometry.rects(store.get(b.w, b.h) ?: PackGeometry.DEFAULT, frame.width, frame.height, cards.size)
+                Pair(CardRecognizer.match(frame, rects, refs), freshCal)
+            }
+            val assign = attempt?.first
+            if (assign == null) {
+                lastFailure = "no frame captured — check Screen Recording permission"
+            } else if (assign.size < expected) {
+                lastFailure = "recognition incomplete (${assign.size}/$expected)"
+            } else if (assign == prev) {
+                // This frame is stable (two consecutive captures agree), so it is also the one
+                // safe to calibrate from — a lone mid-animation detection must not be stored.
+                attempt.second?.let {
+                    store.put(b.w, b.h, it)
+                    calVersion++
+                }
+                assignmentState.value = assign
+                return@LaunchedEffect
+            } else {
+                prev = assign
+            }
+            delay(RECOGNITION_RETRY_MS)
+        }
+        // Last resort: the pack-list order. It is known not to match the screen in general, but
+        // after this many failed captures a possibly misordered grade beats a blank seal.
+        Log.warn(TAG, "$lastFailure after $MAX_RECOGNITION_ATTEMPTS attempts; falling back to pack-list order")
+        val n = cards.size
+        if (cards.all { it.originalIndex in 0 until n } && cards.map { it.originalIndex }.toSet().size == n) {
+            assignmentState.value = cards.withIndex().associate { (i, c) -> c.originalIndex to i }
+        }
     }
 
     // Dev calibration mode: numbered boxes driven by live detection of a full 15-slot grid.
@@ -160,7 +197,7 @@ fun ArenaOverlayTracker(
                     Mark((r.x * sx).roundToInt(), (r.y * sy).roundToInt(), (r.w * sx).roundToInt(), (r.h * sy).roundToInt(), null, r.index + 1, false, null)
                 }
             }
-            delay(CALIBRATION_RETRY_MS)
+            delay(DEV_DETECT_RETRY_MS)
         }
     }
 
@@ -266,22 +303,22 @@ fun ArenaOverlayTracker(
     }
 }
 
-private fun PackGridCalibration.approx(other: PackGridCalibration, eps: Float = 0.004f): Boolean =
-    abs(colX0 - other.colX0) < eps && abs(colPitch - other.colPitch) < eps &&
-        abs(colW - other.colW) < eps && abs(row0Y - other.row0Y) < eps &&
-        abs(rowPitch - other.rowPitch) < eps && abs(cardH - other.cardH) < eps
-
-private fun geometryMarks(cards: List<OverlayCard>, cal: PackGridCalibration, winW: Int, winH: Int): List<Mark> {
+private fun geometryMarks(
+    cards: List<OverlayCard>,
+    cal: PackGridCalibration,
+    winW: Int,
+    winH: Int,
+    assignment: Map<Int, Int>?,
+): List<Mark> {
     if (cards.isEmpty()) return emptyList()
     val rects = PackGeometry.rects(cal, winW, winH, cards.size)
-    // Cards arrive ranked; originalIndex is the on-screen slot. Fall back to list order if the
-    // indices don't form a clean permutation.
-    val byOriginal = cards.all { it.originalIndex in rects.indices } &&
-        cards.map { it.originalIndex }.toSet().size == cards.size
-    val best = cards.indices.maxByOrNull { cards[it].value ?: Double.NEGATIVE_INFINITY }
-    return cards.mapIndexed { i, c ->
-        val r = rects[if (byOriginal) c.originalIndex else i]
-        Mark(r.x, r.y, r.w, r.h, c.value, null, i == best, c.breakdown)
+    // Until recognition lands, every slot shows a neutral placeholder (gray "—" seal).
+    if (assignment == null) return rects.map { Mark(it.x, it.y, it.w, it.h, null, null, false, null) }
+    val bestCard = assignment.values.maxByOrNull { cards[it].value ?: Double.NEGATIVE_INFINITY }
+    return rects.map { r ->
+        val ci = assignment[r.index]
+        if (ci == null) Mark(r.x, r.y, r.w, r.h, null, null, false, null)
+        else Mark(r.x, r.y, r.w, r.h, cards[ci].value, null, ci == bestCard, cards[ci].breakdown)
     }
 }
 

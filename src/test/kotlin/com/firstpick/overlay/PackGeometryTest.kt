@@ -78,20 +78,17 @@ class PackGeometryTest {
     }
 
     @Test
-    fun storeRoundTripsAndMatchesOnAspect() {
+    fun storeRoundTripsAndOnlyMatchesTheExactSize() {
         val dir = Files.createTempDirectory("fp-cal")
         val store = PackGridCalibrationStore(dir.resolve("grid.json"))
         assertNull(store.get(1470, 860))
 
         store.put(1470, 860, PackGeometry.DEFAULT)
         assertEquals(PackGeometry.DEFAULT, store.get(1470, 860))
-        assertTrue(store.has(1470, 860))
 
-        // same aspect, different scale → reuse
-        assertEquals(PackGeometry.DEFAULT, store.get(735, 430))
-        assertTrue(!store.has(735, 430))
-
-        // different aspect → no reuse
+        // Arena's title bar is constant points, so fractions drift across sizes — no reuse,
+        // not even at the same aspect ratio.
+        assertNull(store.get(735, 430))
         assertNull(store.get(1470, 1100))
 
         // fresh instance reads what was persisted
