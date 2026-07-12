@@ -250,6 +250,7 @@ fun BreakdownTooltip(b: ValueBreakdown) {
             if (b.penalty != 0.0) BreakdownRow("Color penalty", String.format("%+.1f", b.penalty))
             if (b.duplicatePenalty != 0.0) BreakdownRow("Extra copy", String.format("%+.1f", b.duplicatePenalty))
             if (b.needsPoints != 0.0) BreakdownRow("Deck needs", String.format("%+.1f", b.needsPoints))
+            if (b.modelShift != 0.0) BreakdownRow("Model adjustment", String.format("%+.1f", b.modelShift))
             Spacer(Modifier.height(4.dp))
             BreakdownRow("Final score", String.format("%.1f", b.finalScore), bold = true)
         }

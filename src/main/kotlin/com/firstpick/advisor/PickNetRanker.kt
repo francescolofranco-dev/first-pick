@@ -9,8 +9,9 @@ import com.firstpick.model.PickNet
  * order wins. The heuristic VALUEs stay on display but are transplanted
  * rank-preservingly along the model's order, keeping value monotonic with
  * rank — grades, confidence gaps, and the pack's value distribution all keep
- * their meaning. A card whose displayed value is no longer its own loses its
- * score-breakdown tooltip rather than show numbers that don't add up.
+ * their meaning. A card whose displayed value is no longer its own keeps its
+ * score-breakdown tooltip, with the gap booked as an explicit "model
+ * adjustment" line so the components still sum to the displayed grade.
  */
 object PickNetRanker {
     /** Below this share of pack cards known to the model, don't trust it. */
@@ -32,7 +33,9 @@ object PickNetRanker {
             s.copy(
                 value = v,
                 rawValue = v,
-                breakdown = s.breakdown.takeIf { v == s.value },
+                // The card keeps its own component breakdown; the transplant gap becomes a
+                // "model adjustment" so Final score still equals the displayed grade.
+                breakdown = s.breakdown?.copy(finalScore = v, modelShift = v - s.value),
                 reasons = if (promoted) (listOf(MODEL_PICK_REASON) + s.reasons).take(3) else s.reasons,
             )
         }

@@ -46,10 +46,16 @@ class PickNetRankerTest {
         assertEquals(listOf("Carrion", "Bolt", "Angel"), ranked.map { it.card.name })
         // Value stays monotonic with rank: best displayed value on the net's top card.
         assertEquals(listOf(80.0, 60.0, 40.0), ranked.map { it.value })
-        // Transplanted cards lose the breakdown tooltip; Bolt keeps its own value → keeps it.
-        assertNull(ranked[0].breakdown)
+        // Every card keeps its breakdown; Final score tracks the displayed grade, and the
+        // transplant gap is booked as the model adjustment (Carrion 40 -> shown 80 = +40).
+        val carrion = ranked[0].breakdown!!
+        assertEquals(80.0, carrion.finalScore)
+        assertEquals(40.0, carrion.modelShift)
+        // Bolt keeps its own value → no adjustment.
         assertNotNull(ranked[1].breakdown)
-        assertNull(ranked[2].breakdown)
+        assertEquals(0.0, ranked[1].breakdown!!.modelShift)
+        // Angel demoted 80 -> shown 40 = -40.
+        assertEquals(-40.0, ranked[2].breakdown!!.modelShift)
         // The promoted top card is flagged.
         assertEquals(PickNetRanker.MODEL_PICK_REASON, ranked[0].reasons.first())
         assertTrue(ranked[1].reasons.none { it == PickNetRanker.MODEL_PICK_REASON })
@@ -62,6 +68,7 @@ class PickNetRankerTest {
         assertEquals("Carrion", ranked[0].card.name)
         assertTrue(ranked[0].reasons.none { it == PickNetRanker.MODEL_PICK_REASON })
         assertNotNull(ranked[0].breakdown)
+        assertEquals(0.0, ranked[0].breakdown!!.modelShift)
     }
 
     @Test

@@ -21,4 +21,6 @@ data class ValueBreakdown(
     val finalScore: Double,
     val themeBonus: Double = 0.0,
     val duplicatePenalty: Double = 0.0,
+    /** How much the learned pick model moved this card's displayed grade off its heuristic value. */
+    val modelShift: Double = 0.0,
 )
