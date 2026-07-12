@@ -48,9 +48,9 @@ private const val POLL_MS = 300L
 private const val BOUNDS_GRACE_MS = 2_000L
 private const val CLICK_THROUGH_ATTEMPTS = 40
 private const val CLICK_THROUGH_RETRY_MS = 150L
-private const val CAPTURE_DEBOUNCE_MS = 350L
-private const val RECOGNITION_RETRY_MS = 700L
-private const val MAX_RECOGNITION_ATTEMPTS = 10
+private const val CAPTURE_DEBOUNCE_MS = 600L
+private const val RECOGNITION_RETRY_MS = 500L
+private const val MAX_RECOGNITION_ATTEMPTS = 12
 private const val DEV_DETECT_RETRY_MS = 900L
 private const val MIN_CALIBRATION_CARDS = 10
 
@@ -121,6 +121,7 @@ fun ArenaOverlayTracker(
     // the pack so a new pack synchronously reverts to placeholders (no one-frame stale grades).
     val packKey = remember(cards) { cards.joinToString("|") { "${it.name}#${it.imageUrl}" } }
     val assignmentState = remember(packKey) { mutableStateOf<Map<Int, Int>?>(null) }
+    var captureFailed by remember(packKey) { mutableStateOf(false) }
 
     var devMarks by remember { mutableStateOf<List<Mark>>(emptyList()) }
     val marks = if (calibrating) devMarks else remember(cards, b.w, b.h, cal, assignmentState.value) {
@@ -130,21 +131,24 @@ fun ArenaOverlayTracker(
     var clickThroughFailed by remember { mutableStateOf(false) }
     val visible = (b.frontmost || calibrating) && (cards.isNotEmpty() || calibrating) && !clickThroughFailed
 
-    // Identity pass: capture, detect, recognize — repeats until two consecutive captures agree
-    // on the full assignment (Arena animates after a pack arrives; a single mid-animation frame
-    // could lock in garbage). Detections also refresh the grid calibration for this window size.
+    // Identity pass: capture, detect, recognize. The FIRST frame that recognizes every card wins.
+    // (Requiring two consecutive identical frames never converged: look-alike cards — e.g. two red
+    // creatures — flip between captures, so the gate stalled and no grades ever showed. The
+    // size < expected guard below still rejects mid-animation frames, whose moving cards don't
+    // fill the grid.) A successful read also refreshes this window size's grid calibration.
     LaunchedEffect(packKey, visible, b.w, b.h) {
         if (calibrating || !visible || cards.isEmpty() || assignmentState.value != null) return@LaunchedEffect
+        captureFailed = false
         delay(CAPTURE_DEBOUNCE_MS)
         val refs = withContext(Dispatchers.IO) {
             cards.map { c -> c.imageUrl?.let { CardImageLoader.loadBufferedImage(it) }?.let { CardRecognizer.ofCard(it) } }
         }
         val expected = refs.count { it != null }
         if (expected == 0) {
-            Log.warn(TAG, "no card images available for recognition; seals stay ungraded")
+            Log.warn(TAG, "no card art available for recognition; seals stay ungraded")
+            captureFailed = true
             return@LaunchedEffect
         }
-        var prev: Map<Int, Int>? = null
         var lastFailure = "no frame captured — check Screen Recording permission"
         repeat(MAX_RECOGNITION_ATTEMPTS) {
             val attempt = withContext(Dispatchers.IO) {
@@ -158,31 +162,26 @@ fun ArenaOverlayTracker(
                 Pair(CardRecognizer.match(frame, rects, refs), freshCal)
             }
             val assign = attempt?.first
-            if (assign == null) {
-                lastFailure = "no frame captured — check Screen Recording permission"
-            } else if (assign.size < expected) {
-                lastFailure = "recognition incomplete (${assign.size}/$expected)"
-            } else if (assign == prev) {
-                // This frame is stable (two consecutive captures agree), so it is also the one
-                // safe to calibrate from — a lone mid-animation detection must not be stored.
-                attempt.second?.let {
-                    store.put(b.w, b.h, it)
-                    calVersion++
+            when {
+                assign == null -> lastFailure = "no frame captured — check Screen Recording permission"
+                assign.size < expected -> lastFailure = "recognition incomplete (${assign.size}/$expected) — pack may still be animating"
+                else -> {
+                    attempt.second?.let {
+                        store.put(b.w, b.h, it)
+                        calVersion++
+                    }
+                    assignmentState.value = assign
+                    return@LaunchedEffect
                 }
-                assignmentState.value = assign
-                return@LaunchedEffect
-            } else {
-                prev = assign
             }
             delay(RECOGNITION_RETRY_MS)
         }
-        // Last resort: the pack-list order. It is known not to match the screen in general, but
-        // after this many failed captures a possibly misordered grade beats a blank seal.
-        Log.warn(TAG, "$lastFailure after $MAX_RECOGNITION_ATTEMPTS attempts; falling back to pack-list order")
-        val n = cards.size
-        if (cards.all { it.originalIndex in 0 until n } && cards.map { it.originalIndex }.toSet().size == n) {
-            assignmentState.value = cards.withIndex().associate { (i, c) -> c.originalIndex to i }
-        }
+        // Every attempt failed to read the whole pack — capture isn't working (Screen Recording
+        // off, or the window can't be grabbed). Do NOT fall back to the log's pack order: it does
+        // not match Arena's on-screen order (measured 13/13 wrong), so it would misgrade every
+        // card. Leave the placeholders and flag it so the overlay can prompt for the permission.
+        captureFailed = true
+        Log.warn(TAG, "$lastFailure after $MAX_RECOGNITION_ATTEMPTS attempts; leaving seals ungraded")
     }
 
     // Dev calibration mode: numbered boxes driven by live detection of a full 15-slot grid.
@@ -237,7 +236,26 @@ fun ArenaOverlayTracker(
             for (m in marks) {
                 if (m.number != null) NumberBox(m) else GradeSeal(m)
             }
+            if (captureFailed && !calibrating) CaptureHint(Modifier.align(Alignment.TopCenter))
         }
+    }
+}
+
+@Composable
+private fun CaptureHint(modifier: Modifier) {
+    Box(
+        modifier
+            .offset(y = 44.dp)
+            .background(Color(0xF01A1512), RoundedCornerShape(8.dp))
+            .border(1.dp, Color(0xFFFFC02E), RoundedCornerShape(8.dp))
+            .padding(horizontal = 14.dp, vertical = 8.dp),
+    ) {
+        Text(
+            "FirstPick can't read the pack — turn on Screen Recording for it in System Settings › Privacy & Security, then reopen the overlay.",
+            color = Color(0xFFF0E6D8),
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Medium,
+        )
     }
 }
 
