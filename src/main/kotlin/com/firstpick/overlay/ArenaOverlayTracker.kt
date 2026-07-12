@@ -19,6 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -33,6 +34,8 @@ import com.firstpick.ui.BreakdownTooltip
 import com.firstpick.ui.CardImageLoader
 import com.firstpick.ui.DevFlags
 import com.firstpick.ui.MacOverlay
+import com.firstpick.ui.TierInk
+import com.firstpick.ui.isBombTier
 import com.firstpick.ui.letterGrade
 import com.firstpick.ui.valueTierColor
 import com.firstpick.advisor.ValueBreakdown
@@ -325,25 +328,41 @@ private fun geometryMarks(
 @Composable
 private fun GradeSeal(m: Mark) {
     val color = valueTierColor(m.value)
+    val bomb = isBombTier(m.value)
     val d = (m.w * 0.40f).roundToInt().coerceIn(34, 92)
-    val cx = m.x + m.w / 2 - d / 2
-    val cy = m.y + m.h - (d * 0.72f).roundToInt()
-    Box(
-        Modifier
-            .offset(cx.dp, cy.dp)
-            .size(d.dp)
-            .background(Color(0xF00E1312), CircleShape)
-            .border(if (m.isBest) 3.dp else 2.dp, color, CircleShape),
-        contentAlignment = Alignment.Center,
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(letterGrade(m.value), color = color, fontWeight = FontWeight.Bold, fontSize = (d * 0.34f).sp)
-            Text(
-                m.value?.roundToInt()?.toString() ?: "—",
-                color = color.copy(alpha = 0.85f),
-                fontFamily = FontFamily.Monospace,
-                fontSize = (d * 0.18f).sp,
-            )
+    // A gold halo makes a bomb impossible to miss; the recommended pick (best in the pack) gets a
+    // fainter one so it still reads when it isn't a bomb. The halo widens the box, so re-center.
+    val haloAlpha = if (bomb) 0.55f else if (m.isBest) 0.34f else 0f
+    val halo = if (bomb) (d * 0.44f).roundToInt() else if (m.isBest) (d * 0.30f).roundToInt() else 0
+    val box = d + halo * 2
+    val cx = m.x + m.w / 2 - box / 2
+    val cy = m.y + m.h - (d * 0.72f).roundToInt() - halo
+
+    Box(Modifier.offset(cx.dp, cy.dp).size(box.dp), contentAlignment = Alignment.Center) {
+        if (haloAlpha > 0f) {
+            Box(Modifier.matchParentSize().background(Brush.radialGradient(listOf(color.copy(alpha = haloAlpha), Color.Transparent))))
+        }
+        Box(
+            Modifier
+                .size(d.dp)
+                .background(if (bomb) color else Color(0xF00E1312), CircleShape)
+                .border(
+                    width = if (bomb) 2.5.dp else if (m.isBest) 3.dp else 2.dp,
+                    color = if (bomb) Color(0xFFFFE7A6) else color,
+                    shape = CircleShape,
+                ),
+            contentAlignment = Alignment.Center,
+        ) {
+            val ink = if (bomb) TierInk else color
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(letterGrade(m.value), color = ink, fontWeight = FontWeight.Bold, fontSize = (d * 0.34f).sp)
+                Text(
+                    m.value?.roundToInt()?.toString() ?: "—",
+                    color = ink.copy(alpha = 0.85f),
+                    fontFamily = FontFamily.Monospace,
+                    fontSize = (d * 0.18f).sp,
+                )
+            }
         }
     }
 }
