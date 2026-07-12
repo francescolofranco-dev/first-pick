@@ -282,4 +282,28 @@ class AdvisorEngineTest {
         val result = run(pack, pool, packNumber = 3, pickNumber = 10)
         result.forEach { assertTrue(it.value in 0.0..100.0, "${it.card.name} value ${it.value} out of bounds") }
     }
+
+    @Test
+    fun breakdownComponentsSumToTheFinalScore() {
+        // Exhaustiveness: every term that moves the score must be a breakdown row, so the tooltip
+        // adds up. Includes a card that clamps at 100 (scoreCap) and one likely to wheel.
+        val pool = List(6) { card(100 + it, "BlueGuy$it", 0.58, "U") }
+        val pack = listOf(
+            card(1, "Insane", 0.82, "U", iwd = 0.10),      // huge z -> clamps at 100
+            card(2, "Wheeler", 0.54, "U", alsa = 9.0),     // ALSA >= wheelAlsa -> wheel penalty
+            card(3, "OffColor", 0.60, "R"),                // off-lane color penalty
+            card(4, "Terrible", 0.30, "R"),                // clamps at 0
+        )
+        val result = run(pack, pool, packNumber = 3, pickNumber = 10)
+        for (s in result) {
+            val b = s.breakdown!!
+            val sum = b.baseScore + b.archetypeShift + b.synergyBonus + b.themeBonus +
+                b.penalty + b.needsPoints + b.wheelPenalty + b.duplicatePenalty + b.scoreCap + b.modelShift
+            assertEquals(b.finalScore, sum, 1e-6, "${s.card.name}: rows sum to $sum but finalScore is ${b.finalScore}")
+            assertEquals(s.value, b.finalScore, 1e-9, "${s.card.name}: finalScore must equal the displayed value")
+        }
+        // The chosen cards actually exercise the two newly-booked terms.
+        assertTrue(scoreOf(result, "Wheeler").breakdown!!.wheelPenalty < 0.0, "wheel penalty should fire")
+        assertTrue(scoreOf(result, "Insane").breakdown!!.scoreCap < 0.0, "top-end clamp should book a negative scoreCap")
+    }
 }

@@ -30,7 +30,6 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberWindowState
 import com.firstpick.core.Log
-import com.firstpick.ui.BreakdownTooltip
 import com.firstpick.ui.CardImageLoader
 import com.firstpick.ui.DevFlags
 import com.firstpick.ui.MacOverlay
@@ -38,7 +37,6 @@ import com.firstpick.ui.TierInk
 import com.firstpick.ui.isBombTier
 import com.firstpick.ui.letterGrade
 import com.firstpick.ui.valueTierColor
-import com.firstpick.advisor.ValueBreakdown
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -60,12 +58,11 @@ data class OverlayCard(
     val value: Double?,
     val imageUrl: String?,
     val name: String = "",
-    val breakdown: ValueBreakdown? = null,
     /** Position of this card in Arena's pack list (the on-screen slot), row-major. */
     val originalIndex: Int = -1,
 )
 
-private data class Mark(val x: Int, val y: Int, val w: Int, val h: Int, val value: Double?, val number: Int?, val isBest: Boolean, val breakdown: ValueBreakdown? = null)
+private data class Mark(val x: Int, val y: Int, val w: Int, val h: Int, val value: Double?, val number: Int?, val isBest: Boolean)
 
 /**
  * Seal POSITIONS come from calibrated window geometry (Arena's pack grid is deterministic per
@@ -197,47 +194,10 @@ fun ArenaOverlayTracker(
                 val sx = b.w.toFloat() / grid.imageW
                 val sy = b.h.toFloat() / grid.imageH
                 devMarks = grid.cards(15).map { r ->
-                    Mark((r.x * sx).roundToInt(), (r.y * sy).roundToInt(), (r.w * sx).roundToInt(), (r.h * sy).roundToInt(), null, r.index + 1, false, null)
+                    Mark((r.x * sx).roundToInt(), (r.y * sy).roundToInt(), (r.w * sx).roundToInt(), (r.h * sy).roundToInt(), null, r.index + 1, false)
                 }
             }
             delay(DEV_DETECT_RETRY_MS)
-        }
-    }
-
-    var hoveredIndex by remember { mutableStateOf<Int?>(null) }
-    LaunchedEffect(visible, b.x, b.y, marks) {
-        // The marks this index pointed into are gone on every restart; without the reset a
-        // tooltip could stay stuck on screen when the pointer is no longer over any seal.
-        hoveredIndex = null
-        if (!visible || marks.isEmpty()) return@LaunchedEffect
-        var lastHovered: Int? = null
-        while (true) {
-            val ptr = withContext(Dispatchers.IO) { java.awt.MouseInfo.getPointerInfo()?.location }
-            if (ptr != null) {
-                val mx = ptr.x - b.x
-                val my = ptr.y - b.y
-
-                val expand = 10
-
-                var hIndex: Int? = null
-                for ((i, m) in marks.withIndex()) {
-                    val d = (m.w * 0.40f).roundToInt().coerceIn(34, 92)
-                    val cx = m.x + m.w / 2 - d / 2
-                    val cy = m.y + m.h - (d * 0.72f).roundToInt()
-
-                    val p = if (i == lastHovered) expand else 0
-                    if (mx >= cx - p && mx <= cx + d + p && my >= cy - p && my <= cy + d + p) {
-                        hIndex = i
-                        break
-                    }
-                }
-
-                if (hIndex != lastHovered) {
-                    hoveredIndex = hIndex
-                    lastHovered = hIndex
-                }
-            }
-            delay(50)
         }
     }
 
@@ -277,31 +237,6 @@ fun ArenaOverlayTracker(
             for (m in marks) {
                 if (m.number != null) NumberBox(m) else GradeSeal(m)
             }
-
-            val hIndex = hoveredIndex
-            if (hIndex != null && hIndex in marks.indices) {
-                val m = marks[hIndex]
-                val bd = m.breakdown
-                if (bd != null) {
-                    val d = (m.w * 0.40f).roundToInt().coerceIn(34, 92)
-                    val cx = m.x + m.w / 2 - d / 2
-                    val cy = m.y + m.h - (d * 0.72f).roundToInt()
-
-                    val tooltipW = 205
-                    val tooltipH = 170
-
-                    var tooltipX = cx + d / 2 - tooltipW / 2
-                    var tooltipY = cy - tooltipH - 8
-
-                    if (tooltipX < 8) tooltipX = 8
-                    if (tooltipX + tooltipW > b.w - 8) tooltipX = b.w - tooltipW - 8
-                    if (tooltipY < 8) tooltipY = cy + d + 8
-
-                    Box(Modifier.offset(tooltipX.dp, tooltipY.dp)) {
-                        BreakdownTooltip(bd)
-                    }
-                }
-            }
         }
     }
 }
@@ -316,12 +251,12 @@ private fun geometryMarks(
     if (cards.isEmpty()) return emptyList()
     val rects = PackGeometry.rects(cal, winW, winH, cards.size)
     // Until recognition lands, every slot shows a neutral placeholder (gray "—" seal).
-    if (assignment == null) return rects.map { Mark(it.x, it.y, it.w, it.h, null, null, false, null) }
+    if (assignment == null) return rects.map { Mark(it.x, it.y, it.w, it.h, null, null, false) }
     val bestCard = assignment.values.maxByOrNull { cards[it].value ?: Double.NEGATIVE_INFINITY }
     return rects.map { r ->
         val ci = assignment[r.index]
-        if (ci == null) Mark(r.x, r.y, r.w, r.h, null, null, false, null)
-        else Mark(r.x, r.y, r.w, r.h, cards[ci].value, null, ci == bestCard, cards[ci].breakdown)
+        if (ci == null) Mark(r.x, r.y, r.w, r.h, null, null, false)
+        else Mark(r.x, r.y, r.w, r.h, cards[ci].value, null, ci == bestCard)
     }
 }
 

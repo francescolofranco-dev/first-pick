@@ -73,7 +73,7 @@ fun main() {
             val isDrafting = state.phase == DraftPhase.DRAFTING || state.phase == DraftPhase.IDLE
             if (isDrafting) {
                 val cards = remember(state.packCards) {
-                    state.packCards.map { OverlayCard(it.value, it.imageUrl, it.name, it.breakdown, it.originalIndex) }
+                    state.packCards.map { OverlayCard(it.value, it.imageUrl, it.name, it.originalIndex) }
                 }
                 ArenaOverlayTracker(cards = cards)
             } else {

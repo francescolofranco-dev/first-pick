@@ -205,6 +205,8 @@ class AdvisorEngine(
             needsPoints = needsPts,
             finalScore = value,
             duplicatePenalty = -dupPts,
+            wheelPenalty = -wheelPts,
+            scoreCap = value - rawValue,
         )
 
         return ScoredCard(card, value, blendedZ, isBomb, reasons.take(MAX_REASONS), breakdown, rawValue)
