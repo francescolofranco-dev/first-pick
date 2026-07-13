@@ -41,6 +41,54 @@ object DeckProjector {
     private const val THEME_NUDGE = 0.008
     private const val KEY_NUDGE = 0.005
 
+    /**
+     * How a candidate card changes the projected deck: [project] of `pool + candidate`
+     * compared against [project] of `pool`. Engine-internal for now.
+     */
+    data class Fit(
+        /** The candidate earns one of the 23 spell slots. */
+        val makesDeck: Boolean,
+        /** Names pushed out of the 23 (empty when it doesn't make the deck; the whole
+         *  list is only meaningful when the base didn't shift). */
+        val displaced: List<String>,
+        /** Adding the candidate moved the projected two-color base itself. */
+        val baseShifted: Boolean,
+        /** A splash color that appeared (or changed) because of the candidate. */
+        val splashAdded: Char?,
+        /** Projected powerScore delta (after − before). */
+        val powerDelta: Double,
+    )
+
+    /** Pure comparison of two projections; [before] may be cached across a whole pack. */
+    fun fit(before: DeckOption?, after: DeckOption?, candidate: RankedCard): Fit {
+        val beforeCounts = before?.spells?.groupingBy { it.name }?.eachCount().orEmpty()
+        val afterCounts = after?.spells?.groupingBy { it.name }?.eachCount().orEmpty()
+        val makesDeck = (afterCounts[candidate.name] ?: 0) > (beforeCounts[candidate.name] ?: 0)
+        val displaced = beforeCounts.entries.flatMap { (name, count) ->
+            List((count - (afterCounts[name] ?: 0)).coerceAtLeast(0)) { name }
+        }
+        val baseShifted = before != null && after != null && before.basePair != after.basePair
+        val splashAdded = after?.splash?.takeIf { it != before?.splash }
+        val powerDelta = (after?.powerScore ?: 0.0) - (before?.powerScore ?: 0.0)
+        return Fit(makesDeck, displaced, baseShifted, splashAdded, powerDelta)
+    }
+
+    /** Convenience: project with and without [candidate] and compare. */
+    fun fit(
+        pool: List<RankedCard>,
+        candidate: RankedCard,
+        metrics: SetMetrics,
+        meta: (String) -> CardMeta? = { null },
+        archetypeRating: (String, String) -> CardRating? = { _, _ -> null },
+        pairStrength: Map<String, Double> = emptyMap(),
+        synergy: SynergyIndex? = null,
+        before: DeckOption? = null,
+    ): Fit {
+        val b = before ?: project(pool, metrics, meta, archetypeRating, pairStrength, synergy)
+        val a = project(pool + candidate, metrics, meta, archetypeRating, pairStrength, synergy)
+        return fit(b, a, candidate)
+    }
+
     /** The strongest projected deck for this pool — the pick-time entry point. */
     fun project(
         pool: List<RankedCard>,

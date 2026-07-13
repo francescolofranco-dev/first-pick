@@ -7,6 +7,7 @@ import com.firstpick.cards.SetMetrics
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 /**
  * DeckProjector is the shared deck model behind both the end-of-draft builder and
@@ -43,5 +44,52 @@ class DeckProjectorTest {
     @Test
     fun projectIsNullOnAnEmptyPool() {
         assertNull(DeckProjector.project(emptyList(), metrics, meta))
+    }
+
+    @Test
+    fun strongOnColorCardMakesTheDeckAndDisplacesExactlyOneFiller() {
+        val fit = DeckProjector.fit(pool(), card(999, "Bomb", 0.70, "U"), metrics, meta)
+        assertTrue(fit.makesDeck, "a 70% on-color card must earn a slot")
+        assertEquals(1, fit.displaced.size, "one filler leaves the 23: ${fit.displaced}")
+        assertTrue(fit.displaced.first() != "Bomb")
+        assertTrue(!fit.baseShifted)
+        assertTrue(fit.powerDelta > 0, "the projected deck got stronger")
+    }
+
+    @Test
+    fun marginalOffColorCardDoesNotMakeTheDeck() {
+        val pool = buildList {
+            repeat(13) { add(card(it, "W$it", 0.56, "W")) }
+            repeat(13) { add(card(100 + it, "U$it", 0.56, "U")) }
+        }
+        val fit = DeckProjector.fit(pool, card(999, "MehBlack", 0.565, "B"), metrics, meta)
+        assertTrue(!fit.makesDeck, "half a point of win rate does not dent a full two-color deck")
+        assertTrue(fit.displaced.isEmpty())
+        assertNull(fit.splashAdded)
+    }
+
+    @Test
+    fun strongOffColorCardIntoAShortBaseBecomesTheSplash() {
+        val pool = buildList {
+            repeat(9) { add(card(it, "W$it", 0.56, "W")) }
+            repeat(9) { add(card(100 + it, "U$it", 0.56, "U")) }
+        }
+        val fit = DeckProjector.fit(pool, card(999, "BlackBomb", 0.62, "B"), metrics, meta)
+        assertTrue(fit.makesDeck, "a short base takes the strong off-color card as its splash")
+        assertEquals('B', fit.splashAdded, "the deck opened a black splash for this card")
+    }
+
+    @Test
+    fun duplicateCopiesAreCountedNotConfusedByName() {
+        // Pool already holds one mediocre "Dup"; adding a second must register as making
+        // the deck only if the extra COPY earns a slot, not because the name is present.
+        val pool = pool() + card(998, "Dup", 0.50, "W")
+        val before = DeckProjector.project(pool, metrics, meta)!!
+        val copiesBefore = before.spells.count { it.name == "Dup" }
+        val fit = DeckProjector.fit(pool, card(999, "Dup", 0.50, "W"), metrics, meta)
+        val makesAsExtraCopy = fit.makesDeck
+        // A 0.50 card in a 0.58 pool doesn't make the 23 at all — neither copy.
+        assertEquals(0, copiesBefore)
+        assertTrue(!makesAsExtraCopy, "a below-rate duplicate must not read as 'makes the deck'")
     }
 }
