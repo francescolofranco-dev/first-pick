@@ -4,6 +4,8 @@ import com.firstpick.advisor.AdvisorEngine
 import com.firstpick.advisor.COLOR_PAIRS
 import com.firstpick.advisor.DeckBuilder
 import com.firstpick.advisor.DeckOption
+import com.firstpick.advisor.DeckProjector
+import com.firstpick.advisor.Lane
 import com.firstpick.advisor.LaneDetector
 import com.firstpick.signals.SignalsEngine
 import com.firstpick.cards.ArchetypeRepository
@@ -83,6 +85,10 @@ fun main(args: Array<String>) = runBlocking {
         dupCreaturePts = sysD("firstpick.dupCreaturePts", base.dupCreaturePts),
         creatureFloorPts = sysD("firstpick.creatureFloorPts", base.creatureFloorPts),
         creatureFloorTarget = sysD("firstpick.creatureFloorTarget", base.creatureFloorTarget),
+        fitPerPowerDelta = sysD("firstpick.fitPerPowerDelta", base.fitPerPowerDelta),
+        fitCapPts = sysD("firstpick.fitCapPts", base.fitCapPts),
+        fitRampStart = sysD("firstpick.fitRampStart", base.fitRampStart),
+        fitRampSpan = sysD("firstpick.fitRampSpan", base.fitRampSpan),
     )
     val engine = AdvisorEngine(cfg)
     val netPath = System.getProperty("firstpick.net")
@@ -95,6 +101,13 @@ fun main(args: Array<String>) = runBlocking {
     fun buildDeck(pool: List<RankedCard>): DeckOption? =
         DeckBuilder.build(pool, repo.setMetrics, meta, archRepo::archetypeRating, pairStrength, maxOptions = 1, synergy = synergyIndex)
             .firstOrNull()
+    // Deck-fit probe mirroring the app's wiring; -Dfirstpick.fitPerPowerDelta=0 skips the
+    // projections entirely, giving a byte-identical no-fit baseline for A/Bs.
+    fun fitProbe(pool: List<RankedCard>, lane: Lane): ((RankedCard) -> DeckProjector.Fit?)? {
+        if (cfg.fitPerPowerDelta <= 0.0 || !lane.isEstablished) return null
+        val before = DeckProjector.project(pool, repo.setMetrics, meta, archRepo::archetypeRating, pairStrength, synergyIndex)
+        return { c -> DeckProjector.fit(pool, c, repo.setMetrics, meta, archRepo::archetypeRating, pairStrength, synergyIndex, before) }
+    }
 
     // ---- Pass 1: per-draft human pool + agreement diagnostics; assemble estimator training data.
     fun isTest(id: String) = (id.hashCode() and 0x7fffffff) % 5 == 0
@@ -112,7 +125,7 @@ fun main(args: Array<String>) = runBlocking {
             seen[(row.pack + 1) to (row.pick + 1)] = pack
             val signals = SignalsEngine.openLanesResolved(seen)
             val lane = LaneDetector.detect(pool, repo.setMetrics, pairStrength, signals)
-            val scored = engine.score(pack, pool, row.pack + 1, row.pick + 1, repo.setMetrics, lane, archRepo::archetypeRating, meta, synergyIndex)
+            val scored = engine.score(pack, pool, row.pack + 1, row.pick + 1, repo.setMetrics, lane, archRepo::archetypeRating, meta, synergyIndex, fitProbe(pool, lane))
             scored.firstOrNull()?.let { top ->
                 diag.record(
                     agreeTop1 = top.card.name == row.pickedName,
@@ -178,7 +191,7 @@ fun main(args: Array<String>) = runBlocking {
             seen[(row.pack + 1) to (row.pick + 1)] = pack
             val signals = SignalsEngine.openLanesResolved(seen)
             val lane = LaneDetector.detect(enginePool, repo.setMetrics, pairStrength, signals)
-            val scored = engine.score(pack, enginePool, row.pack + 1, row.pick + 1, repo.setMetrics, lane, archRepo::archetypeRating, meta, synergyIndex)
+            val scored = engine.score(pack, enginePool, row.pack + 1, row.pick + 1, repo.setMetrics, lane, archRepo::archetypeRating, meta, synergyIndex, fitProbe(enginePool, lane))
             enginePool.add(scored.firstOrNull()?.card ?: pack.first())
         }
         val humanPool = picks.map { repo.resolveName(it.pickedName) }

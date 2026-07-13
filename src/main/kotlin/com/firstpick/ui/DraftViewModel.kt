@@ -3,6 +3,7 @@ package com.firstpick.ui
 import com.firstpick.advisor.AdvisorEngine
 import com.firstpick.advisor.DeckBuilder
 import com.firstpick.advisor.DeckOption
+import com.firstpick.advisor.DeckProjector
 import com.firstpick.advisor.Lane
 import com.firstpick.advisor.LaneDetector
 import com.firstpick.advisor.PickNetRanker
@@ -187,6 +188,7 @@ class DraftViewModel(
                 archetypeRating = archetypeRepo::archetypeRating,
                 meta = metaRepo::meta,
                 synergy = synergyRepo.index,
+                deckFit = deckFitProbe(pool, lane),
             )
             val ranked = net?.let { PickNetRanker.rerank(it, scored, pool.map { c -> c.name }) } ?: scored
             ranked.toRows(state.packCards)
@@ -253,6 +255,21 @@ class DraftViewModel(
             pickModelActive = net != null,
             modelSets = pickNetRepo.bundledSets(StandardSets.codes, format),
         )
+    }
+
+    // Deck-fit probe for pick scoring: projects the pool's best deck once per pack, then
+    // re-projects per candidate. Null while the lane is open — the engine's ramp would zero
+    // the points anyway, so we skip the projections entirely.
+    private fun deckFitProbe(
+        pool: List<com.firstpick.cards.RankedCard>,
+        lane: Lane,
+    ): ((com.firstpick.cards.RankedCard) -> DeckProjector.Fit?)? {
+        if (!lane.isEstablished) return null
+        val strength = archetypeRepo.strengthMap()
+        val before = DeckProjector.project(pool, repo.setMetrics, metaRepo::meta, archetypeRepo::archetypeRating, strength, synergyRepo.index)
+        return { card ->
+            DeckProjector.fit(pool, card, repo.setMetrics, metaRepo::meta, archetypeRepo::archetypeRating, strength, synergyRepo.index, before)
+        }
     }
 
     private fun DeckOption.toUi(): DeckOptionUi {

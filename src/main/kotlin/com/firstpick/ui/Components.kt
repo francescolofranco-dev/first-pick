@@ -248,6 +248,7 @@ fun BreakdownTooltip(b: ValueBreakdown) {
             if (b.synergyBonus != 0.0) BreakdownRow("Synergy bonus", String.format("%+.1f", b.synergyBonus))
             if (b.themeBonus != 0.0) BreakdownRow("Theme synergy", String.format("%+.1f", b.themeBonus))
             if (b.needsPoints != 0.0) BreakdownRow("Deck needs", String.format("%+.1f", b.needsPoints))
+            if (b.deckFitPoints != 0.0) BreakdownRow("Deck fit", String.format("%+.1f", b.deckFitPoints))
             if (b.penalty != 0.0) BreakdownRow("Color penalty", String.format("%+.1f", b.penalty))
             if (b.wheelPenalty != 0.0) BreakdownRow("Likely to wheel", String.format("%+.1f", b.wheelPenalty))
             if (b.duplicatePenalty != 0.0) BreakdownRow("Extra copy", String.format("%+.1f", b.duplicatePenalty))

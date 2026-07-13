@@ -298,12 +298,83 @@ class AdvisorEngineTest {
         for (s in result) {
             val b = s.breakdown!!
             val sum = b.baseScore + b.archetypeShift + b.synergyBonus + b.themeBonus +
-                b.penalty + b.needsPoints + b.wheelPenalty + b.duplicatePenalty + b.scoreCap + b.modelShift
+                b.penalty + b.needsPoints + b.deckFitPoints + b.wheelPenalty + b.duplicatePenalty + b.scoreCap + b.modelShift
             assertEquals(b.finalScore, sum, 1e-6, "${s.card.name}: rows sum to $sum but finalScore is ${b.finalScore}")
             assertEquals(s.value, b.finalScore, 1e-9, "${s.card.name}: finalScore must equal the displayed value")
         }
         // The chosen cards actually exercise the two newly-booked terms.
         assertTrue(scoreOf(result, "Wheeler").breakdown!!.wheelPenalty < 0.0, "wheel penalty should fire")
         assertTrue(scoreOf(result, "Insane").breakdown!!.scoreCap < 0.0, "top-end clamp should book a negative scoreCap")
+    }
+
+    // --- Constructive deck-fit (DeckProjector.Fit layered into the value) ---
+
+    private val creatureMeta: (String) -> CardMeta? = { CardMeta(it, cmc = 3, isCreature = true, isLand = false) }
+
+    private fun committedPool() = List(10) { card(100 + it, "BlueGuy$it", 0.58, "U") } +
+        List(5) { card(200 + it, "WhiteGuy$it", 0.58, "W") }
+
+    @Test
+    fun deckFitBreaksATieTowardTheCardThatMakesTheDeck() {
+        val pool = committedPool()
+        val pack = listOf(card(1, "Filler", 0.57, "U"), card(2, "Upgrade", 0.57, "U"))
+        val fit: (RankedCard) -> DeckProjector.Fit? = { c ->
+            if (c.name == "Upgrade") DeckProjector.Fit(true, listOf("BlueGuy0"), false, null, powerDelta = 2.0)
+            else DeckProjector.Fit(false, emptyList(), false, null, 0.0)
+        }
+        val result = engine.score(
+            pack, pool, packNumber = 2, pickNumber = 5, metrics = metrics,
+            lane = LaneDetector.detect(pool, metrics), meta = creatureMeta, deckFit = fit,
+        )
+        assertEquals("Upgrade", result.first().card.name)
+        assertTrue("Makes your deck" in scoreOf(result, "Upgrade").reasons)
+        assertEquals(4.0, scoreOf(result, "Upgrade").breakdown!!.deckFitPoints, 0.01)
+        assertEquals(0.0, scoreOf(result, "Filler").breakdown!!.deckFitPoints, 0.01)
+        assertTrue(scoreOf(result, "Filler").reasons.none { it == "Makes your deck" })
+    }
+
+    @Test
+    fun deckFitIsNeverConsultedWhileTheLaneIsOpen() {
+        var called = false
+        val fit: (RankedCard) -> DeckProjector.Fit? = { _ ->
+            called = true
+            DeckProjector.Fit(true, emptyList(), false, null, 3.0)
+        }
+        val pack = listOf(card(1, "A", 0.57, "U"), card(2, "B", 0.57, "W"))
+        val result = engine.score(
+            pack, pool = listOf(card(100, "OnlyCard", 0.58, "U")), packNumber = 1, pickNumber = 2,
+            metrics = metrics, lane = LaneDetector.detect(listOf(card(100, "OnlyCard", 0.58, "U")), metrics),
+            meta = creatureMeta, deckFit = fit,
+        )
+        assertTrue(!called, "P1 early picks are pure power — the projector must not even run")
+        assertEquals(0.0, result.first().breakdown!!.deckFitPoints, 1e-9)
+    }
+
+    @Test
+    fun deckFitNamesTheSplashItOpens() {
+        val pool = committedPool()
+        val pack = listOf(card(1, "SplashBomb", 0.62, "B"))
+        val fit: (RankedCard) -> DeckProjector.Fit? = { _ ->
+            DeckProjector.Fit(true, listOf("WhiteGuy4"), false, splashAdded = 'B', powerDelta = 1.5)
+        }
+        val result = engine.score(
+            pack, pool, packNumber = 2, pickNumber = 5, metrics = metrics,
+            lane = LaneDetector.detect(pool, metrics), meta = creatureMeta, deckFit = fit,
+        )
+        assertTrue("Worth a B splash" in result.first().reasons, "got ${result.first().reasons}")
+    }
+
+    @Test
+    fun deckFitBonusIsCapped() {
+        val pool = committedPool()
+        val pack = listOf(card(1, "MegaBomb", 0.70, "U", iwd = 0.08))
+        val fit: (RankedCard) -> DeckProjector.Fit? = { _ ->
+            DeckProjector.Fit(true, emptyList(), false, null, powerDelta = 50.0)
+        }
+        val result = engine.score(
+            pack, pool, packNumber = 3, pickNumber = 10, metrics = metrics,
+            lane = LaneDetector.detect(pool, metrics), meta = creatureMeta, deckFit = fit,
+        )
+        assertEquals(AdvisorEngine.Config().fitCapPts, result.first().breakdown!!.deckFitPoints, 1e-9)
     }
 }

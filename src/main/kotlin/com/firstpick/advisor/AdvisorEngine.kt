@@ -61,6 +61,14 @@ class AdvisorEngine(
         // adds pull toward creatures while the pool projects below creatureFloorTarget.
         val creatureFloorPts: Double = 0.0,
         val creatureFloorTarget: Double = 15.0,
+        // Constructive deck-fit: when a candidate earns a slot in the projected best deck
+        // (DeckProjector), credit the projector's own power delta. Ramps with lane commitment —
+        // zero while colors are open, full weight by the end of pack 1. Layers under PickNet:
+        // it informs the displayed value and reasons, never reorders the learned model.
+        val fitPerPowerDelta: Double = 2.0,
+        val fitCapPts: Double = 6.0,
+        val fitRampStart: Double = 0.10,
+        val fitRampSpan: Double = 0.23,
     )
 
     fun score(
@@ -73,6 +81,7 @@ class AdvisorEngine(
         archetypeRating: (String, String) -> CardRating? = { _, _ -> null },
         meta: (String) -> CardMeta? = { null },
         synergy: SynergyIndex? = null,
+        deckFit: ((RankedCard) -> DeckProjector.Fit?)? = null,
     ): List<ScoredCard> {
         val poolMetas = pool.mapNotNull { meta(it.name) }
         val needs = PoolNeeds.analyze(poolMetas, pool.size)
@@ -81,9 +90,11 @@ class AdvisorEngine(
         val theme = synergy?.let { ThemeSynergy(it, pool) }
         val poolCounts = pool.groupingBy { it.name }.eachCount()
         val splashColors = splashColorsOf(pool, lane, meta)
+        val fitW = fitWeight(progress, lane)
 
         return pack.map { card ->
-            evaluate(card, lane, metrics, archetypeRating, meta, progress, needs, theme, poolCounts[card.name] ?: 0, splashColors)
+            val fit = if (fitW > 0.0) deckFit?.invoke(card) else null
+            evaluate(card, lane, metrics, archetypeRating, meta, progress, needs, theme, poolCounts[card.name] ?: 0, splashColors, fit, fitW)
         }.sortedWith(compareByDescending<ScoredCard> { it.rawValue }.thenBy { it.card.displayName })
     }
 
@@ -98,6 +109,8 @@ class AdvisorEngine(
         theme: ThemeSynergy?,
         copiesInPool: Int,
         splashColors: Set<Char>,
+        fit: DeckProjector.Fit?,
+        fitWeight: Double,
     ): ScoredCard {
         val reasons = mutableListOf<String>()
         val globalWr = card.gihWr
@@ -192,8 +205,24 @@ class AdvisorEngine(
         val dupPts = duplicatePenalty(copiesInPool, cardMeta)
         if (dupPts >= DUP_REASON_THRESHOLD) reasons += "${copiesInPool + 1}th copy — diminishing"
 
+        // Constructive deck-fit: only cards that EARN a slot in the projected best deck get
+        // credit, sized by how much the projector says the deck improved. Cards that miss the
+        // 23 get zero, not a penalty — redundancy and options are what a draft pool is for.
+        var fitPts = 0.0
+        if (fit != null && fit.makesDeck) {
+            fitPts = (config.fitPerPowerDelta * fit.powerDelta.coerceAtLeast(0.0))
+                .coerceAtMost(config.fitCapPts) * fitWeight
+            if (fitPts >= FIT_REASON_THRESHOLD) {
+                reasons += when {
+                    fit.splashAdded != null -> "Worth a ${fit.splashAdded} splash"
+                    fit.baseShifted -> "Bends your colors"
+                    else -> "Makes your deck"
+                }
+            }
+        }
+
         val rawValue = config.valueMidpoint + config.valuePerZ * (blendedZ - penalty) +
-            totalSynergyPts + needsPts - wheelPts - dupPts
+            totalSynergyPts + needsPts + fitPts - wheelPts - dupPts
         val value = rawValue.coerceIn(0.0, 100.0)
 
         val breakdown = ValueBreakdown(
@@ -205,6 +234,7 @@ class AdvisorEngine(
             needsPoints = needsPts,
             finalScore = value,
             duplicatePenalty = -dupPts,
+            deckFitPoints = fitPts,
             wheelPenalty = -wheelPts,
             scoreCap = value - rawValue,
         )
@@ -292,6 +322,13 @@ class AdvisorEngine(
     private fun needsWeight(progress: Double): Double =
         ((progress - config.needsRampStart) / config.needsRampSpan).coerceIn(0.0, 1.0)
 
+    // Deck-fit is only meaningful once the pool has committed to colors: zero while the lane
+    // is open (P1 early picks stay pure power), full weight by the end of pack 1.
+    private fun fitWeight(progress: Double, lane: Lane): Double {
+        if (!lane.isEstablished || config.fitPerPowerDelta <= 0.0) return 0.0
+        return ((progress - config.fitRampStart) / config.fitRampSpan).coerceIn(0.0, 1.0)
+    }
+
     private fun penaltyZ(progress: Double): Double {
         val p = ((progress - config.penaltyRampStart) / (1.0 - config.penaltyRampStart)).coerceIn(0.0, 1.0)
         return p * config.penaltyMax
@@ -300,6 +337,7 @@ class AdvisorEngine(
     companion object {
         private const val PENALTY_REASON_THRESHOLD = 0.1
         private const val DUP_REASON_THRESHOLD = 1.0
+        private const val FIT_REASON_THRESHOLD = 1.0
         private const val MAX_REASONS = 3
     }
 }

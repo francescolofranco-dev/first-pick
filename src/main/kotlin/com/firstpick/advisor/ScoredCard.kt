@@ -15,8 +15,8 @@ data class ScoredCard(
 /**
  * Every additive term that produces the displayed grade, so the tooltip rows sum to finalScore
  * exactly. baseScore + archetypeShift + synergyBonus + themeBonus + penalty + needsPoints +
- * wheelPenalty + duplicatePenalty = the raw score; scoreCap books the 0..100 clamp and modelShift
- * books the learned model's rank transplant, giving finalScore.
+ * deckFitPoints + wheelPenalty + duplicatePenalty = the raw score; scoreCap books the 0..100
+ * clamp and modelShift books the learned model's rank transplant, giving finalScore.
  */
 data class ValueBreakdown(
     val baseScore: Double,
@@ -27,6 +27,8 @@ data class ValueBreakdown(
     val finalScore: Double,
     val themeBonus: Double = 0.0,
     val duplicatePenalty: Double = 0.0,
+    /** Constructive deck-fit: the candidate earns a slot in the projected best deck. */
+    val deckFitPoints: Double = 0.0,
     /** Discount for a card likely to wheel back (subtracted from the raw score). */
     val wheelPenalty: Double = 0.0,
     /** Adjustment from clamping the raw score into 0..100 (nonzero only at the extremes). */
