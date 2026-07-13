@@ -80,6 +80,39 @@ class DeckProjectorTest {
     }
 
     @Test
+    fun seatsTheRemovalFloorOverHigherWinRateFluff() {
+        val metaMap = mutableMapOf<String, CardMeta>()
+        fun mk(id: Int, name: String, gih: Double, color: String, creature: Boolean, removal: Boolean = false): RankedCard {
+            metaMap[name] = CardMeta(name, cmc = 3, isCreature = creature, isLand = false, isRemoval = removal)
+            return card(id, name, gih, color)
+        }
+        val pool = buildList {
+            repeat(16) { add(mk(it, "Cre$it", 0.56, if (it % 2 == 0) "W" else "U", creature = true)) }
+            repeat(8) { add(mk(100 + it, "Fluff$it", 0.60, if (it % 2 == 0) "W" else "U", creature = false)) }
+            repeat(5) { add(mk(200 + it, "Kill$it", 0.55, if (it % 2 == 0) "W" else "U", creature = false, removal = true)) }
+        }
+        val top = DeckProjector.projectAll(pool, metrics, { metaMap[it] }).first()
+        assertTrue(top.removal >= 4, "playable removal must be seated over higher-WR fluff, got ${top.removal}")
+    }
+
+    @Test
+    fun neverSeatsDudRemovalToHitTheFloor() {
+        val metaMap = mutableMapOf<String, CardMeta>()
+        fun mk(id: Int, name: String, gih: Double, color: String, creature: Boolean, removal: Boolean = false): RankedCard {
+            metaMap[name] = CardMeta(name, cmc = 3, isCreature = creature, isLand = false, isRemoval = removal)
+            return card(id, name, gih, color)
+        }
+        val pool = buildList {
+            repeat(16) { add(mk(it, "Cre$it", 0.58, if (it % 2 == 0) "W" else "U", creature = true)) }
+            repeat(8) { add(mk(100 + it, "Fluff$it", 0.58, if (it % 2 == 0) "W" else "U", creature = false)) }
+            // z = (0.50 - 0.55) / 0.03 = -1.67, well under the quality gate.
+            repeat(5) { add(mk(200 + it, "Dud$it", 0.50, if (it % 2 == 0) "W" else "U", creature = false, removal = true)) }
+        }
+        val top = DeckProjector.projectAll(pool, metrics, { metaMap[it] }).first()
+        assertEquals(0, top.removal, "dud removal must not be forced in to satisfy the floor")
+    }
+
+    @Test
     fun duplicateCopiesAreCountedNotConfusedByName() {
         // Pool already holds one mediocre "Dup"; adding a second must register as making
         // the deck only if the extra COPY earns a slot, not because the name is present.

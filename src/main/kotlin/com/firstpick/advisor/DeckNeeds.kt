@@ -51,7 +51,11 @@ data class PoolNeeds(
 data class NeedsResult(val points: Double, val reasons: List<String>)
 
 object DeckNeeds {
-    const val TARGET_REMOVAL = 3.0
+    // Humans end with ~4.7 removal in DECK (ECL A/B) — the old pool target of 3 starved the
+    // builder; DeckProjector's removal floor can only seat what the picks brought home. 6 is
+    // the swept optimum on ECL (best top-1 AND smallest removal gap) and meets the saturation
+    // boundary below, so bonus and penalty stay coherent.
+    const val TARGET_REMOVAL = 6.0
     const val REMOVAL_SATURATION = 6
     const val TARGET_CREATURES = 14.0
     const val TARGET_TWO_DROPS = 7.0

@@ -27,6 +27,12 @@ object DeckProjector {
     private const val CREATURE_BIAS = 0.015
     private val CREATURE_CURVE = linkedMapOf(2 to 4, 3 to 4, 4 to 3, 5 to 2, 6 to 1, 1 to 1)
 
+    // Removal floor: a greedy-by-score merge under-seats interaction (ECL A/B: engine decks
+    // 3.3 removal vs humans' 4.7). Seed playable removal before the merge — quality-gated so
+    // a removal-starved pool is never forced to play duds.
+    private const val REMOVAL_TARGET = 4
+    private const val REMOVAL_MIN_Z = -0.75
+
     private const val MIN_COLOR_PIPS = 4
     private const val MIN_COLOR_RATIO = 0.20
 
@@ -295,6 +301,7 @@ object DeckProjector {
         val score: Double,
         val cmc: Int,
         val isCreature: Boolean,
+        val isRemoval: Boolean,
     )
 
     private fun selectSpells(
@@ -314,7 +321,7 @@ object DeckProjector {
             }
             .map { card ->
                 val m = meta(card.name)
-                Candidate(card, cardScore(card), m?.cmc ?: 3, m?.isCreature == true)
+                Candidate(card, cardScore(card), m?.cmc ?: 3, m?.isCreature == true, m?.isRemoval == true)
             }
             .sortedByDescending { it.score }
 
@@ -327,10 +334,19 @@ object DeckProjector {
             byBucket[bucket].orEmpty().take(target).forEach { chosen.add(it) }
         }
 
+        // Seat the removal floor ahead of the merge (curve-seeded removal creatures count).
+        var removalSeated = chosen.count { it.isRemoval }
+        for (cand in others) {
+            if (removalSeated >= REMOVAL_TARGET || chosen.size >= SPELL_SLOTS) break
+            if (!cand.isRemoval) continue
+            if ((metrics.z(capScore(cand.card)) ?: 0.0) < REMOVAL_MIN_Z) continue
+            if (chosen.add(cand)) removalSeated++
+        }
+
         val creatureQueue = ArrayDeque(creatures.filterNot { it in chosen })
-        val otherQueue = ArrayDeque(others)
-        var creatureCount = chosen.size
-        var otherCount = 0
+        val otherQueue = ArrayDeque(others.filterNot { it in chosen })
+        var creatureCount = chosen.count { it.isCreature }
+        var otherCount = chosen.size - creatureCount
         while (chosen.size < SPELL_SLOTS && (creatureQueue.isNotEmpty() || otherQueue.isNotEmpty())) {
             val c = creatureQueue.firstOrNull()
             val o = otherQueue.firstOrNull()
