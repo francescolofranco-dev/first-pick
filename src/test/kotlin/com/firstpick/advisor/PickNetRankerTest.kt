@@ -59,6 +59,8 @@ class PickNetRankerTest {
         // The promoted top card is flagged.
         assertEquals(PickNetRanker.MODEL_PICK_REASON, ranked[0].reasons.first())
         assertTrue(ranked[1].reasons.none { it == PickNetRanker.MODEL_PICK_REASON })
+        // Each card records its 1-based rank in the model's order (for the explanation caption).
+        assertEquals(listOf(1, 2, 3), ranked.map { it.modelRank })
     }
 
     @Test

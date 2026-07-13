@@ -10,6 +10,8 @@ data class ScoredCard(
     val reasons: List<String>,
     val breakdown: ValueBreakdown? = null,
     val rawValue: Double = value,
+    /** 1-based rank in the learned pick model's order for this pack; null when the model didn't run. */
+    val modelRank: Int? = null,
 )
 
 /**

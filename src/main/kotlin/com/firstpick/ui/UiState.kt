@@ -19,6 +19,8 @@ data class PackCardUi(
     val imageUrl: String? = null,
     val z: Double = 0.0,
     val breakdown: com.firstpick.advisor.ValueBreakdown? = null,
+    /** 1-based rank the learned pick model gave this card in the pack; null when it didn't run. */
+    val modelRank: Int? = null,
 )
 
 data class ColorScore(val color: Char, val score: Double)

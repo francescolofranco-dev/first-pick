@@ -79,7 +79,7 @@ internal fun PackPane(state: DraftUiState, onSimulate: (String) -> Unit = {}) = 
             contentPadding = PaddingValues(vertical = 2.dp),
             verticalArrangement = Arrangement.spacedBy(5.dp),
         ) {
-            items(state.packCards, key = { "${it.grpId}#${it.rank}" }) { PackRow(it) }
+            items(state.packCards, key = { "${it.grpId}#${it.rank}" }) { PackRow(it, state.packCards.size) }
         }
     }
 }
@@ -155,8 +155,12 @@ private fun ConfidenceBanner(cards: List<PackCardUi>) {
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun PackRow(card: PackCardUi) {
+private fun PackRow(card: PackCardUi, packSize: Int) {
     val top = card.rank == 1
+    // The bomb star is a strong "this wins games" claim; only show it when the displayed grade
+    // still agrees. When the model demotes a stats-bomb below bomb tier, the star and the "Bomb"
+    // reason are dropped (that story now lives in the model-adjustment explanation instead).
+    val bombConsistent = card.isBomb && isBombTier(card.value)
     Row(
         Modifier
             .fillMaxWidth()
@@ -181,14 +185,23 @@ private fun PackRow(card: PackCardUi) {
             modifier = Modifier.width(20.dp),
         )
         if (card.breakdown != null) {
-            TooltipArea(tooltip = { BreakdownTooltip(card.breakdown) }) { GradeBadge(card.value) }
+            val model = card.breakdown.takeIf { it.modelShift != 0.0 && card.modelRank != null }?.let { b ->
+                ModelExplain(
+                    rank = card.modelRank!!,
+                    packSize = packSize,
+                    soloValue = card.value?.minus(b.modelShift),
+                    ata = card.ata,
+                    alsa = card.alsa,
+                )
+            }
+            TooltipArea(tooltip = { BreakdownTooltip(card.breakdown, model) }) { GradeBadge(card.value) }
         } else {
             GradeBadge(card.value)
         }
         Spacer(Modifier.width(11.dp))
         Column(Modifier.weight(1f)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                if (card.isBomb) Text("★ ", fontSize = 13.sp, color = MaterialTheme.colorScheme.tertiary)
+                if (bombConsistent) Text("★ ", fontSize = 13.sp, color = MaterialTheme.colorScheme.tertiary)
                 CardPreview(card.imageUrl) {
                     Text(
                         card.name,
@@ -200,9 +213,10 @@ private fun PackRow(card: PackCardUi) {
                     )
                 }
             }
-            if (card.reasons.isNotEmpty()) {
+            val shownReasons = if (bombConsistent) card.reasons else card.reasons.filter { it != "Bomb" }
+            if (shownReasons.isNotEmpty()) {
                 Text(
-                    card.reasons.joinToString(" · "),
+                    shownReasons.joinToString(" · "),
                     fontSize = 11.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,

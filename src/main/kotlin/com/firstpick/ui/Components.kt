@@ -233,7 +233,7 @@ internal fun Double?.as1dp(): String = this?.let { "%.1f".format(it) } ?: "—"
 internal fun Double?.asInt(): String = this?.let { "%.0f".format(it) } ?: "—"
 
 @Composable
-fun BreakdownTooltip(b: ValueBreakdown) {
+fun BreakdownTooltip(b: ValueBreakdown, model: ModelExplain? = null) {
     Surface(
         modifier = Modifier.padding(4.dp),
         color = MaterialTheme.colorScheme.inverseSurface,
@@ -253,7 +253,20 @@ fun BreakdownTooltip(b: ValueBreakdown) {
             if (b.wheelPenalty != 0.0) BreakdownRow("Likely to wheel", String.format("%+.1f", b.wheelPenalty))
             if (b.duplicatePenalty != 0.0) BreakdownRow("Extra copy", String.format("%+.1f", b.duplicatePenalty))
             if (b.scoreCap != 0.0) BreakdownRow(if (b.scoreCap < 0.0) "Capped at 100" else "Floored at 0", String.format("%+.1f", b.scoreCap))
-            if (b.modelShift != 0.0) BreakdownRow("Model adjustment", String.format("%+.1f", b.modelShift))
+            if (b.modelShift != 0.0) {
+                BreakdownRow("Model adjustment", String.format("%+.1f", b.modelShift))
+                if (model != null) {
+                    Spacer(Modifier.height(3.dp))
+                    for (line in modelExplainLines(model)) {
+                        Text(
+                            line,
+                            fontSize = 10.sp,
+                            color = MaterialTheme.colorScheme.inverseOnSurface.copy(alpha = 0.72f),
+                            modifier = Modifier.width(180.dp),
+                        )
+                    }
+                }
+            }
             Spacer(Modifier.height(4.dp))
             BreakdownRow("Final score", String.format("%.1f", b.finalScore), bold = true)
         }

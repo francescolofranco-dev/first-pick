@@ -37,6 +37,7 @@ object PickNetRanker {
                 // "model adjustment" so Final score still equals the displayed grade.
                 breakdown = s.breakdown?.copy(finalScore = v, modelShift = v - s.value),
                 reasons = if (promoted) (listOf(MODEL_PICK_REASON) + s.reasons).take(3) else s.reasons,
+                modelRank = i + 1,
             )
         }
     }

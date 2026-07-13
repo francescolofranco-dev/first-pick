@@ -64,6 +64,31 @@ fun rankBasename(value: Double?): String = "seals/" + when {
     else -> "iron"
 }
 
+/** Data for the faithful explanation of a learned-model rank transplant (see [modelExplainLines]). */
+data class ModelExplain(
+    val rank: Int,
+    val packSize: Int,
+    /** The grade value the card would show without the model — i.e. displayed value minus the shift. */
+    val soloValue: Double?,
+    val ata: Double?,
+    val alsa: Double?,
+)
+
+/**
+ * Human-readable lines explaining why a card's displayed grade differs from its own score. The
+ * model works on card identities, not properties, so we can't say WHY it likes a card — only that
+ * it ranks it here, versus the card's own grade and how early the community actually takes it.
+ */
+fun modelExplainLines(m: ModelExplain): List<String> {
+    val rankLine = "Model rank #${m.rank} of ${m.packSize} · without model ${letterGrade(m.soloValue)}"
+    val timing = when {
+        m.ata != null -> "Drafters usually take it ~pick ${"%.0f".format(m.ata)}"
+        m.alsa != null -> "Usually still there ~pick ${"%.0f".format(m.alsa)}"
+        else -> null
+    }
+    return listOfNotNull(rankLine, timing)
+}
+
 /** Dark ink for text drawn on top of a filled tier color (the bomb seal). */
 val TierInk = Color(0xFF0C100F)
 

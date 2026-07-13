@@ -388,6 +388,7 @@ class DraftViewModel(
                 imageUrl = s.card.rating?.imageUrl,
                 z = s.z,
                 breakdown = s.breakdown,
+                modelRank = s.modelRank,
             )
         }
     }
