@@ -55,7 +55,8 @@ fun App(
             Column(Modifier.fillMaxSize().padding(14.dp)) {
                 Header(state, isOverlayOpen, onToggleOverlay, onSelectFormat, onStopSim, onTogglePause)
 
-                if (state.deckOptions.isNotEmpty() || state.poolSize > 0) {
+                val deckTabEnabled = state.deckOptions.isNotEmpty() || state.deckSoFar != null
+                if (deckTabEnabled || state.poolSize > 0) {
                     Spacer(Modifier.height(8.dp))
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                         TabRow(
@@ -72,8 +73,11 @@ fun App(
                             Tab(
                                 selected = currentScreen == AppScreen.DECK_BUILDER,
                                 onClick = { currentScreen = AppScreen.DECK_BUILDER },
-                                enabled = state.deckOptions.isNotEmpty(),
-                                text = { Text("Deck builder", fontSize = 13.sp, fontWeight = FontWeight.Bold) },
+                                enabled = deckTabEnabled,
+                                text = {
+                                    val label = if (state.deckOptions.isNotEmpty()) "Deck builder" else "Deck so far"
+                                    Text(label, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                                },
                             )
                         }
                     }
@@ -84,6 +88,8 @@ fun App(
                     Box(Modifier.weight(1f).fillMaxHeight()) {
                         if (currentScreen == AppScreen.DECK_BUILDER && state.deckOptions.isNotEmpty()) {
                             DeckBuilderPane(state.deckOptions)
+                        } else if (currentScreen == AppScreen.DECK_BUILDER && state.deckSoFar != null) {
+                            DeckSoFarPane(state.deckSoFar, state.deckSoFarCuts)
                         } else {
                             PackPane(state, onSimulate)
                         }

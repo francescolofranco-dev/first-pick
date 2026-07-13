@@ -177,6 +177,14 @@ class DraftViewModel(
         val poolMetas = pool.mapNotNull { metaRepo.meta(it.name) }
         val format = RatingsFormat.resolve(formatChoice, state.format)
         val net = pickNetRepo.netFor(state.setCode, format)
+        // The deck this pool is building right now — shared by the pick-time deck-fit signal
+        // and the "Deck so far" panel, so a card's projected fit always matches what's shown.
+        // Gated on lane.isEstablished: an open pool has no meaningful "best deck" yet.
+        val liveProjection = if (loaded && lane.isEstablished) {
+            DeckProjector.project(pool, repo.setMetrics, metaRepo::meta, archetypeRepo::archetypeRating, archetypeRepo.strengthMap(), synergyRepo.index)
+        } else {
+            null
+        }
         val rows = if (loaded && state.packCards.isNotEmpty()) {
             val scored = advisor.score(
                 pack = repo.resolvePack(state.packCards),
@@ -188,7 +196,7 @@ class DraftViewModel(
                 archetypeRating = archetypeRepo::archetypeRating,
                 meta = metaRepo::meta,
                 synergy = synergyRepo.index,
-                deckFit = deckFitProbe(pool, lane),
+                deckFit = deckFitProbe(pool, liveProjection),
             )
             val ranked = net?.let { PickNetRanker.rerank(it, scored, pool.map { c -> c.name }) } ?: scored
             ranked.toRows(state.packCards)
@@ -240,6 +248,8 @@ class DraftViewModel(
             archetypes = archetypeRows(lane.pair),
             deckNeeds = deckNeeds,
             deckOptions = deckOptions,
+            deckSoFar = liveProjection?.toUi(),
+            deckSoFarCuts = cutsOf(pool, liveProjection),
             ratingsFormatChoice = formatChoice,
             simulating = simulating,
             simPaused = simPaused.value,
@@ -257,19 +267,27 @@ class DraftViewModel(
         )
     }
 
-    // Deck-fit probe for pick scoring: projects the pool's best deck once per pack, then
-    // re-projects per candidate. Null while the lane is open — the engine's ramp would zero
-    // the points anyway, so we skip the projections entirely.
+    // Deck-fit probe for pick scoring: re-projects per candidate against the already-computed
+    // [before] projection. Null when there's no projection to compare against (lane still open).
     private fun deckFitProbe(
         pool: List<com.firstpick.cards.RankedCard>,
-        lane: Lane,
+        before: DeckOption?,
     ): ((com.firstpick.cards.RankedCard) -> DeckProjector.Fit?)? {
-        if (!lane.isEstablished) return null
+        if (before == null) return null
         val strength = archetypeRepo.strengthMap()
-        val before = DeckProjector.project(pool, repo.setMetrics, metaRepo::meta, archetypeRepo::archetypeRating, strength, synergyRepo.index)
         return { card ->
             DeckProjector.fit(pool, card, repo.setMetrics, metaRepo::meta, archetypeRepo::archetypeRating, strength, synergyRepo.index, before)
         }
+    }
+
+    // Pool copies that fell out of [proj]'s 23 (and its nonbasic lands) — the flip side of
+    // "Deck so far": what your picks brought home but the current best build doesn't want.
+    private fun cutsOf(pool: List<com.firstpick.cards.RankedCard>, proj: DeckOption?): List<DeckSpellUi> {
+        if (proj == null) return emptyList()
+        val inCounts = (proj.spells + proj.nonbasicLands).groupingBy { it.name }.eachCount()
+        return pool.groupBy { it.name }
+            .flatMap { (name, copies) -> copies.drop(inCounts[name] ?: 0) }
+            .toDeckSpells()
     }
 
     private fun DeckOption.toUi(): DeckOptionUi {

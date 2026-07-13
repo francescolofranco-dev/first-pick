@@ -24,6 +24,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
@@ -63,6 +64,55 @@ internal fun DeckBuilderPane(options: List<DeckOptionUi>) {
     }
 }
 
+/**
+ * Live, mid-draft view of [DeckProjector.project]: the deck your picks are building right now,
+ * plus the pool copies that currently fall out of the 23 — a directional read, not a final build.
+ */
+@Composable
+internal fun DeckSoFarPane(deck: DeckOptionUi, cuts: List<DeckSpellUi>) {
+    val spellCount = deck.spells.sumOf { it.count }
+    Column(Modifier.fillMaxSize()) {
+        Text("Deck so far", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+        Spacer(Modifier.height(2.dp))
+        Text(
+            "Projected from your picks — updates every pick, not a final build.",
+            fontSize = 11.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Spacer(Modifier.height(10.dp))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            PipRow(deck.colors.toList())
+            Spacer(Modifier.width(6.dp))
+            Text(deck.title, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+            Spacer(Modifier.width(10.dp))
+            TierBadge(deck.tier)
+            Spacer(Modifier.width(8.dp))
+            Text("Power ${deck.power}", fontSize = 12.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
+        }
+        Spacer(Modifier.height(6.dp))
+        Text(
+            "$spellCount/23 spells · ${deck.creatures} creatures · ${deck.removal} removal",
+            fontSize = 12.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Spacer(Modifier.height(10.dp))
+        DeckListHeader()
+        Spacer(Modifier.height(4.dp))
+        LazyColumn(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+            item { SectionLabel("In the deck") }
+            items(deck.spells) { DeckSpellRow(it) }
+            if (deck.lands.isNotEmpty()) {
+                item { SectionLabel("Lands") }
+                items(deck.lands) { DeckSpellRow(it) }
+            }
+            if (cuts.isNotEmpty()) {
+                item { SectionLabel("Not making the cut yet") }
+                items(cuts) { DeckSpellRow(it, muted = true) }
+            }
+        }
+    }
+}
+
 @Composable
 private fun DeckListHeader() {
     Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -85,9 +135,9 @@ private fun SectionLabel(text: String) {
 }
 
 @Composable
-private fun DeckSpellRow(s: DeckSpellUi) {
+private fun DeckSpellRow(s: DeckSpellUi, muted: Boolean = false) {
     Row(
-        Modifier.fillMaxWidth().clip(RoundedCornerShape(6.dp))
+        Modifier.fillMaxWidth().alpha(if (muted) 0.5f else 1f).clip(RoundedCornerShape(6.dp))
             .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
             .padding(horizontal = 8.dp, vertical = 5.dp),
         verticalAlignment = Alignment.CenterVertically,

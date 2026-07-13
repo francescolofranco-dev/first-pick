@@ -112,6 +112,10 @@ data class DraftUiState(
     val archetypes: List<ArchetypeRow> = emptyList(),
     val deckNeeds: List<String> = emptyList(),
     val deckOptions: List<DeckOptionUi> = emptyList(),
+    /** The deck your picks are building right now, mid-draft — null until the lane commits. */
+    val deckSoFar: DeckOptionUi? = null,
+    /** Pool copies [deckSoFar] doesn't want — the flip side of the projected 23. */
+    val deckSoFarCuts: List<DeckSpellUi> = emptyList(),
     val ratingsFormatChoice: String = RatingsFormat.PREMIER,
     val simulating: Boolean = false,
     val simPaused: Boolean = false,
