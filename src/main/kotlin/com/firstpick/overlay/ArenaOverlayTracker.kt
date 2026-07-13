@@ -1,5 +1,6 @@
 package com.firstpick.overlay
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -8,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -19,10 +19,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.BitmapPainter
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.loadImageBitmap
+import androidx.compose.ui.res.loadSvgPainter
+import androidx.compose.ui.res.useResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -33,10 +41,8 @@ import com.firstpick.core.Log
 import com.firstpick.ui.CardImageLoader
 import com.firstpick.ui.DevFlags
 import com.firstpick.ui.MacOverlay
-import com.firstpick.ui.TierInk
 import com.firstpick.ui.isBombTier
-import com.firstpick.ui.letterGrade
-import com.firstpick.ui.valueTierColor
+import com.firstpick.ui.rankBasename
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -278,47 +284,87 @@ private fun geometryMarks(
     }
 }
 
+// Badge art contract: a SQUARE canvas with the shield emblem horizontally centred and wings / star
+// / flames free to run into the transparent margin. The metal ranks centre the shield on the
+// canvas midline; fire seats it lower to make room for its flame crown. Each rank therefore
+// declares where its emblem centre sits (measured from the art), and we align every rank on that
+// point so the row reads evenly and the score chip lands just beneath each shield.
+private const val BADGE_SCALE = 0.72f
+
+/** Vertical fraction of the badge canvas where the emblem centre sits, measured from the art. */
+private fun emblemAnchorY(value: Double?): Float = if (isBombTier(value)) 0.61f else 0.50f
+
 @Composable
 private fun GradeSeal(m: Mark) {
-    val color = valueTierColor(m.value)
-    val bomb = isBombTier(m.value)
-    val d = (m.w * 0.40f).roundToInt().coerceIn(34, 92)
-    // A gold halo makes a bomb impossible to miss; the recommended pick (best in the pack) gets a
-    // fainter one so it still reads when it isn't a bomb. The halo widens the box, so re-center.
-    val haloAlpha = if (bomb) 0.55f else if (m.isBest) 0.34f else 0f
-    val halo = if (bomb) (d * 0.44f).roundToInt() else if (m.isBest) (d * 0.30f).roundToInt() else 0
-    val box = d + halo * 2
-    val cx = m.x + m.w / 2 - box / 2
-    val cy = m.y + m.h - (d * 0.72f).roundToInt() - halo
+    val fire = isBombTier(m.value)
+    val badge = (m.w * BADGE_SCALE).coerceIn(60f, 176f) // full square canvas size on the card
+    val cx = m.x + m.w / 2f
+    // Seat the emblem in the lower half of the card, leaving room for the score chip beneath it and
+    // (for fire) the flame crown above.
+    val cy = m.y + m.h - 0.44f * badge
 
-    Box(Modifier.offset(cx.dp, cy.dp).size(box.dp), contentAlignment = Alignment.Center) {
-        if (haloAlpha > 0f) {
-            Box(Modifier.matchParentSize().background(Brush.radialGradient(listOf(color.copy(alpha = haloAlpha), Color.Transparent))))
-        }
+    // A soft halo draws the eye to the recommended pick; fire gets a hotter one. Behind the emblem.
+    val haloAlpha = if (fire) 0.5f else if (m.isBest) 0.34f else 0f
+    if (haloAlpha > 0f) {
+        val haloColor = if (fire) Color(0xFFFFB020) else Color(0xFF7FD1C4)
+        val haloD = badge * 0.72f
         Box(
             Modifier
-                .size(d.dp)
-                .background(if (bomb) color else Color(0xF00E1312), CircleShape)
-                .border(
-                    width = if (bomb) 2.5.dp else if (m.isBest) 3.dp else 2.dp,
-                    color = if (bomb) Color(0xFFFFE7A6) else color,
-                    shape = CircleShape,
-                ),
-            contentAlignment = Alignment.Center,
+                .offset((cx - haloD / 2f).dp, (cy - haloD / 2f).dp)
+                .size(haloD.dp)
+                .background(Brush.radialGradient(listOf(haloColor.copy(alpha = haloAlpha), Color.Transparent))),
+        )
+    }
+
+    rankPainter(m.value)?.let { painter ->
+        val top = cy - emblemAnchorY(m.value) * badge
+        Box(Modifier.offset((cx - badge / 2f).dp, top.dp).size(badge.dp)) {
+            Image(painter, contentDescription = null, modifier = Modifier.fillMaxSize())
+        }
+    }
+
+    ScoreChip(m.value, badge, cx, cy + 0.34f * badge)
+}
+
+/** The precise 0-100 score in a compact chip, centred at (cx,cy) just beneath the emblem. */
+@Composable
+private fun ScoreChip(value: Double?, badge: Float, cx: Float, cy: Float) {
+    val chipH = 0.20f * badge
+    Box(
+        Modifier.offset((cx - badge / 2f).dp, (cy - chipH / 2f).dp).size(badge.dp, chipH.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Box(
+            Modifier
+                .clip(RoundedCornerShape(50))
+                .background(Color(0xE60E1312))
+                .padding(horizontal = (0.09f * badge).dp, vertical = (0.02f * badge).dp),
         ) {
-            val ink = if (bomb) TierInk else color
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(letterGrade(m.value), color = ink, fontWeight = FontWeight.Bold, fontSize = (d * 0.34f).sp)
-                Text(
-                    m.value?.roundToInt()?.toString() ?: "—",
-                    color = ink.copy(alpha = 0.85f),
-                    fontFamily = FontFamily.Monospace,
-                    fontSize = (d * 0.18f).sp,
-                )
-            }
+            Text(
+                value?.roundToInt()?.toString() ?: "—",
+                color = Color(0xFFF2E9D8),
+                fontFamily = FontFamily.Monospace,
+                fontWeight = FontWeight.Bold,
+                fontSize = (0.135f * badge).sp,
+            )
         }
     }
 }
+
+@Composable
+private fun rankPainter(value: Double?): Painter? {
+    val density = LocalDensity.current
+    val base = rankBasename(value)
+    // Prefer the shipped badge PNG; fall back to the placeholder SVG until it's dropped in.
+    return remember(base, density) {
+        loadBadge("$base.png", density) ?: loadBadge("$base.svg", density)
+    }
+}
+
+private fun loadBadge(path: String, density: Density): Painter? = runCatching {
+    if (path.endsWith(".png")) useResource(path) { BitmapPainter(loadImageBitmap(it)) }
+    else useResource(path) { loadSvgPainter(it, density) }
+}.getOrNull()
 
 @Composable
 private fun NumberBox(m: Mark) {

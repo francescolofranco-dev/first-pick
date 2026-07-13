@@ -46,6 +46,24 @@ fun valueTierColor(value: Double?): Color = when {
 /** The bomb tier (A+) gets the standout filled seal treatment in the overlay. */
 fun isBombTier(value: Double?): Boolean = value != null && value >= 80.0
 
+/**
+ * Resource basename (no extension) of the rank badge for a grade. The 0-100 score keeps driving
+ * everything; the overlay just collapses it to five visual ranks — iron, bronze, silver, gold,
+ * fire. Fire is the bomb tier (>=80), so it stays in lock-step with [isBombTier] and the pack-row
+ * star. A null value is the neutral placeholder shown before art recognition lands.
+ *
+ * The overlay loads `<basename>.png` (the shipped badge art), falling back to `<basename>.svg` if
+ * a PNG is ever missing.
+ */
+fun rankBasename(value: Double?): String = "seals/" + when {
+    value == null -> "neutral"
+    value >= 80 -> "fire"
+    value >= 64 -> "gold"
+    value >= 56 -> "silver"
+    value >= 48 -> "bronze"
+    else -> "iron"
+}
+
 /** Dark ink for text drawn on top of a filled tier color (the bomb seal). */
 val TierInk = Color(0xFF0C100F)
 
