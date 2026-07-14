@@ -51,7 +51,7 @@ class DeckBuilderTest {
             else CardMeta(name, cmc = 3, isCreature = true, isLand = false)
         }
         val pool = buildList {
-            add(card(1, "HybridGuy", 0.65, "UW")) // strong, so it's a lock for inclusion
+            add(card(1, "HybridGuy", 0.65, "UW"))
             repeat(11) { add(card(10 + it, "U$it", 0.55, "U")) }
             repeat(11) { add(card(30 + it, "G$it", 0.55, "G")) }
         }

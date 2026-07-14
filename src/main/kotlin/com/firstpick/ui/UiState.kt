@@ -19,7 +19,7 @@ data class PackCardUi(
     val imageUrl: String? = null,
     val z: Double = 0.0,
     val breakdown: com.firstpick.advisor.ValueBreakdown? = null,
-    /** 1-based rank the learned pick model gave this card in the pack; null when it didn't run. */
+
     val modelRank: Int? = null,
 )
 
@@ -112,9 +112,9 @@ data class DraftUiState(
     val archetypes: List<ArchetypeRow> = emptyList(),
     val deckNeeds: List<String> = emptyList(),
     val deckOptions: List<DeckOptionUi> = emptyList(),
-    /** The deck your picks are building right now, mid-draft — null until the lane commits. */
+
     val deckSoFar: DeckOptionUi? = null,
-    /** Pool copies [deckSoFar] doesn't want — the flip side of the projected 23. */
+
     val deckSoFarCuts: List<DeckSpellUi> = emptyList(),
     val ratingsFormatChoice: String = RatingsFormat.PREMIER,
     val simulating: Boolean = false,

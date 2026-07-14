@@ -7,16 +7,7 @@ import com.firstpick.cards.CardRepository
 import kotlinx.coroutines.runBlocking
 import kotlin.math.sqrt
 
-/**
- * Cold-start feasibility probe. On day one of a new set 17Lands has no ratings, so the engine's
- * card-quality signal is missing. This asks: can we impute a card's quality from cheap functional
- * features (cmc, type, roles, rarity, colors) of similar cards? Leave-one-out k-NN over one set's
- * cards predicts each card's GIH z-score from its nearest analogs and correlates against the truth.
- * A high correlation means functional features alone give a usable day-one prior; a low one means
- * we need richer signal (oracle-text embeddings).
- *
- * Run: ./gradlew coldStartProbe -Pset=FIN [-Pformat=PremierDraft]
- */
+
 fun main(args: Array<String>) = runBlocking {
     val set = args.getOrElse(0) { "FIN" }
     val format = args.getOrElse(1) { "PremierDraft" }
@@ -40,7 +31,7 @@ fun main(args: Array<String>) = runBlocking {
     }
     if (raw.size < 50) { println("Too few rated cards (${raw.size})."); return@runBlocking }
 
-    // Standardize features so Euclidean distance treats each dimension evenly.
+
     val dim = raw[0].feat.size
     val mean = DoubleArray(dim); val std = DoubleArray(dim)
     for (d in 0 until dim) {
@@ -72,7 +63,7 @@ fun main(args: Array<String>) = runBlocking {
             k, corr, rmseM, rmseB, if (rmseB > 0) (1 - rmseM / rmseB) * 100 else 0.0))
     }
 
-    // Sanity: how much does a single feature (rarity) alone explain? Bombs cluster in rares/mythics.
+
     val rar = DoubleArray(raw.size) { raw[it].feat[RARITY_IDX] }
     val actual = DoubleArray(raw.size) { raw[it].z }
     val w = DoubleArray(raw.size) { raw[it].games.toDouble() }

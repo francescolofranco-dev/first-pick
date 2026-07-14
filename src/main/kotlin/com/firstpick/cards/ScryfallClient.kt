@@ -240,14 +240,14 @@ class ScryfallClient(
         private val HYBRID_RE = Regex("\\{([WUBRG])/([WUBRG])\\}")
         private val PURE_PIP_RE = Regex("\\{([WUBRG])\\}")
 
-        /** Colors with two or more non-hybrid pips in [manaCost] — too demanding to splash. */
+
         internal fun heavyPipsOf(manaCost: String): String {
             val counts = mutableMapOf<Char, Int>()
             for (m in PURE_PIP_RE.findAll(manaCost)) counts.merge(m.groupValues[1][0], 1, Int::plus)
             return "WUBRG".filter { (counts[it] ?: 0) >= 2 }
         }
 
-        /** Canonical (WUBRG-ordered) 2-letter hybrid pip groups in [manaCost], e.g. ["WU"]. */
+
         internal fun hybridGroupsOf(manaCost: String): List<String> =
             HYBRID_RE.findAll(manaCost)
                 .map { m -> listOf(m.groupValues[1][0], m.groupValues[2][0]).sortedBy { "WUBRG".indexOf(it) }.joinToString("") }

@@ -9,11 +9,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-/**
- * DeckProjector is the shared deck model behind both the end-of-draft builder and
- * (soon) pick-time deck fit. These tests pin the contract between its entry points;
- * the projection behavior itself is covered by [DeckBuilderTest].
- */
+
 class DeckProjectorTest {
 
     private val metrics = SetMetrics(meanGihWr = 0.55, stdDevGihWr = 0.03)
@@ -105,7 +101,7 @@ class DeckProjectorTest {
         val pool = buildList {
             repeat(16) { add(mk(it, "Cre$it", 0.58, if (it % 2 == 0) "W" else "U", creature = true)) }
             repeat(8) { add(mk(100 + it, "Fluff$it", 0.58, if (it % 2 == 0) "W" else "U", creature = false)) }
-            // z = (0.50 - 0.55) / 0.03 = -1.67, well under the quality gate.
+
             repeat(5) { add(mk(200 + it, "Dud$it", 0.50, if (it % 2 == 0) "W" else "U", creature = false, removal = true)) }
         }
         val top = DeckProjector.projectAll(pool, metrics, { metaMap[it] }).first()
@@ -114,14 +110,14 @@ class DeckProjectorTest {
 
     @Test
     fun duplicateCopiesAreCountedNotConfusedByName() {
-        // Pool already holds one mediocre "Dup"; adding a second must register as making
-        // the deck only if the extra COPY earns a slot, not because the name is present.
+
+
         val pool = pool() + card(998, "Dup", 0.50, "W")
         val before = DeckProjector.project(pool, metrics, meta)!!
         val copiesBefore = before.spells.count { it.name == "Dup" }
         val fit = DeckProjector.fit(pool, card(999, "Dup", 0.50, "W"), metrics, meta)
         val makesAsExtraCopy = fit.makesDeck
-        // A 0.50 card in a 0.58 pool doesn't make the 23 at all — neither copy.
+
         assertEquals(0, copiesBefore)
         assertTrue(!makesAsExtraCopy, "a below-rate duplicate must not read as 'makes the deck'")
     }

@@ -51,22 +51,19 @@ data class PoolNeeds(
 data class NeedsResult(val points: Double, val reasons: List<String>)
 
 object DeckNeeds {
-    // Humans end with ~4.7 removal in DECK (ECL A/B) — the old pool target of 3 starved the
-    // builder; DeckProjector's removal floor can only seat what the picks brought home. 6 is
-    // the swept optimum on ECL (best top-1 AND smallest removal gap) and meets the saturation
-    // boundary below, so bonus and penalty stay coherent.
+
+
     const val TARGET_REMOVAL = 6.0
     const val REMOVAL_SATURATION = 6
     const val TARGET_CREATURES = 14.0
-    // 8 (was 7): engine decks ran 4.7 two-drop creatures vs humans' 5.1 (ECL A/B); the higher
-    // pool target closed a third of the gap with no cost elsewhere.
+
+
     const val TARGET_TWO_DROPS = 8.0
     const val TARGET_FIXING = 3
     const val FIXING_MIN_POOL = 12
     const val TARGET_FINISHERS = 2.0
-    // 6 (was 4): the raw-count trigger muted every cmc>=5 card from mid-draft on and left
-    // decks top-light (ECL: engine 3.05 vs human 3.47 top-end; threshold 6 -> 3.30 with
-    // deck-strength uplift -1.10 -> -0.85 and no agreement cost).
+
+
     const val TOP_HEAVY_THRESHOLD = 6
 
     const val PROJECTION_PRIOR = 8.0

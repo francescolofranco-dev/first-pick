@@ -24,7 +24,7 @@ data class DeckOption(
     val curve: List<Pair<String, Int>>,
 )
 
-/** End-of-draft presenter over [DeckProjector]: the full slate of build options. */
+
 object DeckBuilder {
     fun build(
         pool: List<RankedCard>,

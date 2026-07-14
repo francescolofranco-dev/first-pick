@@ -6,12 +6,7 @@ import com.firstpick.cards.CardMeta
 import com.firstpick.cards.SetMetrics
 import kotlin.math.sqrt
 
-/**
- * Turns a built [DeckOption] into a fixed feature vector for the outcome-trained
- * [DeckStrengthModel]. Features are deck-quality signals (power, curve, roles) plus the
- * drafter's [rankOrdinal] as an explicit skill control, so the model can hold skill fixed
- * when comparing two decks. Index 0 is the intercept; [RANK_INDEX] locates the skill control.
- */
+
 object DeckFeatures {
     val NAMES = listOf(
         "intercept", "deckZ", "topZ", "removal", "creatures", "twoDrops",
@@ -21,25 +16,22 @@ object DeckFeatures {
     val RANK_INDEX = NAMES.indexOf("rank")
     val DIM = NAMES.size
 
-    /** All features. */
+
     val KEEP_ALL = IntArray(DIM) { it }
 
-    /** Structure only — drops the GIH-derived features (deckZ, topZ, bombs) so we can see
-     *  whether a deck is better for reasons OTHER than raw card quality. */
+
     val KEEP_STRUCTURAL = (0 until DIM).filter { NAMES[it] !in setOf("deckZ", "topZ", "bombs") }.toIntArray()
 
     fun project(x: DoubleArray, keep: IntArray): DoubleArray = DoubleArray(keep.size) { x[keep[it]] }
 
-    /** Append all pairwise products of the non-intercept features — turns the linear estimator
-     *  into a quadratic one, so we can tell whether structure matters through interactions
-     *  (e.g. curve only matters for aggro) rather than additively. */
+
     fun expandInteractions(x: DoubleArray): DoubleArray {
         val extra = ArrayList<Double>()
         for (i in 1 until x.size) for (j in i until x.size) extra.add(x[i] * x[j])
         return DoubleArray(x.size + extra.size) { if (it < x.size) x[it] else extra[it - x.size] }
     }
 
-    // A rough limited curve template (23 spells): a few 1s, heavy 2s/3s, tapering top-end.
+
     private val CURVE_TEMPLATE = doubleArrayOf(1.0, 6.0, 6.0, 4.0, 3.0, 3.0)
 
     fun of(deck: DeckOption, metrics: SetMetrics, meta: (String) -> CardMeta?, rankOrdinal: Double): DoubleArray {
@@ -56,11 +48,10 @@ object DeckFeatures {
         val bombs = zs.count { it > 1.0 }.toDouble()
         val fixers = (deck.nonbasicLands.count { meta(it.name)?.isFixing == true } +
             spells.count { meta(it.name)?.isFixing == true }).toDouble()
-        // How far the pool fell short of a full 23-spell deck — thin pools win less.
+
         val shortfall = (23 - spells.size).coerceAtLeast(0).toDouble()
 
-        // Color spread: concentration (max share), balance (min share), and how many colors the
-        // deck actually leans on — a proxy for mana consistency vs. greedy splashing.
+
         val pips = HashMap<Char, Int>()
         for (c in spells) for (ch in LaneDetector.colorsOf(c)) pips.merge(ch, 1, Int::plus)
         val totalPips = pips.values.sum().coerceAtLeast(1)
@@ -68,7 +59,7 @@ object DeckFeatures {
         val minColorShare = if (pips.isEmpty()) 0.0 else pips.values.min().toDouble() / totalPips
         val colorCount = pips.count { it.value.toDouble() / totalPips >= 0.10 }.toDouble()
 
-        // Curve deviation: L1 distance between the deck's cmc distribution and the template.
+
         val hist = IntArray(6)
         for (c in cmcs) hist[c.coerceIn(1, 6) - 1]++
         val n = cmcs.size.coerceAtLeast(1)
@@ -85,10 +76,10 @@ object DeckFeatures {
     }
 }
 
-/** Maps 17Lands rank strings ("bronze", "gold-3", …) to an ordinal skill scale 0..5. */
+
 object DraftRank {
     private val ORDER = listOf("bronze", "silver", "gold", "platinum", "diamond", "mythic")
-    const val DEFAULT = 2.0 // ~gold, the middle of the ladder, for missing ranks
+    const val DEFAULT = 2.0
 
     fun ordinal(rank: String?): Double {
         if (rank.isNullOrBlank()) return DEFAULT
@@ -98,11 +89,7 @@ object DraftRank {
     }
 }
 
-/**
- * Predicts a deck's match win rate from its features, fit to REAL match outcomes (not GIH).
- * Standardizes inputs with training-set stats so ridge is scale-invariant; the intercept
- * (index 0) is never standardized or penalized.
- */
+
 class DeckStrengthModel(
     private val beta: DoubleArray,
     private val mean: DoubleArray,
@@ -117,7 +104,7 @@ class DeckStrengthModel(
         return s.coerceIn(0.0, 1.0)
     }
 
-    /** Win rate for this deck if drafted by a player of [referenceRank], isolating deck quality. */
+
     fun strengthAtRank(x: DoubleArray, referenceRank: Double): Double {
         val c = x.copyOf()
         c[DeckFeatures.RANK_INDEX] = referenceRank
@@ -127,7 +114,7 @@ class DeckStrengthModel(
     fun beta(): DoubleArray = beta.copyOf()
 }
 
-/** Weighted ridge regression via the normal equations, solved with Gaussian elimination. */
+
 object DeckStrengthTrainer {
     fun train(x: List<DoubleArray>, y: DoubleArray, w: DoubleArray, lambda: Double = 5.0): DeckStrengthModel {
         require(x.isNotEmpty()) { "no training samples" }
@@ -158,7 +145,7 @@ object DeckStrengthTrainer {
                 for (j in 0 until d) a[i][j] += wi * zi[i] * zi[j]
             }
         }
-        for (i in 1 until d) a[i][i] += lambda // ridge on slopes only, not the intercept
+        for (i in 1 until d) a[i][i] += lambda
         return DeckStrengthModel(solve(a, b), mean, std)
     }
 

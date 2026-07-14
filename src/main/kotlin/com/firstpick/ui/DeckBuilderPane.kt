@@ -64,10 +64,7 @@ internal fun DeckBuilderPane(options: List<DeckOptionUi>) {
     }
 }
 
-/**
- * Live, mid-draft view of [DeckProjector.project]: the deck your picks are building right now,
- * plus the pool copies that currently fall out of the 23 — a directional read, not a final build.
- */
+
 @Composable
 internal fun DeckSoFarPane(deck: DeckOptionUi, cuts: List<DeckSpellUi>) {
     val spellCount = deck.spells.sumOf { it.count }

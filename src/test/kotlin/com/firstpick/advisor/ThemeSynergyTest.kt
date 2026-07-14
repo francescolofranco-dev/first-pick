@@ -84,7 +84,7 @@ class ThemeSynergyTest {
 
     @Test
     fun clearlyStrongerOffThemeCardStillWins() {
-        // User requirement: two strong cards without synergy beat two weak cards with synergy.
+
         val pack = listOf(card(1, "Payoff", 0.53), card(2, "StrongVanilla", 0.60))
         val pool = List(5) { card(100 + it, "Enabler${(it % 4) + 1}", 0.56, "G") }
         val result = run(pack, pool)

@@ -20,7 +20,7 @@ class PickNetRepositoryTest {
         val ranked = net.score(emptyList(), listOf("Mountain", "Aurelia's Vindicator"))
         assertEquals("Aurelia's Vindicator", ranked[0].first)
 
-        // Wrong format/set must not leak the loaded model.
+
         assertNull(repo.netFor("MKM", "TradDraft"))
         assertNull(repo.netFor("OTJ", "PremierDraft"))
     }

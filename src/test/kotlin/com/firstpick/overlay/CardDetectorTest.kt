@@ -4,6 +4,7 @@ import java.awt.image.BufferedImage
 import javax.imageio.ImageIO
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -48,9 +49,8 @@ class CardDetectorTest {
 
     @Test
     fun findsTheGridWhenTheSelectedCardGlowMergesColumns() {
-        // MSH QuickDraft P1P1: Arena pre-selects a card whose highlight glow bridges the gap
-        // between columns 1 and 2, and the dark MSH name bars shift the brightness bands
-        // below the true card tops. 14 cards lay out 5/5/4.
+
+
         val frame = fixture("msh-p1p1-14cards.jpg")
         val grid = CardDetector.detect(frame, expectedCount = 14)
         assertNotNull(grid, "glow-merged columns must be split back apart")
@@ -83,8 +83,8 @@ class CardDetectorTest {
 
     @Test
     fun singleRowPackAnchorsToTheCardsNotTheBrightBackdrop() {
-        // Late picks show one row of cards over the animated city backdrop; the backdrop's
-        // bright structures must not hijack the column/row projections.
+
+
         val w = 1554
         val h = 992
         val img = BufferedImage(w, h, BufferedImage.TYPE_INT_RGB)
@@ -115,22 +115,21 @@ class CardDetectorTest {
 
     @Test
     fun rejectsAHoveredMagnifiedFrameWhereRowsFuseAndTheGridShiftsDown() {
-        // MTGA's magnified card preview + tooltip fill the gap between the two card rows, fusing
-        // them into one tall bright band. The detector then bottom-anchors the grid far too low
-        // (row 0 landing near mid-screen). Such a frame must be rejected so the overlay keeps its
-        // last clean detection instead of painting seals at the bottom of the window.
+
+
         val w = 2560
         val h = 1496
         val img = BufferedImage(w, h, BufferedImage.TYPE_INT_RGB)
         val g = img.createGraphics()
         g.color = java.awt.Color(20, 15, 12)
         g.fillRect(0, 0, w, h)
-        // five columns, but one continuous tall lit region (fused rows) whose bottom sits low
+
         g.color = java.awt.Color(230, 225, 215)
         for (i in 0 until 5) g.fillRect(380 + i * 260, 460, 220, 514)
         g.dispose()
 
         assertNull(CardDetector.detect(img, expectedCount = 8))
+        assertTrue(CardDetector.isHoverMagnified(img, expectedCount = 8), "the overlay must recognize this exact frame as a hover preview so it can hide its seals")
     }
 
     @Test
@@ -141,5 +140,19 @@ class CardDetectorTest {
     @Test
     fun returnsNullForABlankFrame() {
         assertNull(CardDetector.detect(BufferedImage(1280, 748, BufferedImage.TYPE_INT_RGB)))
+    }
+
+    @Test
+    fun doesNotFlagOrdinaryDetectionFailuresAsHoverMagnified() {
+
+
+        assertFalse(CardDetector.isHoverMagnified(BufferedImage(64, 64, BufferedImage.TYPE_INT_RGB)))
+        assertFalse(CardDetector.isHoverMagnified(BufferedImage(1280, 748, BufferedImage.TYPE_INT_RGB)))
+    }
+
+    @Test
+    fun doesNotFlagACleanCaptureAsHoverMagnified() {
+        assertFalse(CardDetector.isHoverMagnified(fixture("p1p1-13cards.png"), expectedCount = 13))
+        assertFalse(CardDetector.isHoverMagnified(fixture("msh-p1p1-14cards.jpg"), expectedCount = 14))
     }
 }

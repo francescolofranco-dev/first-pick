@@ -15,10 +15,10 @@ class ModelExplainTest {
 
     @Test
     fun demotedBombShowsItsOwnHighGrade() {
-        // Falcon-style: stats grade A+, model buries it — the caption keeps the A+ context.
+
         val lines = modelExplainLines(ModelExplain(rank = 7, packSize = 14, soloValue = 84.9, ata = null, alsa = 4.6))
         assertTrue(lines[0].endsWith("without model A+"), lines[0])
-        // ATA missing -> fall back to ALSA phrasing.
+
         assertEquals("Usually still there ~pick 5", lines[1])
     }
 
@@ -30,7 +30,7 @@ class ModelExplainTest {
 
     @Test
     fun bombTierGatesTheStar() {
-        // The star/label consistency rule the UI applies: a demoted bomb (C-tier) is no longer a bomb.
+
         assertTrue(isBombTier(85.0))
         assertTrue(!isBombTier(52.6))
     }

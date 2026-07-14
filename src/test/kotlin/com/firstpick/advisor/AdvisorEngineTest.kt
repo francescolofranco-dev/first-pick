@@ -123,8 +123,8 @@ class AdvisorEngineTest {
 
     @Test
     fun nonbasicLandIsJudgedByProducedColorsNotItsBlankColor() {
-        // BG lane. A B/G dual is premium fixing; a G/W dual only taps for green here and must
-        // not outrank the on-lane dual on its splash-inflated win rate; a mono-B tapland is fine.
+
+
         val pool = List(6) { card(100 + it, "Guy$it", 0.58, if (it % 2 == 0) "B" else "G") }
         val meta: (String) -> CardMeta? = { name ->
             when (name) {
@@ -153,8 +153,8 @@ class AdvisorEngineTest {
 
     @Test
     fun fixingLandForACommittedSplashIsNotPenalized() {
-        // BG lane that has committed a white splash (2 white cards in the pool). A W/B tapland
-        // taps for a main color (B) AND the splash (W), so it's premium fixing, not off-color.
+
+
         val meta: (String) -> CardMeta? = { name ->
             when (name) {
                 "OrzhovDual" -> CardMeta(name, cmc = 0, isCreature = false, isLand = true, producedColors = setOf('W', 'B'))
@@ -172,7 +172,7 @@ class AdvisorEngineTest {
 
     @Test
     fun fixingLandForAColorYouAreNotPlayingIsStillPenalized() {
-        // Same W/B land, but the pool has no white cards — white is wasted, so keep the penalty.
+
         val meta: (String) -> CardMeta? = { name ->
             if (name == "OrzhovDual") CardMeta(name, cmc = 0, isCreature = false, isLand = true, producedColors = setOf('W', 'B')) else null
         }
@@ -191,7 +191,7 @@ class AdvisorEngineTest {
                 else -> CardMeta(name, cmc = 3, isCreature = true, isLand = false)
             }
         }
-        // Lane is UB; pool already holds three copies of the same removal spell.
+
         val pool = List(3) { card(200, "RemovalA", 0.57, "U") } + List(4) { card(100 + it, "Guy$it", 0.57, "U") }
         val pack = listOf(card(1, "RemovalA", 0.57, "U"), card(2, "RemovalB", 0.57, "U"))
         val result = run(pack, pool, packNumber = 3, pickNumber = 1, meta = meta)
@@ -285,14 +285,14 @@ class AdvisorEngineTest {
 
     @Test
     fun breakdownComponentsSumToTheFinalScore() {
-        // Exhaustiveness: every term that moves the score must be a breakdown row, so the tooltip
-        // adds up. Includes a card that clamps at 100 (scoreCap) and one likely to wheel.
+
+
         val pool = List(6) { card(100 + it, "BlueGuy$it", 0.58, "U") }
         val pack = listOf(
-            card(1, "Insane", 0.82, "U", iwd = 0.10),      // huge z -> clamps at 100
-            card(2, "Wheeler", 0.54, "U", alsa = 9.0),     // ALSA >= wheelAlsa -> wheel penalty
-            card(3, "OffColor", 0.60, "R"),                // off-lane color penalty
-            card(4, "Terrible", 0.30, "R"),                // clamps at 0
+            card(1, "Insane", 0.82, "U", iwd = 0.10),
+            card(2, "Wheeler", 0.54, "U", alsa = 9.0),
+            card(3, "OffColor", 0.60, "R"),
+            card(4, "Terrible", 0.30, "R"),
         )
         val result = run(pack, pool, packNumber = 3, pickNumber = 10)
         for (s in result) {
@@ -302,12 +302,11 @@ class AdvisorEngineTest {
             assertEquals(b.finalScore, sum, 1e-6, "${s.card.name}: rows sum to $sum but finalScore is ${b.finalScore}")
             assertEquals(s.value, b.finalScore, 1e-9, "${s.card.name}: finalScore must equal the displayed value")
         }
-        // The chosen cards actually exercise the two newly-booked terms.
+
         assertTrue(scoreOf(result, "Wheeler").breakdown!!.wheelPenalty < 0.0, "wheel penalty should fire")
         assertTrue(scoreOf(result, "Insane").breakdown!!.scoreCap < 0.0, "top-end clamp should book a negative scoreCap")
     }
 
-    // --- Constructive deck-fit (DeckProjector.Fit layered into the value) ---
 
     private val creatureMeta: (String) -> CardMeta? = { CardMeta(it, cmc = 3, isCreature = true, isLand = false) }
 

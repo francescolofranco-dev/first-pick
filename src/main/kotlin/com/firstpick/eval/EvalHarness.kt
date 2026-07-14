@@ -101,15 +101,15 @@ fun main(args: Array<String>) = runBlocking {
     fun buildDeck(pool: List<RankedCard>): DeckOption? =
         DeckBuilder.build(pool, repo.setMetrics, meta, archRepo::archetypeRating, pairStrength, maxOptions = 1, synergy = synergyIndex)
             .firstOrNull()
-    // Deck-fit probe mirroring the app's wiring; -Dfirstpick.fitPerPowerDelta=0 skips the
-    // projections entirely, giving a byte-identical no-fit baseline for A/Bs.
+
+
     fun fitProbe(pool: List<RankedCard>, lane: Lane): ((RankedCard) -> DeckProjector.Fit?)? {
         if (cfg.fitPerPowerDelta <= 0.0 || !lane.isEstablished) return null
         val before = DeckProjector.project(pool, repo.setMetrics, meta, archRepo::archetypeRating, pairStrength, synergyIndex)
         return { c -> DeckProjector.fit(pool, c, repo.setMetrics, meta, archRepo::archetypeRating, pairStrength, synergyIndex, before) }
     }
 
-    // ---- Pass 1: per-draft human pool + agreement diagnostics; assemble estimator training data.
+
     fun isTest(id: String) = (id.hashCode() and 0x7fffffff) % 5 == 0
     val diag = Metrics()
     val netDiag = Metrics()
@@ -164,7 +164,7 @@ fun main(args: Array<String>) = runBlocking {
     }
     val referenceRank = if (rankN > 0) rankSum / rankN else DraftRank.DEFAULT
 
-    // ---- Split into train (fit estimator) and held-out test (report on).
+
     val train = samples.filter { !it.test && it.matches > 0 }
     val valid = samples.filter { it.test && it.matches > 0 }
     if (train.size < 50 || valid.isEmpty()) {
@@ -177,7 +177,7 @@ fun main(args: Array<String>) = runBlocking {
         return@runBlocking
     }
 
-    // ---- Pass 2: engine self-draft on the TEST split; collect engine vs human deck features.
+
     val cmp = ArrayList<Pair<DoubleArray, DoubleArray>>()
     fun poolCreatures(pool: List<RankedCard>) = pool.count { meta(it.name)?.isCreature == true }
     var engPoolCr = 0.0; var humPoolCr = 0.0; var poolN = 0
@@ -203,7 +203,7 @@ fun main(args: Array<String>) = runBlocking {
     }
     if (poolN > 0) println("[pool creatures — engine %.2f vs human %.2f]".format(engPoolCr / poolN, humPoolCr / poolN))
 
-    // ---- Report: honest headline first, GIH agreement demoted to diagnostics.
+
     fun wr(x: Double) = "%.1f%%".format(x * 100)
     println("\n=== HONEST EVAL — $set $format (held-out ${samples.count { it.test }}/${samples.size} drafts, ${cmp.size} self-drafted) ===")
     println("Estimators trained on REAL match outcomes (rank-controlled, held-out validation):")
@@ -265,13 +265,7 @@ fun main(args: Array<String>) = runBlocking {
     }
 }
 
-/**
- * Experiment: outcome re-ranking of the model's near-ties. When the model's top-2
- * scores sit within [gap] and the pool is at least [minPool] picks deep, build the
- * deck implied by each candidate and let the outcome-trained estimator break the
- * tie. Estimator fits on train-split drafts; picks are measured on the test split
- * only (which the pick model also never trained on — same draft_id hash rule).
- */
+
 private fun rerankerExperiment(
     net: PickNet,
     drafts: Map<String, MutableList<PickRow>>,
@@ -316,7 +310,7 @@ private fun rerankerExperiment(
             val ranked = net.score(rawPool, row.packCards)
             if (ranked.size >= 2 && ranked[0].second.isFinite() && ranked[1].second.isFinite()) {
                 val gap = (ranked[0].second - ranked[1].second).toDouble()
-                // The estimator's verdict is shared by every config that triggers on this row.
+
                 val flipToSecond: Boolean by lazy {
                     val a = buildDeck(pool + repo.resolveName(ranked[0].first))
                     val b = buildDeck(pool + repo.resolveName(ranked[1].first))

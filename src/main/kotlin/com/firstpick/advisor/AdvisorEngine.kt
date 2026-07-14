@@ -27,9 +27,8 @@ class AdvisorEngine(
         val alsaZMax: Double = 0.8,
         val minArchSamples: Int = 200,
         val archWeightBase: Double = 0.0,
-        // Once a lane is committed, a card's win rate WITHIN that lane predicts better than its
-        // global rate, so the archetype shift ramps to full trust by late pack 1 (validated
-        // neutral on human-agreement, slightly better winner-alignment, on the FIN backtest).
+
+
         val archWeightSlope: Double = 2.0,
         val archWeightMax: Double = 1.0,
         val archWeightRampStart: Double = 0.06,
@@ -46,25 +45,22 @@ class AdvisorEngine(
         val penaltyMax: Double = 3.0,
         val needsRampStart: Double = 0.25,
         val needsRampSpan: Double = 0.55,
-        // Diminishing returns for extra copies already in the pool. Noncreature spells (removal,
-        // tricks) get redundant faster than creatures; lands are exempt (you want many).
+
+
         val dupSpellPts: Double = 5.0,
         val dupSpellFree: Int = 1,
         val dupCreaturePts: Double = 2.0,
         val dupCreatureFree: Int = 2,
         val dupCapPts: Double = 12.0,
-        // A color the pool commits this many playable cards to (beyond the main pair) is a real
-        // splash — fixing that taps for it is doing useful work, not wasting a pip.
+
+
         val splashMinCards: Int = 2,
-        // Greedy win-rate drafting under-picks creatures and lands creature-light (~10.6 vs a
-        // human's ~12.9), and creature count is an outcome-validated deck-strength driver. This
-        // adds pull toward creatures while the pool projects below creatureFloorTarget.
+
+
         val creatureFloorPts: Double = 0.0,
         val creatureFloorTarget: Double = 15.0,
-        // Constructive deck-fit: when a candidate earns a slot in the projected best deck
-        // (DeckProjector), credit the projector's own power delta. Ramps with lane commitment —
-        // zero while colors are open, full weight by the end of pack 1. Layers under PickNet:
-        // it informs the displayed value and reasons, never reorders the learned model.
+
+
         val fitPerPowerDelta: Double = 2.0,
         val fitCapPts: Double = 6.0,
         val fitRampStart: Double = 0.10,
@@ -129,8 +125,8 @@ class AdvisorEngine(
         val statSynergyPts = synergyBonus(card, globalWr, archWr, archSamples, reasons)
 
         val themeResult = theme?.evaluate(card, config) ?: ThemeSynergy.Result.NONE
-        // The shared cap only engages when theme points exist, so a profile-less run is
-        // byte-identical to the old engine under any knob combination.
+
+
         val totalSynergyPts = if (themeResult.points > 0.0) {
             (statSynergyPts + themeResult.points).coerceAtMost(config.synergyTotalCapPts)
         } else {
@@ -142,9 +138,8 @@ class AdvisorEngine(
         val cardMeta = meta(card.name)
         val colors = LaneDetector.colorsOf(card)
         val hybridGroups = cardMeta?.hybridColorGroups.orEmpty()
-        // A mana-producing nonbasic land is judged by what it TAPS FOR, not its (blank) color:
-        // a land that covers your lane's colors is premium fixing, one that wastes production on
-        // off-colors (e.g. a Selesnya dual in a Golgari deck) is a wrong dual, not a top pick.
+
+
         val produced = cardMeta?.producedColors.orEmpty()
         val isFixingLand = cardMeta?.isLand == true && produced.isNotEmpty()
         val offColors: Set<Char>
@@ -152,9 +147,9 @@ class AdvisorEngine(
         if (isFixingLand) {
             offColors = when {
                 !lane.isEstablished -> emptySet()
-                produced.containsAll(lane.colors) -> emptySet() // taps for all your colors → good fixing
-                // A produced color you're actually splashing isn't wasted — it's the fixing you
-                // committed to when you took those off-color cards. Only truly unused pips count.
+                produced.containsAll(lane.colors) -> emptySet()
+
+
                 else -> produced - lane.colors - splashColors
             }
             colorDenom = produced.size
@@ -205,9 +200,7 @@ class AdvisorEngine(
         val dupPts = duplicatePenalty(copiesInPool, cardMeta)
         if (dupPts >= DUP_REASON_THRESHOLD) reasons += "${copiesInPool + 1}th copy — diminishing"
 
-        // Constructive deck-fit: only cards that EARN a slot in the projected best deck get
-        // credit, sized by how much the projector says the deck improved. Cards that miss the
-        // 23 get zero, not a penalty — redundancy and options are what a draft pool is for.
+
         var fitPts = 0.0
         if (fit != null && fit.makesDeck) {
             fitPts = (config.fitPerPowerDelta * fit.powerDelta.coerceAtLeast(0.0))
@@ -292,8 +285,7 @@ class AdvisorEngine(
         return pts
     }
 
-    // Colors the pool is meaningfully splashing (playable, off the main pair, at least
-    // splashMinCards deep). Fixing that taps for one of these is real fixing, not a wasted pip.
+
     private fun splashColorsOf(
         pool: List<RankedCard>,
         lane: Lane,
@@ -322,8 +314,7 @@ class AdvisorEngine(
     private fun needsWeight(progress: Double): Double =
         ((progress - config.needsRampStart) / config.needsRampSpan).coerceIn(0.0, 1.0)
 
-    // Deck-fit is only meaningful once the pool has committed to colors: zero while the lane
-    // is open (P1 early picks stay pure power), full weight by the end of pack 1.
+
     private fun fitWeight(progress: Double, lane: Lane): Double {
         if (!lane.isEstablished || config.fitPerPowerDelta <= 0.0) return 0.0
         return ((progress - config.fitRampStart) / config.fitRampSpan).coerceIn(0.0, 1.0)

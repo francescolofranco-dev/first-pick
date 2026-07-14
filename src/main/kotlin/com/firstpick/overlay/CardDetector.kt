@@ -49,15 +49,26 @@ object CardDetector {
     private const val DEFAULT_PITCH_RATIO = 1.1
     private const val MAX_ROW0_TOP = 0.35
 
-    fun detect(img: BufferedImage, expectedCount: Int = 0): Grid? {
+    private sealed class DetectResult {
+        data class Found(val grid: Grid) : DetectResult()
+        object HoverMagnified : DetectResult()
+        object Indeterminate : DetectResult()
+    }
+
+    fun detect(img: BufferedImage, expectedCount: Int = 0): Grid? =
+        (detectInternal(img, expectedCount) as? DetectResult.Found)?.grid
+
+
+    fun isHoverMagnified(img: BufferedImage, expectedCount: Int = 0): Boolean =
+        detectInternal(img, expectedCount) is DetectResult.HoverMagnified
+
+    private fun detectInternal(img: BufferedImage, expectedCount: Int): DetectResult {
         val w = img.width
         val h = img.height
-        if (w < 200 || h < 200) return null
+        if (w < 200 || h < 200) return DetectResult.Indeterminate
         val gray = toGray(img, w, h)
 
-        // Confine the column projection to where the cards can be: with few cards (one or two
-        // rows) the lower half is just the animated city backdrop, whose bright structures
-        // otherwise out-vote the cards and hijack the columns.
+
         val expRows = if (expectedCount > 0) ceil(expectedCount.toDouble() / MAX_COLS).toInt() else 3
         val by0 = (BAND_TOP * h).toInt()
         val by1 = (minOf(BAND_BOTTOM, BAND_TOP + expRows * ROW_BAND_SPAN) * h).toInt()
@@ -72,15 +83,14 @@ object CardDetector {
         normalize(colProj)
         val cut = (RIGHT_PANEL_CUT * w).toInt()
         for (x in cut until w) colProj[x] = 0f
-        // The selected card's highlight glow can bridge the gap between two columns and fuse
-        // their projection runs, so runs about k× the typical column width get split back into k.
+
+
         val rawCols = splitMergedRuns(runsAbove(colProj, COL_THRESH, (COL_MIN_LEN * w).toInt(), (COL_MAX_GAP * w).toInt()))
         Log.debug(TAG, "cols=${rawCols.map { "${it.first}..${it.last}" }} expected=${minOf(MAX_COLS, expectedCount)}")
-        if (rawCols.isEmpty() || rawCols.size > MAX_COLS) return null
-        if (expectedCount > 0 && rawCols.size != minOf(MAX_COLS, expectedCount)) return null
+        if (rawCols.isEmpty() || rawCols.size > MAX_COLS) return DetectResult.Indeterminate
+        if (expectedCount > 0 && rawCols.size != minOf(MAX_COLS, expectedCount)) return DetectResult.Indeterminate
 
-        // Arena renders every card the same width; projection runs get ragged edges from
-        // per-card content, so re-center each column on the median width.
+
         val colW = rawCols.map { it.last - it.first + 1 }.sorted()[rawCols.size / 2]
         val cols = rawCols.map { c ->
             val center = (c.first + c.last) / 2
@@ -88,8 +98,7 @@ object CardDetector {
             a..(a + colW - 1).coerceAtMost(w - 1)
         }
 
-        // Project rows over ALL columns: a single card's dark art or name bar can fragment or
-        // shift the band, but averaged across the row some card is always bright.
+
         val gridW = cols.sumOf { it.last - it.first + 1 }
         val rowProj = FloatArray(h)
         for (y in 0 until h) {
@@ -104,12 +113,11 @@ object CardDetector {
         normalize(rowProj)
         val bands = runsAbove(rowProj, ROW_THRESH, (ROW_MIN_LEN * h).toInt(), (ROW_MAX_GAP * h).toInt())
         Log.debug(TAG, "bands=${bands.map { "${it.first}..${it.last}" }}")
-        if (bands.isEmpty()) return null
+        if (bands.isEmpty()) return DetectResult.Indeterminate
 
         val aspectH = (colW / CARD_ASPECT).toInt()
-        // Bright bands anchor to card CONTENT: the bottom (text box → card edge) is stable
-        // across frame styles, the top (name bar, art sky) is not. Trust the band's own height
-        // only when it matches the card aspect; otherwise anchor at the bottom and use aspect.
+
+
         val first = bands.first()
         val row0H = first.last - first.first + 1
         val cardH: Int
@@ -121,13 +129,11 @@ object CardDetector {
             cardH = aspectH
             row0Top = (first.last - aspectH + 1).coerceAtLeast(0)
         }
-        // When a card is hovered, MTGA's magnified preview + tooltip fuse the row gaps into one
-        // tall band, and the grid bottom-anchors far too low. A real pack's top row always sits
-        // in the upper part of the window, so reject a shifted-down grid rather than paint seals
-        // in the wrong place; the overlay keeps its last clean detection.
+
+
         if (row0Top > (MAX_ROW0_TOP * h)) {
             Log.debug(TAG, "reject: row0Top $row0Top past ${(MAX_ROW0_TOP * h).toInt()} (hovered/magnified frame)")
-            return null
+            return DetectResult.HoverMagnified
         }
         val pitchCandidates = bands.map { it.last }.zipWithNext { a, b -> b - a }
             .filter { it in (0.9 * cardH).toInt()..(1.5 * cardH).toInt() }
@@ -146,8 +152,8 @@ object CardDetector {
             val bottom = (top + cardH - 1).coerceAtMost(h - 1)
             if (top < 0 || top > h - 1 || bottom <= top) null else top..bottom
         }
-        if (rows.isEmpty()) return null
-        return Grid(cols, rows, w, h)
+        if (rows.isEmpty()) return DetectResult.Indeterminate
+        return DetectResult.Found(Grid(cols, rows, w, h))
     }
 
     private fun toGray(img: BufferedImage, w: Int, h: Int): FloatArray {

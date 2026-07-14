@@ -14,13 +14,7 @@ import java.nio.file.Files
 import javax.imageio.ImageIO
 import kotlin.math.abs
 
-/**
- * Runs the overlay pipeline against a frame and the live Player.log. Geometry gives the seal
- * positions the overlay ships; detection+recognition give the frame's ground truth for both
- * positions (alignment deltas) and identity. The ORDER CHECK verdict measures how wrong the
- * log-order fallback would be — historically the log's pack order does NOT match the screen
- * (live-disproven 2026-06-29), which is why recognition is the shipped identity source.
- */
+
 fun main(args: Array<String>) = runBlocking {
     val framePath = args.getOrNull(0)?.takeIf { it.isNotBlank() }
     val format = args.getOrNull(1)?.takeIf { it.isNotBlank() } ?: "PremierDraft"

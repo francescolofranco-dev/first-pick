@@ -10,12 +10,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
 
-/**
- * Loads the learned pick model for a set+format. Models are trained offline
- * (training/train_picker.py) and never change at runtime. Lookup order:
- * user-overridable cache file, then the bundled resource. No model for a
- * set is a valid state: the advisor then ranks heuristically as before.
- */
+
 class PickNetRepository(private val cacheDir: Path = AppPaths.cacheDir) {
     private val mutex = Mutex()
     private val bundledCache = ConcurrentHashMap<String, Boolean>()
@@ -39,11 +34,11 @@ class PickNetRepository(private val cacheDir: Path = AppPaths.cacheDir) {
         }
     }
 
-    /** The loaded model, but only if it is the one for [setCode]+[format]. */
+
     fun netFor(setCode: String?, format: String): PickNet? =
         net?.takeIf { setCode != null && loadedKey == key(setCode, format) }
 
-    /** Which of [candidates] ship with a bundled model for [format]. */
+
     fun bundledSets(candidates: Collection<String>, format: String): List<String> =
         candidates.map { it.uppercase() }.sorted().filter { set ->
             bundledCache.getOrPut("${set}_$format") {

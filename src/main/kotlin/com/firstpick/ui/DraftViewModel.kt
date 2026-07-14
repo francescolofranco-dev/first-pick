@@ -177,9 +177,8 @@ class DraftViewModel(
         val poolMetas = pool.mapNotNull { metaRepo.meta(it.name) }
         val format = RatingsFormat.resolve(formatChoice, state.format)
         val net = pickNetRepo.netFor(state.setCode, format)
-        // The deck this pool is building right now — shared by the pick-time deck-fit signal
-        // and the "Deck so far" panel, so a card's projected fit always matches what's shown.
-        // Gated on lane.isEstablished: an open pool has no meaningful "best deck" yet.
+
+
         val liveProjection = if (loaded && lane.isEstablished) {
             DeckProjector.project(pool, repo.setMetrics, metaRepo::meta, archetypeRepo::archetypeRating, archetypeRepo.strengthMap(), synergyRepo.index)
         } else {
@@ -267,8 +266,7 @@ class DraftViewModel(
         )
     }
 
-    // Deck-fit probe for pick scoring: re-projects per candidate against the already-computed
-    // [before] projection. Null when there's no projection to compare against (lane still open).
+
     private fun deckFitProbe(
         pool: List<com.firstpick.cards.RankedCard>,
         before: DeckOption?,
@@ -280,8 +278,7 @@ class DraftViewModel(
         }
     }
 
-    // Pool copies that fell out of [proj]'s 23 (and its nonbasic lands) — the flip side of
-    // "Deck so far": what your picks brought home but the current best build doesn't want.
+
     private fun cutsOf(pool: List<com.firstpick.cards.RankedCard>, proj: DeckOption?): List<DeckSpellUi> {
         if (proj == null) return emptyList()
         val inCounts = (proj.spells + proj.nonbasicLands).groupingBy { it.name }.eachCount()

@@ -19,7 +19,7 @@ class RankBadgeTest {
 
     @Test
     fun fireRankStaysInLockStepWithTheBombTier() {
-        // Fire is the bomb tier; the pack-row star and the seal must never disagree on the boundary.
+
         assertEquals("seals/gold", rankBasename(79.9))
         assertTrue(!isBombTier(79.9))
         assertEquals("seals/fire", rankBasename(80.0))
@@ -28,7 +28,7 @@ class RankBadgeTest {
 
     @Test
     fun everyRankBadgeIsBundled() {
-        // A typo in rankBasename() would otherwise fall back silently at runtime; fail here instead.
+
         for (v in listOf(null, 30.0, 50.0, 58.0, 70.0, 88.0)) {
             val path = "${rankBasename(v)}.png"
             val stream = this::class.java.classLoader.getResourceAsStream(path)
@@ -39,8 +39,8 @@ class RankBadgeTest {
 
     @Test
     fun everyRankBadgeIsASquarePng() {
-        // Alignment across ranks relies on each badge being a square canvas (emblem centred, wings in
-        // the margin). A non-square drop-in would skew the whole row — catch it here.
+
+
         for (v in listOf(null, 30.0, 50.0, 58.0, 70.0, 88.0)) {
             val path = "${rankBasename(v)}.png"
             val bmp = this::class.java.classLoader.getResourceAsStream(path)!!.use { loadImageBitmap(it) }

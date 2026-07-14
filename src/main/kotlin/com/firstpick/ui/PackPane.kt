@@ -157,9 +157,8 @@ private fun ConfidenceBanner(cards: List<PackCardUi>) {
 @Composable
 private fun PackRow(card: PackCardUi, packSize: Int) {
     val top = card.rank == 1
-    // The bomb star is a strong "this wins games" claim; only show it when the displayed grade
-    // still agrees. When the model demotes a stats-bomb below bomb tier, the star and the "Bomb"
-    // reason are dropped (that story now lives in the model-adjustment explanation instead).
+
+
     val bombConsistent = card.isBomb && isBombTier(card.value)
     Row(
         Modifier

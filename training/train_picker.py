@@ -53,7 +53,7 @@ def min_winrate(n_games: float, p: float = 0.55, stdev: float = 1.5) -> float:
     """Lower confidence bound used by statistical-drafting: keep drafters whose
     bucketed win rate is within `stdev` standard errors of p from above."""
     if n_games <= 0:
-        return 1.0  # unknown volume -> exclude
+        return 1.0
     return p - stdev * math.sqrt(p * (1 - p) / n_games)
 
 
@@ -190,7 +190,6 @@ def train(cards, pools, packs, picks, rarities, device, epochs, patience, lr, ba
             pick = t_pick[idx].to(device)
             logits = model(pool, pack)
             loss = ce(logits, pick)
-            # 3x penalty for recommending a rare/mythic where the drafter took a C/U.
             raredraft = is_premium[logits.argmax(dim=1)] & ~is_premium[pick]
             loss = (loss * torch.where(raredraft, 3.0, 1.0)).mean()
             opt.zero_grad()
@@ -228,7 +227,7 @@ def fold_batchnorm(model: DraftNet):
         a1, c1 = affine(model.bn1)
         a2, c2 = affine(model.bn2)
         w1, b1 = model.l1.weight.clone(), model.l1.bias.clone()
-        w2 = model.l2.weight * a1  # scale columns
+        w2 = model.l2.weight * a1
         b2 = model.l2.weight @ c1 + model.l2.bias
         w3 = model.out.weight * a2
         b3 = model.out.weight @ c2 + model.out.bias

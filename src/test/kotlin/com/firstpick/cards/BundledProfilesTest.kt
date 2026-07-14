@@ -34,15 +34,15 @@ class BundledProfilesTest {
                 assertTrue(roleCards.size >= 4, "${entry.code} ${arch.pair}: archetype too thin")
                 assertTrue(roleCards.none { it.isBlank() }, "${entry.code} ${arch.pair}: blank card name")
             }
-            // the index must build without throwing (dedup, combo symmetry)
+
             SynergyIndex(profile)
         }
     }
 
     @Test
     fun noOrphanProfilesOutsideTheManifest() {
-        // Every bundled profile except the manifest itself must be declared in standard.json,
-        // so a rotated-out set can't linger silently.
+
+
         val manifest = json.decodeFromString<StandardManifest>(resource("/synergy/standard.json")!!)
         val declared = manifest.sets.mapTo(mutableSetOf()) { it.code.uppercase() }
         assertTrue("MSH" in declared, "MSH must be a declared supported set")

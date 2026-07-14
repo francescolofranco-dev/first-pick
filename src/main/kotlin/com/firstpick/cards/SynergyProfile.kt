@@ -45,10 +45,7 @@ data class SynergyTag(val pair: String, val role: SynergyRole, val archetypeName
 
 data class ComboPartner(val name: String, val note: String)
 
-/**
- * Read-only lookup over a [SetSynergyProfile], keyed by the same name normalization the
- * rating/meta repositories use so 17Lands names and Scryfall names resolve to one entry.
- */
+
 class SynergyIndex(val profile: SetSynergyProfile) {
     private val tagsByName: Map<String, List<SynergyTag>>
     private val partnersByName: Map<String, Map<String, ComboPartner>>
@@ -57,8 +54,8 @@ class SynergyIndex(val profile: SetSynergyProfile) {
     init {
         val tags = mutableMapOf<String, MutableList<SynergyTag>>()
         for (arch in profile.archetypes) {
-            // One tag per (card, pair): roles are added strongest-first, so a card listed both
-            // as payoff and keyCard of the same archetype counts once — never as stacked fuel.
+
+
             fun addAll(names: List<String>, role: SynergyRole) {
                 for (n in names) {
                     val list = tags.getOrPut(normalize(n)) { mutableListOf() }
@@ -86,7 +83,7 @@ class SynergyIndex(val profile: SetSynergyProfile) {
 
     fun tags(name: String): List<SynergyTag> = tagsByName[normalize(name)].orEmpty()
 
-    /** Normalized partner name → partner (display name + combo note). */
+
     fun partners(name: String): Map<String, ComboPartner> = partnersByName[normalize(name)].orEmpty()
 
     fun archetype(pair: String): SynergyArchetype? = archetypesByPair[pair]
@@ -96,12 +93,7 @@ class SynergyIndex(val profile: SetSynergyProfile) {
     }
 }
 
-/**
- * Loads the per-set synergy knowledge base. The profile is precomputed at set release
- * (researched + grounded against 17Lands data) and never changes at runtime.
- * Lookup order: user-overridable cache file, then the bundled resource.
- * No profile for a set is a valid state: the advisor then scores exactly as before.
- */
+
 class SynergyRepository(private val cacheDir: Path = AppPaths.cacheDir) {
     private val json = Json { ignoreUnknownKeys = true; isLenient = true }
     private val mutex = Mutex()

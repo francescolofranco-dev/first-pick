@@ -20,11 +20,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import kotlin.system.exitProcess
 
-/**
- * Verifies end-to-end that click-through can be applied to a tracker-style window: creates a
- * transparent always-on-top window, applies setIgnoresMouseEvents via the window handle, and
- * reads the property back. With -Pstay=1 the window remains up so clicks can be tested by hand.
- */
+
 fun main(args: Array<String>) {
     val stay = args.contains("stay")
     application {

@@ -90,8 +90,8 @@ class DraftTrackerTest {
 
     @Test
     fun aPickClearsThePackUntilTheNextOneArrives() {
-        // The pack leaves Arena's screen the instant the pick is made; the overlay must not keep
-        // sealing the old pack while the next one is in transit.
+
+
         val tracker = DraftTracker()
         tracker.onLine("[UnityCrossThreadLogger]==> Event.Join {\"EventName\":\"PremierDraft_MKM_20240206\"}")
         tracker.onLine("[UnityCrossThreadLogger]==> Draft.Notify {\"SelfPack\":1,\"SelfPick\":1,\"PackCards\":\"100,200,300\"}")

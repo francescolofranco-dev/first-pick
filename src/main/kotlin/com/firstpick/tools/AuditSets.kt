@@ -11,11 +11,7 @@ import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.time.Duration
 
-/**
- * Rotation audit: checks every bundled synergy profile against live Standard legality
- * (Scryfall) and reports which sets are still legal and which have rotated out and should
- * be dropped. Run: ./gradlew auditSets
- */
+
 fun main() {
     val json = Json { ignoreUnknownKeys = true }
     val http = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(15)).build()
@@ -44,7 +40,7 @@ fun main() {
     }
 }
 
-/** null = couldn't determine; true/false = Standard legality of a representative card. */
+
 private fun standardLegal(http: HttpClient, json: Json, setCode: String): Boolean? = runCatching {
     val url = "https://api.scryfall.com/cards/search?q=e%3A${setCode.lowercase()}&unique=cards&page=1"
     val req = HttpRequest.newBuilder(URI.create(url))

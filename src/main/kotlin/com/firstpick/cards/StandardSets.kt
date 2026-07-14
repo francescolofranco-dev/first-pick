@@ -16,12 +16,7 @@ data class StandardManifest(
     val sets: List<StandardSet> = emptyList(),
 )
 
-/**
- * The set of Standard-legal, Arena-drafted sets FirstPick ships synergy profiles for.
- * A set is supported while it is Standard-legal; when it rotates out, its profile and its
- * manifest entry are dropped (run `./gradlew auditSets` to find rotated sets).
- * This is advisory metadata — [SynergyRepository] still loads any bundled profile that exists.
- */
+
 object StandardSets {
     private val json = Json { ignoreUnknownKeys = true }
 
@@ -45,7 +40,7 @@ object StandardSets {
             else -> SynergyTierLevel.NONE
         }
 
-    /** Supported sets grouped by tier, each list in manifest order. */
+
     fun researched(): List<String> = manifest.sets.filter { it.tier == "researched" }.map { it.code.uppercase() }
     fun grounded(): List<String> = manifest.sets.filter { it.tier != "researched" }.map { it.code.uppercase() }
 

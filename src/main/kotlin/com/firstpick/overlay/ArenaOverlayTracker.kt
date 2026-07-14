@@ -57,6 +57,7 @@ private const val CLICK_THROUGH_RETRY_MS = 150L
 private const val CAPTURE_DEBOUNCE_MS = 600L
 private const val RECOGNITION_RETRY_MS = 500L
 private const val MAX_RECOGNITION_ATTEMPTS = 12
+private const val HOVER_POLL_MS = 500L
 private const val DEV_DETECT_RETRY_MS = 900L
 private const val MIN_CALIBRATION_CARDS = 10
 
@@ -64,22 +65,13 @@ data class OverlayCard(
     val value: Double?,
     val imageUrl: String?,
     val name: String = "",
-    /** Position of this card in Arena's pack list (the on-screen slot), row-major. */
+
     val originalIndex: Int = -1,
 )
 
 private data class Mark(val x: Int, val y: Int, val w: Int, val h: Int, val value: Double?, val number: Int?, val isBest: Boolean)
 
-/**
- * Seal POSITIONS come from calibrated window geometry (Arena's pack grid is deterministic per
- * window size), so seals appear the instant the log announces a pack — as neutral placeholders.
- * Card IDENTITY comes from capture + art recognition in the background, because the log's pack
- * order is NOT the on-screen order (live-disproven 2026-06-29): once two consecutive captures
- * agree on the assignment, the placeholders fill in with grades. A successful detection also
- * refreshes this window size's grid calibration as a by-product. Capture failures (hover
- * preview, animation, permissions) therefore delay grades but never move, hide, or mis-seat
- * the seals.
- */
+
 @Composable
 fun ArenaOverlayTracker(
     cards: List<OverlayCard> = emptyList(),
@@ -91,8 +83,7 @@ fun ArenaOverlayTracker(
     val cap = remember { capturer }
     val store = remember { calibrationStore }
 
-    // Keep the last known bounds through transient locate failures: tearing the window down and
-    // recreating it made the overlay flicker and dropped its click-through state.
+
     var bounds by remember { mutableStateOf<WindowBounds?>(null) }
     LaunchedEffect(loc) {
         var lastSeen = 0L
@@ -123,8 +114,7 @@ fun ArenaOverlayTracker(
     var calVersion by remember { mutableStateOf(0) }
     val cal = remember(b.w, b.h, calVersion) { store.get(b.w, b.h) }
 
-    // Slot -> index into cards; null while recognition is still pending for this pack. Keyed on
-    // the pack so a new pack synchronously reverts to placeholders (no one-frame stale grades).
+
     val packKey = remember(cards) { cards.joinToString("|") { "${it.name}#${it.imageUrl}" } }
     val assignmentState = remember(packKey) { mutableStateOf<Map<Int, Int>?>(null) }
     var captureFailed by remember(packKey) { mutableStateOf(false) }
@@ -137,11 +127,7 @@ fun ArenaOverlayTracker(
     var clickThroughFailed by remember { mutableStateOf(false) }
     val visible = (b.frontmost || calibrating) && (cards.isNotEmpty() || calibrating) && !clickThroughFailed
 
-    // Identity pass: capture, detect, recognize. The FIRST frame that recognizes every card wins.
-    // (Requiring two consecutive identical frames never converged: look-alike cards — e.g. two red
-    // creatures — flip between captures, so the gate stalled and no grades ever showed. The
-    // size < expected guard below still rejects mid-animation frames, whose moving cards don't
-    // fill the grid.) A successful read also refreshes this window size's grid calibration.
+
     LaunchedEffect(packKey, visible, b.w, b.h) {
         if (calibrating || !visible || cards.isEmpty() || assignmentState.value != null) return@LaunchedEffect
         captureFailed = false
@@ -161,8 +147,8 @@ fun ArenaOverlayTracker(
                 val frame = cap.capture() ?: return@withContext null
                 val grid = CardDetector.detect(frame, cards.size)
                 val freshCal = if (cards.size >= MIN_CALIBRATION_CARDS) grid?.let { PackGeometry.fromGrid(it) } else null
-                // Recognize inside detected rects when available; otherwise the calibrated
-                // fractions mapped into the frame still put each art window on its card.
+
+
                 val rects = grid?.cards(cards.size)
                     ?: PackGeometry.rects(store.get(b.w, b.h) ?: PackGeometry.DEFAULT, frame.width, frame.height, cards.size)
                 Pair(CardRecognizer.match(frame, rects, refs), freshCal)
@@ -182,15 +168,27 @@ fun ArenaOverlayTracker(
             }
             delay(RECOGNITION_RETRY_MS)
         }
-        // Every attempt failed to read the whole pack — capture isn't working (Screen Recording
-        // off, or the window can't be grabbed). Do NOT fall back to the log's pack order: it does
-        // not match Arena's on-screen order (measured 13/13 wrong), so it would misgrade every
-        // card. Leave the placeholders and flag it so the overlay can prompt for the permission.
+
+
         captureFailed = true
         Log.warn(TAG, "$lastFailure after $MAX_RECOGNITION_ATTEMPTS attempts; leaving seals ungraded")
     }
 
-    // Dev calibration mode: numbered boxes driven by live detection of a full 15-slot grid.
+
+    var hovering by remember(packKey) { mutableStateOf(false) }
+    LaunchedEffect(packKey, visible, b.w, b.h) {
+        if (calibrating || !visible) {
+            hovering = false
+            return@LaunchedEffect
+        }
+        while (true) {
+            val frame = withContext(Dispatchers.IO) { cap.capture() }
+            hovering = frame != null && CardDetector.isHoverMagnified(frame, cards.size)
+            delay(HOVER_POLL_MS)
+        }
+    }
+
+
     LaunchedEffect(calibrating, b.w, b.h) {
         if (!calibrating) return@LaunchedEffect
         while (true) {
@@ -208,7 +206,7 @@ fun ArenaOverlayTracker(
 
     Window(
         onCloseRequest = {},
-        visible = visible,
+        visible = visible && !hovering,
         state = wState,
         title = TRACKER_TITLE,
         transparent = true,
@@ -217,17 +215,16 @@ fun ArenaOverlayTracker(
         focusable = false,
         resizable = false,
     ) {
-        // Apply click-through as soon as the native window exists — an overlay covering Arena
-        // without it steals every click (and activating the app raises the main window over the
-        // game). If it verifiably cannot be applied, hide the overlay rather than block Arena.
+
+
         var applied by remember { mutableStateOf(false) }
         LaunchedEffect(visible) {
             if (applied) return@LaunchedEffect
             repeat(CLICK_THROUGH_ATTEMPTS) {
                 if (withContext(Dispatchers.IO) { MacOverlay.setClickThrough(window, true) }) {
                     applied = true
-                    // A transient failure may have latched the fail-safe; a verified apply
-                    // makes the overlay safe to show again.
+
+
                     clickThroughFailed = false
                     return@LaunchedEffect
                 }
@@ -274,7 +271,7 @@ private fun geometryMarks(
 ): List<Mark> {
     if (cards.isEmpty()) return emptyList()
     val rects = PackGeometry.rects(cal, winW, winH, cards.size)
-    // Until recognition lands, every slot shows a neutral placeholder (gray "—" seal).
+
     if (assignment == null) return rects.map { Mark(it.x, it.y, it.w, it.h, null, null, false) }
     val bestCard = assignment.values.maxByOrNull { cards[it].value ?: Double.NEGATIVE_INFINITY }
     return rects.map { r ->
@@ -284,26 +281,22 @@ private fun geometryMarks(
     }
 }
 
-// Badge art contract: a SQUARE canvas with the shield emblem horizontally centred and wings / star
-// / flames free to run into the transparent margin. The metal ranks centre the shield on the
-// canvas midline; fire seats it lower to make room for its flame crown. Each rank therefore
-// declares where its emblem centre sits (measured from the art), and we align every rank on that
-// point so the row reads evenly and the score chip lands just beneath each shield.
+
 private const val BADGE_SCALE = 0.72f
 
-/** Vertical fraction of the badge canvas where the emblem centre sits, measured from the art. */
+
 private fun emblemAnchorY(value: Double?): Float = if (isBombTier(value)) 0.61f else 0.50f
 
 @Composable
 private fun GradeSeal(m: Mark) {
     val fire = isBombTier(m.value)
-    val badge = (m.w * BADGE_SCALE).coerceIn(60f, 176f) // full square canvas size on the card
+    val badge = (m.w * BADGE_SCALE).coerceIn(60f, 176f)
     val cx = m.x + m.w / 2f
-    // Seat the emblem in the lower half of the card, leaving room for the score chip beneath it and
-    // (for fire) the flame crown above.
+
+
     val cy = m.y + m.h - 0.44f * badge
 
-    // A soft halo draws the eye to the recommended pick; fire gets a hotter one. Behind the emblem.
+
     val haloAlpha = if (fire) 0.5f else if (m.isBest) 0.34f else 0f
     if (haloAlpha > 0f) {
         val haloColor = if (fire) Color(0xFFFFB020) else Color(0xFF7FD1C4)
@@ -326,7 +319,7 @@ private fun GradeSeal(m: Mark) {
     ScoreChip(m.value, badge, cx, cy + 0.34f * badge)
 }
 
-/** The precise 0-100 score in a compact chip, centred at (cx,cy) just beneath the emblem. */
+
 @Composable
 private fun ScoreChip(value: Double?, badge: Float, cx: Float, cy: Float) {
     val chipH = 0.20f * badge
@@ -355,7 +348,7 @@ private fun ScoreChip(value: Double?, badge: Float, cx: Float, cy: Float) {
 private fun rankPainter(value: Double?): Painter? {
     val density = LocalDensity.current
     val base = rankBasename(value)
-    // Prefer the shipped badge PNG; fall back to the placeholder SVG until it's dropped in.
+
     return remember(base, density) {
         loadBadge("$base.png", density) ?: loadBadge("$base.svg", density)
     }

@@ -10,11 +10,7 @@ import java.nio.file.Path
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
-/**
- * Arena's pack grid as fractions of the window. Arena lays the pack out deterministically for a
- * given window size: up to five columns, row-major, partial last row left-aligned (verified on
- * real capture frames across sets and resolutions).
- */
+
 @Serializable
 data class PackGridCalibration(
     val colX0: Float,
@@ -28,7 +24,7 @@ data class PackGridCalibration(
 object PackGeometry {
     const val COLS = CardDetector.MAX_COLS
 
-    /** Measured from real capture frames (13-card and 14-card P1P1, two sets, two resolutions). */
+
     val DEFAULT = PackGridCalibration(
         colX0 = 0.1469f,
         colPitch = 0.1018f,
@@ -51,7 +47,7 @@ object PackGeometry {
             )
         }
 
-    /** Normalizes a detected grid to window fractions; null when too sparse to trust. */
+
     fun fromGrid(grid: CardDetector.Grid): PackGridCalibration? {
         if (grid.cols.size < 2 || grid.rows.isEmpty()) return null
         val w = grid.imageW.toFloat()
@@ -69,11 +65,7 @@ object PackGeometry {
     }
 }
 
-/**
- * Persisted calibrations keyed by exact window size in points. Fractions are NOT reused across
- * sizes: Arena's title bar is a constant point height and its UI is responsive, so fractions
- * measured at one size drift at another (confirmed live at 1920x1080 during the Phase 1b spike).
- */
+
 class PackGridCalibrationStore(
     private val file: Path = AppPaths.appSupport.resolve("overlay-grid.json"),
 ) {

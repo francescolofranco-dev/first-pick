@@ -10,15 +10,7 @@ import kotlin.math.abs
 import kotlin.math.exp
 import kotlin.math.sqrt
 
-/**
- * Learned pick model: a small MLP trained on 17Lands draft logs (see
- * training/train_picker.py) that scores every card in the set given the
- * current pool. BatchNorm is folded into the weights at export, so inference
- * is three dense layers with GELU between them.
- *
- * File format (.fpnet): one UTF-8 JSON header line, then little-endian
- * float32 weights in order W1(h×n) b1(h) W2(h×h) b2(h) W3(n×h) b3(n).
- */
+
 class PickNet private constructor(
     val set: String,
     val format: String,
@@ -31,8 +23,8 @@ class PickNet private constructor(
     private val w3: FloatArray,
     private val b3: FloatArray,
 ) {
-    // Exact 17Lands names, plus front faces of split/double-faced names ("A // B" → "A")
-    // so Arena-log names still resolve. Exact entries always win.
+
+
     private val index: Map<String, Int> = buildMap {
         for ((i, c) in cards.withIndex()) {
             val front = c.substringBefore(" // ")
@@ -43,10 +35,7 @@ class PickNet private constructor(
 
     fun knows(card: String): Boolean = card in index
 
-    /**
-     * Score [pack] given [pool] (card names; duplicates = copies). Returns the
-     * pack ranked best-first. Pack cards the model doesn't know rank last.
-     */
+
     fun score(pool: Iterable<String>, pack: Collection<String>): List<Pair<String, Float>> {
         val n = cards.size
         val x = FloatArray(n)
@@ -107,7 +96,7 @@ class PickNet private constructor(
             return net
         }
 
-        /** Exact GELU (erf form), matching PyTorch's default. */
+
         private fun gelu(x: Float): Float {
             val v = x.toDouble()
             return (v * 0.5 * (1.0 + erf(v / SQRT2))).toFloat()
@@ -115,7 +104,7 @@ class PickNet private constructor(
 
         private val SQRT2 = sqrt(2.0)
 
-        /** Abramowitz–Stegun 7.1.26, |error| ≤ 1.5e-7. */
+
         private fun erf(x: Double): Double {
             val t = 1.0 / (1.0 + 0.3275911 * abs(x))
             val y = 1.0 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * exp(-x * x)

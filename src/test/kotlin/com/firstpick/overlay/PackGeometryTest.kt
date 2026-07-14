@@ -29,8 +29,8 @@ class PackGeometryTest {
 
     @Test
     fun defaultCalibrationMatchesBothRealFrames() {
-        // The default fractions must place every rect on the card actually rendered there in the
-        // real capture frames — this is the uncalibrated fallback the overlay ships with.
+
+
         for ((name, count) in listOf("p1p1-13cards.png" to 13, "msh-p1p1-14cards.jpg" to 14)) {
             val img = fixture(name)
             val detected = CardDetector.detect(img, expectedCount = count)!!.cards(count)
@@ -44,8 +44,8 @@ class PackGeometryTest {
 
     @Test
     fun calibrationDerivedFromOneFrameTransfersToTheOther() {
-        // Grid fractions measured on one set/resolution must predict the other frame's grid —
-        // that is what makes per-window-size calibration (instead of per-pack capture) sound.
+
+
         val a = fixture("p1p1-13cards.png")
         val b = fixture("msh-p1p1-14cards.jpg")
         val cal = PackGeometry.fromGrid(CardDetector.detect(a, expectedCount = 13)!!)
@@ -86,12 +86,11 @@ class PackGeometryTest {
         store.put(1470, 860, PackGeometry.DEFAULT)
         assertEquals(PackGeometry.DEFAULT, store.get(1470, 860))
 
-        // Arena's title bar is constant points, so fractions drift across sizes — no reuse,
-        // not even at the same aspect ratio.
+
         assertNull(store.get(735, 430))
         assertNull(store.get(1470, 1100))
 
-        // fresh instance reads what was persisted
+
         assertEquals(PackGeometry.DEFAULT, PackGridCalibrationStore(dir.resolve("grid.json")).get(1470, 860))
     }
 }

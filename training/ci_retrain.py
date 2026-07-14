@@ -43,7 +43,7 @@ def data_last_modified(set_code: str):
             lm = r.headers.get("Last-Modified")
             return parsedate_to_datetime(lm) if lm else None
     except Exception:
-        return None  # 17Lands has no dataset for this set (yet)
+        return None
 
 
 def model_committed(set_code: str):
@@ -54,7 +54,6 @@ def model_committed(set_code: str):
         ["git", "log", "-1", "--format=%cI", "--", str(path)],
         capture_output=True, text=True, cwd=ROOT,
     ).stdout.strip()
-    # An uncommitted model (local runs) counts as fresh right now.
     return datetime.fromisoformat(out) if out else datetime.now(timezone.utc)
 
 

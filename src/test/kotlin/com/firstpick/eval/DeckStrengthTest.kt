@@ -28,11 +28,11 @@ class DeckStrengthTest {
 
     @Test
     fun trainerRecoversAMonotoneSignal() {
-        // y rises with feature index 1; the fitted model must predict higher for higher x1.
+
         val x = ArrayList<DoubleArray>()
         val y = ArrayList<Double>()
         for (i in 0 until 400) {
-            val t = (i % 20) / 20.0 // 0..0.95
+            val t = (i % 20) / 20.0
             val f = DoubleArray(DeckFeatures.DIM)
             f[0] = 1.0; f[1] = t; f[DeckFeatures.RANK_INDEX] = 2.0
             x += f

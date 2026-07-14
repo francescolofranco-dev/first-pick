@@ -4,14 +4,7 @@ import com.firstpick.cards.RankedCard
 import com.firstpick.cards.SynergyIndex
 import com.firstpick.cards.SynergyRole
 
-/**
- * Pool-conditioned theme synergy from the per-set knowledge base.
- *
- * Each archetype's "fuel" is how much of the pool already feeds it: payoffs in the pack are
- * worth more the more enablers you drafted, enablers the more payoffs, and the bonus ramps
- * from zero (P1P1 is pure card power) up to a hard cap — so a genuinely stronger card always
- * beats a weaker on-theme card, and synergy only decides close calls.
- */
+
 class ThemeSynergy(
     private val index: SynergyIndex,
     pool: List<RankedCard>,
