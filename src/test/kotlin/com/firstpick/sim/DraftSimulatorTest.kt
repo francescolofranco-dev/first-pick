@@ -19,11 +19,11 @@ class DraftSimulatorTest {
     @Test
     fun simulatesAFullParseableDraft() = runBlocking {
         val cache = createTempDirectory("fp-sim")
-        val ratings = (1..20).joinToString(",", "[", "]") { id ->
+        val ratings = (1..20).joinToString(",", "{\"data\":[", "]}") { id ->
             val color = listOf("W", "U", "B", "R", "G")[id % 5]
             """{"name":"C$id","mtga_id":$id,"color":"$color","rarity":"common","ever_drawn_win_rate":0.5${id % 9},"ever_drawn_game_count":1000}"""
         }
-        Files.writeString(cache.resolve("ratings2_TST_PremierDraft.json"), ratings)
+        Files.writeString(cache.resolve("ratings3_TST_PremierDraft.json"), ratings)
 
         val sim = DraftSimulator(
             client = SeventeenLandsClient(cacheDir = cache),

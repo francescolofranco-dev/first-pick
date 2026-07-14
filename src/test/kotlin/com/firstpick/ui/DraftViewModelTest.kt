@@ -62,7 +62,7 @@ class DraftViewModelTest {
     fun pipelineScoresThePackFromALogLine() = runBlocking {
         val cache = createTempDirectory("fp-vm")
         for (f in listOf("PremierDraft", "QuickDraft", "TradDraft")) {
-            Files.writeString(cache.resolve("ratings2_SOS_$f.json"), "[]")
+            Files.writeString(cache.resolve("ratings3_SOS_$f.json"), "{\"data\":[]}")
             Files.writeString(cache.resolve("colorratings_SOS_$f.json"), "[]")
         }
         Files.writeString(cache.resolve("scryfall5_SOS.json"), "[]")

@@ -18,6 +18,11 @@ import java.time.Instant
 import java.time.LocalDate
 
 @Serializable
+private data class CardDataResponse(
+    @SerialName("data") val data: List<CardRating> = emptyList(),
+)
+
+@Serializable
 data class ColorRatingRow(
     @SerialName("color_name") val colorName: String = "",
     @SerialName("short_name") val shortName: String? = null,
@@ -39,10 +44,10 @@ class SeventeenLandsClient(
     suspend fun fetch(set: String, format: String, colors: String? = null): List<CardRating> =
         withContext(Dispatchers.IO) {
             val suffix = colors?.let { "_$it" }.orEmpty()
-            val body = cachedBody("ratings2_${set.uppercase()}_${format}$suffix.json") {
+            val body = cachedBody("ratings3_${set.uppercase()}_${format}$suffix.json") {
                 ratingsUrl(set, format, colors)
             }
-            runCatching { json.decodeFromString<List<CardRating>>(body) }.getOrElse {
+            runCatching { json.decodeFromString<CardDataResponse>(body).data }.getOrElse {
                 Log.error(TAG, "parse ratings ${set.uppercase()}/$format failed", it)
                 throw DataUnavailableException(FetchFailure.BAD_DATA, it)
             }
@@ -146,11 +151,9 @@ class SeventeenLandsClient(
             set: String,
             format: String,
             colors: String? = null,
-            today: LocalDate = LocalDate.now(),
         ): String =
-            "https://www.17lands.com/card_ratings/data" +
-                "?expansion=${set.uppercase()}&format=$format" +
-                "&start_date=$START_DATE&end_date=$today" +
+            "https://www.17lands.com/api/card_data" +
+                "?expansion=${set.uppercase()}&event_type=$format&time_period=ALL_TIME" +
                 (colors?.let { "&colors=$it" } ?: "")
 
         fun colorRatingsUrl(set: String, format: String, today: LocalDate = LocalDate.now()): String =
