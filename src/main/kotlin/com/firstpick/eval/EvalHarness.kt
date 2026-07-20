@@ -77,6 +77,7 @@ fun main(args: Array<String>) = runBlocking {
         comboPts = sysD("firstpick.comboPts", base.comboPts),
         comboCapPts = sysD("firstpick.comboCapPts", base.comboCapPts),
         synergyTotalCapPts = sysD("firstpick.synergyTotalCapPts", base.synergyTotalCapPts),
+        earlyBombThemeFuelBonus = sysD("firstpick.earlyBombThemeFuelBonus", base.earlyBombThemeFuelBonus),
         penaltyRampStart = sysD("firstpick.penaltyRampStart", base.penaltyRampStart),
         penaltyMax = sysD("firstpick.penaltyMax", base.penaltyMax),
         needsRampStart = sysD("firstpick.needsRampStart", base.needsRampStart),

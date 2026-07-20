@@ -41,6 +41,7 @@ class AdvisorEngine(
         val comboPts: Double = 2.0,
         val comboCapPts: Double = 4.0,
         val synergyTotalCapPts: Double = 8.0,
+        val earlyBombThemeFuelBonus: Double = 1.0,
         val penaltyRampStart: Double = 0.15,
         val penaltyMax: Double = 3.0,
         val needsRampStart: Double = 0.25,
@@ -83,7 +84,15 @@ class AdvisorEngine(
         val needs = PoolNeeds.analyze(poolMetas, pool.size)
         val picksTaken = (packNumber - 1) * config.picksPerPack + (pickNumber - 1)
         val progress = (picksTaken.toDouble() / config.totalPicks).coerceIn(0.0, 1.0)
-        val theme = synergy?.let { ThemeSynergy(it, pool) }
+        val theme = synergy?.let {
+            ThemeSynergy(it, pool) { card ->
+                if (!lane.isEstablished && isBomb(card, metrics)) {
+                    1.0 + config.earlyBombThemeFuelBonus.coerceAtLeast(0.0)
+                } else {
+                    1.0
+                }
+            }
+        }
         val poolCounts = pool.groupingBy { it.name }.eachCount()
         val splashColors = splashColorsOf(pool, lane, meta)
         val fitW = fitWeight(progress, lane)
@@ -112,9 +121,7 @@ class AdvisorEngine(
         val globalWr = card.gihWr
 
         val baseZ = effectiveZ(card, metrics)
-        val iwdVal = card.rating?.iwd
-        val isBomb = baseZ > config.bombZ &&
-            (if (iwdVal != null) iwdVal > config.bombIwd else baseZ > config.bombZNoIwd)
+        val isBomb = isBomb(baseZ, card.rating?.iwd)
 
         val pair = lane.pair
         val archCard = pair?.let { archetypeRating(card.name, it) }
@@ -251,6 +258,12 @@ class AdvisorEngine(
         }
         return config.unratedZ
     }
+
+    private fun isBomb(card: RankedCard, metrics: SetMetrics): Boolean =
+        isBomb(effectiveZ(card, metrics), card.rating?.iwd)
+
+    private fun isBomb(baseZ: Double, iwd: Double?): Boolean =
+        baseZ > config.bombZ && (if (iwd != null) iwd > config.bombIwd else baseZ > config.bombZNoIwd)
 
     private fun archetypeShiftZ(
         globalWr: Double?,

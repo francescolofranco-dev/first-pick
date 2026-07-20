@@ -8,6 +8,7 @@ import com.firstpick.cards.SynergyRole
 class ThemeSynergy(
     private val index: SynergyIndex,
     pool: List<RankedCard>,
+    poolCardWeight: (RankedCard) -> Double = { 1.0 },
 ) {
     data class Result(val points: Double, val reasons: List<String>) {
         companion object { val NONE = Result(0.0, emptyList()) }
@@ -20,13 +21,14 @@ class ThemeSynergy(
 
     init {
         for (card in pool) {
+            val weight = poolCardWeight(card).coerceAtLeast(0.0)
             for (tag in index.tags(card.name)) {
                 val f = fuel.getOrPut(tag.pair) { Fuel() }
                 when (tag.role) {
-                    SynergyRole.SIGNPOST -> { f.enabler += SIGNPOST_FUEL; f.payoff += SIGNPOST_FUEL; f.total += SIGNPOST_FUEL }
-                    SynergyRole.PAYOFF -> { f.payoff += 1.0; f.total += 1.0 }
-                    SynergyRole.ENABLER -> { f.enabler += 1.0; f.total += 1.0 }
-                    SynergyRole.KEY -> f.total += KEY_FUEL
+                    SynergyRole.SIGNPOST -> { f.enabler += SIGNPOST_FUEL * weight; f.payoff += SIGNPOST_FUEL * weight; f.total += SIGNPOST_FUEL * weight }
+                    SynergyRole.PAYOFF -> { f.payoff += weight; f.total += weight }
+                    SynergyRole.ENABLER -> { f.enabler += weight; f.total += weight }
+                    SynergyRole.KEY -> f.total += KEY_FUEL * weight
                 }
             }
         }

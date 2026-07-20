@@ -16,12 +16,19 @@ class ThemeSynergyTest {
     private val metrics = SetMetrics(meanGihWr = 0.55, stdDevGihWr = 0.03)
     private val engine = AdvisorEngine()
 
-    private fun card(id: Int, name: String, gih: Double, color: String = "U") = RankedCard(
+    private fun card(
+        id: Int,
+        name: String,
+        gih: Double,
+        color: String = "U",
+        rarity: String = "common",
+        iwd: Double? = 0.0,
+    ) = RankedCard(
         grpId = id,
         name = name,
         rating = CardRating(
-            name = name, mtgaId = id, color = color, rarity = "common",
-            everDrawnWinRate = gih, everDrawnGameCount = 2000, drawnImprovementWinRate = 0.0, avgSeen = 4.0,
+            name = name, mtgaId = id, color = color, rarity = rarity,
+            everDrawnWinRate = gih, everDrawnGameCount = 2000, drawnImprovementWinRate = iwd, avgSeen = 4.0,
         ),
     )
 
@@ -56,6 +63,65 @@ class ThemeSynergyTest {
         val pack = listOf(card(1, "Payoff", 0.55), card(2, "Vanilla", 0.55))
         val result = run(pack, pool = emptyList(), pick = 1)
         assertEquals(0.0, scoreOf(result, "Payoff").breakdown!!.themeBonus)
+    }
+
+    @Test
+    fun earlyBombMakesItsThemeSupportMatterSlightlyMoreWithoutPenalizingOtherCards() {
+        val pack = listOf(card(1, "Enabler1", 0.55), card(2, "Vanilla", 0.55))
+        val pool = listOf(card(100, "Payoff", 0.61, "G", rarity = "rare", iwd = 0.06))
+        val lane = LaneDetector.detect(pool, metrics)
+        val baseline = AdvisorEngine(AdvisorEngine.Config(earlyBombThemeFuelBonus = 0.0)).score(
+            pack, pool, 1, 2, metrics, lane, synergy = index,
+        )
+        val reinforced = run(pack, pool, pick = 2)
+
+        val baselineSupport = scoreOf(baseline, "Enabler1")
+        val reinforcedSupport = scoreOf(reinforced, "Enabler1")
+        assertTrue(reinforcedSupport.breakdown!!.themeBonus > baselineSupport.breakdown!!.themeBonus)
+        assertTrue(reinforcedSupport.value > scoreOf(reinforced, "Vanilla").value)
+        assertTrue(reinforcedSupport.reasons.any { it.startsWith("Synergy:") })
+        assertEquals(
+            scoreOf(baseline, "Vanilla").value,
+            scoreOf(reinforced, "Vanilla").value,
+            1e-9,
+            "the early anchor may reward support, but must not penalize an unrelated card",
+        )
+    }
+
+    @Test
+    fun anEarlyRareThatIsNotABombDoesNotReceiveExtraThemeWeight() {
+        val pack = listOf(card(1, "Enabler1", 0.55))
+        val pool = listOf(card(100, "Payoff", 0.575, "G", rarity = "rare", iwd = 0.06))
+        val lane = LaneDetector.detect(pool, metrics)
+        val baseline = AdvisorEngine(AdvisorEngine.Config(earlyBombThemeFuelBonus = 0.0)).score(
+            pack, pool, 1, 2, metrics, lane, synergy = index,
+        )
+        val scored = run(pack, pool, pick = 2)
+
+        assertEquals(
+            scoreOf(baseline, "Enabler1").breakdown!!.themeBonus,
+            scoreOf(scored, "Enabler1").breakdown!!.themeBonus,
+            1e-9,
+        )
+    }
+
+    @Test
+    fun bombAnchorBoostStopsAfterTheEarlyOpenLaneStage() {
+        val pack = listOf(card(1, "Enabler1", 0.55))
+        val pool = listOf(card(100, "Payoff", 0.61, "G", rarity = "rare", iwd = 0.06)) +
+            List(4) { card(200 + it, "Filler$it", 0.56, "G") }
+        val lane = LaneDetector.detect(pool, metrics)
+        val baseline = AdvisorEngine(AdvisorEngine.Config(earlyBombThemeFuelBonus = 0.0)).score(
+            pack, pool, 1, 6, metrics, lane, synergy = index,
+        )
+        val scored = run(pack, pool, pick = 6)
+
+        assertTrue(lane.isEstablished)
+        assertEquals(
+            scoreOf(baseline, "Enabler1").breakdown!!.themeBonus,
+            scoreOf(scored, "Enabler1").breakdown!!.themeBonus,
+            1e-9,
+        )
     }
 
     @Test
