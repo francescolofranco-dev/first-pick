@@ -28,9 +28,6 @@ object DeckProjector {
     private const val MIN_COLOR_PIPS = 4
     private const val MIN_COLOR_RATIO = 0.20
 
-    private const val INCOMPLETE_SPELL_PENALTY = 3.0
-    private const val UNFIXED_SPLASH_PENALTY = 4.0
-    private const val SPLASH_FIXING_REWARD = 1.0
     private const val SPLASH_UPGRADE_MARGIN = 0.02
 
 
@@ -150,16 +147,15 @@ object DeckProjector {
             }
         }
         fun rawScore(card: RankedCard): Double {
-            val arch = archetypeRating(card.name, pair)?.gihWr
-            return arch ?: card.gihWr ?: (metrics.meanGihWr - 0.02)
+            val pairRating = archetypeRating(card.name, pair)
+            if (card.rating == null && pairRating == null) return metrics.meanGihWr - 0.02
+            return DeckAnalysis.cardQuality(card.rating, pairRating, metrics)
         }
         fun cardScore(card: RankedCard): Double = rawScore(card) + themeNudge(card)
 
         val eligible = spells.filter(::onColor)
         val base = selectSpells(eligible, metrics, meta, ::cardScore, ::rawScore).toMutableList()
 
-        val baseFixers = base.count { meta(it.name)?.isFixing == true } +
-            lands.count { val c = LaneDetector.colorsOf(it); (c.isEmpty() || pairSet.containsAll(c)) && meta(it.name)?.isFixing == true }
         var splashedSpells = chooseSplash(spells, pairSet, SPELL_SLOTS - base.size, ::onColor, ::cardScore, meta)
         if (upgrade) {
 
@@ -191,26 +187,38 @@ object DeckProjector {
             identity.isEmpty() || deckColors.containsAll(identity) || identity.containsAll(deckColors)
         }
 
-        val deckWr = chosen.mapNotNull { it.gihWr }.ifEmpty { listOf(metrics.meanGihWr) }.average()
         val metas = chosen.map { meta(it.name) }
         val creatures = metas.count { it?.isCreature == true }
         val removal = metas.count { it?.isRemoval == true }
-        val twoDrops = metas.count { it != null && it.isCreature && it.cmc in 1..2 }
-        val avgCmc = metas.mapNotNull { it?.cmc }.ifEmpty { listOf(3) }.average()
-        val fixersCount = chosen.count { meta(it.name)?.isFixing == true } + onColorLands.count { meta(it.name)?.isFixing == true }
-
-        val power = powerScore(deckWr, metrics, strength, creatures, removal, twoDrops, splashedSpells.size, fixersCount, chosen.size)
+        val landFixers = onColorLands.count { meta(it.name)?.isFixing == true }
+        val identity = DeckAnalysis.identity(chosen, pair, meta, synergy, landFixers)
+        val power = DeckAnalysis.power(
+            spells = chosen,
+            pair = pair,
+            metrics = metrics,
+            meta = meta,
+            archetypeRating = archetypeRating,
+            pairStrength = strength,
+            identity = identity,
+            synergy = synergy,
+            landFixers = landFixers,
+            splashCount = splashedSpells.size,
+        )
         val landCount = (DECK_SIZE - chosen.size).coerceAtLeast(LAND_SLOTS)
         return DeckOption(
             colors = "WUBRG".filter { it in deckColors },
             basePair = "WUBRG".filter { it in pairSet },
             splash = splashColor,
             theme = synergy?.archetype(pair)?.name,
-            powerScore = power,
-            tier = tierOf(power),
-            type = typeOf(avgCmc, twoDrops, removal),
-            outlook = outlookOf(power),
-            deckWinRate = deckWr,
+            powerScore = power.score,
+            tier = tierOf(power.score),
+            type = identity.pace.label,
+            outlook = DeckAnalysis.outlook(power),
+            deckWinRate = power.qualityRate,
+            identityConfidence = identity.confidenceLabel,
+            identityReasons = identity.reasons,
+            powerConfidence = power.confidenceLabel,
+            powerReasons = power.reasons,
             spells = chosen.sortedWith(compareBy({ meta(it.name)?.cmc ?: 9 }, { -(it.gihWr ?: 0.0) })),
             nonbasicLands = onColorLands,
             landCount = landCount,
@@ -367,35 +375,6 @@ object DeckProjector {
         return buckets.toList()
     }
 
-    private fun powerScore(
-        deckWr: Double,
-        metrics: SetMetrics,
-        strength: Double?,
-        creatures: Int,
-        removal: Int,
-        twoDrops: Int,
-        splashCount: Int,
-        fixersCount: Int,
-        spellCount: Int,
-    ): Double {
-        val z = metrics.z(deckWr) ?: 0.0
-        var score = 50.0 + 18.0 * z
-        strength?.let { score += (it - metrics.meanGihWr) * 60.0 }
-        if (removal >= 3) score += 3.0
-        if (creatures in 13..18) score += 3.0
-        if (twoDrops >= 6) score += 2.0
-
-        if (spellCount < SPELL_SLOTS) score -= (SPELL_SLOTS - spellCount) * INCOMPLETE_SPELL_PENALTY
-
-        if (splashCount > 0) {
-            val unmitigated = (splashCount - fixersCount).coerceAtLeast(0)
-            score -= unmitigated * UNFIXED_SPLASH_PENALTY
-            if (fixersCount > splashCount) score += ((fixersCount - splashCount) * SPLASH_FIXING_REWARD).coerceAtMost(3.0)
-        }
-
-        return score.coerceIn(0.0, 100.0)
-    }
-
     private fun tierOf(power: Double): String = when {
         power >= 80 -> "A+"
         power >= 72 -> "A"
@@ -406,16 +385,4 @@ object DeckProjector {
         else -> "D"
     }
 
-    private fun typeOf(avgCmc: Double, twoDrops: Int, removal: Int): String = when {
-        avgCmc < 2.8 && twoDrops >= 6 -> "Aggro"
-        avgCmc > 3.4 && removal >= 4 -> "Control"
-        else -> "Midrange"
-    }
-
-    private fun outlookOf(power: Double): String = when {
-        power >= 72 -> "Strong — aim for 6+ wins"
-        power >= 60 -> "Solid — 4–5 wins"
-        power >= 50 -> "Playable — 3–4 wins"
-        else -> "Risky — needs the draw"
-    }
 }

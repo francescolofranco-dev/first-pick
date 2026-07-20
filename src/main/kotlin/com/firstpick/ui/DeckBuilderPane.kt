@@ -51,6 +51,13 @@ internal fun DeckBuilderPane(options: List<DeckOptionUi>) {
             fontSize = 12.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+        Text(
+            (listOf(sel.identityLine) + sel.identityReasons.take(2) + sel.powerReasons.take(2)).joinToString(" · "),
+            fontSize = 10.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+        )
         Spacer(Modifier.height(8.dp))
         DeckListHeader()
         Spacer(Modifier.height(4.dp))
@@ -91,6 +98,13 @@ internal fun DeckSoFarPane(deck: DeckOptionUi, cuts: List<DeckSpellUi>) {
             "$spellCount/23 spells · ${deck.creatures} creatures · ${deck.removal} removal",
             fontSize = 12.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Text(
+            (listOf(deck.identityLine) + deck.powerReasons.take(2)).joinToString(" · "),
+            fontSize = 10.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
         )
         Spacer(Modifier.height(10.dp))
         DeckListHeader()
@@ -214,7 +228,7 @@ private fun OptionCard(opt: DeckOptionUi, selected: Boolean, onClick: () -> Unit
             Spacer(Modifier.width(8.dp))
             Text("Power ${opt.power}", fontSize = 12.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
         }
-        Text(opt.type, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurface)
+        Text(opt.identityLine, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurface)
         Text(opt.outlook, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Text("${opt.creatures} creatures · ${opt.removal} removal", fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }

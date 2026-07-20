@@ -43,8 +43,8 @@ mana curve, and your pool — all updating as you pick.
 </picture>
 
 **Post-draft deck builder.** When the draft ends, get 2–3 buildable decks ranked by power,
-each with a letter tier, archetype, and a win-rate outlook. It favors a clean two-color
-build over a greedy splash.
+each with a letter tier, deck type, archetype, confidence, and an explainable strength
+summary. It favors a clean two-color build over a greedy splash.
 
 <picture>
   <img src="docs/screenshots/deck-builder.png" width="820" alt="Post-draft deck builder options" />
@@ -77,8 +77,8 @@ tags (removal · fixing · finisher · draw · evasion), copy counts, and a sugg
   window that draws each card's grade (A+→F + 0–100) right on the card, locating
   them by screen capture so it stays aligned at any window size. Draft support
   only — no deck tracking.
-- **Post-draft deck builder** — 2–3 buildable decks with power score, tier, type,
-  manabase, and outlook.
+- **Post-draft deck builder** — 2–3 buildable decks with a sample-aware power score,
+  tier, aggro/tempo/midrange/control/ramp classification, manabase, and reasons.
 
 ## Requirements
 

@@ -64,6 +64,10 @@ data class DeckOptionUi(
     val type: String,
     val outlook: String,
     val power: Int,
+    val identityConfidence: String,
+    val identityReasons: List<String>,
+    val powerConfidence: String,
+    val powerReasons: List<String>,
     val creatures: Int,
     val removal: Int,
     val landLine: String,
@@ -75,6 +79,9 @@ data class DeckOptionUi(
             val base = guildName(basePair).ifBlank { basePair } + (splash?.let { " · splash $it" } ?: "")
             return theme?.let { "$base · $it" } ?: base
         }
+
+    val identityLine: String
+        get() = "$type · ${identityConfidence.lowercase()} confidence"
 }
 
 fun guildName(pair: String): String = when (pair) {

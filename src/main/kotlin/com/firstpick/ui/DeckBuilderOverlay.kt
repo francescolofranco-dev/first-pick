@@ -216,7 +216,7 @@ private fun DeckHelperView(
                                 Spacer(Modifier.width(6.dp))
                                 Text("Power: ${opt.power}", fontSize = 11.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
                             }
-                            Text(opt.type, fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            Text(opt.identityLine, fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis)
                             Text(opt.outlook, fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
                         }
                     }
@@ -259,6 +259,15 @@ private fun DeckHelperView(
                         .padding(horizontal = 4.dp)
                 )
             }
+
+            Text(
+                (listOf(sel.identityLine) + sel.powerReasons.take(2)).joinToString(" · "),
+                fontSize = 9.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(bottom = 4.dp),
+            )
 
             val groupedSpells = remember(sel.spells) {
                 val groups = sel.spells.groupBy { spell ->

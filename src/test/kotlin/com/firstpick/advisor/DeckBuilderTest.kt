@@ -37,6 +37,18 @@ class DeckBuilderTest {
     }
 
     @Test
+    fun exposesAnExplainableDeckIdentityAndHonestStrengthSummary() {
+        val top = DeckBuilder.build(pool(), metrics, meta).first()
+
+        assertTrue(top.type in setOf("Aggro", "Tempo", "Midrange", "Control", "Ramp"))
+        assertTrue(top.identityReasons.isNotEmpty())
+        assertTrue(top.powerReasons.isNotEmpty())
+        assertTrue(top.identityConfidence in setOf("Low", "Medium", "High"))
+        assertTrue(top.powerConfidence in setOf("Low", "Medium", "High"))
+        assertTrue("wins" !in top.outlook.lowercase(), "outlook must not claim an uncalibrated event record")
+    }
+
+    @Test
     fun fillsToTwentyThreeSpellsAndSeventeenLandsNeverPadding() {
         val top = DeckBuilder.build(pool(), metrics, meta).first()
         assertEquals(23, top.spells.size, "a complete deck runs 23 spells")
