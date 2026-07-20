@@ -1,430 +1,528 @@
 {
  "set": "EOE",
  "setName": "Edge of Eternities",
- "generated": "2026-07-04",
+ "generated": "2026-07-20",
  "mechanics": [
   {
    "name": "Warp",
-   "summary": ""
+   "summary": "An alternative cost: cast the card from hand for its warp cost, exile it at the beginning of the next end step, then cast it later from exile for its full cost. Cheap tempo and ETB value now, a real threat later \u2014 and every warped spell switches on Void that turn."
   },
   {
    "name": "Station",
-   "summary": ""
+   "summary": "Tap another creature you control (sorcery-speed) to put charge counters equal to its power on a Spacecraft or Planet; hitting printed thresholds unlocks abilities and usually turns the Spacecraft into an attacking creature. Wants expendable bodies and rewards going wide \u2014 22 Spacecraft in the set."
   },
   {
    "name": "Void",
-   "summary": ""
+   "summary": "Ability word: a bonus if a nonland permanent left the battlefield this turn or a spell was warped this turn. Fed by warp, sacrifice, removal, and bounce \u2014 the blue/black axis of the set."
   },
   {
-   "name": "Landfall",
-   "summary": ""
+   "name": "Landfall + Landers",
+   "summary": "Classic landfall triggers plus Lander artifact tokens ('{2}, {T}, Sacrifice: search a basic, put it in tapped'); ~20 cards make or use Landers, letting any deck bank instant-speed landfall triggers."
   },
   {
    "name": "Surveil",
-   "summary": ""
+   "summary": "A small blue/black graveyard-smoothing theme; several payoffs care about cards entering the graveyard."
+  },
+  {
+   "name": "Planets",
+   "summary": "Five legendary Planet lands that can themselves be stationed to unlock powerful effects; free spell-lands for the aggressive decks and mana sinks for the slow ones."
   }
  ],
  "archetypes": [
   {
    "pair": "WU",
-   "name": "Spacecraft tempo",
-   "playstyle": "",
-   "speed": "",
+   "name": "Second-spell aggro",
+   "playstyle": "Curve out and chain cheap spells so you double-spell from turn three onward; Station Monitor and Cosmogrand Zenith convert every second spell into flying Drones, Soldier tokens, and +1/+1 counters while one-mana interaction and cantrips keep the count alive.",
+   "speed": "aggro",
    "signposts": [
     "Station Monitor"
    ],
    "payoffs": [
-    "Sinister Cryologist",
-    "Exosuit Savior",
+    "Cosmogrand Zenith",
+    "Sunstar Lightsmith",
     "Illvoi Infiltrator",
-    "Flight-Deck Coordinator",
-    "Illvoi Galeblade",
-    "Brightspear Zealot"
+    "Brightspear Zealot",
+    "Illvoi Operative"
    ],
    "enablers": [
-    "Wurmwall Sweeper",
-    "Atomic Microsizer",
-    "Zealous Display",
+    "Uthros Psionicist",
+    "Gigastorm Titan",
+    "Cryogen Relic",
     "Mental Modulation",
-    "Scout for Survivors"
+    "Honor",
+    "Illvoi Galeblade",
+    "Cryoshatter"
    ],
    "keyCards": [
-    "Squire's Lightblade",
-    "Dawnstrike Vanguard",
-    "Seam Rip",
-    "Uthros Scanship",
-    "Starfighter Pilot",
-    "Uthros Psionicist",
-    "Cloudsculpt Technician",
+    "Quantum Riddler",
+    "Synthesizer Labship",
+    "Beyond the Quiet",
+    "Lumen-Class Frigate",
+    "Haliya, Guided by Light",
+    "Sunstar Chaplain",
     "Codecracker Hound",
-    "Gigastorm Titan",
-    "Rescue Skiff",
-    "Illvoi Operative",
-    "Weftblade Enhancer",
-    "Mechan Navigator",
+    "All-Fates Stalker",
     "Banishing Light"
    ]
   },
   {
    "pair": "WB",
-   "name": "Void lifedrain",
-   "playstyle": "",
-   "speed": "",
+   "name": "Token go-wide attrition",
+   "playstyle": "Flood the board with Soldier and Robot tokens and creatures that leave a body behind, then turn the pile lethal with Syr Vondam's deathtouch pump and death-trigger drain. Token makers are thin at common, so a clean curve plus black's removal does most of the actual winning.",
+   "speed": "midrange",
    "signposts": [
     "Syr Vondam, the Lucent"
    ],
    "payoffs": [
-    "Insatiable Skittermaw",
-    "Rayblade Trooper",
-    "Knight Luminary",
-    "Honored Knight-Captain",
-    "Blade of the Swarm",
-    "Susurian Voidborn"
+    "Syr Vondam, Sunstar Exemplar",
+    "Cosmogrand Zenith",
+    "Elegy Acolyte",
+    "Lumen-Class Frigate",
+    "Exalted Sunborn"
    ],
    "enablers": [
-    "Thaumaton Torpedo",
-    "Fell Gravship",
-    "Hylderblade",
-    "Susurian Dirgecraft",
-    "Wurmwall Sweeper"
+    "Knight Luminary",
+    "Gravpack Monoist",
+    "Rayblade Trooper",
+    "Honored Knight-Captain",
+    "Susurian Voidborn",
+    "Umbral Collar Zealot"
    ],
    "keyCards": [
-    "Vote Out",
+    "Fell Gravship",
+    "Sunset Saboteur",
+    "The Seriema",
     "Dubious Delicacy",
     "All-Fates Stalker",
-    "Timeline Culler",
-    "Auxiliary Boosters",
-    "Dark Endurance",
-    "Perigee Beckoner",
+    "Sunstar Chaplain",
+    "Haliya, Guided by Light",
     "Faller's Faithful",
-    "Temporal Intervention",
-    "Sunstar Expansionist",
-    "Umbral Collar Zealot",
-    "Banishing Light",
-    "Rescue Skiff",
-    "Voidforged Titan"
+    "Banishing Light"
    ]
   },
   {
    "pair": "WR",
-   "name": "Aggro",
-   "playstyle": "",
-   "speed": "",
+   "name": "Station aggro",
+   "playstyle": "Flood the board with cheap bodies and Robot tokens, attack relentlessly, and tap spare creatures to station Spacecraft that finish the job as fliers; end-step triggers then pay you off for the tapped team. Curve out and stay tapped \u2014 the deck rewards committing, not holding back.",
+   "speed": "aggro",
    "signposts": [
     "Sami, Ship's Engineer"
    ],
    "payoffs": [
-    "Frontline War-Rager",
-    "Molecular Modifier",
-    "Memorial Team Leader",
-    "Kavaron Harrier",
-    "Kavaron Turbodrone",
-    "Brightspear Zealot"
+    "Warmaker Gunship",
+    "Lumen-Class Frigate",
+    "Sunstar Chaplain",
+    "Exalted Sunborn",
+    "Sami, Wildcat Captain"
    ],
    "enablers": [
-    "Wurmwall Sweeper",
-    "Rig for War",
-    "Full Bore",
-    "Drill Too Deep",
-    "Emergency Eject"
+    "Kavaron Harrier",
+    "Knight Luminary",
+    "Honored Knight-Captain",
+    "Wedgelight Rammer",
+    "Pulsar Squadron Ace",
+    "Zookeeper Mechan"
    ],
    "keyCards": [
-    "Galvanizing Sawship",
-    "Cut Propulsion",
-    "Wedgelight Rammer",
-    "Bombard",
-    "Luxknight Breacher",
-    "Red Tiger Mechan",
-    "Debris Field Crusher",
-    "Dual-Sun Adepts",
-    "Pulsar Squadron Ace",
-    "Dawnstrike Vanguard",
-    "Reroute Systems",
+    "Cosmogrand Zenith",
+    "Nova Hellkite",
+    "The Seriema",
+    "Possibility Technician",
+    "All-Fates Stalker",
     "Starfield Shepherd",
-    "Zookeeper Mechan",
-    "Chrome Companion"
+    "Terrapact Intimidator",
+    "Rayblade Trooper",
+    "Banishing Light"
    ]
   },
   {
    "pair": "WG",
-   "name": "Planets ramp",
-   "playstyle": "",
-   "speed": "",
+   "name": "+1/+1 counters aggro",
+   "playstyle": "Lead with above-rate two- and three-drops, then stack +1/+1 counters until they outclass every blocker and keep attacking; Haliya converts counter-carrier damage into cards, so force bad blocks and punish them with tricks.",
+   "speed": "aggro",
    "signposts": [
     "Haliya, Ascendant Cadet"
    ],
    "payoffs": [
-    "Hemosymbic Mite",
-    "Meltstrider Eulogist",
+    "Ouroboroid",
+    "Dyadrine, Synthesis Amalgam",
+    "Sunstar Chaplain",
+    "Rayblade Trooper",
     "Drix Fatemaker",
-    "Broodguard Elite",
-    "Dawnstrike Vanguard",
-    "Dockworker Drone"
+    "Meltstrider Eulogist"
    ],
    "enablers": [
-    "Atmospheric Greenhouse",
-    "Dual-Sun Technique",
-    "Auxiliary Boosters",
-    "Wurmwall Sweeper",
-    "Meltstrider's Resolve"
+    "Honor",
+    "Biosynthic Burst",
+    "Dockworker Drone",
+    "Intrepid Tenderfoot",
+    "Broodguard Elite"
    ],
    "keyCards": [
-    "Rescue Skiff",
-    "Honor",
-    "Emergency Eject",
-    "Reroute Systems",
-    "Intrepid Tenderfoot",
-    "Biosynthic Burst",
-    "Sunstar Lightsmith",
-    "Larval Scoutlander",
-    "Focus Fire",
-    "Close Encounter",
-    "Meltstrider's Gear",
+    "Lumen-Class Frigate",
+    "Cosmogrand Zenith",
+    "The Seriema",
+    "Haliya, Guided by Light",
+    "All-Fates Stalker",
+    "Meltstrider's Resolve",
     "Starfield Shepherd",
-    "Pinnacle Kill-Ship",
-    "Wedgelight Rammer"
+    "Banishing Light"
    ]
   },
   {
    "pair": "UB",
    "name": "Void control",
-   "playstyle": "",
-   "speed": "",
+   "playstyle": "Churn cheap artifacts through sacrifice, bounce, and warp to keep Void switched on, then answer everything with upgraded Void removal while out-drawing the opponent; a sweeper or stationed Spacecraft closes the grind.",
+   "speed": "control",
    "signposts": [
     "Alpharael, Dreaming Acolyte"
    ],
    "payoffs": [
-    "Dauntless Scrapbot",
-    "Chrome Companion",
-    "Mechan Assembler",
-    "Virus Beetle",
-    "Beamsaw Prospector",
-    "Comet Crawler"
+    "Singularity Rupture",
+    "Elegy Acolyte",
+    "Tragic Trajectory",
+    "Fell Gravship",
+    "Monoist Circuit-Feeder"
    ],
    "enablers": [
-    "Scour for Scrap",
-    "Nutrient Block",
-    "Dark Endurance",
-    "Thaumaton Torpedo",
-    "Cryogen Relic"
+    "Cryogen Relic",
+    "Dubious Delicacy",
+    "Codecracker Hound",
+    "Umbral Collar Zealot",
+    "Desculpting Blast",
+    "Gravpack Monoist",
+    "Embrace Oblivion"
    ],
    "keyCards": [
-    "Tragic Trajectory",
-    "Mechan Shieldmate",
-    "Virulent Silencer",
-    "Unravel",
-    "Scrounge for Eternity",
-    "Desculpting Blast",
-    "Hullcarver",
-    "Cloudsculpt Technician",
-    "Monoist Sentry",
-    "Cerebral Download",
-    "Embrace Oblivion",
-    "Illvoi Infiltrator",
+    "Quantum Riddler",
+    "Sunset Saboteur",
     "Faller's Faithful",
-    "Gravblade Heavy"
+    "Tractor Beam",
+    "Virus Beetle",
+    "Mouth of the Storm",
+    "Uthros Psionicist",
+    "Depressurize"
    ]
   },
   {
    "pair": "UR",
-   "name": "Spacecraft spells",
-   "playstyle": "",
-   "speed": "",
+   "name": "Artifact aggro",
+   "playstyle": "Flood the board with cheap artifacts and Robot/Drone tokens so every entry grows a threat through Mm'menon and pumps Warmaker Gunship's artifact count; curve low, double-spell early, and convert the tempo before slower decks stabilize.",
+   "speed": "aggro",
    "signposts": [
     "Mm'menon, Uthros Exile"
    ],
    "payoffs": [
-    "Oreplate Pangolin",
-    "Virulent Silencer",
-    "Mechan Shieldmate",
-    "Kavaron Skywarden",
-    "Kavaron Harrier",
-    "Nanoform Sentinel"
+    "Pinnacle Emissary",
+    "Warmaker Gunship",
+    "Synthesizer Labship",
+    "Emissary Escort",
+    "Rust Harvester",
+    "Oreplate Pangolin"
    ],
    "enablers": [
-    "Lithobraking",
-    "Plasma Bolt",
-    "Full Bore",
-    "Illvoi Light Jammer",
-    "Debris Field Crusher"
+    "Cryogen Relic",
+    "Melded Moxite",
+    "Kavaron Harrier",
+    "Selfcraft Mechan",
+    "Zookeeper Mechan",
+    "Dauntless Scrapbot",
+    "Illvoi Light Jammer"
    ],
    "keyCards": [
-    "Zookeeper Mechan",
-    "Mechan Assembler",
-    "Red Tiger Mechan",
-    "Kavaron Turbodrone",
-    "Selfcraft Mechan",
-    "Steelswarm Operator",
-    "Slagdrill Scrapper",
+    "Quantum Riddler",
+    "Nova Hellkite",
     "Terrapact Intimidator",
-    "Annul",
-    "Melded Moxite",
-    "Mechanozoa",
-    "Uthros Psionicist",
-    "Drill Too Deep",
-    "Orbital Plunge"
+    "Possibility Technician",
+    "Codecracker Hound",
+    "Tractor Beam",
+    "Orbital Plunge",
+    "Plasma Bolt",
+    "Desculpting Blast"
    ]
   },
   {
    "pair": "UG",
-   "name": "Station ramp",
-   "playstyle": "",
-   "speed": "",
+   "name": "Lander ramp",
+   "playstyle": "Ramp with Lander tokens and cheap fixers into an oversized top end, holding Landers to crack at instant speed for landfall blowouts with Genemorph Imago and Glacier Godmaw. Skew the curve high \u2014 the deck wins the late game it inevitably reaches.",
+   "speed": "midrange",
    "signposts": [
     "Biomechan Engineer"
    ],
    "payoffs": [
-    "Tapestry Warden",
-    "Survey Mechan",
-    "Eumidian Terrabotanist",
-    "Galactic Wayfarer",
-    "Lashwhip Predator",
-    "Gene Pollinator"
+    "Genemorph Imago",
+    "Glacier Godmaw",
+    "Harmonious Grovestrider",
+    "Mightform Harmonizer",
+    "Eusocial Engineering",
+    "Fungal Colossus"
    ],
    "enablers": [
-    "Meltstrider's Gear",
-    "Command Bridge",
-    "Thaumaton Torpedo",
-    "Pinnacle Kill-Ship",
-    "Sami's Curiosity"
+    "Galactic Wayfarer",
+    "Larval Scoutlander",
+    "Gene Pollinator",
+    "Edge Rover",
+    "Seedship Agrarian",
+    "Consult the Star Charts"
    ],
    "keyCards": [
-    "Divert Disaster",
-    "Specimen Freighter",
-    "Diplomatic Relations",
-    "Seedship Impact",
-    "Fungal Colossus",
-    "Dauntless Scrapbot",
-    "Edge Rover",
-    "Skystinger",
-    "Illvoi Light Jammer",
-    "Mouth of the Storm",
-    "Close Encounter",
-    "Germinating Wurm",
-    "Larval Scoutlander",
-    "Meltstrider's Resolve"
+    "Quantum Riddler",
+    "Ouroboroid",
+    "Extinguisher Battleship",
+    "Codecracker Hound",
+    "Meltstrider's Resolve",
+    "Weftwalking",
+    "Synthesizer Labship",
+    "Cryogen Relic",
+    "Mouth of the Storm"
    ]
   },
   {
    "pair": "BR",
-   "name": "Sacrifice",
-   "playstyle": "",
-   "speed": "",
+   "name": "Void sacrifice",
+   "playstyle": "Trade, sacrifice, and warp something every turn so Void never switches off, upgrading Plasma Bolt and Tragic Trajectory into premium removal while Elegy Acolyte and Interceptor Mechan grind the card advantage. Cheap expendable bodies plus sac outlets are the engine; the opponent runs out of creatures and cards first.",
+   "speed": "midrange",
    "signposts": [
     "Interceptor Mechan"
    ],
    "payoffs": [
-    "Red Tiger Mechan",
-    "Terrapact Intimidator",
-    "Weftstalker Ardent",
-    "Roving Actuator",
-    "Dauntless Scrapbot",
-    "Blade of the Swarm"
+    "Elegy Acolyte",
+    "Mutinous Massacre",
+    "Tragic Trajectory",
+    "Plasma Bolt",
+    "Susurian Voidborn"
    ],
    "enablers": [
-    "Systems Override",
+    "Dubious Delicacy",
+    "Umbral Collar Zealot",
+    "Timeline Culler",
+    "Perigee Beckoner",
     "Melded Moxite",
-    "Drill Too Deep",
-    "Invasive Maneuvers",
-    "Orbital Plunge"
+    "Gravpack Monoist",
+    "Embrace Oblivion"
    ],
    "keyCards": [
-    "Kav Landseeker",
-    "Molecular Modifier",
-    "Comet Crawler",
-    "Slagdrill Scrapper",
-    "Umbral Collar Zealot",
-    "Decode Transmissions",
+    "Nova Hellkite",
+    "Possibility Technician",
+    "Warmaker Gunship",
+    "Sunset Saboteur",
+    "Terrapact Intimidator",
+    "Fell Gravship",
     "Monoist Circuit-Feeder",
-    "Virulent Silencer",
-    "Swarm Culler",
-    "Cut Propulsion",
-    "Vaultguard Trooper",
-    "Kavaron Turbodrone",
-    "Plasma Bolt",
-    "Chrome Companion"
+    "Faller's Faithful",
+    "Orbital Plunge"
    ]
   },
   {
    "pair": "BG",
-   "name": "Void midrange",
-   "playstyle": "",
-   "speed": "",
+   "name": "Graveyard value",
+   "playstyle": "Green ramp bodies plus black removal, with Broodtender and Fell Gravship stocking the yard to rebuy your best creature or Spacecraft. The recursion is a value layer on a good-stuff midrange shell, not a dedicated engine \u2014 win the long game on card quality.",
+   "speed": "midrange",
    "signposts": [
     "Seedship Broodtender"
    ],
    "payoffs": [
-    "Broodguard Elite",
-    "Monoist Circuit-Feeder",
-    "Chrome Companion",
-    "Thawbringer",
-    "Voidforged Titan",
-    "Monoist Sentry"
+    "Fell Gravship",
+    "Zero Point Ballad",
+    "Xu-Ifit, Osteoharmonist",
+    "Pull Through the Weft"
    ],
    "enablers": [
-    "Temporal Intervention",
-    "Pull Through the Weft",
-    "Pinnacle Kill-Ship",
-    "Command Bridge",
-    "All-Fates Scroll"
+    "Thawbringer",
+    "Galactic Wayfarer",
+    "Gene Pollinator",
+    "Larval Scoutlander",
+    "Umbral Collar Zealot",
+    "Hymn of the Faller"
    ],
    "keyCards": [
-    "Galactic Wayfarer",
-    "Survey Mechan",
-    "Gravkill",
-    "Germinating Wurm",
-    "Hymn of the Faller",
-    "Shattered Wings",
-    "Close Encounter",
+    "Ouroboroid",
+    "Elegy Acolyte",
+    "Sunset Saboteur",
+    "Mightform Harmonizer",
+    "Monoist Circuit-Feeder",
+    "Dubious Delicacy",
+    "Glacier Godmaw",
     "Harmonious Grovestrider",
-    "Depressurize",
-    "Meltstrider Eulogist",
-    "Lashwhip Predator",
-    "Seedship Agrarian",
-    "Scrounge for Eternity",
-    "Susurian Dirgecraft"
+    "Depressurize"
    ]
   },
   {
    "pair": "RG",
-   "name": "Big aggro",
-   "playstyle": "",
-   "speed": "",
+   "name": "Lander landfall",
+   "playstyle": "Bank Lander tokens early, then crack them at instant speed for second land drops that double-trigger landfall \u2014 Tannuk pings into card draw, Harmonizer doubles power, Godmaw alpha-strikes. Ramp into oversized trampers while efficient red removal clears the road.",
+   "speed": "midrange",
    "signposts": [
     "Tannuk, Memorial Ensign"
    ],
    "payoffs": [
-    "Territorial Bruntar",
-    "Nebula Dragon",
+    "Biotech Specialist",
+    "Mightform Harmonizer",
     "Glacier Godmaw",
-    "Remnant Elemental",
-    "Kavaron Skywarden",
-    "Vaultguard Trooper"
-   ],
-   "enablers": [
-    "Pull Through the Weft",
-    "Pinnacle Kill-Ship",
-    "Meltstrider's Gear",
-    "Debris Field Crusher",
+    "Harmonious Grovestrider",
+    "Territorial Bruntar",
     "Eusocial Engineering"
    ],
-   "keyCards": [
-    "Bombard",
-    "Command Bridge",
-    "Frontline War-Rager",
-    "Survey Mechan",
-    "Lithobraking",
-    "Cut Propulsion",
-    "Galvanizing Sawship",
+   "enablers": [
+    "Galactic Wayfarer",
+    "Larval Scoutlander",
+    "Kav Landseeker",
+    "Edge Rover",
     "Seedship Agrarian",
-    "Orbital Plunge",
-    "Biosynthic Burst",
-    "Icecave Crasher",
-    "Rig for War",
+    "Gene Pollinator"
+   ],
+   "keyCards": [
+    "Ouroboroid",
+    "Nova Hellkite",
+    "Warmaker Gunship",
+    "Possibility Technician",
+    "Anticausal Vestige",
     "Terrapact Intimidator",
-    "Harmonious Grovestrider"
+    "Meltstrider's Resolve",
+    "Orbital Plunge"
    ]
   }
  ],
- "combos": []
+ "combos": [
+  {
+   "cards": [
+    "Sinister Cryologist",
+    "Station Monitor"
+   ],
+   "note": "a {U} warp cast is the cheapest possible second spell for Monitor's Drone trigger, and the later exile recast triggers it again"
+  },
+  {
+   "cards": [
+    "Starfield Vocalist",
+    "Codecracker Hound"
+   ],
+   "note": "Vocalist doubles the Hound's ETB dig, and the warp recast from exile serves up the doubled trigger a second time"
+  },
+  {
+   "cards": [
+    "Haliya, Guided by Light",
+    "Auxiliary Boosters"
+   ],
+   "note": "one Boosters cast is two permanents entering (Equipment plus Robot token), covering most of Haliya's three-life end-step draw"
+  },
+  {
+   "cards": [
+    "Syr Vondam, Sunstar Exemplar",
+    "Umbral Collar Zealot"
+   ],
+   "note": "Zealot's free instant-speed creature sacrifice converts spare bodies into Vondam counters and lifegain while surveilling"
+  },
+  {
+   "cards": [
+    "Sunstar Chaplain",
+    "Wurmwall Sweeper"
+   ],
+   "note": "sorcery-speed stationing keeps two creatures tapped so Chaplain's end-step counter always fires while the Sweeper charges to its 4+ flier"
+  },
+  {
+   "cards": [
+    "Sami, Ship's Engineer",
+    "Kavaron Turbodrone"
+   ],
+   "note": "Turbodrone's sorcery-speed self-tap switches on Sami's two-tapped-creatures check, and the tapped Robot she mints keeps it on"
+  },
+  {
+   "cards": [
+    "Cosmogrand Zenith",
+    "Exalted Sunborn"
+   ],
+   "note": "Sunborn's token doubling turns Zenith's second-spell mode into four Soldiers per trigger"
+  },
+  {
+   "cards": [
+    "Ouroboroid",
+    "Loading Zone"
+   ],
+   "note": "Loading Zone doubles Ouroboroid's power-equal counter dump on every creature, tripling its own power each combat"
+  },
+  {
+   "cards": [
+    "Elegy Acolyte",
+    "Timeline Culler"
+   ],
+   "note": "Culler's recastable graveyard warp switches on Elegy's Void every single turn for an end-step 2/2 Robot"
+  },
+  {
+   "cards": [
+    "Nanoform Sentinel",
+    "Synthesizer Labship"
+   ],
+   "note": "tapping Sentinel to station untaps another creature so it can station the Labship again the same turn"
+  },
+  {
+   "cards": [
+    "Roving Actuator",
+    "Cryogen Relic"
+   ],
+   "note": "cracking Relic at instant speed draws a card and switches on Actuator's enters-Void flashback of a cheap spell"
+  },
+  {
+   "cards": [
+    "Mechan Assembler",
+    "Pinnacle Emissary"
+   ],
+   "note": "Emissary's cast-trigger Drone is itself an artifact entering, chaining into Assembler's once-a-turn 2/2 Robot"
+  },
+  {
+   "cards": [
+    "Biomechan Engineer",
+    "Genemorph Imago"
+   ],
+   "note": "Engineer's Lander cracks at instant speed to fire Imago's landfall for a surprise 3/3-or-6/6 mid-combat"
+  },
+  {
+   "cards": [
+    "Seedship Agrarian",
+    "Uthros Scanship"
+   ],
+   "note": "every tap of Agrarian to station the Scanship mints a Lander whose crack feeds his landfall counters, raising future charge"
+  },
+  {
+   "cards": [
+    "Faller's Faithful",
+    "Plasma Bolt"
+   ],
+   "note": "a pre-combat Bolt marks the target with damage so Faithful's ETB kill gives the opponent no consolation cards"
+  },
+  {
+   "cards": [
+    "Drill Too Deep",
+    "Galvanizing Sawship"
+   ],
+   "note": "an instant-speed five charge counters flips the Sawship past its 3+ threshold into a surprise flying haste attacker"
+  },
+  {
+   "cards": [
+    "Mightform Harmonizer",
+    "Galactic Wayfarer"
+   ],
+   "note": "cracking Wayfarer's Lander mid-combat fires Harmonizer's landfall to double an attacker's power at instant speed"
+  },
+  {
+   "cards": [
+    "Tannuk, Memorial Ensign",
+    "Larval Scoutlander"
+   ],
+   "note": "Scoutlander's sac-a-Lander double basic fetch resolves Tannuk's landfall twice in one shot, upgrading it into the draw"
+  },
+  {
+   "cards": [
+    "Biotech Specialist",
+    "Slagdrill Scrapper"
+   ],
+   "note": "Scrapper's repeatable artifact sacrifice draws cards while machine-gunning the Specialist's 2-damage pings"
+  },
+  {
+   "cards": [
+    "Full Bore",
+    "Bygone Colossus"
+   ],
+   "note": "Full Bore's warp-cast bonus gives the turn-3 warped Colossus haste and trample so its one warped turn actually attacks"
+  }
+ ]
 }

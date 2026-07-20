@@ -1,440 +1,656 @@
 {
  "set": "FIN",
  "setName": "Final Fantasy",
- "generated": "2026-07-04",
+ "generated": "2026-07-20",
  "mechanics": [
   {
-   "name": "Transform",
-   "summary": ""
-  },
-  {
    "name": "Job select",
-   "summary": ""
+   "summary": "Equipment that enters by creating a 1/1 colorless Hero token and attaching to it; the equipped creature gains a class and abilities. With 27 Equipment and ~23 Hero payoffs, Equipment density is a real draft axis \u2014 a Job select piece is never a dead draw."
   },
   {
-   "name": "Flashback",
-   "summary": ""
+   "name": "Summons",
+   "summary": "'Summon:' cards are Enchantment Creature \u2014 Saga: a body that ticks a chapter of value each turn and then leaves. Several spells and DFCs cheat them in transformed; they reward decks that can protect a short-lived attacker."
   },
   {
-   "name": "Surveil",
-   "summary": ""
+   "name": "Towns",
+   "summary": "A Land \u2014 Town subtype (23 lands); several payoffs count Towns you control or unlock when enough are assembled, making otherwise-plain nonbasics draftable role-players."
   },
   {
-   "name": "Landfall",
-   "summary": ""
+   "name": "Transform legends",
+   "summary": "27 transform cards \u2014 legendary characters flipping into upgraded forms (Cecil, Garland // Chaos, Exdeath // Neo Exdeath). The flip conditions shape gameplay: most ask you to attack, cast, or hit a threshold."
+  },
+  {
+   "name": "Graveyard spells",
+   "summary": "Flashback (14), Surveil (11), and Mill (10) form a spells-from-the-graveyard axis in blue/black/red \u2014 stock the yard, then recast for value."
+  },
+  {
+   "name": "Tiered",
+   "summary": "Modal spells with escalating additional costs (Fire/Fira/Firaga): scale one card from early interaction to a late-game haymaker; Treasure and ramp make the top tier real."
+  },
+  {
+   "name": "Lands matter",
+   "summary": "Landfall (10) plus Landcycling/Typecycling (10) form the green lands axis; cycling lands away also fuels the graveyard themes."
   }
  ],
  "archetypes": [
   {
    "pair": "WU",
-   "name": "Towns tempo",
-   "playstyle": "",
-   "speed": "",
+   "name": "Magitek artifacts",
+   "playstyle": "Flood the board with cheap artifacts \u2014 Job select Equipment, Vehicles, and Magitek bodies \u2014 then cash them in with count-based payoffs like Machinist's Arsenal and Adelbert Steiner. Curve out and attack, using taps, bounce, and White Auracite for tempo; artifact count, not card quality, is the engine.",
+   "speed": "midrange",
    "signposts": [
-    "Tidus, Blitzball Star",
-    "Cid, Timeless Artificer"
+    "Cid, Timeless Artificer",
+    "Tidus, Blitzball Star"
    ],
    "payoffs": [
-    "Valkyrie Aerial Unit",
-    "Rook Turret",
-    "Iron Giant",
-    "Ambrosia Whiteheart",
-    "Zack Fair",
-    "Summon: Shiva"
+    "Machinist's Arsenal",
+    "Adelbert Steiner",
+    "Cloud, Midgar Mercenary",
+    "Edgar, King of Figaro",
+    "Gaelicat",
+    "Slash of Light"
    ],
    "enablers": [
-    "Cargo Ship",
-    "Sage's Nouliths",
-    "Adventurer's Airship",
-    "White Auracite",
-    "Monk's Fist"
+    "Dragoon's Lance",
+    "Delivery Moogle",
+    "Magitek Infantry",
+    "White Mage's Staff",
+    "Astrologian's Planisphere",
+    "Magitek Armor"
    ],
    "keyCards": [
-    "Restoration Magic",
-    "Fate of the Sun-Cryst",
-    "Sharlayan, Nation of Scholars",
-    "Thief's Knife",
-    "Auron's Inspiration",
-    "Eden, Seat of the Sanctum",
-    "Lion Heart",
-    "Capital City",
-    "Slash of Light",
-    "The Crystal's Chosen",
-    "Summon: Primal Garuda",
-    "Ring of the Lucii",
-    "Magitek Armor",
-    "You're Not Alone"
+    "Dion, Bahamut's Dominant // Bahamut, Warden of Light",
+    "Buster Sword",
+    "Jill, Shiva's Dominant // Shiva, Warden of Ice",
+    "White Auracite",
+    "The Lunar Whale",
+    "Moogles' Valor",
+    "Summon: Knights of Round",
+    "Dragoon's Wyvern",
+    "Absolute Virtue"
    ]
   },
   {
    "pair": "WB",
-   "name": "Lifegain sagas",
-   "playstyle": "",
-   "speed": "",
+   "name": "Sacrifice aristocrats",
+   "playstyle": "Feed cheap Heroes, tokens, and spare artifacts to sacrifice outlets and stack the death triggers into drains, counters, and card draw; a removal-dense midrange deck that wins attrition wars rather than races.",
+   "speed": "midrange",
    "signposts": [
-    "Rufus Shinra",
-    "Judge Magister Gabranth"
+    "Judge Magister Gabranth",
+    "Rufus Shinra"
    ],
    "payoffs": [
-    "G'raha Tia",
-    "Relentless X-ATM092",
+    "Sephiroth, Fabled SOLDIER // Sephiroth, One-Winged Angel",
+    "Squall, SeeD Mercenary",
     "Al Bhed Salvagers",
-    "Ashe, Princess of Dalmasca",
-    "Cloudbound Moogle",
-    "Tonberry"
+    "G'raha Tia"
    ],
    "enablers": [
-    "The Gold Saucer",
-    "Dark Knight's Greatsword",
     "Phantom Train",
-    "Lunatic Pandora",
-    "Sidequest: Catch a Fish // Cooking Campsite"
+    "Zack Fair",
+    "Magitek Armor",
+    "Hecteyes",
+    "Undercity Dire Rat",
+    "Ahriman",
+    "Namazu Trader"
    ],
    "keyCards": [
-    "Aerith Rescue Mission",
-    "Auron's Inspiration",
-    "Adventurer's Airship",
-    "Insomnia, Crown City",
-    "Black Mage's Rod",
-    "Ring of the Lucii",
-    "Eden, Seat of the Sanctum",
-    "Phoenix Down",
-    "The Crystal's Chosen",
-    "Snow Villiers",
-    "Magitek Armor",
-    "Summon: Primal Garuda",
-    "Monk's Fist",
-    "Ahriman"
+    "Dion, Bahamut's Dominant // Bahamut, Warden of Light",
+    "Dragoon's Lance",
+    "Ardyn, the Usurper",
+    "Summon: Primal Odin",
+    "Dark Confidant",
+    "Delivery Moogle",
+    "Sidequest: Hunt the Mark // Yiazmat, Ultimate Mark",
+    "White Auracite",
+    "Overkill"
    ]
   },
   {
    "pair": "WR",
-   "name": "Aggro",
-   "playstyle": "",
-   "speed": "",
+   "name": "Job select Equipment aggro",
+   "playstyle": "Curve out cheap bodies and Job select Equipment \u2014 each weapon brings its own 1/1 Hero to wield it \u2014 then pressure with payoffs that scale on Equipment count like Adelbert Steiner and Slash of Light. Keep attacking; equip triggers and combat tricks out-tempo any defense.",
+   "speed": "aggro",
    "signposts": [
-    "Zidane, Tantalus Thief",
-    "Giott, King of the Dwarves"
+    "Giott, King of the Dwarves",
+    "Zidane, Tantalus Thief"
    ],
    "payoffs": [
-    "Freya Crescent",
-    "Item Shopkeep",
-    "Barret Wallace",
-    "Relentless X-ATM092",
-    "Crystal Fragments // Summon: Alexander",
-    "Adelbert Steiner"
+    "Adelbert Steiner",
+    "Gilgamesh, Master-at-Arms",
+    "Cloud, Midgar Mercenary",
+    "Firion, Wild Rose Warrior",
+    "Machinist's Arsenal",
+    "Slash of Light"
    ],
    "enablers": [
-    "Adventurer's Airship",
-    "Samurai's Katana",
-    "Sidequest: Play Blitzball // World Champion, Celestial Weapon",
-    "Dragoon's Lance",
-    "Lion Heart"
-   ],
-   "keyCards": [
-    "Coral Sword",
-    "Rabanastre, Royal City",
-    "Unexpected Request",
-    "Battle Menu",
-    "Slash of Light",
+    "Delivery Moogle",
     "White Mage's Staff",
-    "Sidequest: Catch a Fish // Cooking Campsite",
-    "Monk's Fist",
-    "Sabotender",
-    "Ambrosia Whiteheart",
-    "Hill Gigas",
     "Paladin's Arms",
     "Weapons Vendor",
-    "Opera Love Song"
+    "Freya Crescent",
+    "Zack Fair"
+   ],
+   "keyCards": [
+    "Dion, Bahamut's Dominant // Bahamut, Warden of Light",
+    "Dragoon's Lance",
+    "Samurai's Katana",
+    "Buster Sword",
+    "Seifer Almasy",
+    "Joshua, Phoenix's Dominant // Phoenix, Warden of Fire",
+    "White Auracite",
+    "Lightning, Army of One",
+    "Battle Menu"
    ]
   },
   {
    "pair": "WG",
-   "name": "Tap/towns",
-   "playstyle": "",
-   "speed": "",
+   "name": "Summons go-wide",
+   "playstyle": "Chain cheap Summon Sagas and token makers into a wide lifelinking board, with Garnet cashing lore counters and Yuna making your enchantment creatures permanent trampling threats. It plays as a value midrange deck that grinds Saga chapters, not a pure token rush.",
+   "speed": "midrange",
    "signposts": [
     "Garnet, Princess of Alexandria",
     "Rinoa Heartilly"
    ],
    "payoffs": [
-    "Loporrit Scout",
-    "Cactuar",
-    "Sidequest: Raise a Chocobo // Black Chocobo",
-    "Summon: Choco/Mog",
-    "Quina, Qu Gourmet",
-    "Summon: Primal Garuda"
+    "Yuna, Hope of Spira",
+    "Summon: Knights of Round",
+    "Moogles' Valor",
+    "The Crystal's Chosen"
    ],
    "enablers": [
-    "Bard's Bow",
-    "Blitzball Shot",
-    "Ride the Shoopuf",
-    "Gongaga, Reactor Town",
-    "Sidequest: Catch a Fish // Cooking Campsite"
+    "Summon: Fenrir",
+    "Summon: Titan",
+    "Summon: Fat Chocobo",
+    "Summon: Primal Garuda",
+    "Torgal, A Fine Hound",
+    "Magitek Armor",
+    "Battle Menu"
    ],
    "keyCards": [
-    "Commune with Beavers",
-    "Windurst, Federation Center",
-    "Summon: Fat Chocobo",
-    "Monk's Fist",
-    "Sharlayan, Nation of Scholars",
-    "Weapons Vendor",
-    "Aerith Rescue Mission",
-    "Relentless X-ATM092",
-    "Phoenix Down",
-    "Rydia's Return",
-    "The Crystal's Chosen",
-    "Snow Villiers",
-    "Adventurer's Airship",
-    "Dragoon's Lance"
+    "Dion, Bahamut's Dominant // Bahamut, Warden of Light",
+    "Sazh Katzroy",
+    "Esper Origins // Summon: Esper Maduin",
+    "Buster Sword",
+    "Dragoon's Lance",
+    "Cloud, Midgar Mercenary",
+    "Delivery Moogle",
+    "White Auracite"
    ]
   },
   {
    "pair": "UB",
-   "name": "Mill control",
-   "playstyle": "",
-   "speed": "",
+   "name": "Graveyard value control",
+   "playstyle": "Grind the long game with removal and 2-for-1s while surveil, flashback, and loots stock your graveyard, turning Swallowed by Leviathan into a hard counter and flipping Card Collection, Ultimecia, and Emet-Selch. The theme is soft \u2014 removal density and bombs win, graveyard payoffs are the topping.",
+   "speed": "control",
    "signposts": [
     "Locke Cole",
     "Ultimecia, Time Sorceress // Ultimecia, Omnipotent"
    ],
    "payoffs": [
-    "Demon Wall",
-    "Malboro",
-    "Hecteyes",
-    "Undercity Dire Rat",
-    "Namazu Trader",
-    "Shambling Cie'th"
+    "Swallowed by Leviathan",
+    "Sidequest: Card Collection // Magicked Card",
+    "Emet-Selch, Unsundered // Hades, Sorcerer of Eld",
+    "Quistis Trepe",
+    "Evil Reawakened",
+    "The Final Days"
    ],
    "enablers": [
-    "Windurst, Federation Center",
-    "The Gold Saucer",
-    "Vector, Imperial Capital",
-    "Treno, Dark City",
-    "Baron, Airship Kingdom"
+    "Dreams of Laguna",
+    "Resentful Revelation",
+    "Il Mheg Pixie",
+    "Shinra Reinforcements",
+    "Ninja's Blades"
    ],
    "keyCards": [
-    "Crossroads Village",
-    "Sephiroth's Intervention",
-    "Circle of Power",
-    "World Map",
-    "Vayne's Treachery",
-    "Overkill",
-    "Swallowed by Leviathan",
-    "Gongaga, Reactor Town",
-    "Sidequest: Card Collection // Magicked Card",
-    "Instant Ramen",
-    "Combat Tutorial",
-    "Lion Heart",
-    "Insomnia, Crown City",
-    "Quistis Trepe"
+    "Ardyn, the Usurper",
+    "Summon: Primal Odin",
+    "Jill, Shiva's Dominant // Shiva, Warden of Ice",
+    "Sephiroth, Fabled SOLDIER // Sephiroth, One-Winged Angel",
+    "Buster Sword",
+    "Zenos yae Galvus // Shinryu, Transcendent Rival",
+    "Sidequest: Hunt the Mark // Yiazmat, Ultimate Mark",
+    "Memories Returning",
+    "Sephiroth's Intervention"
    ]
   },
   {
    "pair": "UR",
-   "name": "Spells",
-   "playstyle": "",
-   "speed": "",
+   "name": "Big-spell wizards",
+   "playstyle": "Land cheap payoff creatures, then chain four-plus-mana noncreature spells \u2014 Tiered magic and X spells count total mana spent \u2014 to snowball counters, stuns, Treasures, and card draw. Grinds to a mid-game where every big spell is removal plus a threat boost.",
+   "speed": "midrange",
    "signposts": [
-    "Shantotto, Tactician Magician",
-    "The Emperor of Palamecia // The Lord Master of Hell"
+    "The Emperor of Palamecia // The Lord Master of Hell",
+    "Shantotto, Tactician Magician"
    ],
    "payoffs": [
-    "Prompto Argentum",
+    "Vivi Ornitier",
     "Ultros, Obnoxious Octopus",
-    "Sabotender",
     "Sahagin",
     "Blazing Bomb",
-    "Scorpion Sentinel"
+    "Prompto Argentum",
+    "Tellah, Great Sage"
    ],
    "enablers": [
-    "Adventurer's Inn",
-    "Light of Judgment",
-    "Choco-Comet",
     "Thunder Magic",
-    "Call the Mountain Chocobo"
+    "Ice Magic",
+    "Fire Magic",
+    "Syncopate",
+    "Sorceress's Schemes",
+    "Light of Judgment",
+    "Retrieve the Esper"
    ],
    "keyCards": [
+    "Nibelheim Aflame",
+    "Choco-Comet",
+    "Jill, Shiva's Dominant // Shiva, Warden of Ice",
+    "Memories Returning",
     "Eject",
-    "Retrieve the Esper",
-    "Ice Magic",
-    "Ring of the Lucii",
-    "Suplex",
-    "Relm's Sketching",
-    "World Map",
-    "Warrior's Sword",
-    "Ether",
-    "Dreams of Laguna",
-    "Fire Magic",
-    "Laughing Mad",
-    "Vector, Imperial Capital",
-    "Syncopate"
+    "The Lunar Whale",
+    "Sidequest: Card Collection // Magicked Card",
+    "Seifer Almasy",
+    "Combat Tutorial"
    ]
   },
   {
    "pair": "UG",
-   "name": "Landfall ramp",
-   "playstyle": "",
-   "speed": "",
+   "name": "Town ramp",
+   "playstyle": "Ramp with land-fetch commons and Towns into a fat top end, converting extra land drops into landfall counters and Town-count payoffs like Travel the Overworld and Balamb Garden. Bounce and counters buy time until the haymakers take over.",
+   "speed": "midrange",
    "signposts": [
-    "Omega, Heartless Evolution",
-    "Ignis Scientia"
+    "Ignis Scientia",
+    "Omega, Heartless Evolution"
    ],
    "payoffs": [
-    "Iron Giant",
+    "Balamb Garden, SeeD Academy // Balamb Garden, Airborne",
+    "Travel the Overworld",
+    "Sazh's Chocobo",
     "PuPu UFO",
-    "Magic Pot",
-    "Gran Pulse Ochu",
-    "Qiqirn Merchant",
-    "Summon: Shiva"
+    "Ride the Shoopuf"
    ],
    "enablers": [
-    "Chocobo Racetrack",
+    "Summon: Fenrir",
+    "Town Greeter",
     "Reach the Horizon",
-    "The Gold Saucer",
-    "Travel the Overworld",
-    "Clash of the Eikons"
+    "Prishe's Wanderings",
+    "Capital City",
+    "Guadosalam, Farplane Gateway"
    ],
    "keyCards": [
-    "Blitzball",
-    "Gongaga, Reactor Town",
-    "Sharlayan, Nation of Scholars",
-    "Eden, Seat of the Sanctum",
-    "Windurst, Federation Center",
-    "Adventurer's Inn",
-    "Rydia's Return",
-    "Tifa's Limit Break",
-    "Ride the Shoopuf",
-    "Capital City",
-    "Gysahl Greens",
-    "Prishe's Wanderings",
-    "Insomnia, Crown City",
-    "Crossroads Village"
+    "Sazh Katzroy",
+    "Jill, Shiva's Dominant // Shiva, Warden of Ice",
+    "Esper Origins // Summon: Esper Maduin",
+    "Buster Sword",
+    "Summon: Titan",
+    "Y'shtola Rhul",
+    "Swallowed by Leviathan",
+    "Eject",
+    "Chocobo Kick"
    ]
   },
   {
    "pair": "BR",
-   "name": "Sacrifice",
-   "playstyle": "",
-   "speed": "",
+   "name": "Black Mage spellslinger",
+   "playstyle": "Amass 0/1 Black Mage Wizard tokens, then chain cheap noncreature spells so every removal spell doubles as reach; win long grindy games on premium black interaction while the pingers finish the job.",
+   "speed": "midrange",
    "signposts": [
     "Black Waltz No. 3",
     "Garland, Knight of Cornelia // Chaos, the Endless"
    ],
    "payoffs": [
-    "Summon: Esper Ramuh",
-    "Mysidian Elder",
-    "Tonberry",
-    "Queen Brahne",
-    "Hill Gigas",
-    "Sandworm"
+    "Kuja, Genome Sorcerer // Trance Kuja, Fate Defied",
+    "Circle of Power",
+    "Black Mage's Rod",
+    "Prompto Argentum",
+    "Blazing Bomb",
+    "Queen Brahne"
    ],
    "enablers": [
-    "Instant Ramen",
-    "Haste Magic",
     "Cornered by Black Mages",
-    "Circle of Power",
-    "Red Mage's Rapier"
+    "Sorceress's Schemes",
+    "Thunder Magic",
+    "Resentful Revelation",
+    "Vayne's Treachery",
+    "Overkill",
+    "Mysidian Elder"
    ],
    "keyCards": [
-    "Unexpected Request",
-    "Self-Destruct",
-    "Sorceress's Schemes",
-    "World Map",
-    "Opera Love Song",
-    "Black Mage's Rod",
-    "Sephiroth's Intervention",
-    "Sidequest: Play Blitzball // World Champion, Celestial Weapon",
-    "Overkill",
-    "Resentful Revelation",
-    "Vincent's Limit Break",
+    "Nibelheim Aflame",
+    "Sephiroth, Fabled SOLDIER // Sephiroth, One-Winged Angel",
+    "Ardyn, the Usurper",
+    "Choco-Comet",
+    "Summon: Primal Odin",
     "Sidequest: Hunt the Mark // Yiazmat, Ultimate Mark",
-    "Blitzball",
-    "Vayne's Treachery"
+    "Seifer Almasy",
+    "Samurai's Katana",
+    "Sephiroth's Intervention"
    ]
   },
   {
    "pair": "BG",
-   "name": "Job select value",
-   "playstyle": "",
-   "speed": "",
+   "name": "Self-mill graveyard",
+   "playstyle": "Stock your graveyard with permanents via mill-on-a-body commons, then cash the count in for Cloud of Darkness blowouts, Neo Exdeath flips, and Evil Reawakened rebuys. Premium black removal and chunky green bodies let it grind as a plain midrange deck when the engine doesn't come together.",
+   "speed": "midrange",
    "signposts": [
     "Cloud of Darkness",
-    "Ragnarok, Divine Deliverance"
+    "Exdeath, Void Warlock // Neo Exdeath, Dimension's End"
    ],
    "payoffs": [
-    "Relentless X-ATM092",
-    "Fang, Fearless l'Cie",
-    "Gaius van Baelsar",
-    "Coliseum Behemoth",
+    "The Final Days",
+    "Evil Reawakened",
+    "Summon: Titan",
     "Diamond Weapon",
-    "Town Greeter"
+    "Fight On!"
    ],
    "enablers": [
-    "Lunatic Pandora",
-    "Fight On!",
-    "Evil Reawakened",
-    "Commune with Beavers",
-    "The Final Days"
+    "Town Greeter",
+    "Shinra Reinforcements",
+    "Resentful Revelation",
+    "Vanille, Cheerful l'Cie",
+    "Esper Origins // Summon: Esper Maduin"
    ],
    "keyCards": [
-    "Adventurer's Inn",
-    "Qutrub Forayer",
-    "Demon Wall",
-    "Namazu Trader",
-    "Tifa's Limit Break",
-    "Gigantoad",
-    "Summon: Anima",
-    "Ring of the Lucii",
-    "Balamb T-Rexaur",
-    "Resentful Revelation",
-    "Capital City",
-    "Gongaga, Reactor Town",
-    "Shinra Reinforcements",
-    "Instant Ramen"
+    "Ardyn, the Usurper",
+    "Sazh Katzroy",
+    "Sephiroth, Fabled SOLDIER // Sephiroth, One-Winged Angel",
+    "Summon: Primal Odin",
+    "Jenova, Ancient Calamity",
+    "Summon: Fenrir",
+    "Buster Sword",
+    "Dark Confidant",
+    "Sidequest: Hunt the Mark // Yiazmat, Ultimate Mark"
    ]
   },
   {
    "pair": "RG",
-   "name": "Aggro",
-   "playstyle": "",
-   "speed": "",
+   "name": "Chocobo landfall",
+   "playstyle": "Flood the board with 2/2 Chocobo tokens and landfall creatures, then let every land drop pump the team for wide, trampling attacks. Land-fetch spells and Summons keep triggers flowing and ramp you into oversized top-end.",
+   "speed": "midrange",
    "signposts": [
-    "Rydia, Summoner of Mist",
-    "Gladiolus Amicitia"
+    "Gladiolus Amicitia",
+    "Rydia, Summoner of Mist"
    ],
    "payoffs": [
-    "Iron Giant",
-    "Barret Wallace",
-    "Sandworm",
-    "Summon: G.F. Ifrit",
-    "Cactuar",
-    "Sidequest: Raise a Chocobo // Black Chocobo"
+    "Traveling Chocobo",
+    "Sazh's Chocobo",
+    "Zell Dincht",
+    "Ride the Shoopuf",
+    "Chocobo Racetrack"
    ],
    "enablers": [
-    "Random Encounter",
-    "Galuf's Final Act",
-    "Self-Destruct",
-    "Chocobo Racetrack",
-    "Gysahl Greens"
+    "Summon: Fenrir",
+    "Summon: Titan",
+    "Call the Mountain Chocobo",
+    "Gysahl Greens",
+    "Town Greeter",
+    "Prishe's Wanderings",
+    "Goobbue Gardener"
    ],
    "keyCards": [
-    "Ride the Shoopuf",
-    "Tifa's Limit Break",
-    "Eden, Seat of the Sanctum",
-    "Sidequest: Play Blitzball // World Champion, Celestial Weapon",
-    "Adventurer's Inn",
-    "Blitzball Shot",
+    "Nibelheim Aflame",
+    "Sazh Katzroy",
+    "Esper Origins // Summon: Esper Maduin",
+    "Seifer Almasy",
+    "Choco-Comet",
+    "Samurai's Katana",
     "Summon: Fat Chocobo",
-    "Sazh's Chocobo",
-    "Quina, Qu Gourmet",
-    "Clash of the Eikons",
-    "Sabotender",
-    "Summon: Fenrir",
-    "World Map",
-    "Goobbue Gardener"
+    "Thunder Magic",
+    "Chocobo Kick"
    ]
   }
  ],
- "combos": []
+ "combos": [
+  {
+   "cards": [
+    "Gilgamesh, Master-at-Arms",
+    "Weapons Vendor"
+   ],
+   "note": "Gilgamesh dumps Equipment straight onto the board and Weapons Vendor suits up a threat with them for free each combat"
+  },
+  {
+   "cards": [
+    "Adelbert Steiner",
+    "Machinist's Arsenal"
+   ],
+   "note": "The Arsenal is a free +1/+1 on Adelbert that also brings its own Hero to hold it"
+  },
+  {
+   "cards": [
+    "Weapons Vendor",
+    "Machinist's Arsenal"
+   ],
+   "note": "Weapons Vendor moves the Arsenal onto your biggest body each combat for another artifact-count pump"
+  },
+  {
+   "cards": [
+    "Zack Fair",
+    "Machinist's Arsenal"
+   ],
+   "note": "Sacrifice Zack in response to removal to shift the Arsenal and his counters onto an indestructible attacker"
+  },
+  {
+   "cards": [
+    "Judge Magister Gabranth",
+    "Al Bhed Salvagers"
+   ],
+   "note": "Every creature or artifact death both grows Gabranth and drains the opponent through Al Bhed Salvagers"
+  },
+  {
+   "cards": [
+    "The Crystal's Chosen",
+    "Judge Magister Gabranth"
+   ],
+   "note": "Four Hero tokens become sacrifice fuel that pile +1/+1 counters onto Gabranth"
+  },
+  {
+   "cards": [
+    "Zack Fair",
+    "Al Bhed Salvagers"
+   ],
+   "note": "Sacrificing Zack to save a creature also triggers Al Bhed Salvagers' drain"
+  },
+  {
+   "cards": [
+    "Garnet, Princess of Alexandria",
+    "Summon: Fat Chocobo"
+   ],
+   "note": "Garnet cashes the lore counters off your Summon Sagas into permanent counters on herself"
+  },
+  {
+   "cards": [
+    "Yuna, Hope of Spira",
+    "Summon: Titan"
+   ],
+   "note": "Yuna recurs a spent Summon Saga and makes your enchantment-creature Summons trampling lifelinkers"
+  },
+  {
+   "cards": [
+    "Locke Cole",
+    "Evil Reawakened"
+   ],
+   "note": "Loot a bomb into the yard with Locke, then Evil Reawakened brings it back with two extra counters"
+  },
+  {
+   "cards": [
+    "Locke Cole",
+    "The Final Days"
+   ],
+   "note": "Locke's combat looting stocks the creature-filled graveyard that The Final Days' flashback empties into a token army"
+  },
+  {
+   "cards": [
+    "Shantotto, Tactician Magician",
+    "Fire Magic"
+   ],
+   "note": "Cast Fire Magic at the Firaga tier and Shantotto swings for all that mana plus draws a card"
+  },
+  {
+   "cards": [
+    "Vivi Ornitier",
+    "Fire Magic"
+   ],
+   "note": "Vivi ramps into and pings off every Fire Magic, snowballing counters and reach"
+  },
+  {
+   "cards": [
+    "The Emperor of Palamecia // The Lord Master of Hell",
+    "Fire Magic"
+   ],
+   "note": "Each four-plus-mana Fira/Firaga stacks a counter toward flipping the Emperor into a demon"
+  },
+  {
+   "cards": [
+    "Prompto Argentum",
+    "Fire Magic"
+   ],
+   "note": "A Firaga-tier cast clears the four-mana bar for a free Prompto Treasure"
+  },
+  {
+   "cards": [
+    "Black Waltz No. 3",
+    "Circle of Power"
+   ],
+   "note": "Circle of Power adds a Wizard pinger so each noncreature spell burns twice over alongside Black Waltz"
+  },
+  {
+   "cards": [
+    "Black Mage's Rod",
+    "Circle of Power"
+   ],
+   "note": "A board of Wizard tokens turns every noncreature spell into a barrage of pings"
+  },
+  {
+   "cards": [
+    "Town Greeter",
+    "Cloud of Darkness"
+   ],
+   "note": "Town Greeter's mill fills the graveyard so Cloud of Darkness wipes a big creature on entry"
+  },
+  {
+   "cards": [
+    "Summon: Titan",
+    "Exdeath, Void Warlock // Neo Exdeath, Dimension's End"
+   ],
+   "note": "Summon: Titan's mill-five races Exdeath to its six-permanent transform"
+  },
+  {
+   "cards": [
+    "Chocobo Racetrack",
+    "Gladiolus Amicitia"
+   ],
+   "note": "Each land drop both spawns a Racetrack Bird and hands a creature +2/+2 and trample off Gladiolus"
+  },
+  {
+   "cards": [
+    "Traveling Chocobo",
+    "Chocobo Racetrack"
+   ],
+   "note": "Traveling Chocobo doubles Racetrack's landfall so every land makes two Birds"
+  },
+  {
+   "cards": [
+    "Town Greeter",
+    "Travel the Overworld"
+   ],
+   "note": "Town Greeter digs up the Towns that make Travel the Overworld a cheap draw-four"
+  },
+  {
+   "cards": [
+    "Balamb Garden, SeeD Academy // Balamb Garden, Airborne",
+    "Travel the Overworld"
+   ],
+   "note": "A pile of Towns both flips Balamb Garden cheaply and slashes Travel the Overworld's cost"
+  },
+  {
+   "cards": [
+    "Cloud, Midgar Mercenary",
+    "Thief's Knife"
+   ],
+   "note": "Cloud doubles the triggered abilities of Equipment attached to it, so Thief's Knife's combat-damage draw fires twice per hit \u2014 and Cloud even tutors the Knife up on entry."
+  },
+  {
+   "cards": [
+    "Vanille, Cheerful l'Cie",
+    "Fang, Fearless l'Cie"
+   ],
+   "note": "The two l'Cie meld into Ragnarok, Divine Deliverance once both are on the battlefield together."
+  },
+  {
+   "cards": [
+    "Cloud, Planet's Champion",
+    "Samurai's Katana"
+   ],
+   "note": "Cloud makes equips targeting it cost {2} less, so Samurai's Katana attaches for {3} and turns the otherwise-plain Cloud into a hasty, trampling, double-striking, indestructible threat."
+  },
+  {
+   "cards": [
+    "Firion, Wild Rose Warrior",
+    "Dragoon's Lance"
+   ],
+   "note": "Firion token-copies Dragoon's Lance as it enters and the copy's own Job select spawns a second Hero and equips it \u2014 two hasty flying Knights off one card."
+  },
+  {
+   "cards": [
+    "Rydia, Summoner of Mist",
+    "Summon: Titan"
+   ],
+   "note": "Rydia's Summon ability reanimates Summon: Titan from the graveyard with haste to re-run its chapters as an attacker."
+  },
+  {
+   "cards": [
+    "Matoya, Archon Elder",
+    "Ultimecia, Time Sorceress // Ultimecia, Omnipotent"
+   ],
+   "note": "Ultimecia's repeated Surveil 2 draws a card each time through Matoya while stocking the graveyard toward Ultimecia's eight-card transform."
+  },
+  {
+   "cards": [
+    "Shantotto, Tactician Magician",
+    "Thunder Magic"
+   ],
+   "note": "Casting Thunder Magic's six-mana Thundaga tier pumps Shantotto +6/+0 and, as a 4+-mana noncreature spell, also draws a card."
+  },
+  {
+   "cards": [
+    "The Emperor of Palamecia // The Lord Master of Hell",
+    "Ice Magic"
+   ],
+   "note": "The Emperor taps for spell-only mana to fund Ice Magic's six-mana Blizzaga, which as a 4+-mana noncreature spell also puts it a counter closer to transforming."
+  },
+  {
+   "cards": [
+    "Judge Magister Gabranth",
+    "Sephiroth, Fabled SOLDIER // Sephiroth, One-Winged Angel"
+   ],
+   "note": "Sephiroth's repeatable sacrifice-a-creature deaths each drop a +1/+1 counter on Gabranth while draining the opponent."
+  },
+  {
+   "cards": [
+    "Beatrix, Loyal General",
+    "Ninja's Blades"
+   ],
+   "note": "Beatrix's combat-step attach moves Ninja's Blades off its 1/1 Hero onto a real body that keeps the loot-and-drain trigger, while the Hero stays on the board."
+  },
+  {
+   "cards": [
+    "Kuja, Genome Sorcerer // Trance Kuja, Fate Defied",
+    "Mysidian Elder"
+   ],
+   "note": "Mysidian Elder's Wizard token helps reach Kuja's four-Wizard transform, after which Trance Kuja doubles every Wizard token's spell-triggered ping."
+  },
+  {
+   "cards": [
+    "Y'shtola Rhul",
+    "Ignis Scientia"
+   ],
+   "note": "Y'shtola's end-step exile-and-return blinks Ignis, re-triggering its land ramp and six-card dig every turn."
+  },
+  {
+   "cards": [
+    "Gladiolus Amicitia",
+    "Reach the Horizon"
+   ],
+   "note": "Reach the Horizon drops two lands at once, firing Gladiolus's landfall twice for +2/+2 and trample each time."
+  }
+ ]
 }

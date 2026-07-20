@@ -1,440 +1,653 @@
 {
  "set": "TLA",
  "setName": "Avatar: The Last Airbender",
- "generated": "2026-07-04",
+ "generated": "2026-07-16",
  "mechanics": [
   {
    "name": "Earthbend",
-   "summary": ""
+   "summary": "Pay an earthbend cost to turn a land you control into a 0/0 haste creature with that many +1/+1 counters; it returns tapped when it dies. Green's ramp-into-beatdown and a counters payoff."
   },
   {
    "name": "Waterbend",
-   "summary": ""
+   "summary": "An alternative cost you may pay by tapping untapped artifacts and creatures you control, each covering {1}. Rewards a wide board and cheap permanents \u2014 blue's tap-for-value engine."
   },
   {
    "name": "Firebending",
-   "summary": ""
+   "summary": "Whenever this creature attacks, add that much red mana until end of combat. An aggressive ritual that bankrolls combat tricks, extra spells, and activated abilities mid-attack."
   },
   {
    "name": "Airbend",
-   "summary": ""
+   "summary": "Exile a nonland permanent; its owner may recast it for {2}. A tempo/blink tool that re-triggers your own enters-the-battlefield effects or resets a threat, and feeds cast-from-exile payoffs."
   },
   {
-   "name": "Transform",
-   "summary": ""
+   "name": "Lessons",
+   "summary": "Instants and sorceries with the Lesson subtype; several payoffs scale with or switch on when three-plus Lessons sit in your graveyard (Combustion Technique, Gran-Gran, The Lion-Turtle, Bumi), a cheap-spell value engine in blue/red/green."
+  },
+  {
+   "name": "Ally typal",
+   "summary": "The set's dominant creature type (~31 cards). Go wide and lean on 'whenever an Ally enters or attacks' triggers, anthems, and token makers to convert a crowded board into damage and value."
+  },
+  {
+   "name": "Avatar Sagas",
+   "summary": "'The Legend of X // Avatar X' double-faced Sagas advance three chapters of value, then transform into a legendary Avatar bomb \u2014 the format's premium rares and mythics."
   }
  ],
  "archetypes": [
   {
    "pair": "WU",
-   "name": "Air tempo",
-   "playstyle": "",
-   "speed": "",
+   "name": "Airbending fliers",
+   "playstyle": "Deploy evasive Allies, then lean on airbend tempo (Aang, Airbending Lesson, Glider Staff) to reset blockers and untangle attacks that draw you extra cards off Sokka and Teo. Air Nomad Legacy and Momo turn a modest air force into lethal while blue bombs and card advantage bury any ground stall.",
+   "speed": "midrange",
    "signposts": [
-    "Sokka, Lateral Strategist",
-    "Air Nomad Legacy"
+    "Air Nomad Legacy",
+    "Sokka, Lateral Strategist"
    ],
    "payoffs": [
-    "Iguana Parrot",
-    "Benevolent River Spirit",
+    "Momo, Friendly Flier",
+    "Teo, Spirited Glider",
     "Aang, the Last Airbender",
-    "Rowdy Snowballers",
-    "Earth Kingdom Soldier",
-    "Earth Kingdom Protectors"
+    "Suki, Courageous Rescuer",
+    "United Front"
    ],
    "enablers": [
-    "Airbender's Reversal",
-    "Meditation Pools",
-    "Razor Rings",
-    "Kyoshi Village",
-    "Invasion Submersible"
+    "Airbending Lesson",
+    "Glider Staff",
+    "Invasion Reinforcements",
+    "Forecasting Fortune Teller",
+    "Knowledge Seeker",
+    "Kyoshi Battle Fan",
+    "North Pole Gates"
    ],
    "keyCards": [
-    "Kyoshi Battle Fan",
-    "Airbending Lesson",
-    "Curious Farm Animals",
-    "Jeong Jeong's Deserters",
-    "Sun-Blessed Peak",
-    "Momo, Playful Pet",
-    "Teo, Spirited Glider",
-    "Fire Nation Warship",
-    "Cat-Owl",
-    "North Pole Gates",
+    "The Legend of Yangchen // Avatar Yangchen",
+    "Aang, Swift Savior // Aang and La, Ocean's Fury",
+    "The Legend of Kuruk // Avatar Kuruk",
+    "Wan Shi Tong, Librarian",
+    "Katara, Water Tribe's Hope",
+    "Invasion Submersible",
+    "South Pole Voyager",
     "Earth Kingdom Jailer",
-    "Zuko's Exile",
-    "Compassionate Healer",
-    "Honest Work"
+    "Ty Lee, Chi Blocker"
    ]
   },
   {
    "pair": "WB",
-   "name": "Bending control",
-   "playstyle": "",
-   "speed": "",
+   "name": "Sacrifice grind",
+   "playstyle": "Manufacture expendable bodies \u2014 Ally tokens, Clues, dying Vehicles \u2014 then cash them in with Tolls of War, Suki, and Phoenix Fleet Airship for incremental value and counters. Best-in-class W/B removal keeps the board flat while you grind out the long game on attrition, not tempo.",
+   "speed": "midrange",
    "signposts": [
     "Hei Bai, Spirit of Balance",
     "Tolls of War"
    ],
    "payoffs": [
-    "Zhao, Ruthless Admiral",
-    "Fire Navy Trebuchet",
-    "Long Feng, Grand Secretariat",
-    "Curious Farm Animals",
-    "Callous Inspector",
-    "Fire Nation Engineer"
+    "Phoenix Fleet Airship",
+    "Suki, Courageous Rescuer",
+    "Obsessive Pursuit",
+    "Sandbender Scavengers"
    ],
    "enablers": [
-    "Destined Confrontation",
-    "North Pole Gates",
-    "Misty Palms Oasis",
-    "Kyoshi Village",
-    "Tundra Tank"
+    "Deadly Precision",
+    "Joo Dee, One of Many",
+    "June, Bounty Hunter",
+    "Fire Nation Warship",
+    "Callous Inspector",
+    "Invasion Reinforcements"
    ],
    "keyCards": [
-    "Fire Nation Warship",
-    "Joo Dee, One of Many",
-    "Sokka, Lateral Strategist",
-    "Meteor Sword",
-    "Enter the Avatar State",
-    "Vengeful Villagers",
-    "Deadly Precision",
-    "Messenger Hawk",
-    "Pretending Poxbearers",
-    "June, Bounty Hunter",
-    "Master Piandao",
-    "Ozai's Cruelty",
-    "Wandering Musicians",
-    "Path to Redemption"
+    "The Fire Nation Drill",
+    "The Rise of Sozin // Fire Lord Sozin",
+    "United Front",
+    "The Legend of Yangchen // Avatar Yangchen",
+    "Koh, the Face Stealer",
+    "Raven Eagle",
+    "Earth Kingdom Jailer",
+    "Heartless Act"
    ]
   },
   {
    "pair": "WR",
-   "name": "Fire aggro",
-   "playstyle": "",
-   "speed": "",
+   "name": "Ally aggro",
+   "playstyle": "Flood the board with cheap Allies and 1/1 tokens, then convert width into damage with anthems and \"creatures-you-control\" scalers like United Front and the signposts; efficient red removal clears blockers so the swarm closes before opponents stabilize.",
+   "speed": "aggro",
    "signposts": [
     "Sun Warriors",
     "Jet, Freedom Fighter"
    ],
    "payoffs": [
-    "Ty Lee, Artful Acrobat",
-    "Rough Rhino Cavalry",
-    "Deserter's Disciple",
-    "Jeong Jeong, the Deserter",
-    "Vindictive Warden",
-    "Treetop Freedom Fighters"
-   ],
-   "enablers": [
-    "How to Start a Riot",
-    "Twin Blades",
-    "Fancy Footwork",
-    "Sun-Blessed Peak",
+    "United Front",
+    "Suki, Courageous Rescuer",
+    "Wartime Protestors",
     "Team Avatar"
    ],
-   "keyCards": [
+   "enablers": [
     "Water Tribe Rallier",
-    "Fire Sages",
-    "War Balloon",
-    "Glider Staff",
-    "Zuko, Exiled Prince",
-    "Cunning Maneuver",
-    "Sandbenders' Storm",
-    "Mongoose Lizard",
-    "Fire Nation Cadets",
-    "Lightning Strike",
-    "Fire Nation Raider",
-    "Combustion Man",
-    "Mai, Jaded Edge",
-    "Airbending Lesson"
+    "Invasion Reinforcements",
+    "The Cave of Two Lovers",
+    "Kyoshi Warriors",
+    "Treetop Freedom Fighters",
+    "Jasmine Dragon Tea Shop",
+    "Sun-Blessed Peak"
+   ],
+   "keyCards": [
+    "The Legend of Yangchen // Avatar Yangchen",
+    "The Legend of Roku // Avatar Roku",
+    "Abandoned Air Temple",
+    "South Pole Voyager",
+    "Earth Kingdom Jailer",
+    "Aang, the Last Airbender",
+    "Iroh, Tea Master",
+    "Firebending Lesson",
+    "Lightning Strike"
    ]
   },
   {
    "pair": "WG",
-   "name": "Earth midrange",
-   "playstyle": "",
-   "speed": "",
+   "name": "Ally go-wide",
+   "playstyle": "Flood the board with cheap Allies, then stack anthems and +1/+1 counters until United Front or a Suki swing turns the wide board lethal. Every Ally-enters trigger (life, draw, counters) compounds, and the fixing lets a bomb slot in over the top.",
+   "speed": "midrange",
    "signposts": [
     "Suki, Kyoshi Warrior",
     "White Lotus Reinforcements"
    ],
    "payoffs": [
-    "Haru, Hidden Talent",
-    "Appa, Loyal Sky Bison",
-    "Earth Rumble Wrestlers",
-    "Water Tribe Rallier",
-    "Flopsie, Bumi's Buddy",
-    "Foggy Swamp Vinebender"
+    "United Front",
+    "Earth King's Lieutenant",
+    "Suki, Courageous Rescuer",
+    "South Pole Voyager"
    ],
    "enablers": [
-    "Kyoshi Village",
-    "Glider Staff",
-    "Sun-Blessed Peak",
-    "Team Avatar",
-    "White Lotus Hideout"
+    "Great Divide Guide",
+    "Water Tribe Rallier",
+    "Kyoshi Warriors",
+    "Invasion Reinforcements",
+    "Earth Kingdom Protectors"
    ],
    "keyCards": [
-    "Invasion Tactics",
-    "Meteor Sword",
-    "Earth Kingdom Protectors",
-    "Rebellious Captives",
-    "Omashu City",
-    "Wandering Musicians",
-    "Seismic Sense",
-    "Master Piandao",
-    "Jet, Freedom Fighter",
+    "The Legend of Yangchen // Avatar Yangchen",
+    "The Earth King",
+    "Badgermole Cub",
+    "Appa, Steadfast Guardian",
+    "Aang, the Last Airbender",
+    "Earth Kingdom Jailer",
     "Allies at Last",
-    "Badgermole",
-    "Rumble Arena",
-    "Vengeful Villagers",
-    "Kyoshi Warriors"
+    "The Legend of Kyoshi // Avatar Kyoshi"
    ]
   },
   {
    "pair": "UB",
-   "name": "Control",
-   "playstyle": "",
-   "speed": "",
+   "name": "Draw-two control",
+   "playstyle": "Chain Clue tokens to reliably hit your second card each turn, spinning up evasive Spirit tokens and +1/+1 counters while premium black removal and board wipes stall to your bombs. Clue density is the real engine \u2014 this is a grindy card-advantage control deck, not a tempo one.",
+   "speed": "control",
    "signposts": [
     "Hama, the Bloodbender",
     "Foggy Swamp Spirit Keeper"
    ],
    "payoffs": [
-    "Earth Village Ruffians",
-    "Platypus-Bear",
-    "Hog-Monkey",
-    "Zhao, Ruthless Admiral",
-    "Forecasting Fortune Teller",
-    "Corrupt Court Official"
+    "Raven Eagle",
+    "Knowledge Seeker",
+    "Messenger Hawk"
    ],
    "enablers": [
-    "Kyoshi Battle Fan",
-    "Misty Palms Oasis",
-    "North Pole Gates",
-    "Zuko's Conviction",
-    "Ruinous Waterbending"
+    "Forecasting Fortune Teller",
+    "The Mechanist, Aerial Artisan",
+    "Obsessive Pursuit",
+    "Gran-Gran",
+    "Fire Nation Warship",
+    "Serpent's Pass"
    ],
    "keyCards": [
-    "Boiling Rock Prison",
-    "Dai Li Indoctrination",
-    "Airship Engine Room",
-    "Pretending Poxbearers",
-    "Foggy Bottom Swamp",
-    "Katara, Bending Prodigy",
-    "White Lotus Hideout",
-    "Cat-Gator",
-    "Lo and Li, Twin Tutors",
-    "Professor Zei, Anthropologist",
-    "Bender's Waterskin",
-    "Merchant of Many Hats",
-    "Honest Work",
-    "Gran-Gran"
+    "The Rise of Sozin // Fire Lord Sozin",
+    "The Legend of Kuruk // Avatar Kuruk",
+    "The Fire Nation Drill",
+    "Wan Shi Tong, Librarian",
+    "Koh, the Face Stealer",
+    "Azula, Cunning Usurper",
+    "Invasion Submersible",
+    "Day of Black Sun",
+    "Heartless Act"
    ]
   },
   {
    "pair": "UR",
-   "name": "Spells",
-   "playstyle": "",
-   "speed": "",
+   "name": "Lessons tempo",
+   "playstyle": "Chain cheap Lessons to stock the graveyard and feed count-scaling payoffs (Combustion Technique, Ran and Shaw) plus noncreature-spell triggers, while burn and blue card advantage keep the tempo lead. Most of the burn is creature-only, so bombs and evasive beaters do the closing.",
+   "speed": "midrange",
    "signposts": [
     "Professor Zei, Anthropologist",
     "Dragonfly Swarm"
    ],
    "payoffs": [
-    "Guru Pathik",
-    "Mongoose Lizard",
-    "Boar-q-pine",
+    "Combustion Technique",
+    "Ran and Shaw",
+    "The Mechanist, Aerial Artisan",
     "Fire Nation Cadets",
-    "Jeong Jeong, the Deserter",
-    "Uncle Iroh"
+    "First-Time Flyer"
    ],
    "enablers": [
-    "Sun-Blessed Peak",
-    "Energybending",
-    "Combustion Technique",
+    "Gran-Gran",
     "Firebending Lesson",
-    "Accumulate Wisdom"
+    "Iroh's Demonstration",
+    "Accumulate Wisdom",
+    "Abandon Attachments",
+    "It'll Quench Ya!"
    ],
    "keyCards": [
-    "Iroh's Demonstration",
+    "The Legend of Kuruk // Avatar Kuruk",
+    "Wan Shi Tong, Librarian",
+    "The Legend of Roku // Avatar Roku",
+    "Invasion Submersible",
     "The Cave of Two Lovers",
-    "Meditation Pools",
-    "Omashu City",
-    "Fire Nation Attacks",
-    "Boomerang Basics",
-    "Abandon Attachments",
-    "Aang's Journey",
-    "Zuko's Exile",
-    "Lightning Strike",
-    "Cunning Maneuver",
-    "Bender's Waterskin",
-    "Crashing Wave",
-    "Bumi Bash"
+    "Ty Lee, Chi Blocker",
+    "The Unagi of Kyoshi Island",
+    "Lightning Strike"
    ]
   },
   {
    "pair": "UG",
-   "name": "Waterbending",
-   "playstyle": "",
-   "speed": "",
+   "name": "Lessons ramp",
+   "playstyle": "The set's greediest deck: chain green ramp and self-mill through the early turns, then bury them with blue Lessons value and X-spell bombs. Bank three Lessons in your graveyard to switch on Lion-Turtle, Gran-Gran, and Bumi.",
+   "speed": "midrange",
    "signposts": [
-    "Hermitic Herbalist",
-    "Guru Pathik"
+    "Guru Pathik",
+    "Hermitic Herbalist"
    ],
    "payoffs": [
-    "Bumi, King of Three Trials",
-    "Turtle-Duck",
-    "North Pole Patrol",
-    "Unlucky Cabbage Merchant",
-    "Flopsie, Bumi's Buddy",
-    "Saber-Tooth Moose-Lion"
+    "Wan Shi Tong, Librarian",
+    "The Legend of Kyoshi // Avatar Kyoshi",
+    "The Lion-Turtle",
+    "Gran-Gran",
+    "Bumi, King of Three Trials"
    ],
    "enablers": [
-    "Crashing Wave",
-    "True Ancestry",
-    "Kyoshi Island Plaza",
-    "Zuko's Exile",
-    "Barrels of Blasting Jelly"
+    "Great Divide Guide",
+    "Ostrich-Horse",
+    "Aang's Journey",
+    "Accumulate Wisdom",
+    "It'll Quench Ya!"
    ],
    "keyCards": [
-    "Kyoshi Village",
-    "Cycle of Renewal",
-    "Fire Nation Warship",
-    "Aang's Journey",
-    "Rocky Rebuke",
-    "Omashu City",
-    "North Pole Gates",
-    "Sun-Blessed Peak",
-    "Allies at Last",
-    "Airship Engine Room",
-    "Ember Island Production",
-    "Shared Roots",
+    "The Legend of Kuruk // Avatar Kuruk",
+    "The Earth King",
+    "Earthbender Ascension",
+    "Badgermole Cub",
+    "Ty Lee, Chi Blocker",
+    "Invasion Submersible",
     "Lost Days",
-    "Walltop Sentries"
+    "The Unagi of Kyoshi Island"
    ]
   },
   {
    "pair": "BR",
-   "name": "Aggro",
-   "playstyle": "",
-   "speed": "",
+   "name": "Firebending aggro",
+   "playstyle": "Curve out with cheap firebending bodies and Raid attackers, then swing every turn while red burn and black removal blast blockers out of the way. Attack triggers and sacrifice payoffs snowball the board; stay aggressive and prioritize efficient two-drops plus removal over top-end.",
+   "speed": "aggro",
    "signposts": [
-    "Cruel Administrator",
-    "Zhao, Ruthless Admiral"
+    "Zhao, Ruthless Admiral",
+    "Cruel Administrator"
    ],
    "payoffs": [
-    "Mai, Jaded Edge",
-    "Combustion Man",
-    "Lo and Li, Twin Tutors",
-    "Vindictive Warden",
-    "Rough Rhino Cavalry",
-    "Zuko, Exiled Prince"
+    "Ozai, the Phoenix King",
+    "Obsessive Pursuit",
+    "Fire Nation Engineer",
+    "Combustion Man"
    ],
    "enablers": [
-    "Jet's Brainwashing",
     "Boiling Rock Prison",
-    "Solstice Revelations",
-    "War Balloon",
-    "Tundra Tank"
+    "The Cave of Two Lovers",
+    "Fire Nation Attacks",
+    "Treetop Freedom Fighters",
+    "Callous Inspector"
    ],
    "keyCards": [
-    "Yuyan Archers",
-    "Fire Nation Raider",
-    "Wolfbat",
-    "Treetop Freedom Fighters",
-    "Ty Lee, Artful Acrobat",
-    "Fire Nation Attacks",
-    "Mongoose Lizard",
-    "Fire Sages",
-    "Azula Always Lies",
-    "How to Start a Riot",
-    "Jeong Jeong, the Deserter",
-    "Dai Li Indoctrination",
-    "The Cave of Two Lovers",
-    "Earth Village Ruffians"
+    "The Fire Nation Drill",
+    "The Legend of Roku // Avatar Roku",
+    "Raven Eagle",
+    "The Rise of Sozin // Fire Lord Sozin",
+    "Koh, the Face Stealer",
+    "Heartless Act",
+    "Epic Downfall",
+    "Firebending Lesson",
+    "Lightning Strike"
    ]
   },
   {
    "pair": "BG",
-   "name": "Earth value",
-   "playstyle": "",
-   "speed": "",
+   "name": "Earthbend counters",
+   "playstyle": "Grind a +1/+1 counter engine: turn lands into creatures with earthbend, pile counters, and recycle dying bodies into more counters via Beifong's Bounty Hunters and Long Feng. Out-size the board with green fatties while black's deep removal clears the path.",
+   "speed": "midrange",
    "signposts": [
-    "Dai Li Agents",
-    "Long Feng, Grand Secretariat"
+    "Long Feng, Grand Secretariat",
+    "Dai Li Agents"
    ],
    "payoffs": [
-    "Saber-Tooth Moose-Lion",
+    "Beifong's Bounty Hunters",
+    "Toph, the Blind Bandit",
     "Earth Kingdom General",
-    "Buzzard-Wasp Colony",
-    "Raucous Audience",
-    "Earth Rumble Wrestlers",
-    "Flopsie, Bumi's Buddy"
+    "The Boulder, Ready to Rumble",
+    "Badgermole"
    ],
    "enablers": [
-    "Leaves from the Vine",
-    "Omashu City",
-    "Rumble Arena",
-    "Boiling Rock Prison",
-    "Ozai's Cruelty"
+    "Earthbender Ascension",
+    "Badgermole Cub",
+    "Great Divide Guide",
+    "Ba Sing Se",
+    "Obsessive Pursuit"
    ],
    "keyCards": [
-    "Rebellious Captives",
-    "Zuko's Conviction",
+    "The Fire Nation Drill",
+    "The Rise of Sozin // Fire Lord Sozin",
+    "The Earth King",
+    "Koh, the Face Stealer",
+    "Raven Eagle",
+    "Day of Black Sun",
+    "Heartless Act",
     "Epic Downfall",
-    "Toph, the Blind Bandit",
-    "Hog-Monkey",
-    "Fire Nation Warship",
-    "Pillar Launch",
-    "Ostrich-Horse",
-    "The Boulder, Ready to Rumble",
-    "Unlucky Cabbage Merchant",
-    "Turtle-Duck",
-    "Meteor Sword",
-    "Rocky Rebuke",
-    "Walltop Sentries"
+    "The Legend of Kyoshi // Avatar Kyoshi"
    ]
   },
   {
    "pair": "RG",
-   "name": "Aggro",
-   "playstyle": "",
-   "speed": "",
+   "name": "Earthbend stompy",
+   "playstyle": "Curve out on power-4 bodies and earthbend your lands into counters, then turn everything sideways while \"four-power matters\" rewards snowball board and cards. Red removal clears blockers so the big green threats connect.",
+   "speed": "midrange",
    "signposts": [
-    "Bitter Work",
-    "Uncle Iroh"
+    "Uncle Iroh",
+    "Bitter Work"
    ],
    "payoffs": [
+    "The Earth King",
+    "Bumi, Unleashed",
+    "The Boulder, Ready to Rumble",
     "Tiger-Dillo",
-    "Fire Nation Raider",
-    "Combustion Man",
-    "Earth Kingdom Soldier",
-    "Vindictive Warden",
-    "Raucous Audience"
+    "Badgermole"
    ],
    "enablers": [
-    "Boiling Rock Prison",
-    "Earthbending Lesson",
-    "Twin Blades",
-    "Rumble Arena",
-    "War Balloon"
+    "Badgermole Cub",
+    "Earthbender Ascension",
+    "Toph, the Blind Bandit",
+    "Earth Kingdom General",
+    "Raucous Audience",
+    "Great Divide Guide",
+    "The Cave of Two Lovers",
+    "Ostrich-Horse"
    ],
    "keyCards": [
-    "Bumi Bash",
-    "The Cave of Two Lovers",
-    "Origin of Metalbending",
-    "Earth Rumble",
-    "Mongoose Lizard",
-    "The Boulder, Ready to Rumble",
-    "Jet, Freedom Fighter",
-    "Pillar Launch",
-    "Toph, the Blind Bandit",
-    "Ty Lee, Artful Acrobat",
-    "Ostrich-Horse",
-    "Cycle of Renewal",
-    "Zuko's Exile",
-    "Platypus-Bear"
+    "The Legend of Roku // Avatar Roku",
+    "The Legend of Kyoshi // Avatar Kyoshi",
+    "Toph, Hardheaded Teacher",
+    "Iroh's Demonstration",
+    "Combustion Technique",
+    "Firebending Lesson",
+    "Lightning Strike"
    ]
   }
  ],
- "combos": []
+ "combos": [
+  {
+   "cards": [
+    "Foggy Swamp Spirit Keeper",
+    "Forecasting Fortune Teller"
+   ],
+   "note": "The Clue's extra draw each turn trips Foggy Swamp's second-draw trigger for a Spirit token"
+  },
+  {
+   "cards": [
+    "Knowledge Seeker",
+    "Forecasting Fortune Teller"
+   ],
+   "note": "Cracking the Clue hits your second draw and grows Knowledge Seeker"
+  },
+  {
+   "cards": [
+    "Messenger Hawk",
+    "Foggy Swamp Spirit Keeper"
+   ],
+   "note": "Messenger Hawk's Clue and second-draw bonus both feed the draw-two engine"
+  },
+  {
+   "cards": [
+    "Teo, Spirited Glider",
+    "Momo, Friendly Flier"
+   ],
+   "note": "Momo discounts and pumps your fliers while Teo loots whenever they attack"
+  },
+  {
+   "cards": [
+    "United Front",
+    "Suki, Kyoshi Warrior"
+   ],
+   "note": "United Front's token flood spikes Suki's power and each attack adds another attacker"
+  },
+  {
+   "cards": [
+    "White Lotus Reinforcements",
+    "United Front"
+   ],
+   "note": "The anthem turns United Front's 1/1 Allies into a real board"
+  },
+  {
+   "cards": [
+    "Avatar Enthusiasts",
+    "United Front"
+   ],
+   "note": "Every Ally token United Front makes stacks a counter on Avatar Enthusiasts"
+  },
+  {
+   "cards": [
+    "Sokka, Lateral Strategist",
+    "United Front"
+   ],
+   "note": "A wide board keeps Sokka's attack-draw online every combat"
+  },
+  {
+   "cards": [
+    "Toph, the Blind Bandit",
+    "Ba Sing Se"
+   ],
+   "note": "Every land the two earthbend piles counters that set Toph's power"
+  },
+  {
+   "cards": [
+    "Dai Li Agents",
+    "Earthbender Ascension"
+   ],
+   "note": "Dai Li's double earthbend triggers Ascension's landfall and grows the counter-creatures its attack drains from"
+  },
+  {
+   "cards": [
+    "Combustion Technique",
+    "Gran-Gran"
+   ],
+   "note": "Each Lesson in the yard grows Combustion Technique and switches on Gran-Gran's discount"
+  },
+  {
+   "cards": [
+    "Ran and Shaw",
+    "Combustion Technique"
+   ],
+   "note": "Casting Lessons like Combustion Technique fills the yard so Ran and Shaw copies itself on entry"
+  },
+  {
+   "cards": [
+    "The Lion-Turtle",
+    "Hermitic Herbalist"
+   ],
+   "note": "Herbalist pays for Lessons that fill the yard and free the Lion-Turtle to swing"
+  },
+  {
+   "cards": [
+    "Bumi, King of Three Trials",
+    "Hermitic Herbalist"
+   ],
+   "note": "Every Lesson Herbalist casts widens Bumi's enters-the-battlefield choices"
+  },
+  {
+   "cards": [
+    "Appa, Steadfast Guardian",
+    "Airbending Lesson"
+   ],
+   "note": "Recasting the airbent permanent triggers Appa's cast-from-exile Ally token"
+  },
+  {
+   "cards": [
+    "Hei Bai, Spirit of Balance",
+    "Tolls of War"
+   ],
+   "note": "Hei Bai's attack sacrifice feeds a Tolls of War Ally token and grows Hei Bai"
+  },
+  {
+   "cards": [
+    "Tolls of War",
+    "Obsessive Pursuit"
+   ],
+   "note": "Sacrificing a Clue each turn spawns a Tolls Ally and stacks Obsessive Pursuit's attack counters"
+  },
+  {
+   "cards": [
+    "Boiling Rock Rioter",
+    "Ozai, the Phoenix King"
+   ],
+   "note": "Stacked firebending attack-mana keeps Ozai above the six-mana line for flying and indestructible"
+  },
+  {
+   "cards": [
+    "Sun Warriors",
+    "United Front"
+   ],
+   "note": "A board full of United Front Allies turns Sun Warriors' attack into a mountain of red mana"
+  },
+  {
+   "cards": [
+    "Jet, Freedom Fighter",
+    "United Front"
+   ],
+   "note": "A wide Ally board turns Jet's entry into a huge burst of damage"
+  },
+  {
+   "cards": [
+    "Appa, Loyal Sky Bison",
+    "Earth Kingdom Jailer"
+   ],
+   "note": "Appa's attack airbend re-blinks Jailer for a {2} recast, re-exiling the best enemy permanent each turn"
+  },
+  {
+   "cards": [
+    "Katara, Water Tribe's Hope",
+    "Gather the White Lotus"
+   ],
+   "note": "the Ally token flood taps to pay Katara's waterbend {X}, turning every 1/1 into an X/X"
+  },
+  {
+   "cards": [
+    "Gran-Gran",
+    "Katara, Bending Prodigy"
+   ],
+   "note": "tapping Gran-Gran to pay Katara's waterbend {6} draw bolts a free loot onto every activation"
+  },
+  {
+   "cards": [
+    "Messenger Hawk",
+    "Raven Eagle"
+   ],
+   "note": "Hawk's Clue cracks for the second draw each turn that triggers Raven Eagle's drain"
+  },
+  {
+   "cards": [
+    "Abandon Attachments",
+    "Combustion Technique"
+   ],
+   "note": "the loot Lesson stocks the graveyard with Lessons that scale Combustion Technique's exile-burn"
+  },
+  {
+   "cards": [
+    "Firebending Lesson",
+    "Fire Nation Cadets"
+   ],
+   "note": "one cheap Lesson in the graveyard permanently switches on Cadets' firebending 2"
+  },
+  {
+   "cards": [
+    "The Mechanist, Aerial Artisan",
+    "Cunning Maneuver"
+   ],
+   "note": "the trick makes a Clue off the Mechanist's trigger that he then animates into a 3/1 flier"
+  },
+  {
+   "cards": [
+    "Guru Pathik",
+    "Accumulate Wisdom"
+   ],
+   "note": "each cheap Lesson cast drops a Pathik counter and fuels Wisdom's three-Lesson draw-three upgrade"
+  },
+  {
+   "cards": [
+    "Tolls of War",
+    "June, Bounty Hunter"
+   ],
+   "note": "every June sacrifice-into-Clue (or Clue crack) on your turn also nets an Ally token from Tolls"
+  },
+  {
+   "cards": [
+    "Pretending Poxbearers",
+    "Hei Bai, Spirit of Balance"
+   ],
+   "note": "sacrificing Poxbearers to Hei Bai banks two +1/+1 counters while the body replaces itself with an Ally token"
+  },
+  {
+   "cards": [
+    "Earth King's Lieutenant",
+    "Kyoshi Warriors"
+   ],
+   "note": "Warriors' two Ally arrivals (body plus token) put two counters on the Lieutenant"
+  },
+  {
+   "cards": [
+    "Wartime Protestors",
+    "Treetop Freedom Fighters"
+   ],
+   "note": "Freedom Fighters plus its Ally token trigger Protestors twice for instant hasty counters"
+  },
+  {
+   "cards": [
+    "Azula, On the Hunt",
+    "Zhao, Ruthless Admiral"
+   ],
+   "note": "cracking Azula's attack Clue with her own firebending mana triggers Zhao's team-wide +1/+0 mid-combat"
+  },
+  {
+   "cards": [
+    "Deadly Precision",
+    "Beifong's Bounty Hunters"
+   ],
+   "note": "sacrificing a creature to pay Precision has Beifong's earthbend for that creature's full power"
+  },
+  {
+   "cards": [
+    "Fatal Fissure",
+    "Toph, the Blind Bandit"
+   ],
+   "note": "the death-trigger earthbend 4 puts four land counters that directly grow Toph's power"
+  },
+  {
+   "cards": [
+    "Long Feng, Grand Secretariat",
+    "Cycle of Renewal"
+   ],
+   "note": "the land sacrificed to Cycle triggers Long Feng, converting double ramp into a free +1/+1 counter"
+  },
+  {
+   "cards": [
+    "The Earth King",
+    "Bitter Work"
+   ],
+   "note": "the instant 4/4 Bear turns on Bitter Work's draw-per-attack with a power-4 creature"
+  },
+  {
+   "cards": [
+    "Toph, Hardheaded Teacher",
+    "Earthbending Lesson"
+   ],
+   "note": "casting the Lesson earthbends with a bonus counter via Toph on top of the Lesson's own earthbend 4"
+  }
+ ]
 }
