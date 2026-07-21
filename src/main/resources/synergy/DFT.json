@@ -1,440 +1,517 @@
 {
  "set": "DFT",
  "setName": "Aetherdrift",
- "generated": "2026-07-04",
+ "generated": "2026-07-20",
  "mechanics": [
   {
-   "name": "Start your engines!",
-   "summary": ""
+   "name": "Start your engines! / Speed",
+   "summary": "Your speed starts at 1 and ticks up once each of your turns that an opponent loses life, to a max of 4. 40 cards start your engines and 34 have Max speed abilities that turn on (or upgrade) once you hit speed 4 \u2014 rewarding a fast, damage-every-turn clock."
   },
   {
-   "name": "Max speed",
-   "summary": ""
-  },
-  {
-   "name": "Cycling",
-   "summary": ""
+   "name": "Vehicles + Mounts",
+   "summary": "41 Vehicles and 14 Mounts. Crew taps creatures to animate Vehicles; Saddle taps creatures (total power N) to power up a Mount for the turn. Both want a wide, expendable board and turn spare bodies into evasive damage."
   },
   {
    "name": "Exhaust",
-   "summary": ""
+   "summary": "Exhaust abilities can each be activated only once ever; several payoffs trigger 'whenever you activate an exhaust ability.' A grindy value axis \u2014 get one big activation, then reward the click."
   },
   {
-   "name": "Saddle",
-   "summary": ""
+   "name": "Cycling",
+   "summary": "28 cards with Cycling (including cycling lands): pay to discard for a card, smoothing draws and feeding graveyard/discard payoffs while never being a dead card."
   }
  ],
  "archetypes": [
   {
    "pair": "WU",
-   "name": "Vehicles tempo",
-   "playstyle": "",
-   "speed": "",
+   "name": "Artifact affinity value",
+   "playstyle": "Flood the board with cheap artifacts and Vehicles, then cash them in: affinity spells come down nearly free while per-artifact scalers snowball the count. Removal and card advantage grind the midgame \u2014 a high-ceiling engine that needs real artifact density to pay off.",
+   "speed": "midrange",
    "signposts": [
     "Guidelight Pathmaker",
     "Voyage Home"
    ],
    "payoffs": [
-    "Interface Ace",
-    "Voyager Quickwelder",
+    "Mendicant Core, Guidelight",
     "Guidelight Synergist",
     "Memory Guardian",
-    "Ticket Tortoise",
-    "Aetherjacket"
+    "Salvation Engine"
    ],
    "enablers": [
-    "Wind-Scarred Crag",
-    "Alacrian Armory",
-    "Starting Column",
-    "Guidelight Matrix",
-    "Country Roads"
+    "Voyager Quickwelder",
+    "Transit Mage",
+    "Broadcast Rambler",
+    "Thopter Fabricator",
+    "Starting Column"
    ],
    "keyCards": [
-    "Aether Syphon",
-    "Broadcast Rambler",
-    "Spotcycle Scouter",
-    "Glitch Ghost Surveyor",
-    "Ride's End",
-    "Detention Chariot",
-    "Night Market",
-    "Tune Up",
-    "Collision Course",
-    "Marshals' Pathcruiser",
-    "Hulldrifter",
-    "Sundial, Dawn Tyrant",
-    "Gallant Strike",
-    "Diversion Unit"
+    "Mu Yanling, Wind Rider",
+    "Riptide Gearhulk",
+    "Perilous Snare",
+    "The Aetherspark",
+    "Possession Engine",
+    "Gloryheath Lynx",
+    "Mindspring Merfolk",
+    "Stock Up",
+    "Spikeshell Harrier"
    ]
   },
   {
    "pair": "WB",
-   "name": "Midrange",
-   "playstyle": "",
-   "speed": "",
+   "name": "Max-speed drain",
+   "playstyle": "Flood a wide Zombie board, then turn every dying body into drain once speed hits max. Cheap sacrifice fodder, premium removal, and graveyard recursion out-attrition the removal-light field into a slow bleed-out.",
+   "speed": "midrange",
    "signposts": [
-    "Embalmed Ascendant",
-    "Dune Drifter"
+    "Dune Drifter",
+    "Embalmed Ascendant"
    ],
    "payoffs": [
-    "Nesting Bot",
-    "Pride of the Road",
-    "Leonin Surveyor",
-    "Swiftwing Assailant",
-    "Streaking Oilgorger",
-    "Walking Sarcophagus"
+    "The Speed Demon",
+    "Zahur, Glory's Past",
+    "Pactdoll Terror",
+    "Cursecloth Wrappings",
+    "Risen Necroregent"
    ],
    "enablers": [
-    "Amonkhet Raceway",
-    "Lightwheel Enhancements",
-    "Bloodfell Caves",
-    "Spotcycle Scouter",
-    "Wind-Scarred Crag"
+    "Engine Rat",
+    "Nesting Bot",
+    "Gas Guzzler",
+    "Carrion Cruiser",
+    "Grim Bauble",
+    "Hour of Victory"
    ],
    "keyCards": [
-    "Avishkar Raceway",
-    "Alacrian Armory",
-    "Risky Shortcut",
-    "Starting Column",
-    "Air Response Unit",
-    "Gallant Strike",
-    "Wickerfolk Indomitable",
+    "Perilous Snare",
+    "The Aetherspark",
+    "Gloryheath Lynx",
+    "Guardian Sunmare",
     "Wreckage Wickerfolk",
-    "Detention Chariot",
-    "Broadcast Rambler",
-    "Unswerving Sloth",
-    "Hour of Victory",
-    "Lotusguard Disciple",
-    "Guidelight Synergist"
+    "Gonti, Night Minister",
+    "Gallant Strike",
+    "Ride's End"
    ]
   },
   {
    "pair": "WR",
-   "name": "Max speed aggro",
-   "playstyle": "",
-   "speed": "",
+   "name": "Speedway go-wide",
+   "playstyle": "Curve out cheap Pilots and Goblins, then crew Vehicles and saddle Mounts to convert spare bodies into evasive damage every turn. Chip in each combat to tick up your speed and cash in the max-speed payoffs before the grind sets in.",
+   "speed": "aggro",
    "signposts": [
-    "Cloudspire Skycycle",
-    "Cloudspire Coordinator"
+    "Cloudspire Coordinator",
+    "Cloudspire Skycycle"
    ],
    "payoffs": [
-    "Reckless Velocitaur",
-    "Brightfield Glider",
     "Cloudspire Captain",
-    "Dracosaur Auxiliary",
-    "Unswerving Sloth",
-    "Gloryheath Lynx"
+    "Kolodin, Triumph Caster",
+    "Road Rage",
+    "Guardian Sunmare"
    ],
    "enablers": [
-    "Spire Mechcycle",
-    "Skybox Ferry",
-    "Air Response Unit",
-    "Marshals' Pathcruiser",
-    "Burner Rocket"
+    "Voyager Glidecar",
+    "Nesting Bot",
+    "Canyon Vaulter",
+    "Basri, Tomorrow's Champion",
+    "Brightfield Glider",
+    "Greasewrench Goblin"
    ],
    "keyCards": [
-    "Rocky Roads",
-    "Road Rage",
-    "Rover Blades",
-    "Daring Mechanic",
-    "Lotusguard Disciple",
-    "Endrider Spikespitter",
-    "Wind-Scarred Crag",
-    "Canyon Vaulter",
-    "Brightfield Mustang",
-    "Push the Limit",
-    "Pedal to the Metal",
-    "Gilded Ghoda",
-    "Sundial, Dawn Tyrant",
-    "Lightshield Parry"
+    "Howlsquad Heavy",
+    "The Aetherspark",
+    "Perilous Snare",
+    "Draconautics Engineer",
+    "Boommobile",
+    "Gloryheath Lynx",
+    "Chandra, Spark Hunter",
+    "Burnout Bashtronaut",
+    "Hazoret, Godseeker"
    ]
   },
   {
    "pair": "WG",
-   "name": "Vehicles",
-   "playstyle": "",
-   "speed": "",
+   "name": "Saddle-up counters",
+   "playstyle": "Chain cheap bodies into saddled Mounts and crewed Vehicles, then snowball +1/+1 counters \u2014 Caradora doubles them \u2014 and swing with ever-growing, evasive threats. White removal buys the time to out-size the midrange race.",
+   "speed": "midrange",
    "signposts": [
     "Lagorin, Soul of Alacria",
     "Veteran Beastrider"
    ],
    "payoffs": [
-    "Canyon Vaulter",
-    "Cloudspire Captain",
-    "Daring Mechanic",
-    "Brightfield Glider",
-    "Lotusguard Disciple",
-    "Alacrian Jaguar"
+    "Caradora, Heart of Alacria",
+    "Guardian Sunmare",
+    "Autarch Mammoth",
+    "Bulwark Ox"
    ],
    "enablers": [
-    "Marshals' Pathcruiser",
-    "Skybox Ferry",
-    "Silken Strength",
-    "Roadside Assistance",
-    "Lightshield Parry"
+    "Gloryheath Lynx",
+    "District Mascot",
+    "Voyager Glidecar",
+    "Canyon Vaulter",
+    "Stampeding Scurryfoot"
    ],
    "keyCards": [
-    "Lightwheel Enhancements",
-    "Amonkhet Raceway",
-    "Gloryheath Lynx",
-    "Unswerving Sloth",
-    "Bestow Greatness",
-    "Wind-Scarred Crag",
-    "Collision Course",
+    "Lumbering Worldwagon",
+    "Agonasaur Rex",
+    "Brightglass Gearhulk",
+    "Perilous Snare",
+    "Basri, Tomorrow's Champion",
     "Ride's End",
-    "Brightfield Mustang",
-    "Rise from the Wreck",
-    "Air Response Unit",
-    "Country Roads",
-    "Gallant Strike",
-    "Leonin Surveyor"
+    "Gallant Strike"
    ]
   },
   {
    "pair": "UB",
-   "name": "Exhaust control",
-   "playstyle": "",
-   "speed": "",
+   "name": "Artifact drain",
+   "playstyle": "Flood the board with cheap artifacts and Thopter tokens, then convert them into repeated life swings with Pactdoll Terror and Haunt the Network. Grind behind removal, card advantage, and lifelink while the incremental drain closes the game.",
+   "speed": "midrange",
    "signposts": [
     "Haunt the Network",
     "Haunted Hellride"
    ],
    "payoffs": [
-    "Ticket Tortoise",
-    "Camera Launcher",
-    "Slick Imitator",
-    "Aetherjacket",
-    "Walking Sarcophagus",
-    "Memory Guardian"
+    "Pactdoll Terror",
+    "Oildeep Gearhulk",
+    "Engine Rat"
    ],
    "enablers": [
-    "Guidelight Matrix",
-    "Bloodfell Caves",
-    "Aether Syphon",
-    "Starting Column",
-    "Thornwood Falls"
+    "Thopter Fabricator",
+    "Nimble Thopterist",
+    "Transit Mage",
+    "Wreckage Wickerfolk",
+    "Grim Bauble"
    ],
    "keyCards": [
-    "Pactdoll Terror",
-    "Avishkar Raceway",
-    "Transit Mage",
-    "Guidelight Optimizer",
-    "Tranquil Cove",
-    "Trade the Helm",
-    "Gearseeker Serpent",
-    "Caelorna, Coral Tyrant",
-    "Wreck Remover",
-    "Hellish Sideswipe",
-    "Hulldrifter",
-    "Scoured Barrens",
-    "Ripclaw Wrangler",
-    "Midnight Mangler"
+    "Mu Yanling, Wind Rider",
+    "The Aetherspark",
+    "The Speed Demon",
+    "Possession Engine",
+    "Riverchurn Monument",
+    "Mindspring Merfolk",
+    "Stock Up",
+    "Spikeshell Harrier"
    ]
   },
   {
    "pair": "UR",
-   "name": "Artifacts/energy",
-   "playstyle": "",
-   "speed": "",
+   "name": "Loot-and-swing discard",
+   "playstyle": "Loot and cycle every turn to pile +1/+1 counters onto Marauding Mako and Scrounging Skyray and fuel Captain Howler's alpha strikes; the card filtering is the engine, so prize discard outlets over raw tempo. Rummage away dead lands and cyclers into pressure while your rares carry the top end.",
+   "speed": "midrange",
    "signposts": [
     "Boosted Sloop",
     "Broadside Barrage"
    ],
    "payoffs": [
-    "Dynamite Diver",
+    "Captain Howler, Sea Scourge",
     "Scrounging Skyray",
     "Marauding Mako",
-    "Gastal Blockbuster",
-    "Magmakin Artillerist",
-    "Pacesetter Paragon"
+    "Monument to Endurance"
    ],
    "enablers": [
-    "Push the Limit",
-    "Skybox Ferry",
+    "Thunderhead Gunner",
+    "Greasewrench Goblin",
+    "Keen Buccaneer",
     "Skycrash",
-    "Clamorous Ironclad",
-    "Rocky Roads"
+    "Fearless Swashbuckler"
    ],
    "keyCards": [
-    "Spell Pierce",
-    "Stall Out",
-    "Tyrox, Saurid Tyrant",
-    "Kickoff Celebrations",
-    "Wreck Remover",
-    "Thunderhead Gunner",
-    "Gilded Ghoda",
-    "Fuel the Flames",
-    "Greasewrench Goblin",
-    "Spire Mechcycle",
-    "Endrider Catalyzer",
-    "Rugged Highlands",
-    "Avishkar Raceway",
-    "Howler's Heavy"
+    "Mu Yanling, Wind Rider",
+    "Draconautics Engineer",
+    "Howlsquad Heavy",
+    "Thopter Fabricator",
+    "Chandra, Spark Hunter",
+    "Possession Engine",
+    "Mindspring Merfolk",
+    "Burnout Bashtronaut"
    ]
   },
   {
    "pair": "UG",
-   "name": "Energy ramp",
-   "playstyle": "",
-   "speed": "",
+   "name": "Exhaust ramp",
+   "playstyle": "Ramp early with dorks and land-fetch, then dump mana into pricey one-time Exhaust abilities that snowball +1/+1 counters and refill your hand. Reuse Exhausts with Elvish Refueler and close with a Sita Varma counter-transfer swing or an over-the-top bomb.",
+   "speed": "midrange",
    "signposts": [
-    "Skyserpent Seeker",
-    "Rangers' Aetherhive"
+    "Rangers' Aetherhive",
+    "Skyserpent Seeker"
    ],
    "payoffs": [
-    "Pit Automaton",
-    "Sabotage Strategist",
-    "Elvish Refueler",
-    "Spikeshell Harrier",
-    "Skystreak Engineer",
-    "Stampeding Scurryfoot"
+    "Sab-Sunen, Luxa Embodied",
+    "Sita Varma, Masked Racer",
+    "Rangers' Refueler",
+    "Afterburner Expert",
+    "Mindspring Merfolk"
    ],
    "enablers": [
-    "Spell Pierce",
-    "Rugged Highlands",
-    "Rangers' Refueler",
-    "Trip Up",
-    "Point the Way"
+    "Elvish Refueler",
+    "Molt Tender",
+    "Stock Up",
+    "Veloheart Bike",
+    "Transit Mage"
    ],
    "keyCards": [
-    "Rover Blades",
-    "Defend the Rider",
-    "Scrap Compactor",
-    "Flood the Engine",
-    "Blossoming Sands",
-    "Spectral Interference",
-    "Avishkar Raceway",
-    "Bounce Off",
-    "Night Market",
-    "Stall Out",
-    "Broken Wings",
-    "Migrating Ketradon",
-    "Tranquil Cove",
-    "Keen Buccaneer"
+    "Lumbering Worldwagon",
+    "Mu Yanling, Wind Rider",
+    "March of the World Ooze",
+    "Agonasaur Rex",
+    "The Aetherspark",
+    "Riverchurn Monument",
+    "Possession Engine",
+    "Spikeshell Harrier"
    ]
   },
   {
    "pair": "BR",
-   "name": "Sacrifice",
-   "playstyle": "",
-   "speed": "",
+   "name": "Max-speed aggro",
+   "playstyle": "Deploy a cheap aggressive board and chip every turn to sprint to max speed, flipping on double strike, doubled damage, and speed-fueled card draw. Black removal and drain clear blockers so the clock never stalls.",
+   "speed": "aggro",
    "signposts": [
-    "Gastal Thrillseeker",
-    "Apocalypse Runner"
+    "Apocalypse Runner",
+    "Gastal Thrillseeker"
    ],
    "payoffs": [
-    "Endrider Spikespitter",
-    "Endrider Catalyzer",
-    "Goblin Surveyor",
-    "Dynamite Diver",
-    "Greasewrench Goblin",
-    "Risen Necroregent"
+    "Far Fortune, End Boss",
+    "Burnout Bashtronaut",
+    "Hazoret, Godseeker",
+    "The Speed Demon",
+    "Gastal Raider"
    ],
    "enablers": [
-    "Outpace Oblivion",
-    "Wind-Scarred Crag",
-    "Hour of Victory",
-    "Burner Rocket",
-    "Crash and Burn"
+    "Draconautics Engineer",
+    "Engine Rat",
+    "Pactdoll Terror",
+    "Endrider Catalyzer",
+    "Grim Bauble"
    ],
    "keyCards": [
-    "Adrenaline Jockey",
-    "Prowcatcher Specialist",
-    "Streaking Oilgorger",
-    "Tyrox, Saurid Tyrant",
-    "Gastal Blockbuster",
-    "Pacesetter Paragon",
-    "Gilded Ghoda",
-    "Lightning Strike",
-    "Grim Javelineer",
+    "Howlsquad Heavy",
+    "Greasewrench Goblin",
+    "Quag Feast",
+    "Coalstoke Gearhulk",
     "Road Rage",
-    "Mutant Surveyor",
-    "Dracosaur Auxiliary",
-    "Walking Sarcophagus",
-    "Risky Shortcut"
+    "Wreckage Wickerfolk",
+    "Spin Out",
+    "Lightning Strike"
    ]
   },
   {
    "pair": "BG",
-   "name": "Exhaust value",
-   "playstyle": "",
-   "speed": "",
+   "name": "Graveyard reanimator",
+   "playstyle": "Self-mill and surveil to stock the yard, then reanimate creatures and Vehicles for grindy value and life drain. Lean on efficient black removal to survive into a late game where a single returned bomb closes it out.",
+   "speed": "midrange",
    "signposts": [
-    "Thundering Broodwagon",
-    "Broodheart Engine"
+    "Broodheart Engine",
+    "Thundering Broodwagon"
    ],
    "payoffs": [
-    "Shefet Archfiend",
-    "Chitin Gravestalker",
-    "Pothole Mole",
-    "Ooze Patrol",
-    "Molt Tender",
-    "Hazard of the Dunes"
+    "Aatchik, Emerald Radian",
+    "Cursecloth Wrappings",
+    "Back on Track",
+    "Ooze Patrol"
    ],
    "enablers": [
-    "Back on Track",
-    "Syphon Fuel",
-    "Rover Blades",
-    "Blossoming Sands",
-    "Bloodfell Caves"
+    "Molt Tender",
+    "Pothole Mole",
+    "Dredger's Insight",
+    "Grim Bauble",
+    "Carrion Cruiser"
    ],
    "keyCards": [
-    "Spin Out",
-    "Veloheart Bike",
-    "Intimidation Tactics",
-    "Dismal Backwater",
-    "Plow Through",
-    "Kalakscion, Hunger Tyrant",
-    "Foul Roads",
-    "Loxodon Surveyor",
-    "Migrating Ketradon",
-    "Locust Spray",
-    "Dredger's Insight",
-    "Autarch Mammoth",
-    "Alacrian Jaguar",
-    "Earthrumbler"
+    "Lumbering Worldwagon",
+    "Agonasaur Rex",
+    "Debris Beetle",
+    "The Aetherspark",
+    "The Speed Demon",
+    "March of the World Ooze",
+    "Quag Feast",
+    "Gonti, Night Minister",
+    "Spin Out"
    ]
   },
   {
    "pair": "RG",
-   "name": "Vehicles aggro",
-   "playstyle": "",
-   "speed": "",
+   "name": "Exhaust midrange",
+   "playstyle": "Curve out with green beaters, then sink Treasure and floated mana into repeatable exhaust activations for +1/+1 counters, haste, and card advantage. Grind a removal-light format with recurring value engines into game-ending bombs.",
+   "speed": "midrange",
    "signposts": [
     "Boom Scholar",
     "Rocketeer Boostbuggy"
    ],
    "payoffs": [
-    "Adrenaline Jockey",
-    "Pacesetter Paragon",
-    "Prowcatcher Specialist",
-    "Dracosaur Auxiliary",
-    "Reckless Velocitaur",
-    "Tyrox, Saurid Tyrant"
+    "Afterburner Expert",
+    "Draconautics Engineer",
+    "Boommobile",
+    "Pyrewood Gearhulk",
+    "Chandra, Spark Hunter"
    ],
    "enablers": [
-    "Skybox Ferry",
-    "Pedal to the Metal",
-    "Rover Blades",
-    "Road Rage",
-    "Crash and Burn"
+    "Redshift, Rocketeer Chief",
+    "Elvish Refueler",
+    "Greasewrench Goblin",
+    "Molt Tender"
    ],
    "keyCards": [
-    "Lightning Strike",
-    "Outpace Oblivion",
-    "Burner Rocket",
-    "Spire Mechcycle",
-    "Fuel the Flames",
-    "Gastal Blockbuster",
-    "Wind-Scarred Crag",
-    "Skycrash",
-    "Gilded Ghoda",
-    "Scrap Compactor",
-    "Point the Way",
-    "Bestow Greatness",
-    "Jibbirik Omnivore",
-    "Amonkhet Raceway"
+    "Lumbering Worldwagon",
+    "Agonasaur Rex",
+    "March of the World Ooze",
+    "Howlsquad Heavy",
+    "Burnout Bashtronaut",
+    "Greenbelt Guardian",
+    "Stampeding Scurryfoot",
+    "Road Rage"
    ]
   }
  ],
- "combos": []
+ "combos": [
+  {
+   "cards": [
+    "Caradora, Heart of Alacria",
+    "Lagorin, Soul of Alacria"
+   ],
+   "note": "Caradora tutors up Lagorin and adds one to every +1/+1 counter Lagorin's saddled attack hands out"
+  },
+  {
+   "cards": [
+    "Lagorin, Soul of Alacria",
+    "Autarch Mammoth"
+   ],
+   "note": "Lagorin's flying saddled attack drops counters on the Mammoth, which also spits out a 3/3 whenever it attacks saddled"
+  },
+  {
+   "cards": [
+    "Caradora, Heart of Alacria",
+    "Autarch Mammoth"
+   ],
+   "note": "Caradora fetches the Mammoth and turbo-charges its counter output"
+  },
+  {
+   "cards": [
+    "Veteran Beastrider",
+    "Autarch Mammoth"
+   ],
+   "note": "Beastrider's end-step untap frees the creatures you tapped to saddle the Mammoth to block or crew again"
+  },
+  {
+   "cards": [
+    "Cloudspire Coordinator",
+    "Kolodin, Triumph Caster"
+   ],
+   "note": "Kolodin's enters-saddled/crewed Mounts and Vehicles count for a flood of Coordinator Pilot tokens"
+  },
+  {
+   "cards": [
+    "Cloudspire Captain",
+    "Cloudspire Coordinator"
+   ],
+   "note": "The Captain lets the Coordinator's 1/1 Pilots crew and saddle above their weight while anthem-pumping the fleet"
+  },
+  {
+   "cards": [
+    "Thopter Fabricator",
+    "Haunt the Network"
+   ],
+   "note": "A wide Thopter board makes Haunt the Network's artifact-count drain lethal, and it adds two more Thopters"
+  },
+  {
+   "cards": [
+    "Pactdoll Terror",
+    "Nimble Thopterist"
+   ],
+   "note": "Each Thopter token entering pings the opponent for one and gains you a life through Pactdoll Terror"
+  },
+  {
+   "cards": [
+    "Pactdoll Terror",
+    "Thopter Fabricator"
+   ],
+   "note": "Every Thopter Fabricator token is another Pactdoll Terror drain trigger"
+  },
+  {
+   "cards": [
+    "Mendicant Core, Guidelight",
+    "Guidelight Synergist"
+   ],
+   "note": "Both scale straight off artifact count, growing huge in a dense artifact deck"
+  },
+  {
+   "cards": [
+    "Captain Howler, Sea Scourge",
+    "Marauding Mako"
+   ],
+   "note": "One discard both pumps Captain Howler's target and stacks counters on the Mako"
+  },
+  {
+   "cards": [
+    "Boosted Sloop",
+    "Scrounging Skyray"
+   ],
+   "note": "The Sloop's attack-step loot feeds a counter onto the Skyray every combat"
+  },
+  {
+   "cards": [
+    "Fearless Swashbuckler",
+    "Marauding Mako"
+   ],
+   "note": "Swashbuckler's attack loot dumps two cards to spike the Mako with counters"
+  },
+  {
+   "cards": [
+    "Elvish Refueler",
+    "Afterburner Expert"
+   ],
+   "note": "Elvish Refueler resets exhaust abilities so Afterburner Expert can fire its counter pump twice in a turn"
+  },
+  {
+   "cards": [
+    "Elvish Refueler",
+    "Sita Varma, Masked Racer"
+   ],
+   "note": "Refueler lets Sita Varma exhaust twice, doubling the counters and the team-wide power swing"
+  },
+  {
+   "cards": [
+    "Sita Varma, Masked Racer",
+    "Rangers' Refueler"
+   ],
+   "note": "Every exhaust activation draws a card off Rangers' Refueler while Sita Varma piles on counters"
+  },
+  {
+   "cards": [
+    "Boom Scholar",
+    "Rocketeer Boostbuggy"
+   ],
+   "note": "Boom Scholar makes the Boostbuggy's exhaust cheaper, and its Treasure helps pay the rest"
+  },
+  {
+   "cards": [
+    "Gastal Thrillseeker",
+    "Far Fortune, End Boss"
+   ],
+   "note": "Thrillseeker's enter-damage and Far Fortune's attack pings both tick your speed toward max every turn"
+  },
+  {
+   "cards": [
+    "Embalmed Ascendant",
+    "Gas Guzzler"
+   ],
+   "note": "The Zombie tokens feed Gas Guzzler's max-speed sacrifice drain while both race speed to 4"
+  },
+  {
+   "cards": [
+    "Dune Drifter",
+    "Nesting Bot"
+   ],
+   "note": "Dune Drifter reanimates a dead body \u2014 the Servo-making Nesting Bot is happy to come back and die again"
+  },
+  {
+   "cards": [
+    "Boom Scholar",
+    "Afterburner Expert"
+   ],
+   "note": "Boom Scholar makes Afterburner Expert's exhaust cheaper, and firing it returns the Expert from the graveyard for another body"
+  },
+  {
+   "cards": [
+    "Kolodin, Triumph Caster",
+    "Voyager Glidecar"
+   ],
+   "note": "Kolodin turns the Glidecar into a hasty artifact creature the moment it enters"
+  }
+ ]
 }
