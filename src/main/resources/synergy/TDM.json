@@ -1,310 +1,394 @@
 {
  "set": "TDM",
  "setName": "Tarkir: Dragonstorm",
- "generated": "2026-07-04",
+ "generated": "2026-07-31",
  "mechanics": [
   {
-   "name": "Mobilize",
-   "summary": ""
-  },
-  {
-   "name": "Renew",
-   "summary": ""
-  },
-  {
    "name": "Endure",
-   "summary": ""
+   "summary": "When a creature endures N, choose either N +1/+1 counters on it or an N/N white Spirit token; if the creature is gone when the ability resolves, you still get the token. This lets Abzan pivot between building tall and going wide."
   },
   {
    "name": "Flurry",
-   "summary": ""
+   "summary": "Flurry triggers when you cast your second spell each turn, regardless of what happened to the first spell, and only once per turn. Cheap spells, mana boosts, and recastable effects turn the trigger into Jeskai tempo and pressure."
+  },
+  {
+   "name": "Renew",
+   "summary": "Renew abilities exile their card from your graveyard as part of a sorcery-speed activation; every renew effect puts counters on a creature, often +1/+1 or keyword counters, and some add another effect. Self-mill turns fallen creatures into Sultai value while cards leaving the graveyard feed overlap payoffs."
+  },
+  {
+   "name": "Mobilize",
+   "summary": "When a creature with mobilize N attacks, it creates N tapped and attacking 1/1 red Warrior tokens, then sacrifices them at the beginning of the next end step. Mardu exploits the temporary bodies with go-wide bonuses, sacrifice outlets, and death triggers."
   },
   {
    "name": "Harmonize",
-   "summary": ""
+   "summary": "You may cast a harmonize spell from your graveyard for its harmonize cost, optionally tapping one untapped creature you control to reduce only the generic portion by that creature's power; it is exiled whenever it leaves the stack. Temur turns big creatures into discounted graveyard spells, while the cast also fuels flurry and leaves-the-graveyard triggers."
+  },
+  {
+   "name": "Omens + Behold",
+   "summary": "Omen cards may be cast using their instant or sorcery Omen characteristics and shuffle into their owner's library if they resolve; in other zones, only their Dragon creature characteristics apply. To behold a Dragon, choose one you control or reveal a Dragon card from hand, discounting or upgrading several spells."
+  },
+  {
+   "name": "Dragons + Dragonstorms",
+   "summary": "The five monocolor Dragonstorm enchantments each have an enters effect and return to their owner's hand whenever a Dragon you control enters, letting you replay that effect. Dragons and Omen cards also turn on behold and reward decks that can support a critical mass."
   }
  ],
  "archetypes": [
   {
-   "pair": "WU",
-   "name": "Jeskai flurry",
-   "playstyle": "",
-   "speed": "",
-   "signposts": [],
-   "payoffs": [
-    "Humbling Elder",
-    "Bearer of Glory",
-    "Salt Road Packbeast",
-    "Fortress Kin-Guard",
-    "Poised Practitioner",
-    "Riling Dawnbreaker // Signaling Roar"
-   ],
-   "enablers": [
-    "Static Snare",
-    "Swiftwater Cliffs",
-    "Teeming Dragonstorm",
-    "Osseous Exhale",
-    "Roiling Dragonstorm"
-   ],
-   "keyCards": [
-    "Mardu Devotee",
-    "Coordinated Maneuver",
-    "Agent of Kotis",
-    "Kishla Trawlers",
-    "Tempest Hawk"
-   ]
-  },
-  {
    "pair": "WB",
-   "name": "Mardu warriors",
-   "playstyle": "",
-   "speed": "",
+   "name": "Token sacrifice grind",
+   "playstyle": "Build expendable Spirit and Warrior tokens through endure and mobilize, attack wide, then cash temporary bodies into cards or drain before the end-step sacrifice. Efficient white-black removal lets the deck trade aggressively and grind longer than the red-white swarm.",
+   "speed": "midrange",
    "signposts": [
     "Hardened Tactician",
     "Marshal of the Lost"
    ],
    "payoffs": [
-    "Nightblade Brigade",
-    "Krumar Initiate",
+    "Elspeth, Storm Slayer",
     "Venerated Stormsinger",
-    "Kin-Tree Nurturer",
-    "Unrooted Ancestor",
-    "Riling Dawnbreaker // Signaling Roar"
+    "Barrensteppe Siege",
+    "Salt Road Packbeast",
+    "Coordinated Maneuver"
    ],
    "enablers": [
-    "Alesha's Legacy",
+    "Voice of Victory",
+    "Dalkovan Packbeasts",
     "Teeming Dragonstorm",
-    "Desperate Measures",
-    "Worthy Cost",
-    "Salt Road Skirmish"
+    "Fortress Kin-Guard",
+    "Salt Road Skirmish",
+    "Sunpearl Kirin",
+    "Duty Beyond Death",
+    "Rally the Monastery"
    ],
    "keyCards": [
-    "Fortress Kin-Guard",
-    "Loxodon Battle Priest",
-    "Sandskitter Outrider",
-    "Bearer of Glory",
-    "Sunpearl Kirin",
+    "Sage of the Skies",
+    "Sinkhole Surveyor",
+    "Qarsi Revenant",
+    "Great Arashin City",
+    "Scavenger Regent // Exude Toxin",
     "Descendant of Storms",
-    "Lightfoot Technique",
-    "Alchemist's Assistant",
-    "Abzan Devotee",
-    "Osseous Exhale",
-    "Salt Road Packbeast",
-    "Cruel Truths",
-    "Arashin Sunshield",
-    "Purging Stormbrood // Absorb Essence"
+    "Caustic Exhale",
+    "Purging Stormbrood // Absorb Essence",
+    "Static Snare"
    ]
   },
   {
    "pair": "WR",
-   "name": "Mardu aggro",
-   "playstyle": "",
-   "speed": "",
+   "name": "Mobilize go-wide aggro",
+   "playstyle": "Curve out with cheap mobilize creatures, flood combat with temporary Warriors, and turn width into pings, scaling attackers, or a lethal Frontline Rush. Keep the curve low enough to double-spell for the flurry package, but prioritize bodies and attacks over a fragile spells-only build.",
+   "speed": "aggro",
    "signposts": [
-    "Frontline Rush",
-    "Cori Mountain Stalwart"
+    "Cori Mountain Stalwart",
+    "Frontline Rush"
    ],
    "payoffs": [
-    "Dalkovan Packbeasts",
-    "Fleeting Effigy",
-    "Wayspeaker Bodyguard",
-    "Descendant of Storms",
-    "Salt Road Packbeast",
-    "Tempest Hawk"
+    "Elspeth, Storm Slayer",
+    "Shocking Sharpshooter",
+    "Windcrag Siege",
+    "War Effort",
+    "Zurgo's Vanguard",
+    "Salt Road Packbeast"
    ],
    "enablers": [
-    "Duty Beyond Death",
-    "Static Snare",
+    "Voice of Victory",
+    "Stadium Headliner",
+    "Dalkovan Packbeasts",
+    "Shock Brigade",
+    "Dalkovan Encampment",
     "Rally the Monastery",
-    "War Effort",
-    "Coordinated Maneuver"
+    "Descendant of Storms",
+    "Fleeting Effigy"
    ],
    "keyCards": [
-    "Unsparing Boltcaster",
-    "Devoted Duelist",
-    "Shocking Sharpshooter",
-    "Starry-Eyed Skyrider",
-    "Wild Ride",
-    "Shock Brigade",
+    "Sage of the Skies",
+    "Cori-Steel Cutter",
+    "Cori Mountain Monastery",
+    "Tersa Lightshatter",
+    "Static Snare",
     "Sunpearl Kirin",
     "Channeled Dragonfire",
-    "Stormplain Detainment",
-    "Reverberating Summons",
-    "Rebellious Strike",
-    "Bearer of Glory",
-    "Fire-Rim Form",
-    "Underfoot Underdogs"
-   ]
-  },
-  {
-   "pair": "WG",
-   "name": "Abzan endure",
-   "playstyle": "",
-   "speed": "",
-   "signposts": [],
-   "payoffs": [
-    "Undergrowth Leopard",
-    "Furious Forebear",
-    "Champion of Dusan",
-    "Riling Dawnbreaker // Signaling Roar",
-    "Bearer of Glory",
-    "Formation Breaker"
-   ],
-   "enablers": [
-    "Synchronized Charge",
-    "Stormplain Detainment",
-    "Knockout Maneuver",
-    "Sarkhan's Resolve"
-   ],
-   "keyCards": [
-    "Trade Route Envoy",
-    "Sultai Devotee",
-    "Tempest Hawk",
-    "Ainok Wayfarer"
+    "Twinmaw Stormbrood // Charring Bite",
+    "Wayspeaker Bodyguard"
    ]
   },
   {
    "pair": "UR",
-   "name": "Jeskai spells",
-   "playstyle": "",
-   "speed": "",
+   "name": "Two-spell value",
+   "playstyle": "Bank cheap cantrips, mana effects, and harmonize spells to double-spell on demand, turning each second cast into flying tokens, cards, or burst damage. Trade tempo early, then let repeatable flurry value take over the midgame.",
+   "speed": "midrange",
    "signposts": [
     "Effortless Master",
     "Glacial Dragonhunt"
    ],
    "payoffs": [
-    "Highspire Bell-Ringer",
-    "Rescue Leopard",
-    "Sunset Strikemaster",
-    "Veteran Ice Climber",
-    "Agent of Kotis",
-    "Meticulous Artisan"
+    "Cori-Steel Cutter",
+    "Wingblade Disciple",
+    "Taigam, Master Opportunist",
+    "Equilibrium Adept",
+    "Runescale Stormbrood // Chilling Screech"
    ],
    "enablers": [
-    "Wingspan Stride",
-    "Ringing Strike Mastery",
-    "Reverberating Summons",
-    "Mystic Monastery",
-    "Roiling Dragonstorm"
+    "Highspire Bell-Ringer",
+    "Unending Whisper",
+    "Focus the Mind",
+    "Channeled Dragonfire",
+    "Ureni's Rebuff",
+    "Sunset Strikemaster"
    ],
    "keyCards": [
-    "Snowmelt Stag",
-    "Temur Monument",
-    "Dirgur Island Dragon // Skimming Strike",
-    "Tranquil Cove",
-    "Nomad Outpost",
-    "Boulderborn Dragon",
-    "Thornwood Falls",
-    "Embermouth Sentinel",
-    "Aegis Sculptor",
-    "Narset's Rebuke",
-    "Equilibrium Adept",
-    "Wingblade Disciple",
-    "Kishla Trawlers",
-    "Runescale Stormbrood // Chilling Screech"
+    "Marang River Regent // Coil and Catch",
+    "Stormscale Scion",
+    "Winternight Stories",
+    "Dragonologist",
+    "Roiling Dragonstorm",
+    "Sibsig Appraiser",
+    "Molten Exhale",
+    "Dispelling Exhale",
+    "Frostcliff Siege"
    ]
   },
   {
    "pair": "UG",
-   "name": "Temur behold",
-   "playstyle": "",
-   "speed": "",
+   "name": "Graveyard recycling value",
+   "playstyle": "Stock the graveyard with selective self-mill, then cash those cards out through renew, harmonize, and recursion to trigger card draw and scaling threats. Cheap interaction buys time for repeated graveyard exchanges to bury the opponent.",
+   "speed": "control",
    "signposts": [
-    "Kishla Skimmer",
-    "Auroral Procession"
+    "Auroral Procession",
+    "Kishla Skimmer"
    ],
    "payoffs": [
-    "Veteran Ice Climber",
     "Attuned Hunter",
-    "Krotiq Nestguard",
-    "Dragon Sniper",
-    "Snowmelt Stag",
-    "Whirlwing Stormbrood // Dynamic Soar"
+    "Essence Anchor",
+    "Aegis Sculptor"
    ],
    "enablers": [
-    "Rite of Renewal",
+    "Ainok Wayfarer",
+    "Sibsig Appraiser",
+    "Traveling Botanist",
+    "Glacierwood Siege",
+    "Champion of Dusan",
     "Synchronized Charge",
-    "Tranquil Cove",
-    "Sarkhan's Resolve",
-    "Frontier Bivouac"
+    "Lasyd Prowler",
+    "Kishla Trawlers"
    ],
    "keyCards": [
-    "Inspirited Vanguard",
-    "Jade-Cast Sentinel",
-    "Dusyut Earthcarver",
-    "Disruptive Stormbrood // Petty Revenge",
-    "Snakeskin Veil",
-    "Watcher of the Wayside",
-    "Opulent Palace",
-    "Rainveil Rejuvenator",
-    "Aegis Sculptor",
-    "Formation Breaker",
-    "Champion of Dusan",
+    "Kishla Village",
+    "Marang River Regent // Coil and Catch",
+    "Warden of the Grove",
+    "Bloomvine Regent // Claim Territory",
+    "Winternight Stories",
+    "Knockout Maneuver",
+    "Dragon Sniper",
     "Piercing Exhale",
-    "Sage of the Fang",
-    "Knockout Maneuver"
+    "Fresh Start"
    ]
   },
   {
    "pair": "BG",
-   "name": "Abzan/Sultai counters",
-   "playstyle": "",
-   "speed": "",
+   "name": "Counters midrange",
+   "playstyle": "Layer endure and renew counters onto resilient attackers, then convert that growth into cards, evasion, and snowballing combat advantages. Trade early, stock the graveyard, and back the largest threat with efficient removal.",
+   "speed": "midrange",
    "signposts": [
-    "Stalwart Successor",
-    "Host of the Hereafter"
+    "Host of the Hereafter",
+    "Stalwart Successor"
    ],
    "payoffs": [
-    "Gurmag Rakshasa",
+    "Hollowmurk Siege",
+    "Formation Breaker",
+    "Attuned Hunter",
     "Delta Bloodflies",
     "Yathan Tombguard",
-    "Formation Breaker",
-    "Hundred-Battle Veteran",
-    "Sage of the Fang"
+    "Trade Route Envoy"
    ],
    "enablers": [
     "Synchronized Charge",
-    "Knockout Maneuver",
-    "Desperate Measures",
+    "Snakeskin Veil",
     "Aggressive Negotiations",
-    "Snakeskin Veil"
-   ],
-   "keyCards": [
-    "Trade Route Envoy",
-    "Attuned Hunter",
-    "Cruel Truths",
-    "Feral Deathgorger // Dusk Sight",
-    "Krumar Initiate",
-    "Abzan Devotee",
-    "Kin-Tree Nurturer",
-    "Sarkhan's Resolve",
-    "Unburied Earthcarver",
+    "Sage of the Fang",
+    "Champion of Dusan",
+    "Sagu Pummeler",
     "Alchemist's Assistant",
-    "Wail of War",
-    "Dragon's Prey",
-    "Alesha's Legacy",
-    "Adorned Crocodile"
-   ]
-  },
-  {
-   "pair": "RG",
-   "name": "Temur mobilize",
-   "playstyle": "",
-   "speed": "",
-   "signposts": [],
-   "payoffs": [
-    "Rescue Leopard",
-    "Sagu Wildling // Roost Seek",
-    "Stormshriek Feral // Flush Out",
-    "Undergrowth Leopard"
-   ],
-   "enablers": [
-    "Piercing Exhale"
+    "Feral Deathgorger // Dusk Sight"
    ],
    "keyCards": [
-    "Trade Route Envoy"
+    "Qarsi Revenant",
+    "Sinkhole Surveyor",
+    "Warden of the Grove",
+    "Knockout Maneuver",
+    "Lasyd Prowler",
+    "Caustic Exhale",
+    "Piercing Exhale",
+    "Ainok Wayfarer"
    ]
   }
  ],
- "combos": []
+ "combos": [
+  {
+   "cards": [
+    "Elspeth, Storm Slayer",
+    "Teeming Dragonstorm"
+   ],
+   "note": "Elspeth doubles Teeming Dragonstorm's two Soldier tokens into four."
+  },
+  {
+   "cards": [
+    "Hardened Tactician",
+    "Teeming Dragonstorm"
+   ],
+   "note": "Teeming Dragonstorm supplies two 2/2 tokens for Tactician to cash into cards."
+  },
+  {
+   "cards": [
+    "Venerated Stormsinger",
+    "Hardened Tactician"
+   ],
+   "note": "Tactician turns each creature token into a card and a Stormsinger drain."
+  },
+  {
+   "cards": [
+    "Marshal of the Lost",
+    "Dalkovan Packbeasts"
+   ],
+   "note": "Resolve mobilize first so Packbeasts' Warriors enlarge Marshal's attack-count pump."
+  },
+  {
+   "cards": [
+    "Duty Beyond Death",
+    "Dalkovan Packbeasts"
+   ],
+   "note": "Sacrifice a temporary Warrior to put a counter on and protect the attacking team."
+  },
+  {
+   "cards": [
+    "Windcrag Siege",
+    "Dalkovan Packbeasts"
+   ],
+   "note": "Windcrag Siege's Mardu mode doubles Packbeasts' mobilize output from three tokens to six."
+  },
+  {
+   "cards": [
+    "Shocking Sharpshooter",
+    "Dalkovan Packbeasts"
+   ],
+   "note": "Packbeasts' three mobilized entrants trigger Sharpshooter three times."
+  },
+  {
+   "cards": [
+    "Stadium Headliner",
+    "Frontline Rush"
+   ],
+   "note": "Frontline Rush adds two bodies to Headliner's creature-count damage."
+  },
+  {
+   "cards": [
+    "Cori-Steel Cutter",
+    "Rally the Monastery"
+   ],
+   "note": "Casting Rally second discounts it while Cutter adds an auto-equipped prowess Monk."
+  },
+  {
+   "cards": [
+    "Salt Road Packbeast",
+    "Dalkovan Packbeasts"
+   ],
+   "note": "Cast Packbeast after combat while the mobilized Warriors still discount affinity."
+  },
+  {
+   "cards": [
+    "Taigam, Master Opportunist",
+    "Glacial Dragonhunt"
+   ],
+   "note": "Taigam copies a second-spell Dragonhunt now and suspends the original for later."
+  },
+  {
+   "cards": [
+    "Highspire Bell-Ringer",
+    "Focus the Mind"
+   ],
+   "note": "Bell-Ringer and Focus's discounts stack to make second-spell Focus cost {1}{U}."
+  },
+  {
+   "cards": [
+    "Sarkhan, Dragon Ascendant",
+    "Stormscale Scion"
+   ],
+   "note": "Every storm-copy Scion entering grows Sarkhan and adds another Dragon anthem."
+  },
+  {
+   "cards": [
+    "Wingblade Disciple",
+    "Cori-Steel Cutter"
+   ],
+   "note": "One second spell makes Disciple's Bird and Cutter's auto-equipped prowess Monk."
+  },
+  {
+   "cards": [
+    "Roiling Dragonstorm",
+    "Runescale Stormbrood // Chilling Screech"
+   ],
+   "note": "Runescale returns Roiling to hand, then replaying it loots and pumps the Dragon."
+  },
+  {
+   "cards": [
+    "Kishla Skimmer",
+    "Auroral Procession"
+   ],
+   "note": "Cast Procession on your turn to return any card and trigger Skimmer's once-per-turn draw."
+  },
+  {
+   "cards": [
+    "Attuned Hunter",
+    "Agent of Kotis"
+   ],
+   "note": "Agent's renew gives Hunter two counters plus Hunter's leaves-the-graveyard counter."
+  },
+  {
+   "cards": [
+    "Essence Anchor",
+    "Unending Whisper"
+   ],
+   "note": "Harmonizing Whisper turns on Anchor's Zombie activation while replacing itself."
+  },
+  {
+   "cards": [
+    "Traveling Botanist",
+    "Winternight Stories"
+   ],
+   "note": "Tapping Botanist to harmonize Winternight Stories triggers its land selection."
+  },
+  {
+   "cards": [
+    "Kishla Skimmer",
+    "Synchronized Charge"
+   ],
+   "note": "Casting Charge with harmonize triggers Skimmer before the counter-fueled attack."
+  },
+  {
+   "cards": [
+    "Host of the Hereafter",
+    "Worthy Cost"
+   ],
+   "note": "Sacrificing a creature with counters to Worthy Cost lets Host transplant those counters."
+  },
+  {
+   "cards": [
+    "Stalwart Successor",
+    "Synchronized Charge"
+   ],
+   "note": "Charge putting two counters on a fresh creature makes Successor supply the third."
+  },
+  {
+   "cards": [
+    "Qarsi Revenant",
+    "Hundred-Battle Veteran"
+   ],
+   "note": "Qarsi's renew supplies the three counter kinds that switch on Veteran's +2/+4."
+  },
+  {
+   "cards": [
+    "Hollowmurk Siege",
+    "Snakeskin Veil"
+   ],
+   "note": "Veil protects a threat while triggering Hollowmurk Siege's Sultai draw."
+  }
+ ]
 }
