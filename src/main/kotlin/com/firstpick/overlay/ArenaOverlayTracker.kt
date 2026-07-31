@@ -176,8 +176,8 @@ fun ArenaOverlayTracker(
 
 
     var hovering by remember(packKey) { mutableStateOf(false) }
-    LaunchedEffect(packKey, visible, b.w, b.h) {
-        if (calibrating || !visible) {
+    LaunchedEffect(packKey, visible, b.w, b.h, assignmentState.value) {
+        if (calibrating || !visible || assignmentState.value == null) {
             hovering = false
             return@LaunchedEffect
         }
@@ -254,7 +254,7 @@ private fun CaptureHint(modifier: Modifier) {
             .padding(horizontal = 14.dp, vertical = 8.dp),
     ) {
         Text(
-            "FirstPick can't read the pack — turn on Screen Recording for it in System Settings › Privacy & Security, then reopen the overlay.",
+            "FirstPick can't capture Arena — enable Screen Recording for FirstPick (or window-capture) in System Settings › Privacy & Security, then reopen the overlay.",
             color = Color(0xFFF0E6D8),
             fontSize = 12.sp,
             fontWeight = FontWeight.Medium,
@@ -282,19 +282,21 @@ private fun geometryMarks(
 }
 
 
-private const val BADGE_SCALE = 0.72f
+private const val BADGE_SCALE = 0.46f
+private const val BADGE_BOTTOM_OVERLAP = 3f
 
 
 private fun emblemAnchorY(value: Double?): Float = if (isBombTier(value)) 0.61f else 0.50f
 
+
+private fun emblemBottomOffset(value: Double?): Float = if (isBombTier(value)) 0.292f else 0.279f
+
 @Composable
 private fun GradeSeal(m: Mark) {
     val fire = isBombTier(m.value)
-    val badge = (m.w * BADGE_SCALE).coerceIn(60f, 176f)
+    val badge = (m.w * BADGE_SCALE).coerceIn(42f, 112f)
     val cx = m.x + m.w / 2f
-
-
-    val cy = m.y + m.h - 0.44f * badge
+    val cy = m.y + m.h - emblemBottomOffset(m.value) * badge + BADGE_BOTTOM_OVERLAP
 
 
     val haloAlpha = if (fire) 0.5f else if (m.isBest) 0.34f else 0f
@@ -316,29 +318,30 @@ private fun GradeSeal(m: Mark) {
         }
     }
 
-    ScoreChip(m.value, badge, cx, cy + 0.34f * badge)
+    ShieldScore(m.value, badge, cx, cy)
 }
 
 
 @Composable
-private fun ScoreChip(value: Double?, badge: Float, cx: Float, cy: Float) {
-    val chipH = 0.20f * badge
+private fun ShieldScore(value: Double?, badge: Float, cx: Float, cy: Float) {
+    val scoreW = 0.38f * badge
+    val scoreH = 0.22f * badge
     Box(
-        Modifier.offset((cx - badge / 2f).dp, (cy - chipH / 2f).dp).size(badge.dp, chipH.dp),
+        Modifier.offset((cx - scoreW / 2f).dp, (cy - scoreH / 2f).dp).size(scoreW.dp, scoreH.dp),
         contentAlignment = Alignment.Center,
     ) {
         Box(
             Modifier
                 .clip(RoundedCornerShape(50))
-                .background(Color(0xE60E1312))
-                .padding(horizontal = (0.09f * badge).dp, vertical = (0.02f * badge).dp),
+                .background(Color(0xFF0E1312))
+                .padding(horizontal = (0.05f * badge).dp, vertical = (0.01f * badge).dp),
         ) {
             Text(
                 value?.roundToInt()?.toString() ?: "—",
                 color = Color(0xFFF2E9D8),
                 fontFamily = FontFamily.Monospace,
                 fontWeight = FontWeight.Bold,
-                fontSize = (0.135f * badge).sp,
+                fontSize = (0.15f * badge).sp,
             )
         }
     }

@@ -1,6 +1,7 @@
 package com.firstpick.ui
 
 import androidx.compose.ui.res.loadImageBitmap
+import javax.imageio.ImageIO
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -45,6 +46,15 @@ class RankBadgeTest {
             val path = "${rankBasename(v)}.png"
             val bmp = this::class.java.classLoader.getResourceAsStream(path)!!.use { loadImageBitmap(it) }
             assertTrue(bmp.width == bmp.height && bmp.width >= 128, "not a square badge: $path is ${bmp.width}x${bmp.height}")
+        }
+    }
+
+    @Test
+    fun everyRankBadgeIsOpaqueAtItsCentre() {
+        for (v in listOf(null, 30.0, 50.0, 58.0, 70.0, 88.0)) {
+            val path = "${rankBasename(v)}.png"
+            val image = this::class.java.classLoader.getResourceAsStream(path)!!.use(ImageIO::read)
+            assertEquals(255, image.getRGB(image.width / 2, image.height / 2) ushr 24, "transparent centre: $path")
         }
     }
 }

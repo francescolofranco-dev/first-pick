@@ -106,14 +106,10 @@ fun App(
 
 @Composable
 internal fun SynergyTierBadge(tier: String) {
-    val researched = tier == "researched"
-    val accent = when {
-        researched || tier == "model" -> MaterialTheme.colorScheme.primary
-        else -> MaterialTheme.colorScheme.tertiary
-    }
-    val label = when {
-        tier == "model" -> "◆ AI picks"
-        researched -> "✦ Deep synergy"
+    val accent = tierAccent(tier)
+    val label = when (tier) {
+        "model" -> "◆ AI picks"
+        "researched" -> "✦ Deep synergy"
         else -> "• Data synergy"
     }
     Box(
@@ -122,6 +118,13 @@ internal fun SynergyTierBadge(tier: String) {
     ) {
         Text(label, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = accent)
     }
+}
+
+@Composable
+internal fun tierAccent(tier: String) = when (tier) {
+    "researched" -> MaterialTheme.colorScheme.primary
+    "model" -> MaterialTheme.colorScheme.secondary
+    else -> MaterialTheme.colorScheme.tertiary
 }
 
 @Composable
