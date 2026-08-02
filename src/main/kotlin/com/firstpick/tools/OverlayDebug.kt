@@ -67,8 +67,19 @@ fun main(args: Array<String>) = runBlocking {
     }
     println("REFS: ${refs.count { it != null }}/${pack.size} reference signatures")
 
-    val assign = CardRecognizer.match(frame, rects, refs)
+    val result = CardRecognizer.matchDetailed(frame, rects, refs)
+    val assign = result.assignment
     println("RECOGNIZE: ${assign.size} assignments")
+    println("  total distance=${"%.1f".format(result.totalDistance)}; worst=${"%.1f".format(result.worstDistance)}")
+    for (rect in rects) {
+        val signature = CardRecognizer.ofRegion(frame, rect.x, rect.y, rect.w, rect.h)
+        val nearest = refs.mapIndexedNotNull { index, ref ->
+            ref?.let { index to CardRecognizer.distance(signature, it) }
+        }.sortedBy { it.second }.take(3)
+        println("  rect#${rect.index} candidates: " + nearest.joinToString { (index, distance) ->
+            "${pack[index].displayName}=${"%.1f".format(distance)}"
+        })
+    }
     var mismatches = 0
     for ((rectIdx, cardIdx) in assign.entries.sortedBy { it.key }) {
         val ok = rectIdx == cardIdx

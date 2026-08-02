@@ -56,6 +56,7 @@ private const val CLICK_THROUGH_RETRY_MS = 150L
 private const val CAPTURE_DEBOUNCE_MS = 600L
 private const val RECOGNITION_RETRY_MS = 500L
 private const val MAX_RECOGNITION_ATTEMPTS = 12
+private const val REQUIRED_FULL_RECOGNITIONS = 3
 private const val HOVER_POLL_MS = 500L
 private const val DEV_DETECT_RETRY_MS = 900L
 private const val MIN_CALIBRATION_CARDS = 10
@@ -69,6 +70,26 @@ data class OverlayCard(
 )
 
 private data class Mark(val x: Int, val y: Int, val w: Int, val h: Int, val value: Double?, val number: Int?, val isBest: Boolean)
+
+internal data class RecognitionAttempt(
+    val match: CardRecognizer.MatchResult,
+    val calibration: PackGridCalibration?,
+)
+
+internal class RecognitionSettler(private val required: Int) {
+    private var best: RecognitionAttempt? = null
+    private var latestCalibration: PackGridCalibration? = null
+    var fullRecognitions: Int = 0
+        private set
+
+    fun observe(attempt: RecognitionAttempt): RecognitionAttempt? {
+        fullRecognitions++
+        if (attempt.calibration != null) latestCalibration = attempt.calibration
+        val previous = best
+        if (previous == null || attempt.match.totalDistance < previous.match.totalDistance) best = attempt
+        return best?.copy(calibration = latestCalibration).takeIf { fullRecognitions >= required }
+    }
+}
 
 
 @Composable
@@ -141,28 +162,37 @@ fun ArenaOverlayTracker(
             return@LaunchedEffect
         }
         var lastFailure = "no frame captured — check Screen Recording permission"
+        val settler = RecognitionSettler(REQUIRED_FULL_RECOGNITIONS)
         repeat(MAX_RECOGNITION_ATTEMPTS) {
             val attempt = withContext(Dispatchers.IO) {
                 val frame = cap.capture() ?: return@withContext null
                 val grid = CardDetector.detect(frame, cards.size)
-                val freshCal = if (cards.size >= MIN_CALIBRATION_CARDS) grid?.let { PackGeometry.fromGrid(it) } else null
+                val freshCal = if (cards.size >= MIN_CALIBRATION_CARDS) {
+                    grid?.let(PackGeometry::fromGrid)?.takeIf(PackGeometry::isPlausible)
+                } else {
+                    null
+                }
 
 
                 val rects = grid?.cards(cards.size)
                     ?: PackGeometry.rects(store.get(b.w, b.h) ?: PackGeometry.DEFAULT, frame.width, frame.height, cards.size)
-                Pair(CardRecognizer.match(frame, rects, refs), freshCal)
+                RecognitionAttempt(CardRecognizer.matchDetailed(frame, rects, refs), freshCal)
             }
-            val assign = attempt?.first
+            val result = attempt?.match
             when {
-                assign == null -> lastFailure = "no frame captured — check Screen Recording permission"
-                assign.size < expected -> lastFailure = "recognition incomplete (${assign.size}/$expected) — pack may still be animating"
+                result == null -> lastFailure = "no frame captured — check Screen Recording permission"
+                result.assignment.size < expected -> lastFailure = "recognition incomplete (${result.assignment.size}/$expected) — pack may still be animating"
                 else -> {
-                    attempt.second?.let {
-                        store.put(b.w, b.h, it)
-                        calVersion++
+                    val settled = settler.observe(requireNotNull(attempt))
+                    if (settled != null) {
+                        settled.calibration?.let {
+                            store.put(b.w, b.h, it)
+                            calVersion++
+                        }
+                        assignmentState.value = settled.match.assignment
+                        return@LaunchedEffect
                     }
-                    assignmentState.value = assign
-                    return@LaunchedEffect
+                    lastFailure = "recognition settling (${settler.fullRecognitions}/$REQUIRED_FULL_RECOGNITIONS)"
                 }
             }
             delay(RECOGNITION_RETRY_MS)

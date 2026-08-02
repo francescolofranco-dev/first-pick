@@ -21,6 +21,7 @@ import com.firstpick.model.DraftPhase
 import com.firstpick.core.AppPaths
 import com.firstpick.ui.App
 import com.firstpick.ui.DraftViewModel
+import com.firstpick.ui.PackCardUi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -73,7 +74,7 @@ fun main() {
             val isDrafting = state.phase == DraftPhase.DRAFTING || state.phase == DraftPhase.IDLE
             if (isDrafting) {
                 val cards = remember(state.packCards) {
-                    state.packCards.map { OverlayCard(it.value, it.imageUrl, it.name, it.originalIndex) }
+                    overlayCards(state.packCards)
                 }
                 ArenaOverlayTracker(cards = cards)
             } else {
@@ -103,3 +104,8 @@ fun main() {
         else if (DevFlags.overlayTrack) ArenaOverlayTracker()
     }
 }
+
+internal fun overlayCards(packCards: List<PackCardUi>): List<OverlayCard> =
+    packCards.sortedBy(PackCardUi::originalIndex).map {
+        OverlayCard(it.value, it.imageUrl, it.name, it.originalIndex)
+    }

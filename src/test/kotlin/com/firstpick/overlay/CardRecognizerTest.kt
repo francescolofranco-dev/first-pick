@@ -2,8 +2,10 @@ package com.firstpick.overlay
 
 import java.awt.Color
 import java.awt.image.BufferedImage
+import javax.imageio.ImageIO
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class CardRecognizerTest {
 
@@ -23,6 +25,10 @@ class CardRecognizerTest {
         }
         return img
     }
+
+    private fun fixture(name: String): BufferedImage =
+        requireNotNull(javaClass.getResourceAsStream("/overlay/$name")) { "missing fixture $name" }
+            .use { ImageIO.read(it) }
 
     @Test
     fun matchesEachRectToTheCardDrawnThere() {
@@ -47,5 +53,75 @@ class CardRecognizerTest {
         for (i in 0 until n) {
             assertEquals(drawn[i], assignment[i], "rect $i should match the card drawn there")
         }
+    }
+
+    @Test
+    fun findsTheMinimumCostOneToOneAssignment() {
+        val refs = listOf(CardRecognizer.ofCard(card(1)), CardRecognizer.ofCard(card(2)))
+        val frame = BufferedImage(640, 440, BufferedImage.TYPE_INT_RGB)
+        val g = frame.createGraphics()
+        g.drawImage(card(2), 10, 10, null)
+        g.drawImage(card(1), 330, 10, null)
+        g.dispose()
+        val rects = listOf(
+            CardDetector.CardRect(10, 10, 10, 300, 420),
+            CardDetector.CardRect(20, 330, 10, 300, 420),
+        )
+
+        val result = CardRecognizer.matchDetailed(frame, rects, refs)
+
+        assertEquals(mapOf(10 to 1, 20 to 0), result.assignment)
+        assertTrue(result.totalDistance >= 0.0)
+        assertTrue(result.worstDistance >= 0.0)
+        assertTrue(result.assignment.values.toSet().size == refs.size)
+    }
+
+    @Test
+    fun distinguishesRepulsorBlastFromAvengersHangarInArenaCapture() {
+        val frame = fixture("msh-p2p4-repulsor-avengers.jpg")
+        val refs = listOf(
+            CardRecognizer.ofCard(fixture("msh-repulsor-reference.jpg")),
+            CardRecognizer.ofCard(fixture("msh-avengers-reference.jpg")),
+        )
+        val rects = listOf(
+            CardDetector.CardRect(0, 0, 0, 228, 330),
+            CardDetector.CardRect(1, 228, 0, 228, 330),
+        )
+
+        val assignment = CardRecognizer.match(frame, rects, refs)
+
+        assertEquals(mapOf(0 to 0, 1 to 1), assignment)
+    }
+
+    @Test
+    fun missingSwampReferenceDoesNotDisplaceWhiteTigerOrSwordsman() {
+        val frame = fixture("msh-p3p4-swordsman-white-tiger-swamp.jpg")
+        val referenceStrip = fixture("msh-p3p4-swordsman-white-tiger-references.jpg")
+        val refs = listOf(
+            CardRecognizer.ofCard(referenceStrip.getSubimage(0, 0, 336, 468)),
+            CardRecognizer.ofCard(referenceStrip.getSubimage(336, 0, 336, 468)),
+            null,
+        )
+        val rects = listOf(
+            CardDetector.CardRect(0, 0, 0, 226, 331),
+            CardDetector.CardRect(1, 226, 0, 226, 331),
+            CardDetector.CardRect(2, 452, 0, 226, 331),
+        )
+
+        val assignment = CardRecognizer.match(frame, rects, refs)
+
+        assertEquals(mapOf(0 to 0, 1 to 1, 2 to 2), assignment)
+    }
+
+    @Test
+    fun avoidsTheLocallyCheapestPairWhenItMakesThePackWorse() {
+        val assignment = CardRecognizer.minimumAssignment(
+            arrayOf(
+                doubleArrayOf(1.0, 2.0),
+                doubleArrayOf(1.1, 100.0),
+            ),
+        )
+
+        assertEquals(listOf(1, 0), assignment.toList())
     }
 }
