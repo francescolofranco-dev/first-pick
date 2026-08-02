@@ -5,6 +5,7 @@ import javax.imageio.ImageIO
 import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -50,11 +51,12 @@ class PackGeometryTest {
         val b = fixture("msh-p1p1-14cards.jpg")
         val cal = PackGeometry.fromGrid(CardDetector.detect(a, expectedCount = 13)!!)
         assertNotNull(cal)
-        val detected = CardDetector.detect(b, expectedCount = 14)!!.cards(14)
+        val targetGrid = CardDetector.detect(b, expectedCount = 14)!!
+        val target = PackGeometry.rects(PackGeometry.fromGrid(targetGrid)!!, b.width, b.height, 14)
         val predicted = PackGeometry.rects(cal, b.width, b.height, 14)
-        for ((d, p) in detected.zip(predicted)) {
-            assertTrue(abs(d.x - p.x) < 0.012 * b.width, "rect ${d.index} x: detected ${d.x}, predicted ${p.x}")
-            assertTrue(abs(d.y - p.y) < 0.02 * b.height, "rect ${d.index} y: detected ${d.y}, predicted ${p.y}")
+        for ((t, p) in target.zip(predicted)) {
+            assertTrue(abs(t.x - p.x) < 0.012 * b.width, "rect ${t.index} x: target ${t.x}, predicted ${p.x}")
+            assertTrue(abs(t.y - p.y) < 0.02 * b.height, "rect ${t.index} y: target ${t.y}, predicted ${p.y}")
         }
     }
 
@@ -62,6 +64,18 @@ class PackGeometryTest {
     fun sparseGridsAreNotTrustedForCalibration() {
         val grid = CardDetector.Grid(cols = listOf(100..200), rows = listOf(50..300), imageW = 1000, imageH = 600)
         assertNull(PackGeometry.fromGrid(grid))
+    }
+
+    @Test
+    fun transitionGridThatWouldShiftEveryShieldIsRejected() {
+        val grid = CardDetector.Grid(
+            cols = listOf(172..291, 296..415, 420..539, 544..663, 668..787),
+            rows = listOf(142..302, 312..472, 482..642),
+            imageW = 1280,
+            imageH = 748,
+        )
+
+        assertFalse(PackGeometry.isPlausible(PackGeometry.fromGrid(grid)!!))
     }
 
     @Test
@@ -92,5 +106,23 @@ class PackGeometryTest {
 
 
         assertEquals(PackGeometry.DEFAULT, PackGridCalibrationStore(dir.resolve("grid.json")).get(1470, 860))
+    }
+
+    @Test
+    fun storeIgnoresAnImplausibleCachedCalibration() {
+        val dir = Files.createTempDirectory("fp-bad-cal")
+        val store = PackGridCalibrationStore(dir.resolve("grid.json"))
+        val shifted = PackGridCalibration(
+            colX0 = 0.13476562f,
+            colPitch = 0.09667969f,
+            colW = 0.09414063f,
+            row0Y = 0.18983957f,
+            rowPitch = 0.22727273f,
+            cardH = 0.2159091f,
+        )
+
+        store.put(1280, 748, shifted)
+
+        assertNull(store.get(1280, 748))
     }
 }

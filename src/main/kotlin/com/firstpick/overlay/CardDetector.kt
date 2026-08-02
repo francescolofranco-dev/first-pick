@@ -16,6 +16,7 @@ object CardDetector {
         val rows: List<IntRange>,
         val imageW: Int,
         val imageH: Int,
+        val overlayRowPitch: Int? = null,
     ) {
         fun cards(count: Int): List<CardRect> {
             val out = ArrayList<CardRect>(count.coerceAtLeast(0))
@@ -143,6 +144,17 @@ object CardDetector {
             (cardH * DEFAULT_PITCH_RATIO).toInt()
         }
 
+        // Card contents do not all reach the same brightness at the bottom, so
+        // band heights vary with the art and rules text. Their starts are stable
+        // and give the overlay a true top-to-top pitch without accumulated drift.
+        val overlayPitchCandidates = bands.map { it.first }.zipWithNext { a, b -> b - a }
+            .filter { it in (0.9 * cardH).toInt()..(1.5 * cardH).toInt() }
+        val overlayPitch = if (overlayPitchCandidates.isNotEmpty()) {
+            overlayPitchCandidates.sorted()[overlayPitchCandidates.size / 2]
+        } else {
+            pitch
+        }
+
         val rowCount = when {
             expectedCount > 0 -> ceil(expectedCount.toDouble() / cols.size).toInt()
             else -> ((bands.last().first - row0Top).toDouble() / pitch).roundToInt() + 1
@@ -153,7 +165,7 @@ object CardDetector {
             if (top < 0 || top > h - 1 || bottom <= top) null else top..bottom
         }
         if (rows.isEmpty()) return DetectResult.Indeterminate
-        return DetectResult.Found(Grid(cols, rows, w, h))
+        return DetectResult.Found(Grid(cols, rows, w, h, overlayPitch))
     }
 
     private fun toGray(img: BufferedImage, w: Int, h: Int): FloatArray {

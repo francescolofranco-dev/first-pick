@@ -58,10 +58,31 @@ object PackGeometry {
             colPitch = (grid.cols.last().first - grid.cols.first().first) / ((grid.cols.size - 1) * w),
             colW = (grid.cols.first().last - grid.cols.first().first + 1) / w,
             row0Y = grid.rows.first().first / h,
-            rowPitch = if (grid.rows.size >= 2) (grid.rows[1].first - grid.rows[0].first) / h
+            rowPitch = if (grid.overlayRowPitch != null) grid.overlayRowPitch / h
+            else if (grid.rows.size >= 2) (grid.rows[1].first - grid.rows[0].first) / h
             else DEFAULT.rowPitch * (cardH / DEFAULT.cardH),
             cardH = cardH,
         )
+    }
+
+    internal fun isPlausible(calibration: PackGridCalibration): Boolean {
+        val values = listOf(
+            calibration.colX0,
+            calibration.colPitch,
+            calibration.colW,
+            calibration.row0Y,
+            calibration.rowPitch,
+            calibration.cardH,
+        )
+        if (values.any { !it.isFinite() || it <= 0f }) return false
+        val lastColX = calibration.colX0 + (COLS - 1) * calibration.colPitch
+        val defaultLastColX = DEFAULT.colX0 + (COLS - 1) * DEFAULT.colPitch
+        return abs(calibration.colPitch - DEFAULT.colPitch) <= 0.0045f &&
+            abs(lastColX - defaultLastColX) <= 0.02f &&
+            abs(calibration.colW - DEFAULT.colW) <= 0.015f &&
+            abs(calibration.row0Y - DEFAULT.row0Y) <= 0.025f &&
+            abs(calibration.rowPitch - DEFAULT.rowPitch) <= 0.02f &&
+            abs(calibration.cardH - DEFAULT.cardH) <= 0.025f
     }
 }
 
@@ -73,7 +94,8 @@ class PackGridCalibrationStore(
     private var cache: MutableMap<String, PackGridCalibration>? = null
 
     @Synchronized
-    fun get(w: Int, h: Int): PackGridCalibration? = loadAll()["${w}x$h"]
+    fun get(w: Int, h: Int): PackGridCalibration? =
+        loadAll()["${w}x$h"]?.takeIf(PackGeometry::isPlausible)
 
     @Synchronized
     fun put(w: Int, h: Int, cal: PackGridCalibration) {

@@ -37,6 +37,23 @@ class CardDetectorTest {
     }
 
     @Test
+    fun overlayPitchUsesStableRowStartsWithoutChangingRecognitionRects() {
+        val grid = CardDetector.detect(fixture("p1p1-13cards.png"), expectedCount = 13)!!
+        val cards = grid.cards(13)
+        val firstPitch = cards[5].y - cards[0].y
+        val secondPitch = cards[10].y - cards[5].y
+
+        assertEquals(firstPitch, secondPitch, "each row must use the same top-to-top pitch")
+        assertTrue(firstPitch > cards[0].h, "row pitch must preserve the visible gap between card rows")
+        assertNotNull(grid.overlayRowPitch)
+        val calibration = PackGeometry.fromGrid(grid)!!
+        assertTrue(
+            kotlin.math.abs(calibration.rowPitch - grid.overlayRowPitch.toFloat() / grid.imageH) < 1e-6,
+            "rendering calibration must use the independently detected overlay pitch",
+        )
+    }
+
+    @Test
     fun boxesAreCardSizedAndTightToTheGrid() {
         val grid = CardDetector.detect(fixture("p1p1-13cards.png"), expectedCount = 13)!!
         val w = grid.imageW
