@@ -7,12 +7,18 @@ import Foundation
 let args = CommandLine.arguments
 let app = args.count > 2 ? args[1] : "MTGA"
 let outPath = args.last ?? "/tmp/mtga-capture.png"
+let watchdogNs: UInt64 = 2_500_000_000
 
 func esc(_ s: String) -> String { s.replacingOccurrences(of: "\"", with: "'") }
 func finish(_ s: String) -> Never { print(s); exit(0) }
 
 let nsApp = NSApplication.shared
 nsApp.setActivationPolicy(.accessory)
+
+Task {
+    try? await Task.sleep(nanoseconds: watchdogNs)
+    finish("{\"captured\":false,\"reason\":\"timeout\"}")
+}
 
 Task {
     do {
