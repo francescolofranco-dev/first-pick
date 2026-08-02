@@ -60,6 +60,9 @@ compose.desktop {
 
 tasks.withType<JavaExec>().matching { it.name == "run" }.configureEach {
     environment("FIRSTPICK_DEMO", "1")
+    if (System.getProperty("os.name").startsWith("Mac")) {
+        doFirst { jvmArgs("-Xdock:name=FirstPick") }
+    }
     if (project.hasProperty("track")) systemProperty("firstpick.overlayTrack", "true")
 }
 
