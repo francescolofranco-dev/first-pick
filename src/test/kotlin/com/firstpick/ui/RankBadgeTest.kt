@@ -1,7 +1,5 @@
 package com.firstpick.ui
 
-import androidx.compose.ui.res.loadImageBitmap
-import javax.imageio.ImageIO
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -9,52 +7,37 @@ import kotlin.test.assertTrue
 class RankBadgeTest {
 
     @Test
-    fun rankBasenameFollowsTheGradeThresholds() {
-        assertEquals("seals/neutral", rankBasename(null))
-        assertEquals("seals/iron", rankBasename(47.9))
-        assertEquals("seals/bronze", rankBasename(48.0))
-        assertEquals("seals/silver", rankBasename(56.0))
-        assertEquals("seals/gold", rankBasename(64.0))
-        assertEquals("seals/fire", rankBasename(80.0))
+    fun gradeLabelsFollowEveryTierThreshold() {
+        val cases = listOf(
+            null to "—",
+            39.9 to "F",
+            40.0 to "D",
+            47.9 to "D",
+            48.0 to "C",
+            55.9 to "C",
+            56.0 to "B",
+            63.9 to "B",
+            64.0 to "B+",
+            71.9 to "B+",
+            72.0 to "A",
+            79.9 to "A",
+            80.0 to "A+",
+        )
+
+        cases.forEach { (value, grade) -> assertEquals(grade, letterGrade(value)) }
     }
 
     @Test
-    fun fireRankStaysInLockStepWithTheBombTier() {
-
-        assertEquals("seals/gold", rankBasename(79.9))
+    fun bombTierStartsAtTheAPlusThreshold() {
         assertTrue(!isBombTier(79.9))
-        assertEquals("seals/fire", rankBasename(80.0))
         assertTrue(isBombTier(80.0))
     }
 
     @Test
-    fun everyRankBadgeIsBundled() {
+    fun everyVisibleGradeTierHasItsOwnColor() {
+        val colors = listOf(null, 39.9, 40.0, 48.0, 56.0, 64.0, 72.0, 80.0)
+            .map(::valueTierColor)
 
-        for (v in listOf(null, 30.0, 50.0, 58.0, 70.0, 88.0)) {
-            val path = "${rankBasename(v)}.png"
-            val stream = this::class.java.classLoader.getResourceAsStream(path)
-            assertTrue(stream != null, "missing rank badge: $path")
-            stream!!.close()
-        }
-    }
-
-    @Test
-    fun everyRankBadgeIsASquarePng() {
-
-
-        for (v in listOf(null, 30.0, 50.0, 58.0, 70.0, 88.0)) {
-            val path = "${rankBasename(v)}.png"
-            val bmp = this::class.java.classLoader.getResourceAsStream(path)!!.use { loadImageBitmap(it) }
-            assertTrue(bmp.width == bmp.height && bmp.width >= 128, "not a square badge: $path is ${bmp.width}x${bmp.height}")
-        }
-    }
-
-    @Test
-    fun everyRankBadgeIsOpaqueAtItsCentre() {
-        for (v in listOf(null, 30.0, 50.0, 58.0, 70.0, 88.0)) {
-            val path = "${rankBasename(v)}.png"
-            val image = this::class.java.classLoader.getResourceAsStream(path)!!.use(ImageIO::read)
-            assertEquals(255, image.getRGB(image.width / 2, image.height / 2) ushr 24, "transparent centre: $path")
-        }
+        assertEquals(colors.size, colors.toSet().size)
     }
 }

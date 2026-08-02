@@ -44,16 +44,6 @@ fun valueTierColor(value: Double?): Color = when {
 fun isBombTier(value: Double?): Boolean = value != null && value >= 80.0
 
 
-fun rankBasename(value: Double?): String = "seals/" + when {
-    value == null -> "neutral"
-    value >= 80 -> "fire"
-    value >= 64 -> "gold"
-    value >= 56 -> "silver"
-    value >= 48 -> "bronze"
-    else -> "iron"
-}
-
-
 data class ModelExplain(
     val rank: Int,
     val packSize: Int,

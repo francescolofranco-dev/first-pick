@@ -1,6 +1,6 @@
 package com.firstpick.overlay
 
-import androidx.compose.foundation.Image
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -19,18 +19,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.BitmapPainter
-import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.loadImageBitmap
-import androidx.compose.ui.res.loadSvgPainter
-import androidx.compose.ui.res.useResource
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -42,7 +40,8 @@ import com.firstpick.ui.CardImageLoader
 import com.firstpick.ui.DevFlags
 import com.firstpick.ui.MacOverlay
 import com.firstpick.ui.isBombTier
-import com.firstpick.ui.rankBasename
+import com.firstpick.ui.letterGrade
+import com.firstpick.ui.valueTierColor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -282,85 +281,151 @@ private fun geometryMarks(
 }
 
 
-private const val BADGE_SCALE = 0.46f
-private const val BADGE_BOTTOM_OVERLAP = 3f
-
-
-private fun emblemAnchorY(value: Double?): Float = if (isBombTier(value)) 0.61f else 0.50f
-
-
-private fun emblemBottomOffset(value: Double?): Float = if (isBombTier(value)) 0.292f else 0.279f
+private const val BADGE_SCALE = 0.52f
+private const val BADGE_MIN_SIZE = 48f
+private const val BADGE_MAX_SIZE = 118f
+private const val BADGE_CARD_OVERLAP = 0.86f
 
 @Composable
 private fun GradeSeal(m: Mark) {
-    val fire = isBombTier(m.value)
-    val badge = (m.w * BADGE_SCALE).coerceIn(42f, 112f)
+    val badge = (m.w * BADGE_SCALE).coerceIn(BADGE_MIN_SIZE, BADGE_MAX_SIZE)
     val cx = m.x + m.w / 2f
-    val cy = m.y + m.h - emblemBottomOffset(m.value) * badge + BADGE_BOTTOM_OVERLAP
+    val top = m.y + m.h - BADGE_CARD_OVERLAP * badge
+    val accent = valueTierColor(m.value)
 
-
-    val haloAlpha = if (fire) 0.5f else if (m.isBest) 0.34f else 0f
-    if (haloAlpha > 0f) {
-        val haloColor = if (fire) Color(0xFFFFB020) else Color(0xFF7FD1C4)
-        val haloD = badge * 0.72f
+    if (m.isBest) {
+        val haloColor = if (isBombTier(m.value)) Color(0xFFFFC02E) else Color(0xFF7FD1C4)
+        val haloD = badge * 1.18f
+        val haloCenterY = top + badge * 0.49f
         Box(
             Modifier
-                .offset((cx - haloD / 2f).dp, (cy - haloD / 2f).dp)
+                .offset((cx - haloD / 2f).dp, (haloCenterY - haloD / 2f).dp)
                 .size(haloD.dp)
-                .background(Brush.radialGradient(listOf(haloColor.copy(alpha = haloAlpha), Color.Transparent))),
+                .background(Brush.radialGradient(listOf(haloColor.copy(alpha = 0.38f), Color.Transparent))),
         )
     }
 
-    rankPainter(m.value)?.let { painter ->
-        val top = cy - emblemAnchorY(m.value) * badge
-        Box(Modifier.offset((cx - badge / 2f).dp, top.dp).size(badge.dp)) {
-            Image(painter, contentDescription = null, modifier = Modifier.fillMaxSize())
+    Box(Modifier.offset((cx - badge / 2f).dp, top.dp).size(badge.dp)) {
+        PickCrest(accent, Modifier.fillMaxSize())
+
+        if (m.value == null) {
+            Text(
+                "—",
+                modifier = Modifier.align(Alignment.Center).offset(y = (-0.02f * badge).dp),
+                color = accent,
+                fontWeight = FontWeight.ExtraBold,
+                fontSize = (0.25f * badge).sp,
+                lineHeight = (0.25f * badge).sp,
+            )
+        } else {
+            Column(
+                modifier = Modifier.align(Alignment.Center).offset(y = (-0.015f * badge).dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text(
+                    letterGrade(m.value),
+                    color = accent,
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = (0.245f * badge).sp,
+                    lineHeight = (0.23f * badge).sp,
+                    maxLines = 1,
+                )
+                Text(
+                    m.value.roundToInt().toString(),
+                    color = Color(0xFFF2E9D8),
+                    fontFamily = FontFamily.Monospace,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = (0.145f * badge).sp,
+                    lineHeight = (0.145f * badge).sp,
+                    maxLines = 1,
+                )
+            }
         }
     }
-
-    ShieldScore(m.value, badge, cx, cy)
 }
 
-
 @Composable
-private fun ShieldScore(value: Double?, badge: Float, cx: Float, cy: Float) {
-    val scoreW = 0.38f * badge
-    val scoreH = 0.22f * badge
-    Box(
-        Modifier.offset((cx - scoreW / 2f).dp, (cy - scoreH / 2f).dp).size(scoreW.dp, scoreH.dp),
-        contentAlignment = Alignment.Center,
+private fun PickCrest(accent: Color, modifier: Modifier = Modifier) {
+    Canvas(modifier) {
+        drawPickCrest(accent)
+    }
+}
+
+private fun DrawScope.drawPickCrest(accent: Color) {
+    val keyline = Color(0xFF070B0A)
+    val face = Color(0xFF0E1312)
+    val rearFace = lerp(accent, face, 0.42f)
+
+    fun card(
+        left: Float,
+        top: Float,
+        width: Float,
+        height: Float,
+        degrees: Float,
+        fill: Color,
     ) {
-        Box(
-            Modifier
-                .clip(RoundedCornerShape(50))
-                .background(Color(0xFF0E1312))
-                .padding(horizontal = (0.05f * badge).dp, vertical = (0.01f * badge).dp),
-        ) {
-            Text(
-                value?.roundToInt()?.toString() ?: "—",
-                color = Color(0xFFF2E9D8),
-                fontFamily = FontFamily.Monospace,
-                fontWeight = FontWeight.Bold,
-                fontSize = (0.15f * badge).sp,
+        val pivot = Offset(left + width / 2f, top + height / 2f)
+        rotate(degrees = degrees, pivot = pivot) {
+            drawRoundRect(
+                color = keyline,
+                topLeft = Offset(left, top),
+                size = Size(width, height),
+                cornerRadius = CornerRadius(width * 0.14f),
+            )
+            val inset = width * 0.055f
+            drawRoundRect(
+                color = fill,
+                topLeft = Offset(left + inset, top + inset),
+                size = Size(width - 2f * inset, height - 2f * inset),
+                cornerRadius = CornerRadius(width * 0.10f),
             )
         }
     }
+
+    card(
+        left = size.width * 0.13f,
+        top = size.height * 0.19f,
+        width = size.width * 0.43f,
+        height = size.height * 0.68f,
+        degrees = -10f,
+        fill = rearFace,
+    )
+    card(
+        left = size.width * 0.44f,
+        top = size.height * 0.19f,
+        width = size.width * 0.43f,
+        height = size.height * 0.68f,
+        degrees = 10f,
+        fill = rearFace,
+    )
+
+    val frontLeft = size.width * 0.25f
+    val frontTop = size.height * 0.06f
+    val frontWidth = size.width * 0.50f
+    val frontHeight = size.height * 0.81f
+    drawRoundRect(
+        color = keyline,
+        topLeft = Offset(frontLeft, frontTop),
+        size = Size(frontWidth, frontHeight),
+        cornerRadius = CornerRadius(frontWidth * 0.14f),
+    )
+
+    val rimInset = frontWidth * 0.055f
+    drawRoundRect(
+        color = accent,
+        topLeft = Offset(frontLeft + rimInset, frontTop + rimInset),
+        size = Size(frontWidth - 2f * rimInset, frontHeight - 2f * rimInset),
+        cornerRadius = CornerRadius(frontWidth * 0.10f),
+    )
+
+    val faceInset = frontWidth * 0.105f
+    drawRoundRect(
+        color = face,
+        topLeft = Offset(frontLeft + faceInset, frontTop + faceInset),
+        size = Size(frontWidth - 2f * faceInset, frontHeight - 2f * faceInset),
+        cornerRadius = CornerRadius(frontWidth * 0.065f),
+    )
 }
-
-@Composable
-private fun rankPainter(value: Double?): Painter? {
-    val density = LocalDensity.current
-    val base = rankBasename(value)
-
-    return remember(base, density) {
-        loadBadge("$base.png", density) ?: loadBadge("$base.svg", density)
-    }
-}
-
-private fun loadBadge(path: String, density: Density): Painter? = runCatching {
-    if (path.endsWith(".png")) useResource(path) { BitmapPainter(loadImageBitmap(it)) }
-    else useResource(path) { loadSvgPainter(it, density) }
-}.getOrNull()
 
 @Composable
 private fun NumberBox(m: Mark) {
