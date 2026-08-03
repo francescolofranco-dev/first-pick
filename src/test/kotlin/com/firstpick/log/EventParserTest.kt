@@ -65,11 +65,27 @@ class EventParserTest {
     }
 
     @Test
-    fun completeWhenStatusNotPickNext() {
+    fun completeWhenStatusIsExplicitlyComplete() {
         val snap = parser.parse(
             snapshotLine(pack = 2, pick = 0, packCards = emptyList(), pickedCards = listOf(1, 2, 3), status = "Complete"),
         ) as DraftEvent.Snapshot
         assertTrue(snap.complete)
+    }
+
+    @Test
+    fun completeWhenArenaUsesTheObservedCompletedStatus() {
+        val snap = parser.parse(
+            snapshotLine(pack = 2, pick = 13, packCards = emptyList(), pickedCards = (1..42).toList(), status = "Completed"),
+        ) as DraftEvent.Snapshot
+        assertTrue(snap.complete)
+    }
+
+    @Test
+    fun unknownBotDraftStatusDoesNotCompleteTheDraft() {
+        val snap = parser.parse(
+            snapshotLine(pack = 2, pick = 0, packCards = listOf(4), pickedCards = listOf(1, 2, 3), status = "Waiting"),
+        ) as DraftEvent.Snapshot
+        assertTrue(!snap.complete)
     }
 
     @Test

@@ -1,6 +1,7 @@
 package com.firstpick.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,6 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,18 +36,80 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+internal val DeckOptionUi.deckBuildKey: String
+    get() = colors
+
+internal fun resolveDeckPreviewKey(
+    optionKeys: List<String>,
+    previewKey: String?,
+    committedKey: String?,
+): String? = previewKey?.takeIf { it in optionKeys }
+    ?: committedKey?.takeIf { it in optionKeys }
+    ?: optionKeys.firstOrNull()
+
 @Composable
-internal fun DeckBuilderPane(options: List<DeckOptionUi>) {
-    var selected by remember(options) { mutableStateOf(0) }
-    val sel = options.getOrElse(selected) { options.first() }
+internal fun DeckBuilderPane(
+    options: List<DeckOptionUi>,
+    committedDeck: DeckOptionUi?,
+    onUseDeck: (DeckOptionUi) -> Unit,
+    onStopGuidance: () -> Unit,
+) {
+    if (options.isEmpty()) return
+
+    val optionKeys = options.map { it.deckBuildKey }
+    val committedKey = committedDeck?.deckBuildKey
+    var previewKey by remember { mutableStateOf<String?>(null) }
+    val resolvedPreviewKey = resolveDeckPreviewKey(optionKeys, previewKey, committedKey)
+    val sel = options.first { it.deckBuildKey == resolvedPreviewKey }
+
+    LaunchedEffect(optionKeys, committedKey) {
+        previewKey = resolveDeckPreviewKey(optionKeys, previewKey, committedKey)
+    }
+
     val spellCount = sel.spells.sumOf { it.count }
     Column(Modifier.fillMaxSize()) {
         Text("Draft complete — pick your build", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+        Spacer(Modifier.height(2.dp))
+        Text(
+            if (committedDeck == null) {
+                "Preview a build, then confirm it to start Arena guidance."
+            } else {
+                "Guidance active for ${committedDeck.title}. Preview another build and confirm to change it."
+            },
+            fontSize = 11.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
         Spacer(Modifier.height(10.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            options.forEachIndexed { i, opt -> OptionCard(opt, i == selected) { selected = i } }
+            options.forEach { opt ->
+                OptionCard(
+                    opt = opt,
+                    previewed = opt.deckBuildKey == resolvedPreviewKey,
+                    active = opt.deckBuildKey == committedKey,
+                    onClick = { previewKey = opt.deckBuildKey },
+                )
+            }
         }
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(10.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            GuidanceAction(
+                label = when {
+                    committedKey == null -> "Use this build"
+                    committedKey == resolvedPreviewKey -> "Guidance active"
+                    else -> "Use this build"
+                },
+                enabled = committedKey != resolvedPreviewKey,
+                onClick = { onUseDeck(sel) },
+            )
+            if (committedDeck != null) {
+                GuidanceAction(
+                    label = "Stop guidance",
+                    emphasized = false,
+                    onClick = onStopGuidance,
+                )
+            }
+        }
+        Spacer(Modifier.height(10.dp))
         Text(
             "${sel.title} (${sel.colors}) · $spellCount spells · ${sel.landLine}",
             fontSize = 12.sp,
@@ -208,16 +272,29 @@ private fun roleColor(role: String): Color = when (role) {
 }
 
 @Composable
-private fun OptionCard(opt: DeckOptionUi, selected: Boolean, onClick: () -> Unit) {
+private fun OptionCard(opt: DeckOptionUi, previewed: Boolean, active: Boolean, onClick: () -> Unit) {
     Column(
         Modifier
             .width(160.dp)
             .clip(RoundedCornerShape(12.dp))
-            .background(if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface)
+            .background(if (previewed) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface)
+            .border(
+                width = if (active) 2.dp else 1.dp,
+                color = if (active) MaterialTheme.colorScheme.primary else Color.Transparent,
+                shape = RoundedCornerShape(12.dp),
+            )
             .clickable(onClick = onClick)
             .padding(12.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
+        if (active) {
+            Text(
+                "GUIDANCE ACTIVE",
+                fontSize = 9.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+            )
+        }
         Row(verticalAlignment = Alignment.CenterVertically) {
             PipRow(opt.colors.toList())
             Spacer(Modifier.width(6.dp))
@@ -231,6 +308,34 @@ private fun OptionCard(opt: DeckOptionUi, selected: Boolean, onClick: () -> Unit
         Text(opt.identityLine, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurface)
         Text(opt.outlook, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Text("${opt.creatures} creatures · ${opt.removal} removal", fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
+@Composable
+private fun GuidanceAction(
+    label: String,
+    enabled: Boolean = true,
+    emphasized: Boolean = true,
+    onClick: () -> Unit,
+) {
+    val background = when {
+        !enabled -> MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
+        emphasized -> MaterialTheme.colorScheme.primary
+        else -> MaterialTheme.colorScheme.surfaceVariant
+    }
+    val foreground = when {
+        !enabled -> MaterialTheme.colorScheme.primary
+        emphasized -> MaterialTheme.colorScheme.onPrimary
+        else -> MaterialTheme.colorScheme.onSurface
+    }
+    Box(
+        Modifier
+            .clip(RoundedCornerShape(8.dp))
+            .background(background)
+            .then(if (enabled) Modifier.clickable(onClick = onClick) else Modifier)
+            .padding(horizontal = 12.dp, vertical = 7.dp),
+    ) {
+        Text(label, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = foreground)
     }
 }
 

@@ -57,7 +57,6 @@ private const val CAPTURE_DEBOUNCE_MS = 600L
 private const val RECOGNITION_RETRY_MS = 500L
 private const val MAX_RECOGNITION_ATTEMPTS = 12
 private const val REQUIRED_FULL_RECOGNITIONS = 3
-private const val HOVER_POLL_MS = 500L
 private const val DEV_DETECT_RETRY_MS = 900L
 private const val MIN_CALIBRATION_CARDS = 10
 
@@ -203,21 +202,6 @@ fun ArenaOverlayTracker(
         Log.warn(TAG, "$lastFailure after $MAX_RECOGNITION_ATTEMPTS attempts; leaving seals ungraded")
     }
 
-
-    var hovering by remember(packKey) { mutableStateOf(false) }
-    LaunchedEffect(packKey, visible, b.w, b.h, assignmentState.value) {
-        if (calibrating || !visible || assignmentState.value == null) {
-            hovering = false
-            return@LaunchedEffect
-        }
-        while (true) {
-            val frame = withContext(Dispatchers.IO) { cap.capture() }
-            hovering = frame != null && CardDetector.isHoverMagnified(frame, cards.size)
-            delay(HOVER_POLL_MS)
-        }
-    }
-
-
     LaunchedEffect(calibrating, b.w, b.h) {
         if (!calibrating) return@LaunchedEffect
         while (true) {
@@ -235,7 +219,7 @@ fun ArenaOverlayTracker(
 
     Window(
         onCloseRequest = {},
-        visible = visible && !hovering,
+        visible = visible,
         state = wState,
         title = TRACKER_TITLE,
         transparent = true,

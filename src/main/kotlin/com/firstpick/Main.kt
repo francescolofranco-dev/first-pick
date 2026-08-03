@@ -6,22 +6,24 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
-import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
-import com.firstpick.ui.DeckBuilderOverlay
 import com.firstpick.ui.DevFlags
+import com.firstpick.overlay.ArenaDeckBuilderOverlay
 import com.firstpick.overlay.ArenaOverlayTracker
+import com.firstpick.overlay.DeckCardCount
 import com.firstpick.overlay.OverlayCard
 import com.firstpick.model.DraftPhase
 import com.firstpick.core.AppPaths
 import com.firstpick.ui.App
+import com.firstpick.ui.DeckOptionUi
+import com.firstpick.ui.DeckSpellUi
 import com.firstpick.ui.DraftViewModel
 import com.firstpick.ui.PackCardUi
+import com.firstpick.ui.deckBuildKey
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -49,6 +51,14 @@ fun main() {
 
         val state by viewModel.ui.collectAsState()
         var isOverlayOpen by remember { mutableStateOf(false) }
+        var committedDeckKey by remember(state.phase == DraftPhase.COMPLETE) {
+            mutableStateOf<String?>(null)
+        }
+        val committedDeck: DeckOptionUi? = if (state.phase == DraftPhase.COMPLETE) {
+            state.deckOptions.firstOrNull { it.deckBuildKey == committedDeckKey }
+        } else {
+            null
+        }
 
 
         Window(
@@ -63,6 +73,11 @@ fun main() {
                 state = state,
                 isOverlayOpen = isOverlayOpen,
                 onToggleOverlay = { isOverlayOpen = !isOverlayOpen },
+                committedDeck = committedDeck,
+                onUseDeck = {
+                    if (state.phase == DraftPhase.COMPLETE) committedDeckKey = it.deckBuildKey
+                },
+                onStopGuidance = { committedDeckKey = null },
                 onSelectFormat = { viewModel.setFormatChoice(it) },
                 onSimulate = { viewModel.startSimulation(it) },
                 onStopSim = { viewModel.stopSimulation() },
@@ -70,38 +85,22 @@ fun main() {
             )
         }
 
-        if (isOverlayOpen) {
-            val isDrafting = state.phase == DraftPhase.DRAFTING || state.phase == DraftPhase.IDLE
-            if (isDrafting) {
+        when {
+            state.phase == DraftPhase.COMPLETE && committedDeck != null -> {
+                val target = remember(committedDeck) { deckGuidanceTarget(committedDeck) }
+                val draftPool = remember(state.draftPool) { deckGuidancePool(state.draftPool) }
+                ArenaDeckBuilderOverlay(target = target, draftPool = draftPool)
+            }
+
+            isOverlayOpen && (state.phase == DraftPhase.DRAFTING || state.phase == DraftPhase.IDLE) -> {
                 val cards = remember(state.packCards) {
                     overlayCards(state.packCards)
                 }
                 ArenaOverlayTracker(cards = cards)
-            } else {
-                val overlayWindowState = rememberWindowState(
-                    size = DpSize(1000.dp, 650.dp),
-                    position = WindowPosition(Alignment.BottomCenter)
-                )
-                Window(
-                    onCloseRequest = { isOverlayOpen = false },
-                    state = overlayWindowState,
-                    title = "FirstPick Overlay",
-                    undecorated = true,
-                    transparent = true,
-                    alwaysOnTop = true,
-                    focusable = false,
-                ) {
-                    DeckBuilderOverlay(
-                        composeWindow = window,
-                        state = state,
-                        windowState = overlayWindowState,
-                        onClose = { isOverlayOpen = false }
-                    )
-                }
             }
-        }
 
-        else if (DevFlags.overlayTrack) ArenaOverlayTracker()
+            !isOverlayOpen && DevFlags.overlayTrack -> ArenaOverlayTracker()
+        }
     }
 }
 
@@ -109,3 +108,10 @@ internal fun overlayCards(packCards: List<PackCardUi>): List<OverlayCard> =
     packCards.sortedBy(PackCardUi::originalIndex).map {
         OverlayCard(it.value, it.imageUrl, it.name, it.originalIndex)
     }
+
+internal fun deckGuidanceTarget(deck: DeckOptionUi): List<DeckCardCount> =
+    deckGuidancePool(deck.spells + deck.lands)
+
+internal fun deckGuidancePool(cards: List<DeckSpellUi>): List<DeckCardCount> = cards
+    .filter { it.count > 0 }
+    .map { DeckCardCount(it.name, it.count, isBasicLand = it.isBasicLand) }

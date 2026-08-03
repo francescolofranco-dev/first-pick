@@ -64,6 +64,22 @@ class DraftTrackerTest {
     }
 
     @Test
+    fun premierDraftCompletesWhenTheFinalPickLogIsConfirmed() {
+        val tracker = DraftTracker()
+        tracker.onLine("[UnityCrossThreadLogger]==> Event.Join {\"EventName\":\"PremierDraft_MKM_20240206\"}")
+        tracker.onLine("[UnityCrossThreadLogger]==> Draft.Notify {\"SelfPack\":3,\"SelfPick\":14,\"PackCards\":\"900\"}")
+        assertEquals(DraftPhase.DRAFTING, tracker.state.value.phase)
+
+        tracker.onLine(
+            "[UnityCrossThreadLogger]==> PlayerDraftMakePick " +
+                "{\"request\":\"{\\\"GrpIds\\\":[\\\"900\\\"],\\\"PackNumber\\\":2,\\\"PickNumber\\\":13}\"}",
+        )
+
+        assertEquals(DraftPhase.COMPLETE, tracker.state.value.phase)
+        assertEquals(listOf(900), tracker.state.value.pool)
+    }
+
+    @Test
     fun resetsWhenANewEventStarts() {
         val tracker = DraftTracker()
         tracker.onLine(snapshotLine(2, 5, listOf(50), listOf(1, 2, 3, 4, 5)))

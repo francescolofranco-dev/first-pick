@@ -52,16 +52,12 @@ object CardDetector {
 
     private sealed class DetectResult {
         data class Found(val grid: Grid) : DetectResult()
-        object HoverMagnified : DetectResult()
         object Indeterminate : DetectResult()
     }
 
     fun detect(img: BufferedImage, expectedCount: Int = 0): Grid? =
         (detectInternal(img, expectedCount) as? DetectResult.Found)?.grid
 
-
-    fun isHoverMagnified(img: BufferedImage, expectedCount: Int = 0): Boolean =
-        detectInternal(img, expectedCount) is DetectResult.HoverMagnified
 
     private fun detectInternal(img: BufferedImage, expectedCount: Int): DetectResult {
         val w = img.width
@@ -133,8 +129,8 @@ object CardDetector {
 
 
         if (row0Top > (MAX_ROW0_TOP * h)) {
-            Log.debug(TAG, "reject: row0Top $row0Top past ${(MAX_ROW0_TOP * h).toInt()} (hovered/magnified frame)")
-            return DetectResult.HoverMagnified
+            Log.debug(TAG, "reject: row0Top $row0Top past ${(MAX_ROW0_TOP * h).toInt()} (magnified/shifted frame)")
+            return DetectResult.Indeterminate
         }
         val pitchCandidates = bands.map { it.last }.zipWithNext { a, b -> b - a }
             .filter { it in (0.9 * cardH).toInt()..(1.5 * cardH).toInt() }

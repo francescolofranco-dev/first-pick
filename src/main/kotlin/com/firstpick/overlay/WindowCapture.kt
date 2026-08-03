@@ -23,12 +23,12 @@ class WindowCapture(
                     .redirectErrorStream(true).start()
                 if (!proc.waitFor(captureTimeoutMs, TimeUnit.MILLISECONDS)) {
                     terminate(proc)
-                    Log.warn(TAG, "capture timed out")
+                    Log.debug(TAG, "capture timed out")
                     return@runCatching null
                 }
                 val log = proc.inputStream.bufferedReader().readText().trim()
                 if (!log.contains("\"captured\":true")) {
-                    Log.warn(TAG, "capture failed: $log")
+                    Log.debug(TAG, "capture failed: $log")
                     return@runCatching null
                 }
                 ImageIO.read(out)
@@ -36,7 +36,7 @@ class WindowCapture(
                 proc?.takeIf { it.isAlive }?.let(::terminate)
                 out.delete()
             }
-        }.getOrElse { Log.warn(TAG, "capture failed: $it"); null }
+        }.getOrElse { Log.debug(TAG, "capture failed: $it"); null }
     }
 
     private fun terminate(proc: Process) {

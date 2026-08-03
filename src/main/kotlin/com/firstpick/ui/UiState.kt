@@ -41,6 +41,7 @@ data class DeckSpellUi(
     val typeLabel: String = "",
     val role: String? = null,
     val isLand: Boolean = false,
+    val isBasicLand: Boolean = false,
 )
 
 fun deckColorRank(color: String): Int {
@@ -119,6 +120,9 @@ data class DraftUiState(
     val archetypes: List<ArchetypeRow> = emptyList(),
     val deckNeeds: List<String> = emptyList(),
     val deckOptions: List<DeckOptionUi> = emptyList(),
+
+    /** Every card drafted, grouped by display name, for post-draft client guidance. */
+    val draftPool: List<DeckSpellUi> = emptyList(),
 
     val deckSoFar: DeckOptionUi? = null,
 

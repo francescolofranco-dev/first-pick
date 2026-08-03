@@ -78,7 +78,8 @@ class EventParser(
             pick = payload.pickNumber + 1,
             packCards = payload.draftPack.toInts(),
             pool = payload.pickedCards.toInts(),
-            complete = !payload.draftStatus.equals("PickNext", ignoreCase = true),
+            complete = payload.draftStatus.equals("Complete", ignoreCase = true) ||
+                payload.draftStatus.equals("Completed", ignoreCase = true),
         )
     }
 

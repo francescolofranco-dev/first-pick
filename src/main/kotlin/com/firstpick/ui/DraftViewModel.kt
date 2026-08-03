@@ -247,6 +247,7 @@ class DraftViewModel(
             archetypes = archetypeRows(lane.pair),
             deckNeeds = deckNeeds,
             deckOptions = deckOptions,
+            draftPool = pool.toDeckSpells(),
             deckSoFar = liveProjection?.toUi(),
             deckSoFarCuts = cutsOf(pool, liveProjection),
             ratingsFormatChoice = formatChoice,
@@ -330,8 +331,23 @@ class DraftViewModel(
                 typeLabel = deckCardType(c.rating, m),
                 role = deckCardRole(m),
                 isLand = m?.isLand == true,
+                isBasicLand = isBasicLand(c.rating, m, name),
             )
         }.sortedWith(deckSpellOrder)
+
+    private fun isBasicLand(
+        rating: com.firstpick.cards.CardRating?,
+        meta: CardMeta?,
+        displayName: String,
+    ): Boolean {
+        if (meta?.isLand != true) return false
+        if (rating?.types.orEmpty().any { it.contains("Basic Land", ignoreCase = true) }) return true
+        val normalized = displayName
+            .removePrefix("A-")
+            .removePrefix("Snow-Covered ")
+            .trim()
+        return normalized in BASIC_LAND_NAMES
+    }
 
     private fun deckCardType(rating: com.firstpick.cards.CardRating?, meta: CardMeta?): String {
         val types = rating?.types.orEmpty()
@@ -418,6 +434,7 @@ class DraftViewModel(
     companion object {
         private const val TAG = "DraftViewModel"
         private const val TOTAL_PICKS = 45
+        private val BASIC_LAND_NAMES = setOf("Plains", "Island", "Swamp", "Mountain", "Forest", "Wastes")
         private val WUBRG_ORDER = listOf('W', 'U', 'B', 'R', 'G')
     }
 }

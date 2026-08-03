@@ -1,6 +1,8 @@
 package com.firstpick
 
 import com.firstpick.ui.PackCardUi
+import com.firstpick.ui.DeckOptionUi
+import com.firstpick.ui.DeckSpellUi
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -13,6 +15,40 @@ class MainTest {
         assertEquals(listOf("Other", "Top pick"), firstRanking.map { it.name })
         assertEquals(firstRanking.map { it.originalIndex }, updatedRanking.map { it.originalIndex })
         assertEquals(listOf(70.0, 42.0), updatedRanking.map { it.value })
+    }
+
+    @Test
+    fun deckGuidanceIncludesSpellsAndDraftedNonbasicLandsButFlagsBasics() {
+        val option = DeckOptionUi(
+            colors = "WU",
+            basePair = "WU",
+            tier = "B",
+            type = "Tempo",
+            outlook = "Solid",
+            power = 70,
+            identityConfidence = "High",
+            identityReasons = emptyList(),
+            powerConfidence = "High",
+            powerReasons = emptyList(),
+            creatures = 15,
+            removal = 4,
+            landLine = "17 lands",
+            spells = listOf(DeckSpellUi("Stock Up", 3, "U", null, count = 2)),
+            lands = listOf(DeckSpellUi("Drafted Dual", 0, "WU", null, isLand = true)),
+        )
+
+        assertEquals(
+            listOf("Stock Up" to 2, "Drafted Dual" to 1),
+            deckGuidanceTarget(option).map { it.name to it.count },
+        )
+
+        val pool = deckGuidancePool(
+            listOf(
+                DeckSpellUi("Plains", 0, "W", null, count = 8, isLand = true, isBasicLand = true),
+                DeckSpellUi("Drafted Dual", 0, "WU", null, isLand = true),
+            ),
+        )
+        assertEquals(listOf(true, false), pool.map { it.isBasicLand })
     }
 
     private fun card(name: String, originalIndex: Int, value: Double) = PackCardUi(

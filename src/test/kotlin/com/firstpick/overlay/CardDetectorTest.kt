@@ -4,7 +4,6 @@ import java.awt.image.BufferedImage
 import javax.imageio.ImageIO
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -131,7 +130,7 @@ class CardDetectorTest {
     }
 
     @Test
-    fun rejectsAHoveredMagnifiedFrameWhereRowsFuseAndTheGridShiftsDown() {
+    fun rejectsAMagnifiedFrameWhereRowsFuseAndTheGridShiftsDown() {
 
 
         val w = 2560
@@ -146,7 +145,6 @@ class CardDetectorTest {
         g.dispose()
 
         assertNull(CardDetector.detect(img, expectedCount = 8))
-        assertTrue(CardDetector.isHoverMagnified(img, expectedCount = 8), "the overlay must recognize this exact frame as a hover preview so it can hide its seals")
     }
 
     @Test
@@ -159,17 +157,4 @@ class CardDetectorTest {
         assertNull(CardDetector.detect(BufferedImage(1280, 748, BufferedImage.TYPE_INT_RGB)))
     }
 
-    @Test
-    fun doesNotFlagOrdinaryDetectionFailuresAsHoverMagnified() {
-
-
-        assertFalse(CardDetector.isHoverMagnified(BufferedImage(64, 64, BufferedImage.TYPE_INT_RGB)))
-        assertFalse(CardDetector.isHoverMagnified(BufferedImage(1280, 748, BufferedImage.TYPE_INT_RGB)))
-    }
-
-    @Test
-    fun doesNotFlagACleanCaptureAsHoverMagnified() {
-        assertFalse(CardDetector.isHoverMagnified(fixture("p1p1-13cards.png"), expectedCount = 13))
-        assertFalse(CardDetector.isHoverMagnified(fixture("msh-p1p1-14cards.jpg"), expectedCount = 14))
-    }
 }

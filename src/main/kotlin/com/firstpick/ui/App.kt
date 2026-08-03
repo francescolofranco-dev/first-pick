@@ -41,6 +41,9 @@ fun App(
     state: DraftUiState,
     isOverlayOpen: Boolean,
     onToggleOverlay: () -> Unit,
+    committedDeck: DeckOptionUi? = null,
+    onUseDeck: (DeckOptionUi) -> Unit = {},
+    onStopGuidance: () -> Unit = {},
     onSelectFormat: (String) -> Unit = {},
     onSimulate: (String) -> Unit = {},
     onStopSim: () -> Unit = {},
@@ -87,7 +90,12 @@ fun App(
                 Row(Modifier.fillMaxSize()) {
                     Box(Modifier.weight(1f).fillMaxHeight()) {
                         if (currentScreen == AppScreen.DECK_BUILDER && state.deckOptions.isNotEmpty()) {
-                            DeckBuilderPane(state.deckOptions)
+                            DeckBuilderPane(
+                                options = state.deckOptions,
+                                committedDeck = committedDeck,
+                                onUseDeck = onUseDeck,
+                                onStopGuidance = onStopGuidance,
+                            )
                         } else if (currentScreen == AppScreen.DECK_BUILDER && state.deckSoFar != null) {
                             DeckSoFarPane(state.deckSoFar, state.deckSoFarCuts)
                         } else {
@@ -190,22 +198,24 @@ private fun Header(
                 }
             }
             FormatSelector(state.ratingsFormatChoice, onSelectFormat)
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(
-                        if (isOverlayOpen) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
-                        else MaterialTheme.colorScheme.surfaceVariant,
+            if (state.phase != DraftPhase.COMPLETE) {
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(
+                            if (isOverlayOpen) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                            else MaterialTheme.colorScheme.surfaceVariant,
+                        )
+                        .clickable(onClick = onToggleOverlay)
+                        .padding(horizontal = 12.dp, vertical = 6.dp),
+                ) {
+                    Text(
+                        text = if (isOverlayOpen) "Hide overlay" else "Show overlay",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = if (isOverlayOpen) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
                     )
-                    .clickable(onClick = onToggleOverlay)
-                    .padding(horizontal = 12.dp, vertical = 6.dp),
-            ) {
-                Text(
-                    text = if (isOverlayOpen) "Hide overlay" else "Show overlay",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = if (isOverlayOpen) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
-                )
+                }
             }
         }
     }

@@ -114,12 +114,13 @@ data class DraftState(
 
         is DraftEvent.PickMade -> {
             val newPool = pool + event.cardIds
-
-            val isLastPickOfDraft = (pack >= 3 && packCards.size <= event.cardIds.size)
-
-            val newPhase = if (isLastPickOfDraft || newPool.size >= 42) DraftPhase.COMPLETE
-                           else if (phase == DraftPhase.IDLE) DraftPhase.DRAFTING
-                           else phase
+            val isConfirmedFinalPick = pack >= 3 &&
+                packCards.isNotEmpty() &&
+                event.cardIds.isNotEmpty() &&
+                packCards.size == event.cardIds.size
+            val newPhase = if (isConfirmedFinalPick) DraftPhase.COMPLETE
+                else if (phase == DraftPhase.IDLE) DraftPhase.DRAFTING
+                else phase
             copy(
                 phase = newPhase,
                 pack = if (event.pack > 0) event.pack else pack,
