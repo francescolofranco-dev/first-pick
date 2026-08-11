@@ -1,440 +1,575 @@
 {
  "set": "DSK",
  "setName": "Duskmourn: House of Horror",
- "generated": "2026-07-04",
+ "generated": "2026-08-11",
  "mechanics": [
   {
-   "name": "Manifest",
-   "summary": ""
+   "name": "Rooms",
+   "summary": "Room cards are split enchantments with two doors: cast either half to unlock that door, then pay the other door's mana cost as a sorcery-speed special action to fully unlock the Room. For eerie abilities, casting a Room supplies the enchantment-entry trigger up front and a second trigger when the last locked door opens."
   },
   {
    "name": "Manifest dread",
-   "summary": ""
-  },
-  {
-   "name": "Delirium",
-   "summary": ""
-  },
-  {
-   "name": "Eerie",
-   "summary": ""
+   "summary": "Look at the top two cards of your library, put one onto the battlefield face down as a colorless 2/2 creature with no name, creature types, or abilities, and put the other into your graveyard. If the manifested card is a creature, you may turn it face up as a special action by paying its mana cost, creating both board presence and graveyard fuel."
   },
   {
    "name": "Survival",
-   "summary": ""
+   "summary": "Survival abilities trigger at the beginning of your second main phase if their creature is tapped, then check that it is still tapped when the trigger resolves. Attacking, crewing, mana abilities, and other tap effects can all switch them on before that phase begins."
+  },
+  {
+   "name": "Eerie",
+   "summary": "Each eerie ability triggers whenever an enchantment you control enters and whenever a Room you control becomes fully unlocked. A cast Room can supply the enchantment-entry trigger and, after its other door opens, one later full-unlock trigger."
+  },
+  {
+   "name": "Impending",
+   "summary": "The five mythic Overlords may be cast for an impending cost, entering with time counters and remaining noncreature enchantments while any counters remain; remove one at the beginning of each of your end steps. Their enters abilities still trigger immediately, and removing the final counter turns them into creatures."
+  },
+  {
+   "name": "Delirium",
+   "summary": "Delirium is active while four or more card types are represented among cards in your graveyard. Artifact creatures and enchantment creatures each supply two types, while Room is an enchantment subtype rather than another card type, so self-mill, manifest dread, and disposable mixed-type permanents are the cleanest setup."
   }
  ],
  "archetypes": [
   {
    "pair": "WU",
-   "name": "Survival flyers",
-   "playstyle": "",
-   "speed": "",
+   "name": "Eerie tempo",
+   "playstyle": "Curve out with enchantment creatures, Auras, and Rooms to stack eerie triggers, then turn the resulting counters and tokens into a tempo clock. Bounce or lock blockers, protect the largest threat, and remember that fully unlocking a Room supplies a second eerie trigger.",
+   "speed": "aggro",
    "signposts": [
     "Gremlin Tamer",
     "Inquisitive Glimmer"
    ],
    "payoffs": [
     "Optimistic Scavenger",
+    "Entity Tracker",
+    "Ethereal Armor",
     "Erratic Apparition",
-    "Unwilling Vessel",
-    "Scrabbling Skullcrab",
-    "Fear of Isolation",
-    "Lionheart Glimmer"
+    "Unwilling Vessel"
    ],
    "enablers": [
-    "Surgical Suite // Hospital Room",
-    "Ethereal Armor",
     "Grand Entryway // Elegant Rotunda",
-    "Unwanted Remake",
+    "Trapped in the Screen",
+    "Glimmerburst",
+    "Fear of Isolation",
+    "Shardmage's Rescue",
     "Bottomless Pool // Locker Room"
    ],
    "keyCards": [
-    "Meat Locker // Drowned Diner",
-    "Shardmage's Rescue",
-    "Etched Cornfield",
-    "Cult Healer",
     "Sheltered by Ghosts",
-    "Underwater Tunnel // Slimy Aquarium",
-    "Clammy Prowler",
-    "Fear of Abduction",
-    "Piranha Fly",
-    "Fear of Impostors",
-    "Trapped in the Screen",
+    "Ghostly Dancers",
+    "Surgical Suite // Hospital Room",
+    "Unnerving Grasp",
+    "Floodpits Drowner",
+    "Unable to Scream",
     "Glimmerlight",
-    "Abandoned Campground",
-    "Fear of Falling"
+    "Meat Locker // Drowned Diner"
    ]
   },
   {
    "pair": "WB",
-   "name": "Rooms lifedrain",
-   "playstyle": "",
-   "speed": "",
+   "name": "Reanimator control",
+   "playstyle": "Draft this as removal-heavy control with reanimation as its finisher: loot, surveil, or landcycle oversized creatures into the graveyard, then return them without paying their additional cast costs. Prioritize time-buying interaction and recyclable value over stuffing the deck with too many expensive targets.",
+   "speed": "control",
    "signposts": [
     "Rite of the Moth",
     "Shroudstomper"
    ],
    "payoffs": [
-    "Spectral Snatcher",
-    "Dashing Bloodsucker",
-    "Fanatic of the Harrowing",
-    "Possessed Goat",
-    "Splitskin Doll",
-    "Cynical Loner"
+    "Live or Die",
+    "Emerge from the Cocoon",
+    "Valgavoth's Faithful",
+    "Defiled Crypt // Cadaver Lab",
+    "Fear of Abduction",
+    "Vile Mutilator"
    ],
    "enablers": [
-    "Etched Cornfield",
-    "Derelict Attic // Widow's Walk",
-    "Haunted Screen",
+    "Splitskin Doll",
+    "Fanatic of the Harrowing",
     "Commune with Evil",
-    "Neglected Manor"
+    "Cynical Loner",
+    "Found Footage",
+    "Shepherding Spirits",
+    "Spectral Snatcher",
+    "Possessed Goat"
    ],
    "keyCards": [
-    "Emerge from the Cocoon",
-    "Give In to Violence",
-    "Killer's Mask",
-    "Unsettling Twins",
-    "Shepherding Spirits",
-    "Valgavoth's Faithful",
-    "Vile Mutilator",
-    "Appendage Amalgam",
-    "Murky Sewer",
-    "Balemurk Leech",
-    "Live or Die",
-    "Found Footage",
-    "Seized from Slumber",
-    "Miasma Demon"
+    "Overlord of the Mistmoors",
+    "Unholy Annex // Ritual Chamber",
+    "Overlord of the Balemurk",
+    "Unstoppable Slasher",
+    "Sheltered by Ghosts",
+    "Nowhere to Run",
+    "Trapped in the Screen",
+    "Seized from Slumber"
    ]
   },
   {
    "pair": "WR",
-   "name": "Aggro",
-   "playstyle": "",
-   "speed": "",
+   "name": "Power-two swarm",
+   "playstyle": "Build a low curve of creatures with power 2 or less and token makers, then make every wide attack lethal through Arabella, Midnight Mayhem, attack anthems, and evasion. Cheap burn and pump should preserve tempo; avoid diluting the deck with slow cards that do not add bodies or clear blockers.",
+   "speed": "aggro",
    "signposts": [
-    "Midnight Mayhem",
-    "Arabella, Abandoned Doll"
+    "Arabella, Abandoned Doll",
+    "Midnight Mayhem"
    ],
    "payoffs": [
-    "Veteran Survivor",
-    "Hardened Escort",
-    "Attack-in-the-Box",
-    "Friendly Ghost",
+    "Enduring Innocence",
     "Irreverent Gremlin",
-    "Patched Plaything"
+    "Vicious Clown",
+    "Razorkin Hordecaller",
+    "Painter's Studio // Defaced Gallery"
    ],
    "enablers": [
-    "Painter's Studio // Defaced Gallery",
-    "Trial of Agony",
-    "Sheltered by Ghosts",
-    "Untimely Malfunction",
-    "Raucous Carnival"
+    "Clockwork Percussionist",
+    "Piggy Bank",
+    "Ragged Playmate",
+    "Unsettling Twins",
+    "Attack-in-the-Box",
+    "Glimmerlight",
+    "The Jolly Balloon Man"
    ],
    "keyCards": [
-    "Most Valuable Slayer",
-    "Acrobatic Cheerleader",
-    "Orphans of the Wheat",
-    "Ragged Playmate",
-    "Glimmerlight",
-    "Norin, Swift Survivalist",
-    "Infernal Phantom",
-    "Vicious Clown",
-    "Unsettling Twins",
-    "Glimmer Seeker",
-    "Conductive Machete",
-    "Exorcise",
-    "Jump Scare",
-    "Terramorphic Expanse"
+    "Sheltered by Ghosts",
+    "Unidentified Hovership",
+    "Splitskin Doll",
+    "Scorching Dragonfire",
+    "Glassworks // Shattered Yard",
+    "Trapped in the Screen",
+    "Turn Inside Out",
+    "Jump Scare"
    ]
   },
   {
    "pair": "WG",
-   "name": "Survival midrange",
-   "playstyle": "",
-   "speed": "",
+   "name": "Survival tap value",
+   "playstyle": "Attack when trades are favorable, but use crew, mana abilities, Coordinated Clobbering, and tap costs to turn on survival before the second main phase through stalled boards. The best builds keep a functional midrange curve and treat survival as repeatable value, not a reason to play every low-rate Survivor.",
+   "speed": "midrange",
    "signposts": [
     "Baseball Bat",
     "Shrewd Storyteller"
    ],
    "payoffs": [
     "Defiant Survivor",
+    "Glimmer Seeker",
+    "Reluctant Role Model",
+    "Rip, Spawn Hunter",
     "Savior of the Small",
-    "Fear of Abduction",
-    "Rootwise Survivor",
-    "Cautious Survivor",
-    "Fear of Exposure"
+    "Rootwise Survivor"
    ],
    "enablers": [
-    "Frantic Strength",
-    "Sheltered by Ghosts",
-    "Etched Cornfield",
-    "Bleeding Woods",
-    "Unwanted Remake"
+    "Coordinated Clobbering",
+    "Enduring Vitality",
+    "Orphans of the Wheat",
+    "Fear of Exposure",
+    "Unidentified Hovership",
+    "Hedge Shredder",
+    "Tyvar, the Pummeler"
    ],
    "keyCards": [
-    "Exorcise",
-    "Neglected Manor",
-    "Orphans of the Wheat",
-    "Friendly Teddy",
-    "Shardmage's Rescue",
-    "Flesh Burrower",
-    "Horrid Vigor",
-    "Veteran Survivor",
-    "Shepherding Spirits",
+    "Sheltered by Ghosts",
+    "Under the Skin",
     "Trapped in the Screen",
-    "Glimmer Seeker",
-    "Jump Scare",
-    "Coordinated Clobbering",
-    "Friendly Ghost"
+    "Veteran Survivor",
+    "Unsettling Twins",
+    "Seized from Slumber",
+    "Frantic Strength",
+    "Wary Watchdog"
    ]
   },
   {
    "pair": "UB",
-   "name": "Delirium",
-   "playstyle": "",
-   "speed": "",
+   "name": "Eerie attrition",
+   "playstyle": "Stabilize with enchantment-based removal and Rooms, using each enchantment entry or fully unlocked Room to convert eerie into surveil, cards, drain, or recursive threats. Win by compounding small advantages behind blockers and instant-speed interaction rather than racing.",
+   "speed": "control",
    "signposts": [
     "Fear of Infinity",
     "Skullsnap Nuisance"
    ],
    "payoffs": [
-    "Malevolent Chandelier",
-    "Fear of Failed Tests",
+    "Entity Tracker",
     "Balemurk Leech",
     "Dashing Bloodsucker",
-    "Tunnel Surveyor",
-    "Cackling Slasher"
+    "Unwilling Vessel",
+    "Scrabbling Skullcrab",
+    "Stalked Researcher"
    ],
    "enablers": [
-    "Strangled Cemetery",
-    "Found Footage",
-    "Murky Sewer",
     "Nowhere to Run",
-    "Cracked Skull"
+    "Unable to Scream",
+    "Meat Locker // Drowned Diner",
+    "Underwater Tunnel // Slimy Aquarium",
+    "Glimmerburst",
+    "Tunnel Surveyor",
+    "Defiled Crypt // Cadaver Lab"
    ],
    "keyCards": [
-    "Duskmourn's Domination",
-    "Keys to the House",
-    "Appendage Amalgam",
-    "Defiled Crypt // Cadaver Lab",
-    "Spectral Snatcher",
-    "Glimmerlight",
-    "Daggermaw Megalodon",
-    "Sporogenic Infection",
-    "Fear of the Dark",
-    "Lakeside Shack",
-    "Derelict Attic // Widow's Walk",
-    "Cynical Loner",
-    "Don't Make a Sound",
-    "Popular Egotist"
+    "Unholy Annex // Ritual Chamber",
+    "Overlord of the Floodpits",
+    "Overlord of the Balemurk",
+    "Unnerving Grasp",
+    "Fear of Isolation",
+    "Stay Hidden, Stay Silent",
+    "Floodpits Drowner",
+    "Bottomless Pool // Locker Room"
    ]
   },
   {
    "pair": "UR",
-   "name": "Spells",
-   "playstyle": "",
-   "speed": "",
+   "name": "Room value control",
+   "playstyle": "Use early doors as modular removal, tempo, and card selection, then spend spare mana unlocking their late halves while holding the board. Preserve high-impact Rooms for cumulative value and cash in exhausted ones only when Intruding Soulrager's card and damage justify shrinking Smoky Lounge // Misty Salon.",
+   "speed": "control",
    "signposts": [
-    "Smoky Lounge // Misty Salon",
-    "Intruding Soulrager"
+    "Intruding Soulrager",
+    "Smoky Lounge // Misty Salon"
    ],
    "payoffs": [
-    "Rampaging Soulrager",
-    "Creeping Peeper",
-    "Stalked Researcher",
-    "Bedhead Beastie",
-    "Fear of Isolation",
-    "Ghostly Keybearer"
+    "Entity Tracker",
+    "Central Elevator // Promising Stairs",
+    "Ghostly Keybearer",
+    "Rampaging Soulrager"
    ],
    "enablers": [
-    "Pyroclasm",
-    "Enter the Enigma",
-    "Peculiar Lighthouse",
-    "Glassworks // Shattered Yard",
-    "Get Out"
+    "Creeping Peeper",
+    "Underwater Tunnel // Slimy Aquarium",
+    "Meat Locker // Drowned Diner",
+    "Ticket Booth // Tunnel of Hate",
+    "Bottomless Pool // Locker Room",
+    "Painter's Studio // Defaced Gallery",
+    "Keys to the House"
    ],
    "keyCards": [
-    "Grab the Prize",
-    "Keys to the House",
+    "Overlord of the Boilerbilges",
+    "Roaring Furnace // Steaming Sauna",
+    "Overlord of the Floodpits",
+    "Unnerving Grasp",
     "Floodpits Drowner",
-    "Underwater Tunnel // Slimy Aquarium",
-    "Ripchain Razorkin",
-    "Ticket Booth // Tunnel of Hate",
-    "Norin, Swift Survivalist",
-    "Piggy Bank",
-    "Friendly Teddy",
-    "Glimmerlight",
-    "Piranha Fly",
-    "Bleeding Woods",
-    "Fear of Failed Tests",
-    "Unwilling Vessel"
+    "Glassworks // Shattered Yard",
+    "Scorching Dragonfire",
+    "Glimmerburst"
    ]
   },
   {
    "pair": "UG",
-   "name": "Survival ramp",
-   "playstyle": "",
-   "speed": "",
+   "name": "Manifest dread value",
+   "playstyle": "Manifest dread converts card selection into board presence while Oblivious Bookworm, Paranormal Analyst, and Threats Around Every Corner recoup the setup with cards or mana. Favor creatures worth turning face up, represent combat flips, and win through incremental advantage plus oversized manifested threats.",
+   "speed": "midrange",
    "signposts": [
-    "Oblivious Bookworm",
-    "Growing Dread"
+    "Growing Dread",
+    "Oblivious Bookworm"
    ],
    "payoffs": [
-    "Anthropede",
-    "Malevolent Chandelier",
-    "Insidious Fungus",
-    "Daggermaw Megalodon",
-    "Floodpits Drowner",
-    "Overgrown Zealot"
+    "Paranormal Analyst",
+    "Threats Around Every Corner",
+    "Cryptid Inspector",
+    "Abhorrent Oculus"
    ],
    "enablers": [
-    "Bear Trap",
-    "Murky Sewer",
-    "Cathartic Parting",
+    "Cursed Windbreaker",
     "Conductive Machete",
-    "Peculiar Lighthouse"
+    "Bashful Beastie",
+    "Defiant Survivor",
+    "Moldering Gym // Weight Room",
+    "Underwater Tunnel // Slimy Aquarium",
+    "Overgrown Zealot",
+    "Hauntwoods Shrieker"
    ],
    "keyCards": [
-    "Strangled Cemetery",
-    "Vanish from Sight",
-    "Cursed Windbreaker",
+    "Valgavoth's Onslaught",
+    "Dissection Tools",
     "Unnerving Grasp",
+    "Under the Skin",
+    "Floodpits Drowner",
+    "Vanish from Sight",
     "Monstrous Emergence",
-    "Keys to the House",
-    "Horrid Vigor",
-    "Etched Cornfield",
-    "Don't Make a Sound",
-    "Duskmourn's Domination",
-    "Bleeding Woods",
-    "Slavering Branchsnapper",
-    "Coordinated Clobbering",
-    "Threats Around Every Corner"
+    "Unable to Scream",
+    "Spineseeker Centipede"
    ]
   },
   {
    "pair": "BR",
-   "name": "Sacrifice",
-   "playstyle": "",
-   "speed": "",
+   "name": "Sacrifice value grind",
+   "playstyle": "Convert expendable creatures and used-up Auras or Rooms into removal, cards, and drain, while keeping outlets and fodder in balance. Trade repeatedly, pressure with menace between exchanges, and win by chaining death value rather than racing.",
+   "speed": "midrange",
    "signposts": [
     "Disturbing Mirth",
     "Sawblade Skinripper"
    ],
    "payoffs": [
-    "Fear of Lost Teeth",
-    "Innocuous Rat",
+    "Popular Egotist",
+    "Undead Sprinter",
     "Boilerbilges Ripper",
-    "Balemurk Leech",
     "Diversion Specialist",
-    "Popular Egotist"
+    "Vile Mutilator"
    ],
    "enablers": [
-    "Final Vengeance",
-    "Glassworks // Shattered Yard",
-    "Vengeful Possession",
+    "Innocuous Rat",
+    "Clockwork Percussionist",
+    "Fear of Lost Teeth",
+    "Piggy Bank",
     "Cracked Skull",
-    "Derelict Attic // Widow's Walk"
+    "Sporogenic Infection",
+    "Vengeful Possession"
    ],
    "keyCards": [
-    "Infernal Phantom",
-    "Sporogenic Infection",
-    "Razortrap Gorge",
-    "Defiled Crypt // Cadaver Lab",
+    "Unholy Annex // Ritual Chamber",
+    "Unstoppable Slasher",
+    "Overlord of the Boilerbilges",
+    "Chainsaw",
+    "Final Vengeance",
     "Nowhere to Run",
-    "Peculiar Lighthouse",
-    "Saw",
     "Betrayer's Bargain",
-    "Withering Torment",
-    "Ticket Booth // Tunnel of Hate",
-    "Dashing Bloodsucker",
-    "Terramorphic Expanse",
-    "Resurrected Cultist",
-    "Clockwork Percussionist"
+    "Come Back Wrong",
+    "Scorching Dragonfire"
    ]
   },
   {
    "pair": "BG",
-   "name": "Delirium graveyard",
-   "playstyle": "",
-   "speed": "",
+   "name": "Delirium attrition control",
+   "playstyle": "Use surveil, manifest dread, and self-mill to assemble four card types while trading through the early game. Once delirium is online, discounted removal, recurring threats, and attrition engines dominate; prioritize diverse types, especially artifact and enchantment creatures, over redundant filler.",
+   "speed": "control",
    "signposts": [
     "Broodspinner",
     "Drag to the Roots"
    ],
    "payoffs": [
-    "Miasma Demon",
-    "Vile Mutilator",
-    "Cackling Slasher",
-    "Valgavoth's Faithful",
+    "The Swarmweaver",
+    "Let's Play a Game",
+    "Patchwork Beastie",
     "Osseous Sticktwister",
-    "Appendage Amalgam"
+    "Balustrade Wurm"
    ],
    "enablers": [
-    "Etched Cornfield",
-    "Let's Play a Game",
-    "Bear Trap",
-    "Live or Die",
-    "Withering Torment"
+    "Wary Watchdog",
+    "Manifest Dread",
+    "Say Its Name",
+    "Commune with Evil",
+    "Moldering Gym // Weight Room",
+    "Bashful Beastie"
    ],
    "keyCards": [
+    "Valgavoth's Onslaught",
+    "Overlord of the Balemurk",
+    "Under the Skin",
+    "Spineseeker Centipede",
+    "Nowhere to Run",
+    "Live or Die",
     "Murder",
-    "Defiled Crypt // Cadaver Lab",
-    "Give In to Violence",
-    "Winter's Intervention",
-    "Killer's Mask",
-    "Haunted Screen",
-    "Found Footage",
-    "Fear of the Dark",
-    "House Cartographer",
-    "Say Its Name",
-    "Attack-in-the-Box",
-    "Moldering Gym // Weight Room",
-    "Bashful Beastie",
-    "Altanak, the Thrice-Called"
+    "Monstrous Emergence"
    ]
   },
   {
    "pair": "RG",
-   "name": "Rooms aggro",
-   "playstyle": "",
-   "speed": "",
+   "name": "Delirium beatdown",
+   "playstyle": "Curve out with artifact and enchantment creatures that contribute multiple graveyard types, then switch on delirium and attack with upgraded threats. Creatures, lands, and sorceries arrive naturally, so prioritize cheap artifacts, enchantments, and instants without sacrificing pressure.",
+   "speed": "aggro",
    "signposts": [
-    "Wildfire Wickerfolk",
-    "Beastie Beatdown"
+    "Beastie Beatdown",
+    "Wildfire Wickerfolk"
    ],
    "payoffs": [
-    "Patchwork Beastie",
+    "Fear of Missing Out",
     "Fear of Burning Alive",
-    "Bedhead Beastie",
-    "Ripchain Razorkin",
-    "Wary Watchdog",
-    "Wickerfolk Thresher"
+    "Patchwork Beastie",
+    "Omnivorous Flytrap",
+    "Wickerfolk Thresher",
+    "Hand That Feeds"
    ],
    "enablers": [
-    "Peculiar Lighthouse",
-    "Violent Urge",
-    "Impossible Inferno",
-    "Scorching Dragonfire",
-    "Frantic Strength"
+    "Wary Watchdog",
+    "Say Its Name",
+    "Manifest Dread",
+    "Clockwork Percussionist",
+    "Piggy Bank",
+    "Grab the Prize",
+    "Turn Inside Out"
    ],
    "keyCards": [
-    "Terramorphic Expanse",
-    "Conductive Machete",
-    "Rootwise Survivor",
-    "Defiant Survivor",
-    "Grasping Longneck",
-    "Manifest Dread",
-    "Say Its Name",
-    "Betrayer's Bargain",
-    "Found Footage",
-    "Ticket Booth // Tunnel of Hate",
-    "Friendly Teddy",
-    "Cautious Survivor",
-    "Flesh Burrower",
-    "Fear of Being Hunted"
+    "Valgavoth's Onslaught",
+    "Overlord of the Boilerbilges",
+    "Tyvar, the Pummeler",
+    "Under the Skin",
+    "Balustrade Wurm",
+    "Razorkin Hordecaller",
+    "Scorching Dragonfire",
+    "Spineseeker Centipede",
+    "Monstrous Emergence"
    ]
   }
  ],
- "combos": []
+ "combos": [
+  {
+   "cards": [
+    "Gremlin Tamer",
+    "Inquisitive Glimmer"
+   ],
+   "note": "Glimmer triggers Tamer on entry and discounts every later enchantment or unlock."
+  },
+  {
+   "cards": [
+    "Ghostly Dancers",
+    "Grand Entryway // Elegant Rotunda"
+   ],
+   "note": "Dancers unlocks the Room's second door to trigger its own eerie ability and create a 3/1 Spirit."
+  },
+  {
+   "cards": [
+    "Gremlin Tamer",
+    "Glimmerburst"
+   ],
+   "note": "Glimmerburst's enchantment token triggers Tamer to create an extra Gremlin."
+  },
+  {
+   "cards": [
+    "Commune with Evil",
+    "Rite of the Moth"
+   ],
+   "note": "Commune stocks a creature for Rite to reanimate and can mill Rite for its flashback cost."
+  },
+  {
+   "cards": [
+    "Rite of the Moth",
+    "Shroudstomper"
+   ],
+   "note": "Rite reanimates Shroudstomper and immediately triggers its drain, life gain, and card draw."
+  },
+  {
+   "cards": [
+    "Enduring Tenacity",
+    "Shroudstomper"
+   ],
+   "note": "Each Shroudstomper life-gain trigger makes Enduring Tenacity drain the opponent for 2 more."
+  },
+  {
+   "cards": [
+    "Arabella, Abandoned Doll",
+    "Midnight Mayhem"
+   ],
+   "note": "Mayhem's three 1/1s add three to Arabella's attack-trigger damage and life gain."
+  },
+  {
+   "cards": [
+    "Enduring Courage",
+    "Midnight Mayhem"
+   ],
+   "note": "Enduring Courage turns Mayhem's three Gremlins into hasty 3/1s for the turn."
+  },
+  {
+   "cards": [
+    "Unidentified Hovership",
+    "Shrewd Storyteller"
+   ],
+   "note": "Crewing Hovership taps Storyteller for its second-main survival trigger without risking it in combat."
+  },
+  {
+   "cards": [
+    "Tyvar, the Pummeler",
+    "Shrewd Storyteller"
+   ],
+   "note": "Tyvar taps Storyteller as its indestructible cost to guarantee Storyteller's survival trigger."
+  },
+  {
+   "cards": [
+    "Fear of Isolation",
+    "Nowhere to Run"
+   ],
+   "note": "Fear returns a spent Nowhere to Run as its extra cost so the -3/-3 entry effect can be replayed."
+  },
+  {
+   "cards": [
+    "Fear of Infinity",
+    "Defiled Crypt // Cadaver Lab"
+   ],
+   "note": "Fear returning itself from the graveyard triggers Defiled Crypt to create a Horror."
+  },
+  {
+   "cards": [
+    "Intruding Soulrager",
+    "Meat Locker // Drowned Diner"
+   ],
+   "note": "Soulrager cashes a fully unlocked Meat Locker into 2 damage and a card after both one-shot doors resolve."
+  },
+  {
+   "cards": [
+    "Fear of Isolation",
+    "Glassworks // Shattered Yard"
+   ],
+   "note": "Fear returns Glassworks after its 4-damage door resolves so that door can be cast again."
+  },
+  {
+   "cards": [
+    "Ghostly Keybearer",
+    "Smoky Lounge // Misty Salon"
+   ],
+   "note": "A Keybearer hit unlocks Misty Salon for free to create its unlocked-door-sized Spirit."
+  },
+  {
+   "cards": [
+    "Oblivious Bookworm",
+    "Unnerving Grasp"
+   ],
+   "note": "Grasp's manifest satisfies Bookworm's end-step condition to turn its loot into a clean draw."
+  },
+  {
+   "cards": [
+    "Threats Around Every Corner",
+    "Unnerving Grasp"
+   ],
+   "note": "Grasp's manifest triggers Threats to put a basic land onto the battlefield tapped."
+  },
+  {
+   "cards": [
+    "Growing Dread",
+    "Hauntwoods Shrieker"
+   ],
+   "note": "Shrieker turns a manifested creature face up for {1}{G}, triggering Growing Dread's counter."
+  },
+  {
+   "cards": [
+    "Disturbing Mirth",
+    "Final Vengeance"
+   ],
+   "note": "Final Vengeance sacrifices Mirth for its cost, triggering Mirth's manifest before the creature is exiled."
+  },
+  {
+   "cards": [
+    "Vengeful Possession",
+    "Final Vengeance"
+   ],
+   "note": "Possession steals a creature that Final Vengeance can sacrifice while exiling a second target."
+  },
+  {
+   "cards": [
+    "Clockwork Percussionist",
+    "Sawblade Skinripper"
+   ],
+   "note": "Skinripper sacrifices Percussionist to grow, enable its end-step damage, and expose the next card to play."
+  },
+  {
+   "cards": [
+    "Broodspinner",
+    "The Swarmweaver"
+   ],
+   "note": "At delirium, Swarmweaver gives Broodspinner and all the Insects it creates +1/+1 and deathtouch."
+  },
+  {
+   "cards": [
+    "Under the Skin",
+    "Defiled Crypt // Cadaver Lab"
+   ],
+   "note": "Under the Skin's graveyard return triggers Defiled Crypt to create a Horror alongside the manifest."
+  },
+  {
+   "cards": [
+    "Fear of Missing Out",
+    "Wildfire Wickerfolk"
+   ],
+   "note": "At delirium, Fear untaps Wickerfolk after its first attack so the hasty trampler can attack again."
+  },
+  {
+   "cards": [
+    "The Rollercrusher Ride",
+    "Beastie Beatdown"
+   ],
+   "note": "At delirium, Rollercrusher doubles the damage Beastie Beatdown's boosted creature deals."
+  }
+ ]
 }
