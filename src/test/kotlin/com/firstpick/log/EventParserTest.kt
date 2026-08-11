@@ -125,4 +125,17 @@ class EventParserTest {
         assertTrue(ev2 is DraftEvent.EventJoined)
         assertEquals("TradDraft_DSK_20240924", ev2.eventName)
     }
+
+    @Test
+    fun parsesDeckSelectCourseWithCardPool() {
+        val courseJson = """
+            {"CourseId":"b07b53bb","InternalEventName":"QuickDraft_MSH_20260731","CurrentModule":"DeckSelect","CardPool":[105103,105001,105076]}
+        """.trimIndent()
+        val event = parser.parse(courseJson)
+        assertNotNull(event)
+        assertTrue(event is DraftEvent.Snapshot)
+        assertEquals("QuickDraft_MSH_20260731", event.eventName)
+        assertEquals(listOf(105103, 105001, 105076), event.pool)
+        assertTrue(event.complete)
+    }
 }

@@ -204,13 +204,13 @@ fun statusPillStyle(model: DeckGuidanceOverlayModel): DeckGuidanceStatusPillStyl
 
 private fun DeckGuidanceOverlayModel.needsChangesLabel(): String {
     val namedChanges = buildList {
-        if (remainingRemovals > 0) add("$remainingRemovals ${if (remainingRemovals == 1) "cut" else "cuts"}")
-        if (remainingAdds > 0) add("$remainingAdds ${if (remainingAdds == 1) "add" else "adds"}")
+        if (remainingRemovals > 0) add("Cut $remainingRemovals ${if (remainingRemovals == 1) "card" else "cards"}")
+        if (remainingAdds > 0) add("Add $remainingAdds ${if (remainingAdds == 1) "card" else "cards"}")
     }
     if (namedChanges.isNotEmpty()) {
         val completeInstructions = namedChanges + when {
-            basicLandDelta < 0 -> listOf("remove ${-basicLandDelta} basic ${if (basicLandDelta == -1) "land" else "lands"}")
-            basicLandDelta > 0 -> listOf("add $basicLandDelta basic ${if (basicLandDelta == 1) "land" else "lands"}")
+            basicLandDelta < 0 -> listOf("Remove ${-basicLandDelta} basic ${if (basicLandDelta == -1) "land" else "lands"}")
+            basicLandDelta > 0 -> listOf("Add $basicLandDelta basic ${if (basicLandDelta == 1) "land" else "lands"}")
             else -> emptyList()
         }
         return "Deck needs changes · ${completeInstructions.joinToString(" · ")}"

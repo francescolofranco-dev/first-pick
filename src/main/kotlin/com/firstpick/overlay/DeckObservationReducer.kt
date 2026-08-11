@@ -109,9 +109,19 @@ class DeckObservationReducer(draftPoolBaseline: List<DeckCardCount>) {
 
         val inferredCounts = inferUniqueVanishedRow(state, frame.totalCards, rows.counts, pool.counts, exact.counts)
 
-        val nextCounts = LinkedHashMap(state.knownCounts)
-        nextCounts.putAll(exact.counts)
-        nextCounts.putAll(inferredCounts)
+        val isFirstReadingWithRows = state.lastVisibleRows.isEmpty() && rows.counts.isNotEmpty()
+        val nextCounts = LinkedHashMap<String, Int>()
+        for (name in state.expectedNames) {
+            val exactCount = exact.counts[name]
+            val inferredCount = inferredCounts[name]
+            val count = when {
+                exactCount != null -> exactCount
+                inferredCount != null -> inferredCount
+                isFirstReadingWithRows -> 0
+                else -> state.knownCounts[name] ?: 0
+            }
+            nextCounts[name] = count
+        }
         return DeckObservationState(
             expectedNames = state.expectedNames,
             knownCounts = nextCounts.toSortedMap(String.CASE_INSENSITIVE_ORDER),

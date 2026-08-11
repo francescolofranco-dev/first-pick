@@ -69,11 +69,11 @@ internal fun Sidebar(state: DraftUiState) {
         }
         if (state.archetypes.isNotEmpty()) {
             Panel("Color pair win rate") {
-                val max = state.archetypes.maxOf { it.winRate }
-                val min = state.archetypes.minOf { it.winRate }
+                val max = state.archetypes.maxOfOrNull { it.winRate } ?: 0.0
+                val min = state.archetypes.minOfOrNull { it.winRate } ?: 0.0
                 Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
                     state.archetypes.take(6).forEach { a ->
-                        val frac = if (max > min) 0.15 + 0.85 * (a.winRate - min) / (max - min) else 1.0
+                        val frac = archetypeFraction(a.winRate, min, max)
                         val color = if (a.isLane) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
@@ -84,7 +84,7 @@ internal fun Sidebar(state: DraftUiState) {
                                 color = if (a.isLane) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier.width(26.dp),
                             )
-                            Bar(frac.toFloat(), color, Modifier.weight(1f))
+                            Bar(frac, color, Modifier.weight(1f))
                             Spacer(Modifier.width(6.dp))
                             Text(
                                 "%.1f".format(a.winRate * 100),
@@ -105,9 +105,9 @@ internal fun Sidebar(state: DraftUiState) {
             if (state.openLanes.isEmpty()) {
                 Text("Reading signals…", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             } else {
-                val max = state.openLanes.maxOf { it.score }
+                val max = state.openLanes.maxOfOrNull { it.score } ?: 0.0
                 Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
-                    state.openLanes.forEach { ColorBar(it.color, it.score / max) }
+                    state.openLanes.forEach { ColorBar(it.color, safeScoreFraction(it.score, max)) }
                 }
             }
         }
@@ -135,8 +135,8 @@ internal fun Sidebar(state: DraftUiState) {
                 if (state.poolColorCounts.isEmpty()) {
                     Text("No picks yet", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 } else {
-                    val max = state.poolColorCounts.maxOf { it.score }
-                    state.poolColorCounts.forEach { ColorBar(it.color, it.score / max, "${it.score.toInt()}") }
+                    val max = state.poolColorCounts.maxOfOrNull { it.score } ?: 0.0
+                    state.poolColorCounts.forEach { ColorBar(it.color, safeScoreFraction(it.score, max), "${it.score.toInt()}") }
                     Spacer(Modifier.height(2.dp))
                     Text(
                         "${state.poolCreatures} creatures · ${state.poolNonCreatures} spells",

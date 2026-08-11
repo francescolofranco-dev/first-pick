@@ -262,4 +262,20 @@ class DeckObservationReducerTest {
         assertEquals(mapOf("Dual Land" to 1), state.knownCounts)
         assertNull(state.countFor("Plains"))
     }
+
+    @Test
+    fun initialObservationSetsUnseenDraftedCardsToZeroInDeck() {
+        val reducer = DeckObservationReducer(baseline("Target Card" to 2, "Cut Card 1" to 1, "Cut Card 2" to 1))
+        val initial = reducer.initialState()
+
+        val observed = reducer.reduce(
+            initial,
+            DeckObservationFrame(totalCards = 40, visibleRows = listOf(visible("Target Card", 2))),
+        )
+
+        assertEquals(2, observed.countFor("Target Card"))
+        assertEquals(0, observed.countFor("Cut Card 1"))
+        assertEquals(0, observed.countFor("Cut Card 2"))
+        assertEquals(DeckObservationStatus.READY, observed.status)
+    }
 }

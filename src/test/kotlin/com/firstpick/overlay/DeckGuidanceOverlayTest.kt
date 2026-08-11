@@ -31,7 +31,7 @@ class DeckGuidanceOverlayTest {
     @Test
     fun needsChangesStatusSummarizesOffscreenWorkAndBasicLandAdjustment() {
         assertEquals(
-            "Deck needs changes · 3 cuts · 1 add · remove 2 basic lands",
+            "Deck needs changes · Cut 3 cards · Add 1 card · Remove 2 basic lands",
             statusPillStyle(
                 DeckGuidanceOverlayModel(
                     status = DeckGuidanceStatus.NEEDS_CHANGES,
@@ -42,7 +42,7 @@ class DeckGuidanceOverlayTest {
             ).label,
         )
         assertEquals(
-            "Deck needs changes · 5 cuts · add 2 basic lands",
+            "Deck needs changes · Cut 5 cards · Add 2 basic lands",
             statusPillStyle(
                 DeckGuidanceOverlayModel(
                     status = DeckGuidanceStatus.NEEDS_CHANGES,

@@ -93,13 +93,14 @@ private fun manaPainter(color: Char): Painter? {
 
 @Composable
 internal fun Bar(fraction: Float, color: Color, modifier: Modifier = Modifier) {
+    val safeFraction = safeFloatFraction(fraction)
     Box(
         modifier
             .height(10.dp)
             .clip(RoundedCornerShape(3.dp))
             .background(MaterialTheme.colorScheme.surfaceVariant),
     ) {
-        Box(Modifier.fillMaxHeight().fillMaxWidth(fraction.coerceIn(0f, 1f)).clip(RoundedCornerShape(3.dp)).background(color))
+        Box(Modifier.fillMaxHeight().fillMaxWidth(safeFraction).clip(RoundedCornerShape(3.dp)).background(color))
     }
 }
 
@@ -108,13 +109,30 @@ internal fun ColorBar(color: Char, fraction: Double, trailing: String? = null) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Pip(color)
         Spacer(Modifier.width(6.dp))
-        Bar(fraction.toFloat().coerceIn(0f, 1f), pipColor(color), Modifier.weight(1f))
+        Bar(safeFloatFraction(fraction.toFloat()), pipColor(color), Modifier.weight(1f))
         if (trailing != null) {
             Spacer(Modifier.width(9.dp))
             Text(trailing, fontFamily = FontFamily.Monospace, fontSize = 11.sp, textAlign = TextAlign.End, modifier = Modifier.width(22.dp))
         }
     }
 }
+
+internal fun safeFloatFraction(fraction: Float): Float =
+    if (fraction.isNaN() || fraction.isInfinite()) 0f else fraction.coerceIn(0f, 1f)
+
+internal fun safeScoreFraction(score: Double, maxScore: Double): Double =
+    if (maxScore <= 0.0 || score.isNaN() || maxScore.isNaN() || score.isInfinite() || maxScore.isInfinite()) {
+        0.0
+    } else {
+        (score / maxScore).coerceIn(0.0, 1.0)
+    }
+
+internal fun archetypeFraction(winRate: Double, minWinRate: Double, maxWinRate: Double): Float =
+    if (maxWinRate <= minWinRate || winRate.isNaN() || minWinRate.isNaN() || maxWinRate.isNaN()) {
+        1.0f
+    } else {
+        (0.15 + 0.85 * (winRate - minWinRate) / (maxWinRate - minWinRate)).toFloat().coerceIn(0f, 1f)
+    }
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable

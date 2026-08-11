@@ -30,6 +30,10 @@ class EventParser(
             parsePremierPick(line)?.let { return it }
         }
 
+        if (LogMatch.contains(line, "CardPool") || LogMatch.contains(line, "DeckSelect")) {
+            parseCourseSnapshot(line)?.let { return it }
+        }
+
         if (LogMatch.contains(line, "EventName") || LogMatch.contains(line, "InternalEventName")) {
             parseEventJoined(line)?.let { return it }
         }
@@ -44,6 +48,54 @@ class EventParser(
         val format = DraftFormat.fromEventName(name)
         if (format == DraftFormat.UNKNOWN) return null
         return DraftEvent.EventJoined(name)
+    }
+
+    private fun parseCourseSnapshot(line: String): DraftEvent.Snapshot? {
+        val start = line.indexOf('{')
+        if (start < 0) return null
+        val slice = line.substring(start)
+        val element = runCatching { json.parseToJsonElement(slice) }.getOrNull() ?: return null
+
+        val objects = mutableListOf<JsonObject>()
+        fun collectObjects(el: JsonElement) {
+            when (el) {
+                is JsonObject -> {
+                    objects.add(el)
+                    for (v in el.values) collectObjects(v)
+                }
+                is JsonArray -> {
+                    for (item in el) collectObjects(item)
+                }
+                else -> {}
+            }
+        }
+        collectObjects(element)
+
+        for (obj in objects) {
+            val eventName = obj.findString("InternalEventName") ?: obj.findString("EventName") ?: continue
+            val format = DraftFormat.fromEventName(eventName)
+            if (format == DraftFormat.UNKNOWN) continue
+
+            val module = obj.findString("CurrentModule")
+            val cardPool = obj.findStringList("CardPool")?.toInts() ?: emptyList()
+
+            if (cardPool.isNotEmpty()) {
+                val isComplete = module.equals("DeckSelect", ignoreCase = true) ||
+                    module.equals("Complete", ignoreCase = true) ||
+                    module.equals("DeckBuilder", ignoreCase = true) ||
+                    cardPool.size >= 40
+
+                return DraftEvent.Snapshot(
+                    eventName = eventName,
+                    pack = 3,
+                    pick = 15,
+                    packCards = emptyList(),
+                    pool = cardPool,
+                    complete = isComplete,
+                )
+            }
+        }
+        return null
     }
 
 
