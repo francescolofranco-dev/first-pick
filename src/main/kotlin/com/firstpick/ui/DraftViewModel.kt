@@ -185,8 +185,10 @@ class DraftViewModel(
             null
         }
         val rows = if (loaded && state.packCards.isNotEmpty()) {
+            val resolvedPack = repo.resolvePack(state.packCards)
+            val basicLands = resolvedPack.filter { it.isBasicLand }
             val scored = advisor.score(
-                pack = repo.resolvePack(state.packCards),
+                pack = resolvedPack.filterNot { it.isBasicLand },
                 pool = pool,
                 packNumber = state.pack.coerceAtLeast(1),
                 pickNumber = state.pick.coerceAtLeast(1),
@@ -198,7 +200,7 @@ class DraftViewModel(
                 deckFit = deckFitProbe(pool, liveProjection),
             )
             val ranked = net?.let { PickNetRanker.rerank(it, scored, pool.map { c -> c.name }) } ?: scored
-            ranked.toRows(state.packCards)
+            packRows(ranked, basicLands, state.packCards)
         } else {
             emptyList()
         }
@@ -327,27 +329,13 @@ class DraftViewModel(
                 cmc = m?.cmc ?: 0,
                 color = c.rating?.color.orEmpty(),
                 gihWr = c.gihWr,
-                imageUrl = c.rating?.imageUrl,
-                typeLabel = deckCardType(c.rating, m),
+                imageUrl = c.imageUrl,
+                typeLabel = if (c.isBasicLand) "Land" else deckCardType(c.rating, m),
                 role = deckCardRole(m),
-                isLand = m?.isLand == true,
-                isBasicLand = isBasicLand(c.rating, m, name),
+                isLand = c.isBasicLand || m?.isLand == true,
+                isBasicLand = c.isBasicLand,
             )
         }.sortedWith(deckSpellOrder)
-
-    private fun isBasicLand(
-        rating: com.firstpick.cards.CardRating?,
-        meta: CardMeta?,
-        displayName: String,
-    ): Boolean {
-        if (meta?.isLand != true) return false
-        if (rating?.types.orEmpty().any { it.contains("Basic Land", ignoreCase = true) }) return true
-        val normalized = displayName
-            .removePrefix("A-")
-            .removePrefix("Snow-Covered ")
-            .trim()
-        return normalized in BASIC_LAND_NAMES
-    }
 
     private fun deckCardType(rating: com.firstpick.cards.CardRating?, meta: CardMeta?): String {
         val types = rating?.types.orEmpty()
@@ -400,30 +388,40 @@ class DraftViewModel(
         return buckets.map { CurveBar(it.key, it.value) }
     }
 
-    private fun List<ScoredCard>.toRows(originalPackIds: List<Int>): List<PackCardUi> {
+    private fun packRows(
+        scored: List<ScoredCard>,
+        basicLands: List<com.firstpick.cards.RankedCard>,
+        originalPackIds: List<Int>,
+    ): List<PackCardUi> {
+        val ordered = scored.map { it.card to it } +
+            basicLands.sortedBy { originalPackIds.indexOf(it.grpId) }.map { it to null }
         val usedIndices = mutableSetOf<Int>()
-        return mapIndexed { i, s ->
+        return ordered.mapIndexed { i, (card, score) ->
             val origIdx = originalPackIds.withIndex()
-                .firstOrNull { (idx, id) -> id == s.card.grpId && idx !in usedIndices }
+                .firstOrNull { (idx, id) -> id == card.grpId && idx !in usedIndices }
                 ?.index ?: 0
             usedIndices.add(origIdx)
             PackCardUi(
-                grpId = s.card.grpId,
+                grpId = card.grpId,
                 originalIndex = origIdx,
                 rank = i + 1,
-                name = s.card.displayName,
-                color = s.card.rating?.color.orEmpty(),
-                rarity = s.card.rating?.rarity.orEmpty(),
-                gihWr = s.card.gihWr,
-                alsa = s.card.rating?.alsa,
-                ata = s.card.rating?.ata,
-                value = s.value,
-                isBomb = s.isBomb,
-                reasons = s.reasons,
-                imageUrl = s.card.rating?.imageUrl,
-                z = s.z,
-                breakdown = s.breakdown,
-                modelRank = s.modelRank,
+                name = card.displayName,
+                color = card.rating?.color.orEmpty(),
+                rarity = card.rating?.rarity.orEmpty(),
+                gihWr = card.gihWr,
+                alsa = card.rating?.alsa,
+                ata = card.rating?.ata,
+                value = score?.value,
+                isBomb = score?.isBomb == true,
+                isRoom = card.rating?.types.orEmpty().any { type ->
+                    type.contains("Room", ignoreCase = true)
+                },
+                isBasicLand = card.isBasicLand,
+                reasons = score?.reasons ?: listOf("Basic land", "Not rated"),
+                imageUrl = card.imageUrl,
+                z = score?.z ?: 0.0,
+                breakdown = score?.breakdown,
+                modelRank = score?.modelRank,
             )
         }
     }
@@ -434,7 +432,6 @@ class DraftViewModel(
     companion object {
         private const val TAG = "DraftViewModel"
         private const val TOTAL_PICKS = 45
-        private val BASIC_LAND_NAMES = setOf("Plains", "Island", "Swamp", "Mountain", "Forest", "Wastes")
         private val WUBRG_ORDER = listOf('W', 'U', 'B', 'R', 'G')
     }
 }

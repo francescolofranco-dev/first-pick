@@ -19,6 +19,7 @@ import java.util.concurrent.ConcurrentHashMap
 object CardImageLoader {
     private val http: HttpClient = HttpClient.newBuilder()
         .connectTimeout(Duration.ofSeconds(15))
+        .followRedirects(HttpClient.Redirect.NORMAL)
         .build()
     private val memory = ConcurrentHashMap<String, ImageBitmap>()
 

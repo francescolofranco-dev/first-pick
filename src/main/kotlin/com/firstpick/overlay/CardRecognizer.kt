@@ -1,7 +1,9 @@
 package com.firstpick.overlay
 
 import java.awt.RenderingHints
+import java.awt.geom.AffineTransform
 import java.awt.image.BufferedImage
+import kotlin.math.roundToInt
 
 object CardRecognizer {
     private const val COLOR_WEIGHT = 8.0
@@ -30,6 +32,9 @@ object CardRecognizer {
         card, 0, 0, card.width, card.height,
         REFERENCE_ART, REFERENCE_LAYOUT,
     )
+
+    fun ofCard(card: BufferedImage, isRoom: Boolean): Signature =
+        ofCard(if (isRoom) arenaRoomReference(card) else card)
 
     fun ofRegion(frame: BufferedImage, rx: Int, ry: Int, rw: Int, rh: Int): Signature = signatureOfRegion(
         frame, rx, ry, rw, rh,
@@ -79,6 +84,49 @@ object CardRecognizer {
         val w = ((crop.x1 - crop.x0) * rw).toInt().coerceIn(1, frame.width - x)
         val h = ((crop.y1 - crop.y0) * rh).toInt().coerceIn(1, frame.height - y)
         return frame.getSubimage(x, y, w, h)
+    }
+
+    private fun arenaRoomReference(card: BufferedImage): BufferedImage {
+        val landscape = BufferedImage(card.height, card.width, BufferedImage.TYPE_INT_RGB)
+        val landscapeGraphics = landscape.createGraphics()
+        try {
+            val g = landscapeGraphics
+            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR)
+            val rotation = AffineTransform().apply {
+                translate(card.height.toDouble(), 0.0)
+                rotate(Math.PI / 2)
+            }
+            g.drawImage(card, rotation, null)
+        } finally {
+            landscapeGraphics.dispose()
+        }
+
+        val out = BufferedImage(card.width, card.height, BufferedImage.TYPE_INT_RGB)
+        val halfHeight = out.height / 2
+        val sourceTop = (ROOM_Y0 * landscape.height).roundToInt()
+        val sourceBottom = (ROOM_Y1 * landscape.height).roundToInt()
+        val outGraphics = out.createGraphics()
+        try {
+            val g = outGraphics
+            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR)
+            g.drawImage(
+                landscape,
+                0, 0, out.width, halfHeight,
+                (ROOM_LEFT_X0 * landscape.width).roundToInt(), sourceTop,
+                (ROOM_LEFT_X1 * landscape.width).roundToInt(), sourceBottom,
+                null,
+            )
+            g.drawImage(
+                landscape,
+                0, halfHeight, out.width, out.height,
+                (ROOM_RIGHT_X0 * landscape.width).roundToInt(), sourceTop,
+                (ROOM_RIGHT_X1 * landscape.width).roundToInt(), sourceBottom,
+                null,
+            )
+        } finally {
+            outGraphics.dispose()
+        }
+        return out
     }
 
     fun match(frame: BufferedImage, rects: List<CardDetector.CardRect>, refs: List<Signature?>): Map<Int, Int> {
@@ -198,4 +246,11 @@ object CardRecognizer {
         }
         return out
     }
+
+    private const val ROOM_LEFT_X0 = 0.073
+    private const val ROOM_LEFT_X1 = 0.511
+    private const val ROOM_RIGHT_X0 = 0.527
+    private const val ROOM_RIGHT_X1 = 0.965
+    private const val ROOM_Y0 = 0.036
+    private const val ROOM_Y1 = 0.545
 }

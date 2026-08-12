@@ -18,6 +18,33 @@ class MainTest {
     }
 
     @Test
+    fun overlayCardsPropagateRoomMetadata() {
+        val cards = overlayCards(
+            listOf(
+                card("Ordinary card", originalIndex = 1, value = 40.0),
+                card("Split Room", originalIndex = 0, value = 60.0, isRoom = true),
+            ),
+        )
+
+        assertEquals(listOf("Split Room", "Ordinary card"), cards.map { it.name })
+        assertEquals(listOf(true, false), cards.map { it.isRoom })
+    }
+
+    @Test
+    fun overlayRetainsAnUnratedBasicAtItsOriginalPosition() {
+        val cards = overlayCards(
+            listOf(
+                card("Rated card", originalIndex = 0, value = 61.0),
+                card("Island", originalIndex = 1, value = null, isBasicLand = true),
+            ),
+        )
+
+        assertEquals(listOf("Rated card", "Island"), cards.map { it.name })
+        assertEquals(listOf(61.0, null), cards.map { it.value })
+        assertEquals(listOf(0, 1), cards.map { it.originalIndex })
+    }
+
+    @Test
     fun deckGuidanceIncludesSpellsAndDraftedNonbasicLandsButFlagsBasics() {
         val option = DeckOptionUi(
             colors = "WU",
@@ -51,7 +78,13 @@ class MainTest {
         assertEquals(listOf(true, false), pool.map { it.isBasicLand })
     }
 
-    private fun card(name: String, originalIndex: Int, value: Double) = PackCardUi(
+    private fun card(
+        name: String,
+        originalIndex: Int,
+        value: Double?,
+        isRoom: Boolean = false,
+        isBasicLand: Boolean = false,
+    ) = PackCardUi(
         grpId = originalIndex,
         originalIndex = originalIndex,
         rank = 1,
@@ -62,5 +95,7 @@ class MainTest {
         alsa = null,
         ata = null,
         value = value,
+        isRoom = isRoom,
+        isBasicLand = isBasicLand,
     )
 }

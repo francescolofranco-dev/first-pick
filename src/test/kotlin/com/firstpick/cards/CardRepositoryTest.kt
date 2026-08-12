@@ -4,6 +4,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertSame
+import kotlin.test.assertTrue
 
 class CardRepositoryTest {
 
@@ -49,10 +50,29 @@ class CardRepositoryTest {
 
     @Test
     fun unknownGrpIdHasNoRating() {
-        val repo = CardRepository()
+        val repo = CardRepository(basicLandResolver = BasicLandResolver { null })
         repo.index(listOf(rating(1, "Alpha", 0.60)))
         val resolved = repo.resolve(42)
         assertNull(resolved.rating)
         assertEquals("Unknown #42", resolved.displayName)
+    }
+
+    @Test
+    fun resolvesUnratedBasicLandIdentityWithoutInventingAStatisticalRating() {
+        val image = "https://api.scryfall.com/cards/arena/92374?format=image&version=normal"
+        val repo = CardRepository(
+            basicLandResolver = BasicLandResolver { id ->
+                if (id == 92374) BasicLandIdentity("Island", image) else null
+            },
+        )
+        repo.index(listOf(rating(1, "Alpha", 0.60)))
+
+        val resolved = repo.resolve(92374)
+
+        assertEquals("Island", resolved.displayName)
+        assertTrue(resolved.isBasicLand)
+        assertNull(resolved.rating)
+        assertNull(resolved.gihWr)
+        assertEquals(image, resolved.imageUrl)
     }
 }

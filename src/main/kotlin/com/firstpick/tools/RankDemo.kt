@@ -65,8 +65,10 @@ fun main(args: Array<String>) = runBlocking {
     val poolNeeds = PoolNeeds.analyze(pool.mapNotNull { metaRepo.meta(it.name) }, pool.size)
     println("Deck needs: " + (poolNeeds.activeNeeds(45).ifEmpty { listOf("solid backbone") }.joinToString(", ")))
     if (pack.isNotEmpty()) {
-        val scored = AdvisorEngine().score(pack, pool, state.pack, state.pick, repo.setMetrics, lane, archRepo::archetypeRating, metaRepo::meta, synergy)
-        val plain = AdvisorEngine().score(pack, pool, state.pack, state.pick, repo.setMetrics, lane, archRepo::archetypeRating, metaRepo::meta)
+        val rateable = pack.filterNot { it.isBasicLand }
+        val basics = pack.filter { it.isBasicLand }
+        val scored = AdvisorEngine().score(rateable, pool, state.pack, state.pick, repo.setMetrics, lane, archRepo::archetypeRating, metaRepo::meta, synergy)
+        val plain = AdvisorEngine().score(rateable, pool, state.pack, state.pick, repo.setMetrics, lane, archRepo::archetypeRating, metaRepo::meta)
         val plainValue = plain.associate { it.card.grpId to it.value }
 
         println("  VALUE   Δsyn  GIH%   ALSA  Card / reasons")
@@ -81,6 +83,9 @@ fun main(args: Array<String>) = runBlocking {
             val star = if (s.isBomb) "★" else " "
             val reasons = if (s.reasons.isNotEmpty()) "  (${s.reasons.joinToString(", ")})" else ""
             println("  ${value.padStart(5)}  ${deltaStr.padStart(5)}  ${gih.padStart(5)}  ${alsa.padStart(4)}  $star ${s.card.displayName}$reasons")
+        }
+        for (card in basics) {
+            println("      —          —     —    ${card.displayName}  (Basic land, not rated)")
         }
     }
 

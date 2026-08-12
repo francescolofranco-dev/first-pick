@@ -15,6 +15,8 @@ data class PackCardUi(
     val ata: Double?,
     val value: Double? = null,
     val isBomb: Boolean = false,
+    val isRoom: Boolean = false,
+    val isBasicLand: Boolean = false,
     val reasons: List<String> = emptyList(),
     val imageUrl: String? = null,
     val z: Double = 0.0,

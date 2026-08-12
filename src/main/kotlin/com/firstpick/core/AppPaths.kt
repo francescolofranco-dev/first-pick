@@ -13,6 +13,9 @@ object AppPaths {
     val defaultPlayerLog: Path =
         home.resolve("Library/Logs/Wizards of the Coast/MTGA/Player.log")
 
+    val arenaRawDataDir: Path =
+        home.resolve("Library/Application Support/com.wizards.mtga/Downloads/Raw")
+
     fun ensureDirectories() {
         Files.createDirectories(appSupport)
         Files.createDirectories(cacheDir)

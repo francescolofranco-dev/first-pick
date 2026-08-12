@@ -124,4 +124,30 @@ class CardRecognizerTest {
 
         assertEquals(listOf(1, 0), assignment.toList())
     }
+
+    @Test
+    fun reflowsSidewaysRoomReferencesToMatchArenasStackedLayout() {
+        val frame = fixture("dsk-room-cycle.jpg")
+        val referenceStrip = fixture("dsk-room-references.jpg")
+        val rawReferences = listOf(
+            CardRecognizer.ofCard(referenceStrip.getSubimage(0, 0, 336, 468)),
+            CardRecognizer.ofCard(referenceStrip.getSubimage(336, 0, 336, 468)),
+            null,
+        )
+        val refs = listOf(
+            CardRecognizer.ofCard(referenceStrip.getSubimage(0, 0, 336, 468), isRoom = true),
+            CardRecognizer.ofCard(referenceStrip.getSubimage(336, 0, 336, 468), isRoom = true),
+            null,
+        )
+        val rects = listOf(
+            CardDetector.CardRect(0, 0, 0, 219, 334),
+            CardDetector.CardRect(1, 219, 0, 219, 334),
+            CardDetector.CardRect(2, 438, 0, 219, 334),
+        )
+
+        assertEquals(mapOf(0 to 2, 1 to 0, 2 to 1), CardRecognizer.match(frame, rects, rawReferences))
+        val result = CardRecognizer.matchDetailed(frame, rects, refs)
+
+        assertEquals(mapOf(0 to 0, 1 to 1, 2 to 2), result.assignment)
+    }
 }

@@ -4,14 +4,20 @@ data class RankedCard(
     val grpId: Int,
     val name: String,
     val rating: CardRating?,
+    val basicLandIdentity: BasicLandIdentity? = null,
 ) {
     val gihWr: Double? get() = rating?.gihWr
     val displayName: String get() = if (name.isNotBlank()) name else "Unknown #$grpId"
+    val imageUrl: String? get() = rating?.imageUrl?.takeIf(String::isNotBlank) ?: basicLandIdentity?.imageUrl
+    val isBasicLand: Boolean get() = basicLandIdentity != null ||
+        rating?.types.orEmpty().any { it.contains("Basic Land", ignoreCase = true) } ||
+        isBasicLandName(name)
 }
 
 class CardRepository(
     private val client: SeventeenLandsClient = SeventeenLandsClient(),
     private val nameResolver: (Int) -> String? = { null },
+    private val basicLandResolver: BasicLandResolver = ArenaBasicLandResolver(),
 ) {
     private var byMtgaId: Map<Int, CardRating> = emptyMap()
     private var byName: Map<String, CardRating> = emptyMap()
@@ -47,6 +53,8 @@ class CardRepository(
     fun resolve(grpId: Int): RankedCard {
         val byId = byMtgaId[grpId]
         if (byId != null) return RankedCard(grpId, byId.name, byId)
+        val basic = basicLandResolver.resolve(grpId)
+        if (basic != null) return RankedCard(grpId, basic.name, null, basic)
         val name = nameResolver(grpId)
         val byNm = name?.let { byName[normalize(it)] }
         return RankedCard(grpId, name ?: byNm?.name ?: "", byNm)

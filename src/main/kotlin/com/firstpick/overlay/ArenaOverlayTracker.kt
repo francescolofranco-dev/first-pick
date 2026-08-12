@@ -66,6 +66,7 @@ data class OverlayCard(
     val name: String = "",
 
     val originalIndex: Int = -1,
+    val isRoom: Boolean = false,
 )
 
 private data class Mark(val x: Int, val y: Int, val w: Int, val h: Int, val value: Double?, val number: Int?, val isBest: Boolean)
@@ -134,7 +135,7 @@ fun ArenaOverlayTracker(
     val cal = remember(b.w, b.h, calVersion) { store.get(b.w, b.h) }
 
 
-    val packKey = remember(cards) { cards.joinToString("|") { "${it.name}#${it.imageUrl}" } }
+    val packKey = remember(cards) { cards.joinToString("|") { "${it.name}#${it.imageUrl}#${it.isRoom}" } }
     val assignmentState = remember(packKey) { mutableStateOf<Map<Int, Int>?>(null) }
     var captureFailed by remember(packKey) { mutableStateOf(false) }
 
@@ -152,7 +153,11 @@ fun ArenaOverlayTracker(
         captureFailed = false
         delay(CAPTURE_DEBOUNCE_MS)
         val refs = withContext(Dispatchers.IO) {
-            cards.map { c -> c.imageUrl?.let { CardImageLoader.loadBufferedImage(it) }?.let { CardRecognizer.ofCard(it) } }
+            cards.map { c ->
+                c.imageUrl
+                    ?.let { CardImageLoader.loadBufferedImage(it) }
+                    ?.let { CardRecognizer.ofCard(it, isRoom = c.isRoom) }
+            }
         }
         val expected = refs.count { it != null }
         if (expected == 0) {

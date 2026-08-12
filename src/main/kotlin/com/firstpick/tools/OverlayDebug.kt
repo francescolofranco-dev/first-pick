@@ -38,7 +38,7 @@ fun main(args: Array<String>) = runBlocking {
     val repo = CardRepository()
     repo.load(set, format)
     val pack = repo.resolvePack(state.packCards)
-    for ((i, c) in pack.withIndex()) println("  slot#$i  ${c.grpId}  ${c.displayName}  img=${if (c.rating?.imageUrl.isNullOrBlank()) "NONE" else "ok"}")
+    for ((i, c) in pack.withIndex()) println("  slot#$i  ${c.grpId}  ${c.displayName}  img=${if (c.imageUrl.isNullOrBlank()) "NONE" else "ok"}")
 
     println()
     println("GEOMETRY (seal positions the overlay places, default fractions):")
@@ -63,7 +63,15 @@ fun main(args: Array<String>) = runBlocking {
     println("  vs geometry: worst dx=${"%.4f".format(worstDx)}w  dy=${"%.4f".format(worstDy)}h  (alignment is fine under ~0.012/0.02)")
 
     val refs = pack.map { c ->
-        c.rating?.imageUrl?.takeIf { it.isNotBlank() }?.let { CardImageLoader.loadBufferedImage(it) }?.let { CardRecognizer.ofCard(it) }
+        c.imageUrl
+            ?.takeIf { it.isNotBlank() }
+            ?.let { CardImageLoader.loadBufferedImage(it) }
+            ?.let { image ->
+                CardRecognizer.ofCard(
+                    image,
+                    isRoom = c.rating?.types.orEmpty().any { it.contains("Room", ignoreCase = true) },
+                )
+            }
     }
     println("REFS: ${refs.count { it != null }}/${pack.size} reference signatures")
 

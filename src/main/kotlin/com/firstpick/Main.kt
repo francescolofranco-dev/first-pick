@@ -114,7 +114,13 @@ fun main() {
 
 internal fun overlayCards(packCards: List<PackCardUi>): List<OverlayCard> =
     packCards.sortedBy(PackCardUi::originalIndex).map {
-        OverlayCard(it.value, it.imageUrl, it.name, it.originalIndex)
+        OverlayCard(
+            value = it.value,
+            imageUrl = it.imageUrl,
+            name = it.name,
+            originalIndex = it.originalIndex,
+            isRoom = it.isRoom,
+        )
     }
 
 internal fun deckGuidanceTarget(deck: DeckOptionUi): List<DeckCardCount> =
