@@ -9,6 +9,7 @@ plugins {
 
 group = "com.firstpick"
 version = "0.1.0"
+val firstPickPackageVersion = (project.findProperty("packageVersion") as String?) ?: "1.0.0"
 
 kotlin {
     jvmToolchain(21)
@@ -29,6 +30,10 @@ dependencies {
 compose.desktop {
     application {
         mainClass = "com.firstpick.MainKt"
+        jvmArgs("-Dfirstpick.version=$firstPickPackageVersion")
+        if (System.getProperty("os.name").startsWith("Mac")) {
+            jvmArgs("-Xdock:name=FirstPick")
+        }
 
         val composeJdk = (project.findProperty("composeJdk") as String?)
             ?: providers.environmentVariable("COMPOSE_JDK").orNull
@@ -38,7 +43,7 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg)
             packageName = "FirstPick"
             modules("java.instrument", "java.net.http", "jdk.unsupported")
-            packageVersion = (project.findProperty("packageVersion") as String?) ?: "1.0.0"
+            packageVersion = firstPickPackageVersion
 
             macOS {
                 bundleID = "com.firstpick.app"
@@ -60,9 +65,6 @@ compose.desktop {
 
 tasks.withType<JavaExec>().matching { it.name == "run" }.configureEach {
     environment("FIRSTPICK_DEMO", "1")
-    if (System.getProperty("os.name").startsWith("Mac")) {
-        doFirst { jvmArgs("-Xdock:name=FirstPick") }
-    }
     if (project.hasProperty("track")) systemProperty("firstpick.overlayTrack", "true")
 }
 

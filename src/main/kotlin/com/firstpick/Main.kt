@@ -22,6 +22,8 @@ import com.firstpick.ui.App
 import com.firstpick.ui.DeckOptionUi
 import com.firstpick.ui.DeckSpellUi
 import com.firstpick.ui.DraftViewModel
+import com.firstpick.ui.FirstPickAboutMenu
+import com.firstpick.ui.FirstPickAboutWindow
 import com.firstpick.ui.PackCardUi
 import com.firstpick.ui.deckBuildKey
 import kotlinx.coroutines.CoroutineScope
@@ -50,6 +52,7 @@ fun main() {
         }
 
         val state by viewModel.ui.collectAsState()
+        var isAboutOpen by remember { mutableStateOf(false) }
         var isOverlayOpen by remember { mutableStateOf(false) }
         var committedDeckKey by remember(state.phase == DraftPhase.COMPLETE) {
             mutableStateOf<String?>(null)
@@ -60,6 +63,7 @@ fun main() {
             null
         }
 
+        FirstPickAboutMenu(onOpenAbout = { isAboutOpen = true })
 
         Window(
             onCloseRequest = {
@@ -83,6 +87,10 @@ fun main() {
                 onStopSim = { viewModel.stopSimulation() },
                 onTogglePause = { viewModel.toggleSimulationPause() }
             )
+        }
+
+        if (isAboutOpen) {
+            FirstPickAboutWindow(onCloseRequest = { isAboutOpen = false })
         }
 
         when {
