@@ -4,6 +4,7 @@ import com.firstpick.advisor.DeckOption
 import com.firstpick.advisor.LaneDetector
 import com.firstpick.cards.CardMeta
 import com.firstpick.cards.SetMetrics
+import com.firstpick.guide.LimitedPolicy
 import kotlin.math.sqrt
 
 
@@ -49,7 +50,7 @@ object DeckFeatures {
         val fixers = (deck.nonbasicLands.count { meta(it.name)?.isFixing == true } +
             spells.count { meta(it.name)?.isFixing == true }).toDouble()
 
-        val shortfall = (23 - spells.size).coerceAtLeast(0).toDouble()
+        val shortfall = (LimitedPolicy.SPELL_SLOTS - spells.size).coerceAtLeast(0).toDouble()
 
 
         val pips = HashMap<Char, Int>()

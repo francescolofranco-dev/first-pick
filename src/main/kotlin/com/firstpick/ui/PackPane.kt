@@ -46,7 +46,11 @@ import com.firstpick.model.DraftPhase
 import com.firstpick.sim.DraftSimulator
 
 @Composable
-internal fun PackPane(state: DraftUiState, onSimulate: (String) -> Unit = {}) = when {
+internal fun PackPane(
+    state: DraftUiState,
+    onSimulate: (String) -> Unit = {},
+    onOpenGuide: () -> Unit = {},
+) = when {
     state.loadingRatings && state.packCards.isEmpty() -> Centered {
         Row(verticalAlignment = Alignment.CenterVertically) {
             CircularProgressIndicator(Modifier.width(18.dp), strokeWidth = 2.dp)
@@ -104,6 +108,10 @@ internal fun PackPane(state: DraftUiState, onSimulate: (String) -> Unit = {}) = 
     }
 
     else -> Column(Modifier.fillMaxSize()) {
+        if (shouldShowGuideStarter(state)) {
+            SetGuideStarter(state, onOpenGuide)
+            Spacer(Modifier.height(7.dp))
+        }
         ConfidenceBanner(state.packCards)
         LazyColumn(
             Modifier.fillMaxSize(),
@@ -112,6 +120,55 @@ internal fun PackPane(state: DraftUiState, onSimulate: (String) -> Unit = {}) = 
         ) {
             items(state.packCards, key = { "${it.grpId}#${it.rank}" }) { PackRow(it, state.packCards.size) }
         }
+    }
+}
+
+internal fun shouldShowGuideStarter(state: DraftUiState): Boolean =
+    state.phase == DraftPhase.DRAFTING &&
+        state.pack == 1 &&
+        state.pick == 1 &&
+        state.setCode != null &&
+        state.packCards.isNotEmpty()
+
+@Composable
+private fun SetGuideStarter(state: DraftUiState, onOpenGuide: () -> Unit) {
+    val guide = state.setGuide
+    val title = guide?.setName?.takeIf { it.isNotBlank() } ?: state.setCode.orEmpty()
+    val detail = when {
+        guide != null && guide.mechanics.isNotEmpty() -> guide.mechanics.take(3).joinToString(" · ") { it.name }
+        guide != null -> "Color pairs, themes, and the set's best cards"
+        state.guideLoading -> "Preparing themes, color pairs, and top cards…"
+        else -> "Draft and sealed fundamentals"
+    }
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(9.dp))
+            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.11f))
+            .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.28f), RoundedCornerShape(9.dp))
+            .clickable(onClick = onOpenGuide)
+            .padding(horizontal = 10.dp, vertical = 7.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(Modifier.weight(1f)) {
+            Text(
+                "$title draft guide",
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                detail,
+                fontSize = 10.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+        Spacer(Modifier.width(8.dp))
+        Text("Open guide  ›", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
     }
 }
 

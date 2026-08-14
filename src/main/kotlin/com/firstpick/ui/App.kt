@@ -34,7 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.firstpick.model.DraftPhase
 
-enum class AppScreen { DRAFT_POOL, DECK_BUILDER }
+enum class AppScreen { DRAFT_POOL, DECK_BUILDER, GUIDES }
 
 @Composable
 fun App(
@@ -48,6 +48,7 @@ fun App(
     onSimulate: (String) -> Unit = {},
     onStopSim: () -> Unit = {},
     onTogglePause: () -> Unit = {},
+    onOpenGuideSource: (String) -> Unit = {},
 ) {
     var currentScreen by remember(state.phase) {
         mutableStateOf(if (state.phase == DraftPhase.COMPLETE) AppScreen.DECK_BUILDER else AppScreen.DRAFT_POOL)
@@ -59,47 +60,60 @@ fun App(
                 Header(state, isOverlayOpen, onToggleOverlay, onSelectFormat, onStopSim, onTogglePause)
 
                 val deckTabEnabled = state.deckOptions.isNotEmpty() || state.deckSoFar != null
-                if (deckTabEnabled || state.poolSize > 0) {
-                    Spacer(Modifier.height(8.dp))
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                        TabRow(
-                            selectedTabIndex = if (currentScreen == AppScreen.DRAFT_POOL) 0 else 1,
-                            modifier = Modifier.width(300.dp).clip(RoundedCornerShape(8.dp)),
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                            contentColor = MaterialTheme.colorScheme.primary,
-                        ) {
-                            Tab(
-                                selected = currentScreen == AppScreen.DRAFT_POOL,
-                                onClick = { currentScreen = AppScreen.DRAFT_POOL },
-                                text = { Text("Draft pool", fontSize = 13.sp, fontWeight = FontWeight.Bold) },
-                            )
-                            Tab(
-                                selected = currentScreen == AppScreen.DECK_BUILDER,
-                                onClick = { currentScreen = AppScreen.DECK_BUILDER },
-                                enabled = deckTabEnabled,
-                                text = {
-                                    val label = if (state.deckOptions.isNotEmpty()) "Deck builder" else "Deck so far"
-                                    Text(label, fontSize = 13.sp, fontWeight = FontWeight.Bold)
-                                },
-                            )
-                        }
+                Spacer(Modifier.height(8.dp))
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                    TabRow(
+                        selectedTabIndex = currentScreen.ordinal,
+                        modifier = Modifier.width(440.dp).clip(RoundedCornerShape(8.dp)),
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        contentColor = MaterialTheme.colorScheme.primary,
+                    ) {
+                        Tab(
+                            selected = currentScreen == AppScreen.DRAFT_POOL,
+                            onClick = { currentScreen = AppScreen.DRAFT_POOL },
+                            text = { Text("Draft pool", fontSize = 13.sp, fontWeight = FontWeight.Bold) },
+                        )
+                        Tab(
+                            selected = currentScreen == AppScreen.DECK_BUILDER,
+                            onClick = { currentScreen = AppScreen.DECK_BUILDER },
+                            enabled = deckTabEnabled,
+                            text = {
+                                val label = if (state.deckOptions.isNotEmpty()) "Deck builder" else "Deck so far"
+                                Text(label, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                            },
+                        )
+                        Tab(
+                            selected = currentScreen == AppScreen.GUIDES,
+                            onClick = { currentScreen = AppScreen.GUIDES },
+                            text = { Text("Guides", fontSize = 13.sp, fontWeight = FontWeight.Bold) },
+                        )
                     }
                 }
 
                 Spacer(Modifier.height(10.dp))
                 Row(Modifier.fillMaxSize()) {
                     Box(Modifier.weight(1f).fillMaxHeight()) {
-                        if (currentScreen == AppScreen.DECK_BUILDER && state.deckOptions.isNotEmpty()) {
-                            DeckBuilderPane(
-                                options = state.deckOptions,
-                                committedDeck = committedDeck,
-                                onUseDeck = onUseDeck,
-                                onStopGuidance = onStopGuidance,
+                        when (currentScreen) {
+                            AppScreen.GUIDES -> GuidePane(state, onOpenGuideSource)
+                            AppScreen.DECK_BUILDER -> when {
+                                state.deckOptions.isNotEmpty() -> DeckBuilderPane(
+                                    options = state.deckOptions,
+                                    committedDeck = committedDeck,
+                                    onUseDeck = onUseDeck,
+                                    onStopGuidance = onStopGuidance,
+                                )
+                                state.deckSoFar != null -> DeckSoFarPane(state.deckSoFar, state.deckSoFarCuts)
+                                else -> PackPane(
+                                    state = state,
+                                    onSimulate = onSimulate,
+                                    onOpenGuide = { currentScreen = AppScreen.GUIDES },
+                                )
+                            }
+                            AppScreen.DRAFT_POOL -> PackPane(
+                                state = state,
+                                onSimulate = onSimulate,
+                                onOpenGuide = { currentScreen = AppScreen.GUIDES },
                             )
-                        } else if (currentScreen == AppScreen.DECK_BUILDER && state.deckSoFar != null) {
-                            DeckSoFarPane(state.deckSoFar, state.deckSoFarCuts)
-                        } else {
-                            PackPane(state, onSimulate)
                         }
                     }
                     if (currentScreen == AppScreen.DRAFT_POOL && (state.poolSize > 0 || state.packCards.isNotEmpty())) {

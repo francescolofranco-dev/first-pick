@@ -28,6 +28,8 @@ import com.firstpick.model.DraftState
 import com.firstpick.model.PickNetRepository
 import com.firstpick.signals.SignalsEngine
 import com.firstpick.sim.DraftSimulator
+import com.firstpick.guide.LimitedPolicy
+import com.firstpick.guide.SetDraftGuideBuilder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -140,6 +142,12 @@ class DraftViewModel(
         currentError = null
         mutex.withLock { _ui.value = _ui.value.copy(loadingRatings = true, dataError = null) }
 
+        // Bundled guidance can be ready before live ratings and should never block P1P1.
+        scope.launch {
+            runCatching { synergyRepo.load(set) }
+            publish()
+        }
+
         val outcome = runCatching { repo.load(set, format) }
         currentError = outcome.exceptionOrNull()?.let { dataErrorMessage(it, set) }
             ?: if (repo.isLoaded) null else dataErrorMessage(null, set)
@@ -148,7 +156,6 @@ class DraftViewModel(
         scope.launch {
             runCatching { metaRepo.load(set, repo.cardNames) }
             runCatching { archetypeRepo.loadStrengths(set, format) }
-            runCatching { synergyRepo.load(set) }
             runCatching { pickNetRepo.load(set, format) }
             publish()
         }
@@ -156,31 +163,58 @@ class DraftViewModel(
 
     private suspend fun ensureLanePair(state: DraftState) {
         val set = state.setCode ?: return
-        if (!repo.isLoaded) return
+        val format = RatingsFormat.resolve(formatChoice, state.format)
+        val dataKey = "${set.uppercase()}_$format"
+        if (repo.loadedKey != dataKey) return
         val pool = state.pool.map(repo::resolve)
         val signals = SignalsEngine.openLanes(state.seen, repo::resolve)
-        val pair = LaneDetector.detect(pool, repo.setMetrics, archetypeRepo.strengthMap(), signals).pair ?: return
-        val format = RatingsFormat.resolve(formatChoice, state.format)
+        val strength = archetypeRepo.strengthMap().takeIf { archetypeRepo.loadedKey == dataKey }.orEmpty()
+        val pair = LaneDetector.detect(pool, repo.setMetrics, strength, signals).pair ?: return
         runCatching { archetypeRepo.ensurePair(set, format, pair) }
     }
 
     private fun buildUi(state: DraftState): DraftUiState {
-        val loaded = repo.isLoaded
+        val format = RatingsFormat.resolve(formatChoice, state.format)
+        val dataKey = state.setCode?.let { "${it.uppercase()}_$format" }
+        val loaded = dataKey != null && repo.loadedKey == dataKey
+        val archetypesLoaded = dataKey != null && archetypeRepo.loadedKey == dataKey
+        val pairStrength = archetypeRepo.strengthMap().takeIf { archetypesLoaded }.orEmpty()
+        val synergyLoaded = state.setCode != null && synergyRepo.loadedSet.equals(state.setCode, ignoreCase = true)
+        val metaLoaded = state.setCode != null && metaRepo.loadedSet.equals(state.setCode, ignoreCase = true)
+        val synergy = synergyRepo.index.takeIf { synergyLoaded }
+        val meta: (String) -> CardMeta? = if (metaLoaded) metaRepo::meta else { _ -> null }
+        val archetypeRating: (String, String) -> com.firstpick.cards.CardRating? = if (archetypesLoaded) {
+            archetypeRepo::archetypeRating
+        } else {
+            { _, _ -> null }
+        }
         val pool = if (loaded) state.pool.map(repo::resolve) else emptyList()
         val signals = if (loaded) SignalsEngine.openLanes(state.seen, repo::resolve) else emptyMap()
         val lane = if (loaded) {
-            LaneDetector.detect(pool, repo.setMetrics, archetypeRepo.strengthMap(), signals)
+            LaneDetector.detect(pool, repo.setMetrics, pairStrength, signals)
         } else {
             Lane(emptySet(), null, emptyMap())
         }
 
-        val poolMetas = pool.mapNotNull { metaRepo.meta(it.name) }
-        val format = RatingsFormat.resolve(formatChoice, state.format)
+        val poolMetas = pool.mapNotNull { meta(it.name) }
         val net = pickNetRepo.netFor(state.setCode, format)
+
+        val guideReady = state.setCode != null && (synergyLoaded || loaded)
+        val setGuide = if (guideReady) {
+            SetDraftGuideBuilder.build(
+                setCode = state.setCode!!,
+                dataFormat = format,
+                ratings = if (loaded) repo.cardRatings else emptyList(),
+                synergy = synergy,
+                pairStrength = pairStrength,
+            )
+        } else {
+            null
+        }
 
 
         val liveProjection = if (loaded && lane.isEstablished) {
-            DeckProjector.project(pool, repo.setMetrics, metaRepo::meta, archetypeRepo::archetypeRating, archetypeRepo.strengthMap(), synergyRepo.index)
+            DeckProjector.project(pool, repo.setMetrics, meta, archetypeRating, pairStrength, synergy)
         } else {
             null
         }
@@ -194,10 +228,10 @@ class DraftViewModel(
                 pickNumber = state.pick.coerceAtLeast(1),
                 metrics = repo.setMetrics,
                 lane = lane,
-                archetypeRating = archetypeRepo::archetypeRating,
-                meta = metaRepo::meta,
-                synergy = synergyRepo.index,
-                deckFit = deckFitProbe(pool, liveProjection),
+                archetypeRating = archetypeRating,
+                meta = meta,
+                synergy = synergy,
+                deckFit = deckFitProbe(pool, liveProjection, pairStrength, synergy, meta, archetypeRating),
             )
             val ranked = net?.let { PickNetRanker.rerank(it, scored, pool.map { c -> c.name }) } ?: scored
             packRows(ranked, basicLands, state.packCards)
@@ -218,10 +252,10 @@ class DraftViewModel(
                 DeckBuilder.build(
                     pool = pool,
                     metrics = repo.setMetrics,
-                    meta = metaRepo::meta,
-                    archetypeRating = archetypeRepo::archetypeRating,
-                    pairStrength = archetypeRepo.strengthMap(),
-                    synergy = synergyRepo.index,
+                    meta = meta,
+                    archetypeRating = archetypeRating,
+                    pairStrength = pairStrength,
+                    synergy = synergy,
                 ).map { it.toUi() }
             }.getOrElse { Log.warn(TAG, "deck build failed: $it"); emptyList() }
         } else {
@@ -246,9 +280,11 @@ class DraftViewModel(
             poolNonCreatures = poolMetas.count { !it.isCreature && !it.isLand },
             lanePair = lane.pair,
             topPairs = lane.topPairs,
-            archetypes = archetypeRows(lane.pair),
+            archetypes = if (archetypesLoaded) archetypeRows(lane.pair) else emptyList(),
             deckNeeds = deckNeeds,
             deckOptions = deckOptions,
+            setGuide = setGuide,
+            guideLoading = state.setCode != null && setGuide == null,
             draftPool = pool.toDeckSpells(),
             deckSoFar = liveProjection?.toUi(),
             deckSoFarCuts = cutsOf(pool, liveProjection),
@@ -273,11 +309,14 @@ class DraftViewModel(
     private fun deckFitProbe(
         pool: List<com.firstpick.cards.RankedCard>,
         before: DeckOption?,
+        pairStrength: Map<String, Double>,
+        synergy: com.firstpick.cards.SynergyIndex?,
+        meta: (String) -> CardMeta?,
+        archetypeRating: (String, String) -> com.firstpick.cards.CardRating?,
     ): ((com.firstpick.cards.RankedCard) -> DeckProjector.Fit?)? {
         if (before == null) return null
-        val strength = archetypeRepo.strengthMap()
         return { card ->
-            DeckProjector.fit(pool, card, repo.setMetrics, metaRepo::meta, archetypeRepo::archetypeRating, strength, synergyRepo.index, before)
+            DeckProjector.fit(pool, card, repo.setMetrics, meta, archetypeRating, pairStrength, synergy, before)
         }
     }
 
@@ -431,7 +470,7 @@ class DraftViewModel(
 
     companion object {
         private const val TAG = "DraftViewModel"
-        private const val TOTAL_PICKS = 45
+        private const val TOTAL_PICKS = LimitedPolicy.DRAFT_TOTAL_PICKS
         private val WUBRG_ORDER = listOf('W', 'U', 'B', 'R', 'G')
     }
 }

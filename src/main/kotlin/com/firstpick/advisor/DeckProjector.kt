@@ -6,27 +6,29 @@ import com.firstpick.cards.RankedCard
 import com.firstpick.cards.SetMetrics
 import com.firstpick.cards.SynergyIndex
 import com.firstpick.cards.SynergyRole
+import com.firstpick.guide.LimitedPolicy
 
 
 object DeckProjector {
-    private const val SPELL_SLOTS = 23
-    private const val LAND_SLOTS = 17
-    private const val DECK_SIZE = 40
+    private const val SPELL_SLOTS = LimitedPolicy.SPELL_SLOTS
+    private const val LAND_SLOTS = LimitedPolicy.LAND_SLOTS
+    private const val DECK_SIZE = LimitedPolicy.DECK_SIZE
 
-    private const val MAX_SPLASH = 4
-    private const val MIN_DECK_SPELLS = 21
+    private const val MAX_SPLASH = LimitedPolicy.MAX_SPLASH_CARDS
+    private const val MIN_DECK_SPELLS = LimitedPolicy.MIN_BUILDABLE_SPELLS
+    private const val MIN_DECK_OPTIONS = 2
 
-    private const val CREATURE_TARGET = 15
+    private const val CREATURE_TARGET = LimitedPolicy.FINAL_CREATURE_TARGET
     private const val NONCREATURE_CAP = 8
     private const val CREATURE_BIAS = 0.015
     private val CREATURE_CURVE = linkedMapOf(2 to 4, 3 to 4, 4 to 3, 5 to 2, 6 to 1, 1 to 1)
 
 
-    private const val REMOVAL_TARGET = 4
+    private const val REMOVAL_TARGET = LimitedPolicy.FINAL_REMOVAL_TARGET
     private const val REMOVAL_MIN_Z = -0.75
 
-    private const val MIN_COLOR_PIPS = 4
-    private const val MIN_COLOR_RATIO = 0.20
+    private const val MIN_COLOR_PIPS = LimitedPolicy.MIN_BASE_COLOR_PIPS
+    private const val MIN_COLOR_RATIO = LimitedPolicy.MIN_BASE_COLOR_RATIO
 
     private const val SPLASH_UPGRADE_MARGIN = 0.02
 
@@ -111,10 +113,15 @@ object DeckProjector {
 
         val main = (pass(MIN_DECK_SPELLS) + pass(MIN_DECK_SPELLS, upgrade = true))
             .sortedByDescending { it.powerScore }
+            .distinctBy { it.colors }
+        // Lenient builds may fill the slate to two choices, but must never pad it to three.
+        val optionCount = minOf(maxOptions, maxOf(MIN_DECK_OPTIONS, main.size))
+        if (main.size >= optionCount) return main.take(optionCount)
+
         val fill = pass(0, lenient = true).sortedByDescending { it.powerScore }
         return (main + fill)
             .distinctBy { it.colors }
-            .take(maxOptions)
+            .take(optionCount)
     }
 
     private fun strengthFor(pair: String, pairStrength: Map<String, Double>): Double? = pairStrength[pair]

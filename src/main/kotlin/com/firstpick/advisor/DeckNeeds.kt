@@ -1,6 +1,7 @@
 package com.firstpick.advisor
 
 import com.firstpick.cards.CardMeta
+import com.firstpick.guide.LimitedPolicy
 import kotlin.math.min
 
 data class PoolNeeds(
@@ -53,18 +54,18 @@ data class NeedsResult(val points: Double, val reasons: List<String>)
 object DeckNeeds {
 
 
-    const val TARGET_REMOVAL = 6.0
+    const val TARGET_REMOVAL = LimitedPolicy.POOL_REMOVAL_TARGET
     const val REMOVAL_SATURATION = 6
-    const val TARGET_CREATURES = 14.0
+    const val TARGET_CREATURES = LimitedPolicy.POOL_CREATURE_TARGET
 
 
-    const val TARGET_TWO_DROPS = 8.0
-    const val TARGET_FIXING = 3
+    const val TARGET_TWO_DROPS = LimitedPolicy.POOL_TWO_DROP_TARGET
+    const val TARGET_FIXING = LimitedPolicy.POOL_FIXING_TARGET
     const val FIXING_MIN_POOL = 12
-    const val TARGET_FINISHERS = 2.0
+    const val TARGET_FINISHERS = LimitedPolicy.POOL_FINISHER_TARGET
 
 
-    const val TOP_HEAVY_THRESHOLD = 6
+    const val TOP_HEAVY_THRESHOLD = LimitedPolicy.POOL_TOP_END_LIMIT
 
     const val PROJECTION_PRIOR = 8.0
 

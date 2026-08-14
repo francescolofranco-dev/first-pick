@@ -5,6 +5,7 @@ import com.firstpick.ui.DeckOptionUi
 import com.firstpick.ui.DeckSpellUi
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 
 class MainTest {
     @Test
@@ -76,6 +77,14 @@ class MainTest {
             ),
         )
         assertEquals(listOf(true, false), pool.map { it.isBasicLand })
+    }
+
+    @Test
+    fun guideLinksOnlyOpenValidHttpsSources() {
+        assertEquals("magic.wizards.com", guideSourceUri("https://magic.wizards.com/en/news")?.host)
+        assertNull(guideSourceUri("http://example.com"))
+        assertNull(guideSourceUri("file:///tmp/guide"))
+        assertNull(guideSourceUri("not a URI"))
     }
 
     private fun card(

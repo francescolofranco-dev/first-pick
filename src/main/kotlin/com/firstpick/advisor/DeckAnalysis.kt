@@ -6,6 +6,7 @@ import com.firstpick.cards.RankedCard
 import com.firstpick.cards.SetMetrics
 import com.firstpick.cards.SynergyIndex
 import com.firstpick.cards.SynergyRole
+import com.firstpick.guide.LimitedPolicy
 import kotlin.math.abs
 
 enum class DeckPace(val label: String) {
@@ -194,8 +195,8 @@ object DeckAnalysis {
             }
         }
 
-        if (f.spellCount < 23) {
-            val missing = 23 - f.spellCount
+        if (f.spellCount < LimitedPolicy.SPELL_SLOTS) {
+            val missing = LimitedPolicy.SPELL_SLOTS - f.spellCount
             adjustments += Adjustment(-missing * 3.0, "Complete spell suite", "$missing spell slots short")
         }
 

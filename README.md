@@ -14,6 +14,11 @@ win-rate data and adjusted for the deck you're actually building: your colors,
 your archetype, your curve, and the roles your pool still needs. When the draft
 ends, it proposes 2–3 finished decks with a power estimate.
 
+Every draft also has an always-available set guide: mechanics, color-pair plans,
+and the strongest commons and non-commons in each color. A separate Sealed guide
+turns proven Limited fundamentals into a practical deck-building checklist. The
+same archetype profiles and construction policy are used by the advisor itself.
+
 > Unofficial fan project. Not affiliated with or endorsed by Wizards of the Coast.
 
 <p align="center">
@@ -41,6 +46,12 @@ mana curve, and your pool — all updating as you pick.
 <picture>
   <img src="docs/screenshots/data-source.png" width="260" alt="17Lands data source selector" />
 </picture>
+
+**Draft and Sealed guides.** Open the Guide tab at any time for the current set's
+mechanics, color-pair themes, signposts, enablers, payoffs, and per-color top commons
+and non-commons. The card lists use the selected 17Lands format; the strategy text is
+bundled for reliable offline access, and its underlying Limited principles link to
+the expert and official sources. The Sealed page remains available even before a draft starts.
 
 **Post-draft deck builder.** When the final pick is confirmed, get 2–3 buildable decks
 ranked by power, each with a letter tier, deck type, archetype, confidence, and an
@@ -79,6 +90,11 @@ when the deck matches.
 - **Dynamic deck-needs** — tracks removal, creatures, 2-drops, fixing, and
   finishers; nudges cards that fill gaps. The pressure ramps up through the draft,
   so early picks stay value-driven and late picks build a balanced deck.
+- **Shared Limited guide** — the visible set archetypes and deck-construction
+  principles are also consumed by pick scoring and deck projection, so explanations
+  and recommendations follow the same model rather than a disconnected article.
+- **Sealed construction reference** — a source-linked checklist for comparing color
+  cores, building a 40-card curve, choosing mana, splashing carefully, and sideboarding.
 - **At-a-glance dashboard** — your lane, ranked archetypes, open-lane signals,
   mana curve, pool, and current deck needs.
 - **On-card overlay** — a transparent, click-through layer pinned to the Arena
@@ -139,7 +155,8 @@ Start a draft in Arena and FirstPick updates live.
 
 A coroutine pipeline: tail `~/Library/Logs/Wizards of the Coast/MTGA/Player.log`
 → reconstruct the live draft → fetch + cache 17Lands ratings, archetype data, and
-Scryfall card facts → run the contextual advisor → render a Compose dashboard.
+Scryfall card facts → combine them with bundled, reviewed set guidance → run the
+contextual advisor → render a Compose dashboard.
 It only ever **reads** the log and your local MTGA card database — plus, when the
 overlays are on, screen frames of the Arena window analyzed locally to locate cards
 and read the visible deck-builder counts. Capture and OCR use short-lived temporary
@@ -184,6 +201,10 @@ Brand assets live in `packaging/icon/` (SVG source + `AppIcon.iconset`) and `doc
 
 - Win-rate and archetype data from [17Lands](https://www.17lands.com/), licensed
   CC-BY-4.0. Fetched politely (cached, throttled, descriptive User-Agent).
+- Limited principles are original summaries based on source-linked articles by
+  Reid Duke and Mark Rosewater on Magic's official site, Ben Stark's *Drafting the
+  Hard Way* discussion, and 17Lands' metric definitions. FirstPick links out; it does
+  not scrape or reproduce articles, videos, podcasts, or transcripts at runtime.
 - Card metadata, the `otag:removal` role tag, and the mana symbol SVGs in
   `src/main/resources/symbols/` from [Scryfall](https://scryfall.com/).
 - Magic: The Gathering is © Wizards of the Coast. This is an unofficial fan tool.

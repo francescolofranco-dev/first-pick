@@ -5,6 +5,7 @@ import com.firstpick.cards.CardRating
 import com.firstpick.cards.RankedCard
 import com.firstpick.cards.SetMetrics
 import com.firstpick.cards.SynergyIndex
+import com.firstpick.guide.LimitedPolicy
 
 class AdvisorEngine(
     private val config: Config = Config(),
@@ -17,8 +18,8 @@ class AdvisorEngine(
         val bombUnsplashablePenaltyScale: Double = 0.5,
         val wheelAlsa: Double = 7.0,
         val wheelPenaltyPts: Double = 1.5,
-        val totalPicks: Int = 45,
-        val picksPerPack: Int = 15,
+        val totalPicks: Int = LimitedPolicy.DRAFT_TOTAL_PICKS,
+        val picksPerPack: Int = LimitedPolicy.PICKS_PER_PACK,
         val valueMidpoint: Double = 50.0,
         val valuePerZ: Double = 16.0,
         val alsaPivot: Double = 5.0,
@@ -42,10 +43,10 @@ class AdvisorEngine(
         val comboCapPts: Double = 4.0,
         val synergyTotalCapPts: Double = 8.0,
         val earlyBombThemeFuelBonus: Double = 1.0,
-        val penaltyRampStart: Double = 0.15,
+        val penaltyRampStart: Double = LimitedPolicy.COLOR_COMMITMENT_RAMP_START,
         val penaltyMax: Double = 3.0,
-        val needsRampStart: Double = 0.25,
-        val needsRampSpan: Double = 0.55,
+        val needsRampStart: Double = LimitedPolicy.DECK_NEEDS_RAMP_START,
+        val needsRampSpan: Double = LimitedPolicy.DECK_NEEDS_RAMP_SPAN,
 
 
         val dupSpellPts: Double = 5.0,
@@ -59,13 +60,13 @@ class AdvisorEngine(
 
 
         val creatureFloorPts: Double = 0.0,
-        val creatureFloorTarget: Double = 15.0,
+        val creatureFloorTarget: Double = LimitedPolicy.FINAL_CREATURE_TARGET.toDouble(),
 
 
         val fitPerPowerDelta: Double = 2.0,
         val fitCapPts: Double = 6.0,
-        val fitRampStart: Double = 0.10,
-        val fitRampSpan: Double = 0.23,
+        val fitRampStart: Double = LimitedPolicy.DECK_FIT_RAMP_START,
+        val fitRampSpan: Double = LimitedPolicy.DECK_FIT_RAMP_SPAN,
     )
 
     fun score(

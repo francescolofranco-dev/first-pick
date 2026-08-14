@@ -76,14 +76,32 @@ class DeckBuilderTest {
     }
 
     @Test
-    fun alwaysOffersThreeBuildsEvenFromALopsidedPool() {
+    fun alwaysOffersAtLeastTwoBuildsEvenFromALopsidedPool() {
         val redOnly = (0 until 8).map { card(it, "R$it", 0.5, "R") }
-        assertEquals(3, DeckBuilder.build(redOnly, metrics, meta).size, "the user always gets a full slate")
+        assertEquals(2, DeckBuilder.build(redOnly, metrics, meta).size, "the user always gets at least two choices")
     }
 
     @Test
-    fun offersThreeBuildsFromANormalPool() {
-        assertEquals(3, DeckBuilder.build(pool(), metrics, meta).size)
+    fun doesNotInventAThirdBuildWithAnUnrepresentedBaseColor() {
+        val options = DeckBuilder.build(pool(), metrics, meta)
+
+        assertEquals(2, options.size, "only two color identities have enough cards to be buildable")
+        for (option in options) {
+            assertTrue(option.basePair.all { baseColor ->
+                option.spells.any { baseColor in LaneDetector.colorsOf(it) }
+            }, "${option.basePair} declares a base color with no matching spells")
+        }
+    }
+
+    @Test
+    fun offersThreeBuildsWhenThreeAreActuallyViable() {
+        val threeColorPool = buildList {
+            listOf("W", "U", "B").forEachIndexed { colorIndex, color ->
+                repeat(12) { add(card(colorIndex * 100 + it, "$color$it", 0.58, color)) }
+            }
+        }
+
+        assertEquals(3, DeckBuilder.build(threeColorPool, metrics, meta).size)
     }
 
     @Test

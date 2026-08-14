@@ -31,6 +31,7 @@ class CardRepository(
     val isLoaded: Boolean get() = loadedKey != null
 
     val cardNames: List<String> get() = byName.values.map { it.name }
+    val cardRatings: List<CardRating> get() = byName.values.toList()
 
     suspend fun load(setCode: String, format: String) {
         val key = "${setCode.uppercase()}_$format"

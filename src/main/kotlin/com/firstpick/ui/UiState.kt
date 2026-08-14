@@ -2,6 +2,7 @@ package com.firstpick.ui
 
 import com.firstpick.model.DraftFormat
 import com.firstpick.model.DraftPhase
+import com.firstpick.guide.SetDraftGuide
 
 data class PackCardUi(
     val grpId: Int,
@@ -122,6 +123,8 @@ data class DraftUiState(
     val archetypes: List<ArchetypeRow> = emptyList(),
     val deckNeeds: List<String> = emptyList(),
     val deckOptions: List<DeckOptionUi> = emptyList(),
+    val setGuide: SetDraftGuide? = null,
+    val guideLoading: Boolean = false,
 
     /** Every card drafted, grouped by display name, for post-draft client guidance. */
     val draftPool: List<DeckSpellUi> = emptyList(),
