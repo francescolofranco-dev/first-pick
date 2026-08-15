@@ -3,6 +3,19 @@ package com.firstpick.ui
 import com.firstpick.model.DraftFormat
 import com.firstpick.model.DraftPhase
 import com.firstpick.guide.SetDraftGuide
+import java.time.Instant
+
+enum class RatingsDataStatus {
+    IDLE,
+    LOADING,
+    /** Ratings were downloaded from 17Lands during this session. */
+    FRESH,
+    /** A still-fresh on-disk cache was used without a network request. */
+    CACHED,
+    /** A refresh failed, so an expired cache is keeping recommendations available. */
+    STALE_CACHE,
+    ERROR,
+}
 
 data class PackCardUi(
     val grpId: Int,
@@ -111,6 +124,13 @@ data class DraftUiState(
     val poolSize: Int = 0,
     val loadingRatings: Boolean = false,
     val dataError: String? = null,
+    val ratingsDataStatus: RatingsDataStatus = RatingsDataStatus.IDLE,
+    val ratingsDataWarning: String? = null,
+    val ratingsLastUpdated: Instant? = null,
+    val ratingsCardCount: Int = 0,
+    val ratingsReliableCardCount: Int = 0,
+    val ratingsMedianGamesPerCard: Int = 0,
+    val canRetryRatings: Boolean = false,
     val packCards: List<PackCardUi> = emptyList(),
     val laneColors: List<Char> = emptyList(),
     val openLanes: List<ColorScore> = emptyList(),

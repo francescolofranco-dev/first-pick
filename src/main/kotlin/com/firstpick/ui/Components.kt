@@ -5,6 +5,8 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.TooltipArea
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,8 +25,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -34,12 +39,19 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.loadSvgPainter
 import androidx.compose.ui.res.useResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupProperties
 import com.firstpick.advisor.ValueBreakdown
 
 @Composable
@@ -68,7 +80,7 @@ fun PipRow(colors: List<Char>) {
 fun Pip(color: Char, size: Dp = 16.dp) {
     val painter = manaPainter(color)
     if (painter != null) {
-        Image(painter, contentDescription = color.toString(), modifier = Modifier.size(size))
+        Image(painter, contentDescription = manaColorName(color), modifier = Modifier.size(size))
     } else {
         Box(Modifier.size(size).clip(RoundedCornerShape(50)).background(pipColor(color)), contentAlignment = Alignment.Center) {
             Text(
@@ -81,6 +93,15 @@ fun Pip(color: Char, size: Dp = 16.dp) {
             )
         }
     }
+}
+
+internal fun manaColorName(color: Char): String = when (color) {
+    'W' -> "White mana"
+    'U' -> "Blue mana"
+    'B' -> "Black mana"
+    'R' -> "Red mana"
+    'G' -> "Green mana"
+    else -> "Colorless mana"
 }
 
 @Composable
@@ -137,6 +158,7 @@ internal fun archetypeFraction(winRate: Double, minWinRate: Double, maxWinRate: 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun Panel(title: String, tooltip: String? = null, content: @Composable () -> Unit) {
+    var helpExpanded by remember(title, tooltip) { mutableStateOf(false) }
     Column(
         Modifier
             .fillMaxWidth()
@@ -161,11 +183,25 @@ internal fun Panel(title: String, tooltip: String? = null, content: @Composable 
                     }
                 },
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .semantics {
+                            role = Role.Button
+                            contentDescription = "Help for $title"
+                            stateDescription = if (helpExpanded) "Help expanded" else "Help collapsed"
+                        }
+                        .focusable()
+                        .clickable(role = Role.Button) { helpExpanded = !helpExpanded },
+                ) {
                     Text(title.uppercase(), fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Spacer(Modifier.width(4.dp))
                     Text("ⓘ", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))
                 }
+            }
+            if (helpExpanded) {
+                Spacer(Modifier.height(6.dp))
+                Text(tooltip, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         } else {
             Text(title.uppercase(), fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -177,26 +213,66 @@ internal fun Panel(title: String, tooltip: String? = null, content: @Composable 
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun CardPreview(imageUrl: String?, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+fun CardPreview(
+    imageUrl: String?,
+    modifier: Modifier = Modifier,
+    description: String = "Card",
+    content: @Composable () -> Unit,
+) {
     if (imageUrl.isNullOrBlank()) {
         Box(modifier) { content() }
         return
     }
-    TooltipArea(
-        modifier = modifier,
-        delayMillis = 300,
-        tooltip = {
-            val bitmap = rememberCardImage(imageUrl)
-            if (bitmap != null) {
-                Image(
-                    bitmap = bitmap,
-                    contentDescription = null,
-                    modifier = Modifier.size(232.dp, 323.dp).clip(RoundedCornerShape(14.dp)),
-                )
+    var pinned by remember(imageUrl) { mutableStateOf(false) }
+    val preview: @Composable () -> Unit = {
+        val bitmap = rememberCardImage(imageUrl)
+        if (bitmap != null) {
+            Image(
+                bitmap = bitmap,
+                contentDescription = "$description card art",
+                modifier = Modifier.size(232.dp, 323.dp).clip(RoundedCornerShape(14.dp)),
+            )
+        }
+    }
+    Box(modifier) {
+        TooltipArea(
+            delayMillis = 300,
+            tooltip = preview,
+        ) {
+            Box(
+                Modifier
+                    .semantics {
+                        role = Role.Button
+                        contentDescription = "Show $description card art"
+                        stateDescription = if (pinned) "Preview open" else "Preview closed"
+                    }
+                    .focusable()
+                    .clickable(
+                        role = Role.Button,
+                        onClickLabel = if (pinned) "Close card preview" else "Open card preview",
+                    ) { pinned = !pinned },
+            ) {
+                content()
             }
-        },
-        content = content,
-    )
+        }
+        if (pinned) {
+            Popup(
+                alignment = Alignment.Center,
+                onDismissRequest = { pinned = false },
+                properties = PopupProperties(focusable = true),
+            ) {
+                Surface(
+                    shape = RoundedCornerShape(14.dp),
+                    shadowElevation = 10.dp,
+                    modifier = Modifier
+                        .semantics { contentDescription = "$description card preview. Press Escape to close." }
+                        .clickable(role = Role.Button, onClickLabel = "Close card preview") { pinned = false },
+                ) {
+                    preview()
+                }
+            }
+        }
+    }
 }
 
 @Composable
@@ -249,6 +325,50 @@ internal fun Centered(content: @Composable () -> Unit) {
 internal fun Double?.asPct(): String = this?.let { "%.1f".format(it * 100) } ?: "—"
 internal fun Double?.as1dp(): String = this?.let { "%.1f".format(it) } ?: "—"
 internal fun Double?.asInt(): String = this?.let { "%.0f".format(it) } ?: "—"
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+internal fun ScoreBreakdownTrigger(
+    breakdown: ValueBreakdown,
+    model: ModelExplain?,
+    content: @Composable () -> Unit,
+) {
+    var expanded by remember(breakdown, model) { mutableStateOf(false) }
+    Box {
+        TooltipArea(tooltip = { BreakdownTooltip(breakdown, model) }) {
+            Box(
+                Modifier
+                    .semantics {
+                        role = Role.Button
+                        contentDescription = "Show score breakdown"
+                        stateDescription = if (expanded) "Score breakdown open" else "Score breakdown closed"
+                    }
+                    .focusable()
+                    .clickable(
+                        role = Role.Button,
+                        onClickLabel = if (expanded) "Close score breakdown" else "Open score breakdown",
+                    ) { expanded = !expanded },
+            ) {
+                content()
+            }
+        }
+        if (expanded) {
+            Popup(
+                alignment = Alignment.Center,
+                onDismissRequest = { expanded = false },
+                properties = PopupProperties(focusable = true),
+            ) {
+                Box(
+                    Modifier.clickable(role = Role.Button, onClickLabel = "Close score breakdown") {
+                        expanded = false
+                    },
+                ) {
+                    BreakdownTooltip(breakdown, model)
+                }
+            }
+        }
+    }
+}
 
 @Composable
 fun BreakdownTooltip(b: ValueBreakdown, model: ModelExplain? = null) {

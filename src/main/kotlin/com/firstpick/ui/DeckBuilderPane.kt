@@ -3,9 +3,12 @@ package com.firstpick.ui
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,6 +20,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Button
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -29,6 +34,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -47,6 +56,7 @@ internal fun resolveDeckPreviewKey(
     ?: committedKey?.takeIf { it in optionKeys }
     ?: optionKeys.firstOrNull()
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun DeckBuilderPane(
     options: List<DeckOptionUi>,
@@ -80,7 +90,10 @@ internal fun DeckBuilderPane(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Spacer(Modifier.height(10.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
             options.forEach { opt ->
                 OptionCard(
                     opt = opt,
@@ -235,7 +248,7 @@ private fun DeckSpellRow(s: DeckSpellUi, muted: Boolean = false) {
                 }
                 Spacer(Modifier.width(6.dp))
             }
-            CardPreview(s.imageUrl) {
+            CardPreview(s.imageUrl, description = s.name) {
                 Text(s.name, fontSize = 12.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
         }
@@ -283,7 +296,15 @@ private fun OptionCard(opt: DeckOptionUi, previewed: Boolean, active: Boolean, o
                 color = if (active) MaterialTheme.colorScheme.primary else Color.Transparent,
                 shape = RoundedCornerShape(12.dp),
             )
-            .clickable(onClick = onClick)
+            .semantics {
+                selected = previewed
+                stateDescription = buildString {
+                    append(if (previewed) "Previewed" else "Not previewed")
+                    if (active) append(", guidance active")
+                }
+            }
+            .focusable()
+            .clickable(role = Role.RadioButton, onClick = onClick)
             .padding(12.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
@@ -318,24 +339,14 @@ private fun GuidanceAction(
     emphasized: Boolean = true,
     onClick: () -> Unit,
 ) {
-    val background = when {
-        !enabled -> MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
-        emphasized -> MaterialTheme.colorScheme.primary
-        else -> MaterialTheme.colorScheme.surfaceVariant
-    }
-    val foreground = when {
-        !enabled -> MaterialTheme.colorScheme.primary
-        emphasized -> MaterialTheme.colorScheme.onPrimary
-        else -> MaterialTheme.colorScheme.onSurface
-    }
-    Box(
-        Modifier
-            .clip(RoundedCornerShape(8.dp))
-            .background(background)
-            .then(if (enabled) Modifier.clickable(onClick = onClick) else Modifier)
-            .padding(horizontal = 12.dp, vertical = 7.dp),
-    ) {
-        Text(label, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = foreground)
+    if (emphasized) {
+        Button(onClick = onClick, enabled = enabled) {
+            Text(label, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+        }
+    } else {
+        OutlinedButton(onClick = onClick, enabled = enabled) {
+            Text(label, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+        }
     }
 }
 

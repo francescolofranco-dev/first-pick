@@ -21,6 +21,8 @@ import com.firstpick.cards.SynergyRepository
 import com.firstpick.cards.SynergyTierLevel
 import com.firstpick.cards.DataUnavailableException
 import com.firstpick.cards.FetchFailure
+import com.firstpick.cards.RatingsDataSource
+import com.firstpick.cards.SeventeenLandsClient
 import com.firstpick.core.AppPaths
 import com.firstpick.core.Log
 import com.firstpick.draft.DraftTracker
@@ -60,8 +62,10 @@ class DraftViewModel(
     val ui: StateFlow<DraftUiState> = _ui.asStateFlow()
 
     private val mutex = Mutex()
+    private val ratingsLoadMutex = Mutex()
     private var requestedKey: String? = null
     @Volatile private var currentError: String? = null
+    @Volatile private var ratingsLoading = false
 
     private var watcherJob: Job? = null
     private var simJob: Job? = null
@@ -132,34 +136,66 @@ class DraftViewModel(
         }
     }
 
+    /** Force a new 17Lands request for the active set, even if this key was already attempted. */
+    fun retryRatings() {
+        scope.launch {
+            val state = tracker.state.value
+            val set = state.setCode ?: return@launch
+            ensureLoaded(set, forceRefresh = true)
+            ensureLanePair(tracker.state.value)
+            publish()
+        }
+    }
+
     private suspend fun publish() = mutex.withLock {
         _ui.value = buildUi(tracker.state.value).copy(dataError = currentError)
     }
 
-    private suspend fun ensureLoaded(set: String) {
-        val format = RatingsFormat.resolve(formatChoice, tracker.state.value.format)
-        val key = "${set}_$format"
-        val proceed = mutex.withLock { if (key == requestedKey) false else { requestedKey = key; true } }
-        if (!proceed) return
-        currentError = null
-        mutex.withLock { _ui.value = _ui.value.copy(loadingRatings = true, dataError = null) }
+    private suspend fun ensureLoaded(set: String, forceRefresh: Boolean = false) {
+        ratingsLoadMutex.withLock {
+            val format = RatingsFormat.resolve(formatChoice, tracker.state.value.format)
+            val key = "${set.uppercase()}_$format"
+            val proceed = mutex.withLock {
+                if (!forceRefresh && key == requestedKey) {
+                    false
+                } else {
+                    requestedKey = key
+                    true
+                }
+            }
+            if (!proceed) return@withLock
 
-        // Bundled guidance can be ready before live ratings and should never block P1P1.
-        scope.launch {
-            runCatching { synergyRepo.load(set) }
+            currentError = null
+            ratingsLoading = true
             publish()
-        }
 
-        val outcome = runCatching { repo.load(set, format) }
-        currentError = outcome.exceptionOrNull()?.let { dataErrorMessage(it, set) }
-            ?: if (repo.isLoaded) null else dataErrorMessage(null, set)
-        publish()
+            // Bundled guidance can be ready before live ratings and should never block P1P1.
+            scope.launch {
+                runCatching { synergyRepo.load(set) }
+                publish()
+            }
 
-        scope.launch {
-            runCatching { metaRepo.load(set, repo.cardNames) }
-            runCatching { archetypeRepo.loadStrengths(set, format) }
-            runCatching { pickNetRepo.load(set, format) }
+            val outcome = runCatching { repo.load(set, format, forceRefresh = forceRefresh) }
+            ratingsLoading = false
+            val failure = outcome.exceptionOrNull()
+            currentError = failure?.let { dataErrorMessage(it, set) }
+                ?: if (repo.isLoadedFor(set, format)) null else dataErrorMessage(null, set)
+
+            val reason = (failure as? DataUnavailableException)?.reason
+            if (reason != null && SeventeenLandsClient.isTransient(reason)) {
+                // A later draft-state emission may try again; manual retry always bypasses this guard.
+                mutex.withLock { if (requestedKey == key) requestedKey = null }
+            }
             publish()
+
+            if (failure == null) {
+                scope.launch {
+                    runCatching { metaRepo.load(set, repo.cardNames) }
+                    runCatching { archetypeRepo.loadStrengths(set, format) }
+                    runCatching { pickNetRepo.load(set, format) }
+                    publish()
+                }
+            }
         }
     }
 
@@ -167,7 +203,7 @@ class DraftViewModel(
         val set = state.setCode ?: return
         val format = RatingsFormat.resolve(formatChoice, state.format)
         val dataKey = "${set.uppercase()}_$format"
-        if (repo.loadedKey != dataKey) return
+        if (!repo.isLoadedFor(set, format)) return
         val pool = state.pool.map(repo::resolve)
         val signals = SignalsEngine.openLanes(state.seen, repo::resolve)
         val strength = archetypeRepo.strengthMap().takeIf { archetypeRepo.loadedKey == dataKey }.orEmpty()
@@ -179,7 +215,17 @@ class DraftViewModel(
         val format = RatingsFormat.resolve(formatChoice, state.format)
         val constructionMode = LimitedMode.fromFormat(state.format)
         val dataKey = state.setCode?.let { "${it.uppercase()}_$format" }
-        val loaded = dataKey != null && repo.loadedKey == dataKey
+        val loaded = state.setCode?.let { repo.isLoadedFor(it, format) } == true
+        val ratingsInfo = repo.ratingsInfo?.takeIf { loaded }
+        val ratingsStatus = when {
+            state.setCode == null -> RatingsDataStatus.IDLE
+            ratingsLoading -> RatingsDataStatus.LOADING
+            ratingsInfo?.source == RatingsDataSource.NETWORK -> RatingsDataStatus.FRESH
+            ratingsInfo?.source == RatingsDataSource.FRESH_CACHE -> RatingsDataStatus.CACHED
+            ratingsInfo?.source == RatingsDataSource.STALE_CACHE -> RatingsDataStatus.STALE_CACHE
+            currentError != null -> RatingsDataStatus.ERROR
+            else -> RatingsDataStatus.IDLE
+        }
         val archetypesLoaded = dataKey != null && archetypeRepo.loadedKey == dataKey
         val pairStrength = archetypeRepo.strengthMap().takeIf { archetypesLoaded }.orEmpty()
         val synergyLoaded = state.setCode != null && synergyRepo.loadedSet.equals(state.setCode, ignoreCase = true)
@@ -278,8 +324,17 @@ class DraftViewModel(
             pack = state.pack,
             pick = state.pick,
             poolSize = state.pool.size,
-            loadingRatings = state.setCode != null && !loaded,
+            loadingRatings = ratingsLoading,
             dataError = null,
+            ratingsDataStatus = ratingsStatus,
+            ratingsDataWarning = ratingsInfo?.takeIf { it.source == RatingsDataSource.STALE_CACHE }
+                ?.let { staleRatingsMessage(it.fallbackReason) },
+            ratingsLastUpdated = ratingsInfo?.lastUpdated,
+            ratingsCardCount = ratingsInfo?.cardCount ?: 0,
+            ratingsReliableCardCount = ratingsInfo?.reliableCardCount ?: 0,
+            ratingsMedianGamesPerCard = ratingsInfo?.medianGamesPerCard ?: 0,
+            canRetryRatings = ratingsStatus == RatingsDataStatus.ERROR ||
+                ratingsStatus == RatingsDataStatus.STALE_CACHE,
             packCards = rows,
             laneColors = WUBRG_ORDER.filter { it in lane.colors },
             openLanes = openLanes,
@@ -495,10 +550,19 @@ internal fun deckLandLine(
 }
 
 internal fun ratingsErrorMessage(reason: FetchFailure?, set: String): String = when (reason) {
-    FetchFailure.RATE_LIMITED -> "17Lands is rate-limiting — retrying; using cached data if available"
+    FetchFailure.RATE_LIMITED -> "17Lands is rate-limiting requests — use Retry data in a moment"
     FetchFailure.OFFLINE -> "Can't reach 17Lands — check your connection"
-    FetchFailure.SERVER_ERROR -> "17Lands is having issues — retrying shortly"
+    FetchFailure.SERVER_ERROR -> "17Lands is having issues — use Retry data in a moment"
     FetchFailure.NOT_FOUND -> "No 17Lands data for $set yet"
     FetchFailure.BAD_DATA -> "17Lands returned unexpected data for $set"
     null -> "Couldn't load 17Lands data for $set"
+}
+
+internal fun staleRatingsMessage(reason: FetchFailure?): String = when (reason) {
+    FetchFailure.RATE_LIMITED -> "Using saved ratings while 17Lands is rate-limiting requests"
+    FetchFailure.OFFLINE -> "Using saved ratings while 17Lands is unreachable"
+    FetchFailure.SERVER_ERROR -> "Using saved ratings while 17Lands is having issues"
+    FetchFailure.NOT_FOUND -> "Using saved ratings because newer 17Lands data was not found"
+    FetchFailure.BAD_DATA -> "Using saved ratings because newer 17Lands data was invalid"
+    null -> "Using saved ratings because they could not be refreshed"
 }

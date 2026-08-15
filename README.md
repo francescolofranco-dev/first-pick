@@ -139,9 +139,11 @@ Grab the latest `.dmg` from the [**Releases**](../../releases/latest) page:
 > Not sure which? Apple menu  → **About This Mac** → look at "Chip" (Apple Silicon)
 > vs "Processor" (Intel).
 
-Open the `.dmg` and drag **FirstPick** into Applications. The app is **unsigned** —
-it's a free, open-source project without a (paid) Apple Developer certificate — so on
-first launch macOS will refuse to open it. To allow it, **either**:
+Open the `.dmg` and drag **FirstPick** into Applications. Tagged releases are
+required to be signed and notarized, so artifacts produced by the current release
+workflow should open normally. Older releases and explicitly labelled
+`*-unsigned.dmg` manual-test artifacts can still be blocked by Gatekeeper. For one
+of those older/test builds, allow it **either** by:
 
 - **System Settings → Privacy & Security**, scroll to the *"FirstPick was blocked…"*
   notice and click **Open Anyway**, then **Open** in the confirmation dialog; **or**
@@ -151,6 +153,10 @@ first launch macOS will refuse to open it. To allow it, **either**:
   ```
 
 Then launch FirstPick, start a draft in Arena, and it updates live.
+
+FirstPick can check GitHub's latest-release metadata and identify the `.dmg` for
+your Mac's architecture. It never downloads or installs an update automatically.
+See [the distribution runbook](docs/distribution.md) for the release guarantees.
 
 ## Run from source
 

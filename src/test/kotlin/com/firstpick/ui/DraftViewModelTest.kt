@@ -8,6 +8,8 @@ import com.firstpick.cards.CardRepository
 import com.firstpick.cards.FetchFailure
 import com.firstpick.cards.ScryfallClient
 import com.firstpick.cards.SeventeenLandsClient
+import com.firstpick.cards.ScriptedHttpClient
+import com.firstpick.cards.StubHttpAction
 import com.firstpick.draft.DraftTracker
 import com.firstpick.log.LogWatcher
 import kotlinx.coroutines.CoroutineScope
@@ -25,6 +27,7 @@ import kotlin.io.path.createTempDirectory
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class DraftViewModelTest {
@@ -113,6 +116,59 @@ class DraftViewModelTest {
             }.setGuide!!
             assertTrue(guide.principles.isNotEmpty())
             assertTrue(guide.archetypes.isNotEmpty())
+        } finally {
+            scope.cancel()
+        }
+    }
+
+    @Test
+    fun manualRetryBypassesFailedRequestGuardAndPublishesFreshMetadata() = runBlocking {
+        val cache = createTempDirectory("fp-vm-retry")
+        val response = """{"data":[
+            {"name":"Split Room","mtga_id":102490,"types":["Enchantment - Room"],
+             "ever_drawn_win_rate":0.58,"ever_drawn_game_count":600}
+        ]}""".trimIndent()
+        val http = ScriptedHttpClient(
+            StubHttpAction.Offline,
+            StubHttpAction.Offline,
+            StubHttpAction.Offline,
+            StubHttpAction.Response(200, response),
+        )
+        for (format in listOf("PremierDraft", "QuickDraft", "TradDraft")) {
+            Files.writeString(cache.resolve("colorratings_SOS_$format.json"), "[]")
+        }
+        Files.writeString(cache.resolve("scryfall5_SOS.json"), "[]")
+        val line = javaClass.getResourceAsStream("/quickdraft_first_snapshot.log")!!
+            .bufferedReader().readText().trim()
+        val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+        try {
+            val vm = DraftViewModel(
+                scope = scope,
+                watcher = FakeWatcher(line),
+                tracker = DraftTracker(),
+                repo = CardRepository(SeventeenLandsClient(cacheDir = cache, http = http)),
+                metaRepo = CardMetaRepository(ScryfallClient(cacheDir = cache)),
+                archetypeRepo = ArchetypeRepository(SeventeenLandsClient(cacheDir = cache)),
+            )
+            vm.start()
+
+            val failed = withTimeout(10_000) {
+                vm.ui.first { it.ratingsDataStatus == RatingsDataStatus.ERROR }
+            }
+            assertTrue(failed.canRetryRatings)
+            assertNotNull(failed.dataError)
+
+            vm.retryRatings()
+
+            val refreshed = withTimeout(10_000) {
+                vm.ui.first { it.ratingsDataStatus == RatingsDataStatus.FRESH }
+            }
+            assertNull(refreshed.dataError)
+            assertEquals(1, refreshed.ratingsCardCount)
+            assertEquals(1, refreshed.ratingsReliableCardCount)
+            assertEquals(600, refreshed.ratingsMedianGamesPerCard)
+            assertNotNull(refreshed.ratingsLastUpdated)
+            assertEquals(4, http.requestCount)
         } finally {
             scope.cancel()
         }

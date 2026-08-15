@@ -1,17 +1,8 @@
 name: Release
 
-# Builds an UNSIGNED macOS .dmg for both Apple Silicon (arm64) and Intel (x86_64)
-# when a vX.Y.Z tag is pushed, then publishes them to a GitHub Release.
-#
-# Both architectures build on Apple Silicon runners (macos-14): arm64 natively, and
-# x86_64 via an Intel JDK under Rosetta (jpackage bundles a runtime matching the JDK
-# arch, so pointing `composeJdk` at the Intel JDK yields an Intel app). This avoids
-# the scarce/deprecated Intel `macos-13` runners.
-#
-# The build is unsigned (no Apple Developer certificate), so users clear the
-# Gatekeeper quarantine on first launch — see the README. To upgrade to a signed +
-# notarized build later: add the secrets from docs/distribution.md, swap the build
-# step for `./gradlew notarizeDmg …`, and re-add a cert-import step.
+# Tag builds fail closed unless all Apple signing and notarization credentials are
+# configured. Manual runs may omit them to produce clearly labelled, unpublished
+# unsigned artifacts for packaging tests.
 
 on:
   push:
@@ -19,11 +10,11 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   build:
-    name: Build unsigned dmg (${{ matrix.arch }})
+    name: Build dmg (${{ matrix.arch }})
     strategy:
       fail-fast: false
       matrix:
@@ -32,9 +23,59 @@ jobs:
             jdkArch: aarch64
           - arch: x86_64
             jdkArch: x64
-    runs-on: macos-14 # Apple Silicon (reliable); x86_64 cross-builds here via Rosetta
+    runs-on: macos-14
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - name: Determine distribution mode
+        id: signing
+        shell: bash
+        env:
+          MACOS_CERTIFICATE_P12: ${{ secrets.MACOS_CERTIFICATE_P12 }}
+          MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
+          MACOS_SIGNING_IDENTITY: ${{ secrets.MACOS_SIGNING_IDENTITY }}
+          NOTARIZATION_APPLE_ID: ${{ secrets.NOTARIZATION_APPLE_ID }}
+          NOTARIZATION_PASSWORD: ${{ secrets.NOTARIZATION_PASSWORD }}
+          NOTARIZATION_TEAM_ID: ${{ secrets.NOTARIZATION_TEAM_ID }}
+        run: |
+          values=(
+            "$MACOS_CERTIFICATE_P12"
+            "$MACOS_CERTIFICATE_PWD"
+            "$MACOS_SIGNING_IDENTITY"
+            "$NOTARIZATION_APPLE_ID"
+            "$NOTARIZATION_PASSWORD"
+            "$NOTARIZATION_TEAM_ID"
+          )
+          present=0
+          for value in "${values[@]}"; do
+            if [[ -n "$value" ]]; then present=$((present + 1)); fi
+          done
+
+          if [[ "$present" -ne 0 && "$present" -ne "${#values[@]}" ]]; then
+            echo "Apple distribution secrets are only partially configured." >&2
+            exit 1
+          fi
+
+          configured=false
+          if [[ "$present" -eq "${#values[@]}" ]]; then configured=true; fi
+
+          if [[ "$GITHUB_REF_TYPE" == "tag" && "$GITHUB_REF_NAME" == v* && "$configured" != true ]]; then
+            echo "Tagged releases require signing and notarization credentials." >&2
+            echo "Configure every secret documented in docs/distribution.md, then rerun the tag workflow." >&2
+            exit 1
+          fi
+
+          echo "configured=$configured" >> "$GITHUB_OUTPUT"
+          if [[ "$configured" == true ]]; then
+            echo "label=signed-notarized" >> "$GITHUB_OUTPUT"
+          else
+            echo "label=unsigned-test-build" >> "$GITHUB_OUTPUT"
+            echo "::warning::Building an unsigned manual-test artifact; it will not be published as a release."
+          fi
+
+      - name: Install Rosetta (x86_64 cross-build only)
+        if: matrix.arch == 'x86_64'
+        run: sudo softwareupdate --install-rosetta --agree-to-license
 
       - name: Set up JDK 21 (${{ matrix.jdkArch }})
         uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4.8.0
@@ -43,65 +84,143 @@ jobs:
           java-version: '21'
           architecture: ${{ matrix.jdkArch }}
 
-      - name: Install Rosetta (x86_64 cross-build only)
-        if: matrix.arch == 'x86_64'
-        run: sudo softwareupdate --install-rosetta --agree-to-license
-
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4.4.3
 
       - name: Derive version
         id: ver
+        shell: bash
         run: |
-          version="${GITHUB_REF_NAME#v}"
-          case "$version" in
-            [0-9]*) ;;            # a real vX.Y.Z tag
-            *) version="1.0.0" ;; # workflow_dispatch / non-version ref: just a test build
-          esac
+          if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then
+            version="${GITHUB_REF_NAME#v}"
+            if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              echo "Release tags must use vMAJOR.MINOR.PATCH (for example, v1.2.3)." >&2
+              exit 1
+            fi
+          else
+            version="1.0.0" # manual non-tag run: packaging test only
+          fi
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
-      # The overlay's macOS helpers (window-locator, window-capture) are gitignored binaries,
-      # so build them here (universal arm64+x86_64 via swiftc/lipo on the macos-14 runner) into
-      # src/main/resources/native/macos/ so packageDmg bundles them into the app.
+      - name: Import Developer ID certificate
+        if: steps.signing.outputs.configured == 'true'
+        shell: bash
+        env:
+          MACOS_CERTIFICATE_P12: ${{ secrets.MACOS_CERTIFICATE_P12 }}
+          MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
+        run: |
+          umask 077
+          certificate_path="$RUNNER_TEMP/firstpick-signing.p12"
+          keychain_path="$RUNNER_TEMP/firstpick-signing.keychain-db"
+          keychain_password="$(uuidgen)"
+
+          echo "$MACOS_CERTIFICATE_P12" | base64 --decode > "$certificate_path"
+          security create-keychain -p "$keychain_password" "$keychain_path"
+          security set-keychain-settings -lut 21600 "$keychain_path"
+          security unlock-keychain -p "$keychain_password" "$keychain_path"
+          security import "$certificate_path" \
+            -P "$MACOS_CERTIFICATE_PWD" \
+            -A -t cert -f pkcs12 \
+            -k "$keychain_path"
+          security set-key-partition-list \
+            -S apple-tool:,apple: \
+            -k "$keychain_password" \
+            "$keychain_path"
+          security list-keychains -d user -s "$keychain_path"
+          rm -f "$certificate_path"
+
+      # These gitignored helpers are compiled as universal binaries so either app
+      # architecture can launch them from its bundled resources.
       - name: Build native helpers (universal)
         run: bash native/macos/build.sh
 
-      # composeJdk points jpackage at this job's JDK, so the bundled runtime (and thus
-      # the .app) matches the JDK architecture: aarch64 -> arm64, x64 (Rosetta) -> Intel.
-      - name: Build dmg
-        run: ./gradlew packageDmg -PpackageVersion=${{ steps.ver.outputs.version }} -PcomposeJdk="$JAVA_HOME" --stacktrace
+      - name: Build, sign, and notarize dmg
+        if: steps.signing.outputs.configured == 'true'
+        env:
+          MACOS_SIGNING_IDENTITY: ${{ secrets.MACOS_SIGNING_IDENTITY }}
+          NOTARIZATION_APPLE_ID: ${{ secrets.NOTARIZATION_APPLE_ID }}
+          NOTARIZATION_PASSWORD: ${{ secrets.NOTARIZATION_PASSWORD }}
+          NOTARIZATION_TEAM_ID: ${{ secrets.NOTARIZATION_TEAM_ID }}
+        run: >-
+          ./gradlew notarizeDmg
+          -PpackageVersion=${{ steps.ver.outputs.version }}
+          -PcomposeJdk="$JAVA_HOME"
+          --stacktrace
 
-      - name: Rename dmg per architecture & checksum
+      - name: Build unsigned manual-test dmg
+        if: steps.signing.outputs.configured != 'true'
+        run: >-
+          ./gradlew packageDmg
+          -PpackageVersion=${{ steps.ver.outputs.version }}
+          -PcomposeJdk="$JAVA_HOME"
+          --stacktrace
+
+      - name: Rename dmg per architecture and checksum
         id: dmg
+        shell: bash
         run: |
-          src=$(find build/compose/binaries -name '*.dmg' | head -n1)
-          if [ -z "$src" ]; then echo "No dmg produced" >&2; exit 1; fi
-          out="FirstPick-${{ steps.ver.outputs.version }}-${{ matrix.arch }}.dmg"
+          src="$(find build/compose/binaries -name '*.dmg' -print -quit)"
+          if [[ -z "$src" ]]; then echo "No dmg produced" >&2; exit 1; fi
+
+          suffix=""
+          if [[ "${{ steps.signing.outputs.configured }}" != true ]]; then
+            suffix="-unsigned"
+          fi
+          out="FirstPick-${{ steps.ver.outputs.version }}-${{ matrix.arch }}${suffix}.dmg"
           mv "$src" "$out"
-          shasum -a 256 "$out" | tee "$out.sha256"
+          shasum -a 256 "$out" > "$out.sha256"
           echo "path=$out" >> "$GITHUB_OUTPUT"
+
+      - name: Validate stapled notarization ticket
+        if: steps.signing.outputs.configured == 'true'
+        run: xcrun stapler validate "${{ steps.dmg.outputs.path }}"
 
       - name: Upload build artifact
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: dmg-${{ matrix.arch }}
+          name: dmg-${{ matrix.arch }}-${{ steps.signing.outputs.label }}
           path: |
             ${{ steps.dmg.outputs.path }}
             ${{ steps.dmg.outputs.path }}.sha256
           if-no-files-found: error
+          retention-days: 7
+
+      - name: Remove temporary signing keychain
+        if: always() && steps.signing.outputs.configured == 'true'
+        run: |
+          rm -f "$RUNNER_TEMP/firstpick-signing.p12"
+          security delete-keychain "$RUNNER_TEMP/firstpick-signing.keychain-db" || true
 
   release:
-    name: Publish GitHub Release
+    name: Publish signed GitHub Release
     needs: build
     runs-on: ubuntu-latest
-    # Only publish for real tag pushes; workflow_dispatch runs are build-test only.
-    if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
+    # Manual workflow runs are artifact-only. A tag cannot reach this job unless
+    # every matrix build completed signing, notarization, and staple validation.
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     steps:
-      - name: Download all dmg artifacts
+      - name: Download signed dmg artifacts
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           path: dist
+          pattern: dmg-*-signed-notarized
           merge-multiple: true
+
+      - name: Verify release artifact set and checksums
+        shell: bash
+        run: |
+          if find dist -name '*-unsigned.dmg' -print -quit | grep -q .; then
+            echo "Refusing to publish an unsigned dmg." >&2
+            exit 1
+          fi
+          if [[ "$(find dist -maxdepth 1 -name '*.dmg' | wc -l | tr -d ' ')" -ne 2 ]]; then
+            echo "Expected one signed dmg for each architecture." >&2
+            find dist -maxdepth 1 -type f -print >&2
+            exit 1
+          fi
+          (cd dist && sha256sum --check ./*.sha256)
 
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2

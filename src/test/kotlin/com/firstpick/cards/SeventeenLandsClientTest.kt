@@ -2,6 +2,9 @@ package com.firstpick.cards
 
 import kotlinx.coroutines.runBlocking
 import java.nio.file.Files
+import java.nio.file.attribute.FileTime
+import java.time.Duration
+import java.time.Instant
 import kotlin.io.path.createTempDirectory
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -44,8 +47,9 @@ class SeventeenLandsClientTest {
     @Test
     fun fetchParsesAFreshCacheWithoutNetwork() = runBlocking {
         val cache = createTempDirectory("fp-17l")
+        val cacheFile = cache.resolve("ratings3_SOS_PremierDraft.json")
         Files.writeString(
-            cache.resolve("ratings3_SOS_PremierDraft.json"),
+            cacheFile,
             """
             {"copyright":"(c) 17Lands","notes":"","data":[
               {"name":"Bolt","mtga_id":42,"color":"R","rarity":"common",
@@ -57,15 +61,41 @@ class SeventeenLandsClientTest {
             """.trimIndent(),
         )
         val client = SeventeenLandsClient(cacheDir = cache)
-        val ratings = client.fetch("SOS", "PremierDraft")
+        val result = client.fetchWithMetadata("SOS", "PremierDraft")
+        val ratings = result.ratings
 
         assertEquals(2, ratings.size)
+        assertEquals(RatingsDataSource.FRESH_CACHE, result.metadata.source)
+        assertEquals(Files.getLastModifiedTime(cacheFile).toInstant(), result.metadata.lastUpdated)
+        assertNull(result.metadata.fallbackReason)
         val bolt = ratings.first { it.name == "Bolt" }
         assertEquals(42, bolt.mtgaId)
         assertEquals(0.585, bolt.gihWr)
         assertEquals(0.061, bolt.iwd)
         assertEquals(2.3, bolt.alsa)
         assertTrue(bolt.hasReliableWinRate)
+    }
+
+    @Test
+    fun failedRefreshServesStaleCacheAndReportsWhy() = runBlocking {
+        val cache = createTempDirectory("fp-17l-stale")
+        val cacheFile = cache.resolve("ratings3_SOS_PremierDraft.json")
+        Files.writeString(cacheFile, """{"data":[{"name":"Saved card","mtga_id":42}]}""")
+        val savedAt = Instant.now().minus(Duration.ofDays(2))
+        Files.setLastModifiedTime(cacheFile, FileTime.from(savedAt))
+        val http = ScriptedHttpClient(StubHttpAction.Offline)
+
+        val result = SeventeenLandsClient(
+            cacheDir = cache,
+            staleness = Duration.ofHours(12),
+            http = http,
+        ).fetchWithMetadata("SOS", "PremierDraft")
+
+        assertEquals(listOf("Saved card"), result.ratings.map(CardRating::name))
+        assertEquals(RatingsDataSource.STALE_CACHE, result.metadata.source)
+        assertEquals(FetchFailure.OFFLINE, result.metadata.fallbackReason)
+        assertEquals(savedAt.epochSecond, result.metadata.lastUpdated.epochSecond)
+        assertEquals(SeventeenLandsClient.MAX_ATTEMPTS, http.requestCount)
     }
 
     @Test

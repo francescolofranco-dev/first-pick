@@ -16,6 +16,8 @@ import com.firstpick.overlay.ArenaDeckBuilderOverlay
 import com.firstpick.overlay.ArenaOverlayTracker
 import com.firstpick.overlay.DeckCardCount
 import com.firstpick.overlay.OverlayCard
+import com.firstpick.overlay.OverlayHealth
+import com.firstpick.overlay.OverlayHealthState
 import com.firstpick.model.DraftPhase
 import com.firstpick.core.AppPaths
 import com.firstpick.ui.App
@@ -32,6 +34,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import java.awt.Desktop
+import java.awt.Dimension
 import java.net.URI
 import java.nio.file.Path
 
@@ -56,6 +59,12 @@ fun main() {
         val state by viewModel.ui.collectAsState()
         var isAboutOpen by remember { mutableStateOf(false) }
         var isOverlayOpen by remember { mutableStateOf(false) }
+        var draftOverlayHealth by remember {
+            mutableStateOf(OverlayHealth(OverlayHealthState.INACTIVE, "Overlay is turned off."))
+        }
+        var deckOverlayHealth by remember {
+            mutableStateOf(OverlayHealth(OverlayHealthState.INACTIVE, "Deck guidance is not active."))
+        }
         var committedDeckKey by remember(state.phase == DraftPhase.COMPLETE) {
             mutableStateOf<String?>(null)
         }
@@ -63,6 +72,11 @@ fun main() {
             state.deckOptions.firstOrNull { it.deckBuildKey == committedDeckKey }
         } else {
             null
+        }
+        val activeOverlayHealth = when {
+            state.phase == DraftPhase.COMPLETE && committedDeck != null -> deckOverlayHealth
+            isOverlayOpen -> draftOverlayHealth
+            else -> OverlayHealth(OverlayHealthState.INACTIVE, "Overlay is turned off.")
         }
 
         FirstPickAboutMenu(onOpenAbout = { isAboutOpen = true })
@@ -75,9 +89,13 @@ fun main() {
             state = rememberWindowState(size = DpSize(720.dp, 760.dp)),
             title = "FirstPick",
         ) {
+            LaunchedEffect(window) {
+                window.minimumSize = Dimension(600, 640)
+            }
             App(
                 state = state,
                 isOverlayOpen = isOverlayOpen,
+                overlayHealth = activeOverlayHealth,
                 onToggleOverlay = { isOverlayOpen = !isOverlayOpen },
                 committedDeck = committedDeck,
                 onUseDeck = {
@@ -89,6 +107,7 @@ fun main() {
                 onStopSim = { viewModel.stopSimulation() },
                 onTogglePause = { viewModel.toggleSimulationPause() },
                 onOpenGuideSource = ::openGuideSource,
+                onRetryRatings = { viewModel.retryRatings() },
             )
         }
 
@@ -100,14 +119,21 @@ fun main() {
             state.phase == DraftPhase.COMPLETE && committedDeck != null -> {
                 val target = remember(committedDeck) { deckGuidanceTarget(committedDeck) }
                 val draftPool = remember(state.draftPool) { deckGuidancePool(state.draftPool) }
-                ArenaDeckBuilderOverlay(target = target, draftPool = draftPool)
+                ArenaDeckBuilderOverlay(
+                    target = target,
+                    draftPool = draftPool,
+                    onHealthChanged = { deckOverlayHealth = it },
+                )
             }
 
             isOverlayOpen && (state.phase == DraftPhase.DRAFTING || state.phase == DraftPhase.IDLE) -> {
                 val cards = remember(state.packCards) {
                     overlayCards(state.packCards)
                 }
-                ArenaOverlayTracker(cards = cards)
+                ArenaOverlayTracker(
+                    cards = cards,
+                    onHealthChanged = { draftOverlayHealth = it },
+                )
             }
 
             !isOverlayOpen && DevFlags.overlayTrack -> ArenaOverlayTracker()

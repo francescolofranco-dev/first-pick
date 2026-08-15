@@ -28,9 +28,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-internal fun Sidebar(state: DraftUiState) {
+internal fun Sidebar(state: DraftUiState, modifier: Modifier = Modifier.width(232.dp)) {
     Column(
-        Modifier.width(232.dp).fillMaxHeight().verticalScroll(rememberScrollState()),
+        modifier.fillMaxHeight().verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         if (state.poolSize == 0 && state.topPairs.isNotEmpty()) {

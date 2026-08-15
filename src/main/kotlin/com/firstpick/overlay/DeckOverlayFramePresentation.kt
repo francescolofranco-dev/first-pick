@@ -4,6 +4,7 @@ package com.firstpick.overlay
 internal sealed interface DeckOverlayFrameAttempt {
     data object ReaderFailure : DeckOverlayFrameAttempt
     data object SupportedBuilderShell : DeckOverlayFrameAttempt
+    data object UnsupportedLayout : DeckOverlayFrameAttempt
     data object OutsideBuilder : DeckOverlayFrameAttempt
     data class Recognized(
         val model: DeckGuidanceOverlayModel,
@@ -140,6 +141,7 @@ internal object DeckOverlayPresentationReducer {
                 retainIndefinitely = true,
             )
 
+            DeckOverlayFrameAttempt.UnsupportedLayout -> outsideBuilder(state, nowMs)
             DeckOverlayFrameAttempt.OutsideBuilder -> outsideBuilder(state, nowMs)
             is DeckOverlayFrameAttempt.Recognized -> recognized(state, attempt, nowMs)
         }

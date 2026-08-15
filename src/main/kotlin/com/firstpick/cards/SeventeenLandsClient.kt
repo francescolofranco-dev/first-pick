@@ -32,6 +32,24 @@ data class ColorRatingRow(
     val winRate: Double? get() = if (games > 0) wins.toDouble() / games else null
 }
 
+enum class RatingsDataSource {
+    NETWORK,
+    FRESH_CACHE,
+    STALE_CACHE,
+}
+
+data class RatingsFetchMetadata(
+    val source: RatingsDataSource,
+    val lastUpdated: Instant,
+    /** Why a network refresh failed when [source] is [RatingsDataSource.STALE_CACHE]. */
+    val fallbackReason: FetchFailure? = null,
+)
+
+data class RatingsFetchResult(
+    val ratings: List<CardRating>,
+    val metadata: RatingsFetchMetadata,
+)
+
 class SeventeenLandsClient(
     private val cacheDir: Path = AppPaths.cacheDir,
     private val staleness: Duration = Duration.ofHours(12),
@@ -42,21 +60,40 @@ class SeventeenLandsClient(
     private val json = Json { ignoreUnknownKeys = true; isLenient = true }
 
     suspend fun fetch(set: String, format: String, colors: String? = null): List<CardRating> =
+        fetchWithMetadata(set, format, colors).ratings
+
+    suspend fun fetchWithMetadata(
+        set: String,
+        format: String,
+        colors: String? = null,
+        forceRefresh: Boolean = false,
+    ): RatingsFetchResult =
         withContext(Dispatchers.IO) {
             val suffix = colors?.let { "_$it" }.orEmpty()
-            val body = cachedBody("ratings3_${set.uppercase()}_${format}$suffix.json") {
+            val cached = cachedBody(
+                cacheName = "ratings3_${set.uppercase()}_${format}$suffix.json",
+                forceRefresh = forceRefresh,
+            ) {
                 ratingsUrl(set, format, colors)
             }
-            runCatching { json.decodeFromString<CardDataResponse>(body).data }.getOrElse {
+            val ratings = runCatching { json.decodeFromString<CardDataResponse>(cached.body).data }.getOrElse {
                 Log.error(TAG, "parse ratings ${set.uppercase()}/$format failed", it)
                 throw DataUnavailableException(FetchFailure.BAD_DATA, it)
             }
+            RatingsFetchResult(
+                ratings = ratings,
+                metadata = RatingsFetchMetadata(
+                    source = cached.source,
+                    lastUpdated = cached.lastUpdated,
+                    fallbackReason = cached.fallbackReason,
+                ),
+            )
         }
 
     suspend fun colorRatings(set: String, format: String): List<ColorRatingRow> =
         withContext(Dispatchers.IO) {
             val body = runCatching {
-                cachedBody("colorratings_${set.uppercase()}_${format}.json") { colorRatingsUrl(set, format) }
+                cachedBody("colorratings_${set.uppercase()}_${format}.json") { colorRatingsUrl(set, format) }.body
             }.getOrElse {
                 Log.warn(TAG, "color ratings ${set.uppercase()}/$format unavailable", it)
                 return@withContext emptyList()
@@ -69,22 +106,54 @@ class SeventeenLandsClient(
         data class Failed(val reason: FetchFailure) : HttpResult
     }
 
-    private fun cachedBody(cacheName: String, url: () -> String): String {
+    private data class CachedBody(
+        val body: String,
+        val source: RatingsDataSource,
+        val lastUpdated: Instant,
+        val fallbackReason: FetchFailure? = null,
+    )
+
+    private fun cachedBody(
+        cacheName: String,
+        forceRefresh: Boolean = false,
+        url: () -> String,
+    ): CachedBody {
         Files.createDirectories(cacheDir)
         val cache = cacheDir.resolve(cacheName)
-        if (isFresh(cache)) return Files.readString(cache)
+        if (!forceRefresh && isFresh(cache)) {
+            return CachedBody(
+                body = Files.readString(cache),
+                source = RatingsDataSource.FRESH_CACHE,
+                lastUpdated = cacheLastUpdated(cache),
+            )
+        }
         return when (val r = httpGet(url())) {
-            is HttpResult.Ok -> { Files.writeString(cache, r.body); r.body }
+            is HttpResult.Ok -> {
+                Files.writeString(cache, r.body)
+                CachedBody(
+                    body = r.body,
+                    source = RatingsDataSource.NETWORK,
+                    lastUpdated = cacheLastUpdated(cache),
+                )
+            }
             is HttpResult.Failed ->
                 if (Files.exists(cache)) {
                     Log.warn(TAG, "$cacheName: ${r.reason} — serving stale cache")
-                    Files.readString(cache)
+                    CachedBody(
+                        body = Files.readString(cache),
+                        source = RatingsDataSource.STALE_CACHE,
+                        lastUpdated = cacheLastUpdated(cache),
+                        fallbackReason = r.reason,
+                    )
                 } else {
                     Log.error(TAG, "$cacheName: ${r.reason} — no cache to fall back on")
                     throw DataUnavailableException(r.reason)
                 }
         }
     }
+
+    private fun cacheLastUpdated(cache: Path): Instant =
+        Files.getLastModifiedTime(cache).toInstant()
 
     private fun isFresh(cache: Path): Boolean {
         if (!Files.exists(cache)) return false

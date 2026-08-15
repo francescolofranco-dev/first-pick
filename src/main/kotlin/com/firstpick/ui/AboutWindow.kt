@@ -5,18 +5,25 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Button
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -31,8 +38,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogWindow
 import androidx.compose.ui.window.rememberDialogState
+import com.firstpick.update.UpdateCheckResult
+import com.firstpick.update.UpdateChecker
+import kotlinx.coroutines.launch
 import java.awt.Desktop
 import java.awt.EventQueue
+import java.net.URI
 
 private const val APP_VERSION_PROPERTY = "firstpick.version"
 
@@ -59,9 +70,13 @@ internal fun FirstPickAboutMenu(onOpenAbout: () -> Unit) {
 
 @Composable
 internal fun FirstPickAboutWindow(onCloseRequest: () -> Unit) {
+    val updateChecker = remember { UpdateChecker() }
+    val scope = rememberCoroutineScope()
+    var checking by remember { mutableStateOf(false) }
+    var updateResult by remember { mutableStateOf<UpdateCheckResult?>(null) }
     DialogWindow(
         onCloseRequest = onCloseRequest,
-        state = rememberDialogState(size = DpSize(420.dp, 310.dp)),
+        state = rememberDialogState(size = DpSize(440.dp, 410.dp)),
         title = "About FirstPick",
         resizable = false,
     ) {
@@ -75,8 +90,8 @@ internal fun FirstPickAboutWindow(onCloseRequest: () -> Unit) {
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center,
                 ) {
-                    FirstPickAppMark(Modifier.size(104.dp))
-                    Spacer(Modifier.height(18.dp))
+                    FirstPickAppMark(Modifier.size(88.dp))
+                    Spacer(Modifier.height(14.dp))
                     Text(
                         text = "FirstPick",
                         color = MaterialTheme.colorScheme.onSurface,
@@ -96,9 +111,76 @@ internal fun FirstPickAboutWindow(onCloseRequest: () -> Unit) {
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Medium,
                     )
+                    Spacer(Modifier.height(18.dp))
+                    UpdateControls(
+                        checking = checking,
+                        result = updateResult,
+                        onCheck = {
+                            if (!checking) {
+                                checking = true
+                                scope.launch {
+                                    updateResult = updateChecker.check()
+                                    checking = false
+                                }
+                            }
+                        },
+                    )
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun UpdateControls(
+    checking: Boolean,
+    result: UpdateCheckResult?,
+    onCheck: () -> Unit,
+) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Button(onClick = onCheck, enabled = !checking) {
+            Text(if (checking) "Checking…" else "Check for updates")
+        }
+        val message = result?.let(::updateResultMessage)
+        if (message != null) {
+            Spacer(Modifier.height(8.dp))
+            Text(
+                message,
+                color = when (result) {
+                    is UpdateCheckResult.Failed -> MaterialTheme.colorScheme.error
+                    is UpdateCheckResult.Available -> MaterialTheme.colorScheme.primary
+                    else -> MaterialTheme.colorScheme.onSurfaceVariant
+                },
+                fontSize = 12.sp,
+            )
+        }
+        val available = result as? UpdateCheckResult.Available
+        if (available != null) {
+            Spacer(Modifier.height(8.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(onClick = { openExternal(available.release.pageUrl) }) {
+                    Text("View release")
+                }
+                available.asset?.let { asset ->
+                    OutlinedButton(onClick = { openExternal(asset.downloadUrl) }) {
+                        Text("Get ${asset.name.substringAfterLast('-')}")
+                    }
+                }
+            }
+        }
+    }
+}
+
+internal fun updateResultMessage(result: UpdateCheckResult): String = when (result) {
+    is UpdateCheckResult.Available -> "Version ${result.latestVersion} is available."
+    is UpdateCheckResult.UpToDate -> "FirstPick ${result.currentVersion} is up to date."
+    is UpdateCheckResult.NotCheckable -> "Update checks are unavailable for development builds."
+    is UpdateCheckResult.Failed -> result.message
+}
+
+private fun openExternal(uri: URI) {
+    runCatching {
+        if (Desktop.isDesktopSupported()) Desktop.getDesktop().browse(uri)
     }
 }
 

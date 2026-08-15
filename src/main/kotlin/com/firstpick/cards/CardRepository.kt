@@ -1,5 +1,7 @@
 package com.firstpick.cards
 
+import java.time.Instant
+
 data class RankedCard(
     val grpId: Int,
     val name: String,
@@ -13,6 +15,16 @@ data class RankedCard(
         rating?.types.orEmpty().any { it.contains("Basic Land", ignoreCase = true) } ||
         isBasicLandName(name)
 }
+
+data class RatingsDatasetInfo(
+    val key: String,
+    val source: RatingsDataSource,
+    val lastUpdated: Instant,
+    val cardCount: Int,
+    val reliableCardCount: Int,
+    val medianGamesPerCard: Int,
+    val fallbackReason: FetchFailure? = null,
+)
 
 class CardRepository(
     private val client: SeventeenLandsClient = SeventeenLandsClient(),
@@ -28,16 +40,41 @@ class CardRepository(
     var setMetrics: SetMetrics = SetMetrics.EMPTY
         private set
 
+    var ratingsInfo: RatingsDatasetInfo? = null
+        private set
+
     val isLoaded: Boolean get() = loadedKey != null
 
     val cardNames: List<String> get() = byName.values.map { it.name }
     val cardRatings: List<CardRating> get() = byName.values.toList()
 
-    suspend fun load(setCode: String, format: String) {
+    suspend fun load(
+        setCode: String,
+        format: String,
+        forceRefresh: Boolean = false,
+    ): RatingsDatasetInfo {
         val key = "${setCode.uppercase()}_$format"
-        if (key == loadedKey) return
-        index(client.fetch(setCode, format), key)
+        if (!forceRefresh && key == loadedKey) ratingsInfo?.let { return it }
+
+        val result = client.fetchWithMetadata(
+            set = setCode,
+            format = format,
+            forceRefresh = forceRefresh,
+        )
+        index(result.ratings, key)
+        return RatingsDatasetInfo(
+            key = key,
+            source = result.metadata.source,
+            lastUpdated = result.metadata.lastUpdated,
+            cardCount = result.ratings.size,
+            reliableCardCount = result.ratings.count(CardRating::hasReliableWinRate),
+            medianGamesPerCard = medianGamesPerCard(result.ratings),
+            fallbackReason = result.metadata.fallbackReason,
+        ).also { ratingsInfo = it }
     }
+
+    fun isLoadedFor(setCode: String, format: String): Boolean =
+        loadedKey == "${setCode.uppercase()}_$format"
 
     internal fun index(ratings: List<CardRating>, key: String = "manual") {
         byMtgaId = ratings.mapNotNull { r -> r.mtgaId?.let { it to r } }.toMap()
@@ -68,6 +105,17 @@ class CardRepository(
 
     private fun normalize(name: String): String =
         name.lowercase().substringBefore(" //").trim()
+
+    private fun medianGamesPerCard(ratings: List<CardRating>): Int {
+        val samples = ratings.map(CardRating::everDrawnGameCount).filter { it > 0 }.sorted()
+        if (samples.isEmpty()) return 0
+        val middle = samples.size / 2
+        return if (samples.size % 2 == 1) {
+            samples[middle]
+        } else {
+            ((samples[middle - 1].toLong() + samples[middle]) / 2L).toInt()
+        }
+    }
 
     companion object {
         private val BEST_FIRST: Comparator<RankedCard> = compareByDescending<RankedCard> {

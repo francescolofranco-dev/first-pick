@@ -1,10 +1,14 @@
 # Distribution: signed & notarized `.dmg` + Homebrew
 
-FirstPick can ship as a signed, notarized macOS `.dmg` (no Gatekeeper warning, no
-`xattr` dance) and via a Homebrew cask. The build config and CI are already wired
-for this — they read all credentials from the environment, so nothing secret lives
-in the repo. With the credentials **unset**, builds are simply unsigned (the
-current behavior); once they're present, the release pipeline signs + notarizes.
+FirstPick's release pipeline ships tagged releases as signed, notarized macOS `.dmg`
+files (no Gatekeeper warning and no `xattr` workaround) and can also ship via a
+Homebrew cask. The build config and CI read credentials from the environment, so
+nothing secret lives in the repository.
+
+The release workflow deliberately fails closed: a `v*` tag cannot publish unless
+all signing and notarization secrets are configured. A manually dispatched workflow
+may omit the secrets, but its output is named `*-unsigned.dmg`, retained only as a
+short-lived Actions artifact, and never published to GitHub Releases.
 
 This document is the runbook for turning it on.
 
@@ -12,7 +16,7 @@ This document is the runbook for turning it on.
 
 - [x] `build.gradle.kts` — `macOS { signing { } notarization { } }`, env-driven, `bundleID = com.firstpick.app`
 - [x] `packageVersion` overridable via `-PpackageVersion` (release sets it from the tag)
-- [x] `.github/workflows/release.yml` — tag-triggered build → sign → notarize → GitHub Release
+- [x] `.github/workflows/release.yml` — signed tag releases plus unsigned manual packaging tests
 - [x] `packaging/homebrew/Casks/firstpick.rb` — cask template
 - [ ] **Apple Developer Program enrollment** (you — ~$99/yr)
 - [ ] **Repo secrets** added (you)
@@ -54,11 +58,20 @@ git tag v1.0.0      # macOS requires the bundle major ≥ 1, so start at 1.0.0
 git push origin v1.0.0
 ```
 
-`release.yml` then runs on a macOS runner: imports the cert, runs
-`./gradlew notarizeDmg -PpackageVersion=1.0.0` (build → sign → notarize → staple),
-computes a SHA-256, and publishes a GitHub Release with the `.dmg` and `.sha256`.
+`release.yml` then runs two architecture jobs on Apple Silicon macOS runners. Each
+job imports the certificate and runs the `notarizeDmg` Gradle task with the version
+from the tag (build → sign → notarize → staple), validates the stapled ticket, and
+computes a SHA-256. The publish job verifies both checksums and refuses any
+`*-unsigned.dmg` before creating the GitHub Release. Tags must use the exact
+`vMAJOR.MINOR.PATCH` form.
 
-Locally you can produce the same artifact (signed, if the env vars are set):
+To test packaging before the secrets are ready, use **Actions → Release → Run
+workflow**. That produces `FirstPick-1.0.0-<arch>-unsigned.dmg` artifacts for seven
+days. These manual artifacts still trigger Gatekeeper and are not suitable for a
+public release. A partially configured secret set is always treated as an error.
+
+Locally you can produce the same artifact after importing the Developer ID
+certificate into your keychain and setting the environment variables:
 ```bash
 MACOS_SIGNING_IDENTITY="Developer ID Application: … (TEAMID)" \
 NOTARIZATION_APPLE_ID="you@example.com" \
@@ -87,9 +100,18 @@ spctl -a -vv /Applications/FirstPick.app     # → "accepted", source=Notarized 
 stapler validate /Applications/FirstPick.app # → "The validate action worked!"
 ```
 
+## Update checks
+
+The app's update checker requests metadata from GitHub's public
+`/repos/francescolofranco-dev/first-pick/releases/latest` API. It compares semantic
+versions and selects the matching `arm64` or `x86_64` `.dmg`. It only returns the
+release page and asset link for the UI to present: it never downloads, mounts, or
+installs an update automatically.
+
 ## Notes
 
-- `macos-latest` is Apple Silicon, so the dmg is **arm64**. To also ship Intel, add a
-  `macos-13` matrix leg and publish both dmgs under distinct names.
+- Both jobs run on `macos-14`: the arm64 app uses an AArch64 JDK and the x86_64 app
+  uses an Intel JDK under Rosetta. `jpackage` therefore bundles a runtime matching
+  the artifact name.
 - The release uses `notarizeDmg` (not the ProGuard-minified `notarizeReleaseDmg`) to
   avoid needing Compose keep-rules. Switch later if you want a smaller bundle.

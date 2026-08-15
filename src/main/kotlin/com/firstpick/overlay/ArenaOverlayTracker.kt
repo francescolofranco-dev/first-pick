@@ -98,6 +98,7 @@ fun ArenaOverlayTracker(
     locator: WindowLocator = WindowLocator(),
     capturer: WindowCapture = WindowCapture(),
     calibrationStore: PackGridCalibrationStore = PackGridCalibrationStore(),
+    onHealthChanged: (OverlayHealth) -> Unit = {},
 ) {
     val loc = remember { locator }
     val cap = remember { capturer }
@@ -119,8 +120,52 @@ fun ArenaOverlayTracker(
             delay(POLL_MS)
         }
     }
-    val b = bounds ?: return
     val calibrating = cards.isEmpty() && DevFlags.overlayTrack
+
+    val packKey = remember(cards) { cards.joinToString("|") { "${it.name}#${it.imageUrl}#${it.isRoom}" } }
+    val assignmentState = remember(packKey) { mutableStateOf<Map<Int, Int>?>(null) }
+    var captureFailed by remember(packKey) { mutableStateOf(false) }
+    var recognitionHealth by remember(packKey) {
+        mutableStateOf(
+            if (cards.isEmpty() && !calibrating) {
+                OverlayHealth(OverlayHealthState.INACTIVE, "Waiting for a draft pack.")
+            } else {
+                OverlayHealth(OverlayHealthState.READING, "Recognizing the cards in Arena's pack.")
+            },
+        )
+    }
+    var devMarks by remember { mutableStateOf<List<Mark>>(emptyList()) }
+    var clickThroughFailed by remember { mutableStateOf(false) }
+    var clickThroughApplied by remember { mutableStateOf(false) }
+
+    val workHealth = when {
+        cards.isEmpty() && !calibrating ->
+            OverlayHealth(OverlayHealthState.INACTIVE, "Waiting for a draft pack.")
+
+        calibrating && devMarks.isNotEmpty() ->
+            OverlayHealth(OverlayHealthState.ACTIVE, "Arena's pack layout is detected.")
+
+        calibrating ->
+            OverlayHealth(OverlayHealthState.READING, "Detecting Arena's pack layout.")
+
+        assignmentState.value != null && clickThroughApplied ->
+            OverlayHealth(OverlayHealthState.ACTIVE, "Draft overlay is synced to Arena's pack.")
+
+        assignmentState.value != null ->
+            OverlayHealth(OverlayHealthState.READING, "Preparing the draft overlay.")
+
+        else -> recognitionHealth
+    }
+    val health = resolveOverlayHealth(
+        arenaAvailable = bounds != null,
+        arenaFrontmost = bounds?.frontmost == true,
+        clickThroughFailed = clickThroughFailed,
+        work = workHealth,
+        allowInBackground = calibrating,
+    )
+    OverlayHealthEffect(health, onHealthChanged)
+
+    val b = bounds ?: return
 
     val wState = rememberWindowState(
         position = WindowPosition(b.x.dp, b.y.dp),
@@ -135,22 +180,20 @@ fun ArenaOverlayTracker(
     val cal = remember(b.w, b.h, calVersion) { store.get(b.w, b.h) }
 
 
-    val packKey = remember(cards) { cards.joinToString("|") { "${it.name}#${it.imageUrl}#${it.isRoom}" } }
-    val assignmentState = remember(packKey) { mutableStateOf<Map<Int, Int>?>(null) }
-    var captureFailed by remember(packKey) { mutableStateOf(false) }
-
-    var devMarks by remember { mutableStateOf<List<Mark>>(emptyList()) }
     val marks = if (calibrating) devMarks else remember(cards, b.w, b.h, cal, assignmentState.value) {
         geometryMarks(cards, cal ?: PackGeometry.DEFAULT, b.w, b.h, assignmentState.value)
     }
 
-    var clickThroughFailed by remember { mutableStateOf(false) }
     val visible = (b.frontmost || calibrating) && (cards.isNotEmpty() || calibrating) && !clickThroughFailed
 
 
     LaunchedEffect(packKey, visible, b.w, b.h) {
         if (calibrating || !visible || cards.isEmpty() || assignmentState.value != null) return@LaunchedEffect
         captureFailed = false
+        recognitionHealth = OverlayHealth(
+            OverlayHealthState.READING,
+            "Recognizing the cards in Arena's pack.",
+        )
         delay(CAPTURE_DEBOUNCE_MS)
         val refs = withContext(Dispatchers.IO) {
             cards.map { c ->
@@ -163,9 +206,14 @@ fun ArenaOverlayTracker(
         if (expected == 0) {
             Log.warn(TAG, "no card art available for recognition; seals stay ungraded")
             captureFailed = true
+            recognitionHealth = OverlayHealth(
+                OverlayHealthState.UNSUPPORTED_LAYOUT,
+                "This pack cannot be matched because card art is unavailable.",
+            )
             return@LaunchedEffect
         }
         var lastFailure = "no frame captured — check Screen Recording permission"
+        var capturedFrames = 0
         val settler = RecognitionSettler(REQUIRED_FULL_RECOGNITIONS)
         repeat(MAX_RECOGNITION_ATTEMPTS) {
             val attempt = withContext(Dispatchers.IO) {
@@ -184,9 +232,25 @@ fun ArenaOverlayTracker(
             }
             val result = attempt?.match
             when {
-                result == null -> lastFailure = "no frame captured — check Screen Recording permission"
-                result.assignment.size < expected -> lastFailure = "recognition incomplete (${result.assignment.size}/$expected) — pack may still be animating"
+                result == null -> {
+                    lastFailure = "no frame captured — check Screen Recording permission"
+                    recognitionHealth = OverlayHealth(
+                        OverlayHealthState.CAPTURE_UNAVAILABLE,
+                        "Arena could not be captured. Check Screen Recording permission.",
+                    )
+                }
+
+                result.assignment.size < expected -> {
+                    capturedFrames++
+                    lastFailure = "recognition incomplete (${result.assignment.size}/$expected) — pack may still be animating"
+                    recognitionHealth = OverlayHealth(
+                        OverlayHealthState.READING,
+                        "Recognizing Arena's pack (${result.assignment.size}/$expected cards).",
+                    )
+                }
+
                 else -> {
+                    capturedFrames++
                     val settled = settler.observe(requireNotNull(attempt))
                     if (settled != null) {
                         settled.calibration?.let {
@@ -194,9 +258,17 @@ fun ArenaOverlayTracker(
                             calVersion++
                         }
                         assignmentState.value = settled.match.assignment
+                        recognitionHealth = OverlayHealth(
+                            OverlayHealthState.ACTIVE,
+                            "Draft overlay is synced to Arena's pack.",
+                        )
                         return@LaunchedEffect
                     }
                     lastFailure = "recognition settling (${settler.fullRecognitions}/$REQUIRED_FULL_RECOGNITIONS)"
+                    recognitionHealth = OverlayHealth(
+                        OverlayHealthState.READING,
+                        "Confirming Arena's pack (${settler.fullRecognitions}/$REQUIRED_FULL_RECOGNITIONS reads).",
+                    )
                 }
             }
             delay(RECOGNITION_RETRY_MS)
@@ -204,6 +276,7 @@ fun ArenaOverlayTracker(
 
 
         captureFailed = true
+        recognitionHealth = packRecognitionFailureHealth(capturedFrames)
         Log.warn(TAG, "$lastFailure after $MAX_RECOGNITION_ATTEMPTS attempts; leaving seals ungraded")
     }
 
@@ -235,12 +308,11 @@ fun ArenaOverlayTracker(
     ) {
 
 
-        var applied by remember { mutableStateOf(false) }
         LaunchedEffect(visible) {
-            if (applied) return@LaunchedEffect
+            if (clickThroughApplied) return@LaunchedEffect
             repeat(CLICK_THROUGH_ATTEMPTS) {
                 if (withContext(Dispatchers.IO) { MacOverlay.setClickThrough(window, true) }) {
-                    applied = true
+                    clickThroughApplied = true
 
 
                     clickThroughFailed = false
@@ -261,6 +333,19 @@ fun ArenaOverlayTracker(
         }
     }
 }
+
+internal fun packRecognitionFailureHealth(capturedFrames: Int): OverlayHealth =
+    if (capturedFrames == 0) {
+        OverlayHealth(
+            OverlayHealthState.CAPTURE_UNAVAILABLE,
+            "Arena could not be captured. Check Screen Recording permission.",
+        )
+    } else {
+        OverlayHealth(
+            OverlayHealthState.UNSUPPORTED_LAYOUT,
+            "The current pack layout could not be recognized.",
+        )
+    }
 
 @Composable
 private fun CaptureHint(modifier: Modifier) {

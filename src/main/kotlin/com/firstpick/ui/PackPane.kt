@@ -1,10 +1,9 @@
 package com.firstpick.ui
 
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.TooltipArea
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,7 +22,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -34,6 +35,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -146,7 +151,9 @@ private fun SetGuideStarter(state: DraftUiState, onOpenGuide: () -> Unit) {
             .clip(RoundedCornerShape(9.dp))
             .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.11f))
             .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.28f), RoundedCornerShape(9.dp))
-            .clickable(onClick = onOpenGuide)
+            .semantics { role = Role.Button }
+            .focusable()
+            .clickable(role = Role.Button, onClick = onOpenGuide)
             .padding(horizontal = 10.dp, vertical = 7.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -216,7 +223,16 @@ private fun CoverageRow(
     expanded: Boolean,
     onToggle: () -> Unit,
 ) {
-    Column(Modifier.fillMaxWidth().clickable(onClick = onToggle)) {
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .semantics {
+                role = Role.Button
+                stateDescription = if (expanded) "$label expanded" else "$label collapsed"
+            }
+            .focusable()
+            .clickable(role = Role.Button, onClick = onToggle),
+    ) {
         Row(
             Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 10.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -244,23 +260,11 @@ private fun CoverageRow(
 @Composable
 private fun DemoSetButton(set: String, recommended: Boolean, onClick: () -> Unit) {
     if (recommended) {
-        Box(
-            modifier = Modifier
-                .clip(RoundedCornerShape(10.dp))
-                .background(MaterialTheme.colorScheme.primary)
-                .clickable(onClick = onClick)
-                .padding(horizontal = 26.dp, vertical = 11.dp),
-        ) {
+        Button(onClick = onClick) {
             Text(set, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimary)
         }
     } else {
-        Box(
-            modifier = Modifier
-                .clip(RoundedCornerShape(10.dp))
-                .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(10.dp))
-                .clickable(onClick = onClick)
-                .padding(horizontal = 20.dp, vertical = 11.dp),
-        ) {
+        OutlinedButton(onClick = onClick) {
             Text(set, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.secondary)
         }
     }
@@ -289,7 +293,6 @@ private fun ConfidenceBanner(cards: List<PackCardUi>) {
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun PackRow(card: PackCardUi, packSize: Int) {
     val top = card.rank == 1
@@ -329,7 +332,7 @@ private fun PackRow(card: PackCardUi, packSize: Int) {
                     alsa = card.alsa,
                 )
             }
-            TooltipArea(tooltip = { BreakdownTooltip(card.breakdown, model) }) { GradeBadge(card.value) }
+            ScoreBreakdownTrigger(card.breakdown, model) { GradeBadge(card.value) }
         } else {
             GradeBadge(card.value)
         }
@@ -337,7 +340,7 @@ private fun PackRow(card: PackCardUi, packSize: Int) {
         Column(Modifier.weight(1f)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 if (bombConsistent) Text("★ ", fontSize = 13.sp, color = MaterialTheme.colorScheme.tertiary)
-                CardPreview(card.imageUrl) {
+                CardPreview(card.imageUrl, description = card.name) {
                     Text(
                         card.name,
                         fontSize = 14.sp,

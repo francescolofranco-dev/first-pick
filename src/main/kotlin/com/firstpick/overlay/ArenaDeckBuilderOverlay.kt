@@ -36,6 +36,7 @@ fun ArenaDeckBuilderOverlay(
     locator: WindowLocator = WindowLocator(),
     capturer: WindowCapture = WindowCapture(),
     ocr: VisionOcr = VisionOcr(),
+    onHealthChanged: (OverlayHealth) -> Unit = {},
 ) {
     val loc = remember { locator }
     val cap = remember { capturer }
@@ -44,6 +45,17 @@ fun ArenaDeckBuilderOverlay(
     val targetKey = remember(target) { target.stableCountKey() }
     val session = remember(poolKey) { DeckGuidanceSession(target, draftPool) }
     SideEffect { session.updateTarget(target) }
+    var presentation by remember(poolKey) { mutableStateOf(DeckOverlayPresentationState.initial()) }
+    var workHealth by remember(poolKey, targetKey) {
+        mutableStateOf(
+            OverlayHealth(
+                OverlayHealthState.READING,
+                "Reading Arena's Limited deck builder.",
+            ),
+        )
+    }
+    var clickThroughFailed by remember { mutableStateOf(false) }
+    var clickThroughApplied by remember { mutableStateOf(false) }
 
     var bounds by remember { mutableStateOf<WindowBounds?>(null) }
     LaunchedEffect(loc) {
@@ -61,6 +73,21 @@ fun ArenaDeckBuilderOverlay(
         }
     }
 
+    val effectiveWorkHealth = if (
+        workHealth.state == OverlayHealthState.ACTIVE && !clickThroughApplied
+    ) {
+        OverlayHealth(OverlayHealthState.READING, "Preparing deck guidance.")
+    } else {
+        workHealth
+    }
+    val health = resolveOverlayHealth(
+        arenaAvailable = bounds != null,
+        arenaFrontmost = bounds?.frontmost == true,
+        clickThroughFailed = clickThroughFailed,
+        work = effectiveWorkHealth,
+    )
+    OverlayHealthEffect(health, onHealthChanged)
+
     val arena = bounds ?: return
     val windowState = rememberWindowState(
         position = WindowPosition(arena.x.dp, arena.y.dp),
@@ -71,11 +98,13 @@ fun ArenaDeckBuilderOverlay(
         windowState.size = DpSize(arena.w.dp, arena.h.dp)
     }
 
-    var presentation by remember(poolKey) { mutableStateOf(DeckOverlayPresentationState.initial()) }
-
     val arenaFrontmost by rememberUpdatedState(arena.frontmost)
     LaunchedEffect(poolKey, targetKey, arena.w, arena.h) {
         presentation = DeckOverlayPresentationState.initial()
+        workHealth = OverlayHealth(
+            OverlayHealthState.READING,
+            "Reading Arena's Limited deck builder.",
+        )
         while (true) {
             // Focus changes only hide the Window; keep the trusted model so a
             // transient locator sample does not force an OCR reacquisition.
@@ -89,6 +118,7 @@ fun ArenaDeckBuilderOverlay(
                 val image = cap.capture() ?: return@withContext DeckOverlayFrameAttempt.ReaderFailure
                 val text = reader.recognize(image) ?: return@withContext DeckOverlayFrameAttempt.ReaderFailure
                 val screen = DeckBuilderScreenInterpreter.interpret(text)
+                val shell = DeckBuilderScreenInterpreter.detectShell(text)
                 when {
                     screen != null && isSupportedLimitedDeckBuilder(screen) ->
                         DeckOverlayFrameAttempt.Recognized(
@@ -96,9 +126,10 @@ fun ArenaDeckBuilderOverlay(
                             layout = screen.overlayLayoutSnapshot(),
                         )
 
-                    DeckBuilderScreenInterpreter.detectShell(text)?.minimumDeckSize == DeckGuidance.LIMITED_DECK_SIZE ->
+                    shell?.minimumDeckSize == DeckGuidance.LIMITED_DECK_SIZE ->
                         DeckOverlayFrameAttempt.SupportedBuilderShell
 
+                    shell != null -> DeckOverlayFrameAttempt.UnsupportedLayout
                     else -> DeckOverlayFrameAttempt.OutsideBuilder
                 }
             }
@@ -108,6 +139,7 @@ fun ArenaDeckBuilderOverlay(
                 nowMs = System.nanoTime() / 1_000_000L,
             )
             presentation = update.state
+            workHealth = deckOverlayWorkHealth(attempt, update.state)
             logDeckOverlayTransitions(update.transitions)
 
             val processingElapsedMs = ((System.nanoTime() - frameStartedNs) / 1_000_000L).coerceAtLeast(0L)
@@ -115,7 +147,6 @@ fun ArenaDeckBuilderOverlay(
         }
     }
 
-    var clickThroughFailed by remember { mutableStateOf(false) }
     val visible = arena.frontmost && presentation.contentVisible && !clickThroughFailed
     Window(
         onCloseRequest = {},
@@ -128,7 +159,6 @@ fun ArenaDeckBuilderOverlay(
         focusable = false,
         resizable = false,
     ) {
-        var clickThroughApplied by remember { mutableStateOf(false) }
         LaunchedEffect(visible) {
             if (!visible || clickThroughApplied) return@LaunchedEffect
             repeat(CLICK_THROUGH_ATTEMPTS) {
@@ -148,6 +178,50 @@ fun ArenaDeckBuilderOverlay(
             viewportWidth = arena.w.dp,
             viewportHeight = arena.h.dp,
             modifier = Modifier.fillMaxSize(),
+        )
+    }
+}
+
+internal fun deckOverlayWorkHealth(
+    attempt: DeckOverlayFrameAttempt,
+    presentation: DeckOverlayPresentationState,
+): OverlayHealth = when (attempt) {
+    DeckOverlayFrameAttempt.ReaderFailure -> OverlayHealth(
+        OverlayHealthState.CAPTURE_UNAVAILABLE,
+        "Arena could not be read. Check Screen Recording permission.",
+    )
+
+    DeckOverlayFrameAttempt.SupportedBuilderShell -> OverlayHealth(
+        OverlayHealthState.READING,
+        "The Limited deck builder is visible; reading its card rows.",
+    )
+
+    DeckOverlayFrameAttempt.UnsupportedLayout -> OverlayHealth(
+        OverlayHealthState.UNSUPPORTED_LAYOUT,
+        "Open a 40-card Limited deck builder to use deck guidance.",
+    )
+
+    DeckOverlayFrameAttempt.OutsideBuilder -> if (presentation.contentVisible) {
+        OverlayHealth(
+            OverlayHealthState.READING,
+            "Looking for Arena's Limited deck builder.",
+        )
+    } else {
+        OverlayHealth(
+            OverlayHealthState.INACTIVE,
+            "Open Arena's Limited deck builder to start guidance.",
+        )
+    }
+
+    is DeckOverlayFrameAttempt.Recognized -> if (presentation.unreadableReason == null) {
+        OverlayHealth(
+            OverlayHealthState.ACTIVE,
+            "Deck guidance is synced to Arena.",
+        )
+    } else {
+        OverlayHealth(
+            OverlayHealthState.READING,
+            "Refreshing Arena's deck rows while retaining trusted guidance.",
         )
     }
 }
