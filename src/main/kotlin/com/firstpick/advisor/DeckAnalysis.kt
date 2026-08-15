@@ -6,7 +6,9 @@ import com.firstpick.cards.RankedCard
 import com.firstpick.cards.SetMetrics
 import com.firstpick.cards.SynergyIndex
 import com.firstpick.cards.SynergyRole
-import com.firstpick.guide.LimitedPolicy
+import com.firstpick.guide.DeckConstructionPolicy
+import com.firstpick.guide.LimitedDeckPolicies
+import com.firstpick.guide.LimitedMode
 import kotlin.math.abs
 
 enum class DeckPace(val label: String) {
@@ -145,6 +147,8 @@ object DeckAnalysis {
         synergy: SynergyIndex?,
         landFixers: Int,
         splashCount: Int,
+        policy: DeckConstructionPolicy = LimitedDeckPolicies.DRAFT,
+        manaSources: ManaSourceReport? = null,
     ): DeckPowerAssessment {
         val f = features(spells, meta, landFixers)
         val estimates = spells.map { cardQuality(it.rating, archetypeRating(it.name, pair), metrics) }
@@ -152,7 +156,7 @@ object DeckAnalysis {
         val meanZ = zs.ifEmpty { listOf(0.0) }.average()
         val topZ = zs.sortedDescending().take(8).ifEmpty { listOf(0.0) }.average()
         val floorZ = zs.sorted().take(5).ifEmpty { listOf(0.0) }.average()
-        val qualityZ = 0.72 * meanZ + 0.18 * topZ + 0.10 * floorZ
+        val qualityZ = policy.meanQualityWeight * meanZ + policy.topQualityWeight * topZ + policy.floorQualityWeight * floorZ
 
         val adjustments = ArrayList<Adjustment>()
         pairStrength?.let {
@@ -195,16 +199,45 @@ object DeckAnalysis {
             }
         }
 
-        if (f.spellCount < LimitedPolicy.SPELL_SLOTS) {
-            val missing = LimitedPolicy.SPELL_SLOTS - f.spellCount
+        if (f.spellCount < policy.spellSlots) {
+            val missing = policy.spellSlots - f.spellCount
             adjustments += Adjustment(-missing * 3.0, "Complete spell suite", "$missing spell slots short")
         }
 
-        if (splashCount > 0) {
+        if (manaSources != null) {
+            if (manaSources.baseShortfall > 0 && policy.manaShortfallPenalty > 0.0) {
+                adjustments += Adjustment(
+                    -manaSources.baseShortfall * policy.manaShortfallPenalty,
+                    "Reliable base-color mana",
+                    "${manaSources.baseShortfall} base-color sources short",
+                )
+            } else if (manaSources.allRequirementsMet && policy.reliableManaBonus > 0.0) {
+                adjustments += Adjustment(policy.reliableManaBonus, "Reliable colored sources")
+            }
+            if (splashCount > 0 && manaSources.splashFeasible) {
+                adjustments += Adjustment(policy.reliableManaBonus, "Splash has credible colored sources")
+            }
+        } else if (splashCount > 0) {
             val unsupported = (splashCount - f.fixers).coerceAtLeast(0)
             if (unsupported > 0) adjustments += Adjustment(-unsupported * 4.0, "Supported splash", "$unsupported splash cards lack fixing")
             val excess = (f.fixers - splashCount).coerceAtLeast(0)
             if (excess > 0) adjustments += Adjustment(excess.coerceAtMost(3).toDouble(), "Splash has reliable fixing")
+        }
+
+        if (policy.mode == LimitedMode.SEALED) {
+            val removalPoints = ((f.removal - policy.removalTarget) * 0.8).coerceIn(-4.0, 2.4)
+            if (removalPoints != 0.0) {
+                adjustments += Adjustment(removalPoints, "Deep removal suite", "Sealed removal is thin")
+            }
+            val finisherPoints = ((f.finishers - policy.finisherTarget) * 0.8).coerceIn(-1.6, 2.4)
+            if (finisherPoints != 0.0) {
+                adjustments += Adjustment(finisherPoints, "Bombs and finishers close games", "Few finishers for stalled boards")
+            }
+            val stallBreakers = f.evasion + f.draw + f.finishers
+            val stallPoints = ((stallBreakers - policy.stallBreakerTarget) * 0.45).coerceIn(-1.8, 2.7)
+            if (stallPoints != 0.0) {
+                adjustments += Adjustment(stallPoints, "Multiple ways to break board stalls", "Few ways to break a board stall")
+            }
         }
 
         synergy?.let { index ->

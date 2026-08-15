@@ -2,34 +2,81 @@
  "set": "FIN",
  "setName": "Final Fantasy",
  "generated": "2026-07-20",
+ "schemaVersion": 2,
+ "updatedAt": "2026-08-15",
+ "sources": [
+ {
+  "id": "fin-mechanics",
+  "title": "Magic: The Gathering—FINAL FANTASY Mechanics",
+  "publisher": "Wizards of the Coast",
+  "author": "Matt Tabak",
+  "date": "2025-05-10",
+  "url": "https://magic.wizards.com/en/news/feature/final-fantasy-mechanics",
+  "kind": "OFFICIAL_MECHANICS"
+ },
+ {
+  "id": "fin-limited-guide",
+  "title": "Magic: The Gathering—FINAL FANTASY Prerelease Guide",
+  "publisher": "Wizards of the Coast",
+  "author": "Jubilee Finnegan",
+  "date": "2025-05-30",
+  "url": "https://magic.wizards.com/en/news/feature/final-fantasy-prerelease-guide",
+  "kind": "OFFICIAL_LIMITED_GUIDE"
+ },
+ {
+  "id": "fin-release-notes",
+  "title": "Magic: The Gathering®—FINAL FANTASY™ Release Notes",
+  "publisher": "Wizards of the Coast",
+  "author": "Eric Levine",
+  "date": "2025-05-30",
+  "url": "https://magic.wizards.com/en/news/feature/final-fantasy-release-notes",
+  "kind": "OFFICIAL_RELEASE_NOTES"
+ },
+ {
+  "id": "fin-17lands",
+  "title": "17Lands Public Limited Data (FIN)",
+  "publisher": "17Lands",
+  "author": "17Lands contributors",
+  "date": "2026-08-15",
+  "url": "https://www.17lands.com/public_datasets",
+  "kind": "LIMITED_DATA"
+ }
+ ],
  "mechanics": [
   {
    "name": "Job select",
-   "summary": "Equipment that enters by creating a 1/1 colorless Hero token and attaching to it; the equipped creature gains a class and abilities. With 27 Equipment and ~23 Hero payoffs, Equipment density is a real draft axis \u2014 a Job select piece is never a dead draw."
+   "summary": "Equipment that enters by creating a 1/1 colorless Hero token and attaching to it; the equipped creature gains a class and abilities. With 27 Equipment and ~23 Hero payoffs, Equipment density is a real draft axis \u2014 a Job select piece is never a dead draw.",
+   "sourceIds": ["fin-mechanics","fin-release-notes"]
   },
   {
    "name": "Summons",
-   "summary": "'Summon:' cards are Enchantment Creature \u2014 Saga: a body that ticks a chapter of value each turn and then leaves. Several spells and DFCs cheat them in transformed; they reward decks that can protect a short-lived attacker."
+   "summary": "'Summon:' cards are Enchantment Creature \u2014 Saga: a body that ticks a chapter of value each turn and then leaves. Several spells and DFCs cheat them in transformed; they reward decks that can protect a short-lived attacker.",
+   "sourceIds": ["fin-mechanics","fin-release-notes"]
   },
   {
    "name": "Towns",
-   "summary": "A Land \u2014 Town subtype (23 lands); several payoffs count Towns you control or unlock when enough are assembled, making otherwise-plain nonbasics draftable role-players."
+   "summary": "A Land \u2014 Town subtype (23 lands); several payoffs count Towns you control or unlock when enough are assembled, making otherwise-plain nonbasics draftable role-players.",
+   "sourceIds": ["fin-mechanics","fin-release-notes"]
   },
   {
    "name": "Transform legends",
-   "summary": "27 transform cards \u2014 legendary characters flipping into upgraded forms (Cecil, Garland // Chaos, Exdeath // Neo Exdeath). The flip conditions shape gameplay: most ask you to attack, cast, or hit a threshold."
+   "summary": "27 transform cards \u2014 legendary characters flipping into upgraded forms (Cecil, Garland // Chaos, Exdeath // Neo Exdeath). The flip conditions shape gameplay: most ask you to attack, cast, or hit a threshold.",
+   "sourceIds": ["fin-mechanics","fin-release-notes"]
   },
   {
    "name": "Graveyard spells",
-   "summary": "Flashback (14), Surveil (11), and Mill (10) form a spells-from-the-graveyard axis in blue/black/red \u2014 stock the yard, then recast for value."
+   "summary": "Flashback (14), Surveil (11), and Mill (10) form a spells-from-the-graveyard axis in blue/black/red \u2014 stock the yard, then recast for value.",
+   "sourceIds": ["fin-mechanics","fin-release-notes"]
   },
   {
    "name": "Tiered",
-   "summary": "Modal spells with escalating additional costs (Fire/Fira/Firaga): scale one card from early interaction to a late-game haymaker; Treasure and ramp make the top tier real."
+   "summary": "Modal spells with escalating additional costs (Fire/Fira/Firaga): scale one card from early interaction to a late-game haymaker; Treasure and ramp make the top tier real.",
+   "sourceIds": ["fin-mechanics","fin-release-notes"]
   },
   {
    "name": "Lands matter",
-   "summary": "Landfall (10) plus Landcycling/Typecycling (10) form the green lands axis; cycling lands away also fuels the graveyard themes."
+   "summary": "Landfall (10) plus Landcycling/Typecycling (10) form the green lands axis; cycling lands away also fuels the graveyard themes.",
+   "sourceIds": ["fin-mechanics","fin-release-notes"]
   }
  ],
  "archetypes": [
@@ -38,6 +85,7 @@
    "name": "Magitek artifacts",
    "playstyle": "Flood the board with cheap artifacts \u2014 Job select Equipment, Vehicles, and Magitek bodies \u2014 then cash them in with count-based payoffs like Machinist's Arsenal and Adelbert Steiner. Curve out and attack, using taps, bounce, and White Auracite for tempo; artifact count, not card quality, is the engine.",
    "speed": "midrange",
+   "sourceIds": ["fin-limited-guide","fin-17lands"],
    "signposts": [
     "Cid, Timeless Artificer",
     "Tidus, Blitzball Star"
@@ -75,6 +123,7 @@
    "name": "Sacrifice aristocrats",
    "playstyle": "Feed cheap Heroes, tokens, and spare artifacts to sacrifice outlets and stack the death triggers into drains, counters, and card draw; a removal-dense midrange deck that wins attrition wars rather than races.",
    "speed": "midrange",
+   "sourceIds": ["fin-limited-guide","fin-17lands"],
    "signposts": [
     "Judge Magister Gabranth",
     "Rufus Shinra"
@@ -111,6 +160,7 @@
    "name": "Job select Equipment aggro",
    "playstyle": "Curve out cheap bodies and Job select Equipment \u2014 each weapon brings its own 1/1 Hero to wield it \u2014 then pressure with payoffs that scale on Equipment count like Adelbert Steiner and Slash of Light. Keep attacking; equip triggers and combat tricks out-tempo any defense.",
    "speed": "aggro",
+   "sourceIds": ["fin-limited-guide","fin-17lands"],
    "signposts": [
     "Giott, King of the Dwarves",
     "Zidane, Tantalus Thief"
@@ -148,6 +198,7 @@
    "name": "Summons go-wide",
    "playstyle": "Chain cheap Summon Sagas and token makers into a wide lifelinking board, with Garnet cashing lore counters and Yuna making your enchantment creatures permanent trampling threats. It plays as a value midrange deck that grinds Saga chapters, not a pure token rush.",
    "speed": "midrange",
+   "sourceIds": ["fin-limited-guide","fin-17lands"],
    "signposts": [
     "Garnet, Princess of Alexandria",
     "Rinoa Heartilly"
@@ -183,6 +234,7 @@
    "name": "Graveyard value control",
    "playstyle": "Grind the long game with removal and 2-for-1s while surveil, flashback, and loots stock your graveyard, turning Swallowed by Leviathan into a hard counter and flipping Card Collection, Ultimecia, and Emet-Selch. The theme is soft \u2014 removal density and bombs win, graveyard payoffs are the topping.",
    "speed": "control",
+   "sourceIds": ["fin-limited-guide","fin-17lands"],
    "signposts": [
     "Locke Cole",
     "Ultimecia, Time Sorceress // Ultimecia, Omnipotent"
@@ -219,6 +271,7 @@
    "name": "Big-spell wizards",
    "playstyle": "Land cheap payoff creatures, then chain four-plus-mana noncreature spells \u2014 Tiered magic and X spells count total mana spent \u2014 to snowball counters, stuns, Treasures, and card draw. Grinds to a mid-game where every big spell is removal plus a threat boost.",
    "speed": "midrange",
+   "sourceIds": ["fin-limited-guide","fin-17lands"],
    "signposts": [
     "The Emperor of Palamecia // The Lord Master of Hell",
     "Shantotto, Tactician Magician"
@@ -257,6 +310,7 @@
    "name": "Town ramp",
    "playstyle": "Ramp with land-fetch commons and Towns into a fat top end, converting extra land drops into landfall counters and Town-count payoffs like Travel the Overworld and Balamb Garden. Bounce and counters buy time until the haymakers take over.",
    "speed": "midrange",
+   "sourceIds": ["fin-limited-guide","fin-17lands"],
    "signposts": [
     "Ignis Scientia",
     "Omega, Heartless Evolution"
@@ -293,6 +347,7 @@
    "name": "Black Mage spellslinger",
    "playstyle": "Amass 0/1 Black Mage Wizard tokens, then chain cheap noncreature spells so every removal spell doubles as reach; win long grindy games on premium black interaction while the pingers finish the job.",
    "speed": "midrange",
+   "sourceIds": ["fin-limited-guide","fin-17lands"],
    "signposts": [
     "Black Waltz No. 3",
     "Garland, Knight of Cornelia // Chaos, the Endless"
@@ -331,6 +386,7 @@
    "name": "Self-mill graveyard",
    "playstyle": "Stock your graveyard with permanents via mill-on-a-body commons, then cash the count in for Cloud of Darkness blowouts, Neo Exdeath flips, and Evil Reawakened rebuys. Premium black removal and chunky green bodies let it grind as a plain midrange deck when the engine doesn't come together.",
    "speed": "midrange",
+   "sourceIds": ["fin-limited-guide","fin-17lands"],
    "signposts": [
     "Cloud of Darkness",
     "Exdeath, Void Warlock // Neo Exdeath, Dimension's End"
@@ -366,6 +422,7 @@
    "name": "Chocobo landfall",
    "playstyle": "Flood the board with 2/2 Chocobo tokens and landfall creatures, then let every land drop pump the team for wide, trampling attacks. Land-fetch spells and Summons keep triggers flowing and ramp you into oversized top-end.",
    "speed": "midrange",
+   "sourceIds": ["fin-limited-guide","fin-17lands"],
    "signposts": [
     "Gladiolus Amicitia",
     "Rydia, Summoner of Mist"
@@ -405,252 +462,288 @@
     "Gilgamesh, Master-at-Arms",
     "Weapons Vendor"
    ],
-   "note": "Gilgamesh dumps Equipment straight onto the board and Weapons Vendor suits up a threat with them for free each combat"
+   "note": "Gilgamesh dumps Equipment straight onto the board and Weapons Vendor suits up a threat with them for free each combat",
+   "sourceIds": ["fin-limited-guide","fin-17lands","fin-release-notes"]
   },
   {
    "cards": [
     "Adelbert Steiner",
     "Machinist's Arsenal"
    ],
-   "note": "The Arsenal is a free +1/+1 on Adelbert that also brings its own Hero to hold it"
+   "note": "The Arsenal is a free +1/+1 on Adelbert that also brings its own Hero to hold it",
+   "sourceIds": ["fin-limited-guide","fin-17lands","fin-release-notes"]
   },
   {
    "cards": [
     "Weapons Vendor",
     "Machinist's Arsenal"
    ],
-   "note": "Weapons Vendor moves the Arsenal onto your biggest body each combat for another artifact-count pump"
+   "note": "Weapons Vendor moves the Arsenal onto your biggest body each combat for another artifact-count pump",
+   "sourceIds": ["fin-limited-guide","fin-17lands","fin-release-notes"]
   },
   {
    "cards": [
     "Zack Fair",
     "Machinist's Arsenal"
    ],
-   "note": "Sacrifice Zack in response to removal to shift the Arsenal and his counters onto an indestructible attacker"
+   "note": "Sacrifice Zack in response to removal to shift the Arsenal and his counters onto an indestructible attacker",
+   "sourceIds": ["fin-limited-guide","fin-17lands","fin-release-notes"]
   },
   {
    "cards": [
     "Judge Magister Gabranth",
     "Al Bhed Salvagers"
    ],
-   "note": "Every creature or artifact death both grows Gabranth and drains the opponent through Al Bhed Salvagers"
+   "note": "Every creature or artifact death both grows Gabranth and drains the opponent through Al Bhed Salvagers",
+   "sourceIds": ["fin-limited-guide","fin-17lands","fin-release-notes"]
   },
   {
    "cards": [
     "The Crystal's Chosen",
     "Judge Magister Gabranth"
    ],
-   "note": "Four Hero tokens become sacrifice fuel that pile +1/+1 counters onto Gabranth"
+   "note": "Four Hero tokens become sacrifice fuel that pile +1/+1 counters onto Gabranth",
+   "sourceIds": ["fin-limited-guide","fin-17lands","fin-release-notes"]
   },
   {
    "cards": [
     "Zack Fair",
     "Al Bhed Salvagers"
    ],
-   "note": "Sacrificing Zack to save a creature also triggers Al Bhed Salvagers' drain"
+   "note": "Sacrificing Zack to save a creature also triggers Al Bhed Salvagers' drain",
+   "sourceIds": ["fin-limited-guide","fin-17lands","fin-release-notes"]
   },
   {
    "cards": [
     "Garnet, Princess of Alexandria",
     "Summon: Fat Chocobo"
    ],
-   "note": "Garnet cashes the lore counters off your Summon Sagas into permanent counters on herself"
+   "note": "Garnet cashes the lore counters off your Summon Sagas into permanent counters on herself",
+   "sourceIds": ["fin-limited-guide","fin-17lands","fin-release-notes"]
   },
   {
    "cards": [
     "Yuna, Hope of Spira",
     "Summon: Titan"
    ],
-   "note": "Yuna recurs a spent Summon Saga and makes your enchantment-creature Summons trampling lifelinkers"
+   "note": "Yuna recurs a spent Summon Saga and makes your enchantment-creature Summons trampling lifelinkers",
+   "sourceIds": ["fin-limited-guide","fin-17lands","fin-release-notes"]
   },
   {
    "cards": [
     "Locke Cole",
     "Evil Reawakened"
    ],
-   "note": "Loot a bomb into the yard with Locke, then Evil Reawakened brings it back with two extra counters"
+   "note": "Loot a bomb into the yard with Locke, then Evil Reawakened brings it back with two extra counters",
+   "sourceIds": ["fin-limited-guide","fin-17lands","fin-release-notes"]
   },
   {
    "cards": [
     "Locke Cole",
     "The Final Days"
    ],
-   "note": "Locke's combat looting stocks the creature-filled graveyard that The Final Days' flashback empties into a token army"
+   "note": "Locke's combat looting stocks the creature-filled graveyard that The Final Days' flashback empties into a token army",
+   "sourceIds": ["fin-limited-guide","fin-17lands","fin-release-notes"]
   },
   {
    "cards": [
     "Shantotto, Tactician Magician",
     "Fire Magic"
    ],
-   "note": "Cast Fire Magic at the Firaga tier and Shantotto swings for all that mana plus draws a card"
+   "note": "Cast Fire Magic at the Firaga tier and Shantotto swings for all that mana plus draws a card",
+   "sourceIds": ["fin-limited-guide","fin-17lands","fin-release-notes"]
   },
   {
    "cards": [
     "Vivi Ornitier",
     "Fire Magic"
    ],
-   "note": "Vivi ramps into and pings off every Fire Magic, snowballing counters and reach"
+   "note": "Vivi ramps into and pings off every Fire Magic, snowballing counters and reach",
+   "sourceIds": ["fin-limited-guide","fin-17lands","fin-release-notes"]
   },
   {
    "cards": [
     "The Emperor of Palamecia // The Lord Master of Hell",
     "Fire Magic"
    ],
-   "note": "Each four-plus-mana Fira/Firaga stacks a counter toward flipping the Emperor into a demon"
+   "note": "Each four-plus-mana Fira/Firaga stacks a counter toward flipping the Emperor into a demon",
+   "sourceIds": ["fin-limited-guide","fin-17lands","fin-release-notes"]
   },
   {
    "cards": [
     "Prompto Argentum",
     "Fire Magic"
    ],
-   "note": "A Firaga-tier cast clears the four-mana bar for a free Prompto Treasure"
+   "note": "A Firaga-tier cast clears the four-mana bar for a free Prompto Treasure",
+   "sourceIds": ["fin-limited-guide","fin-17lands","fin-release-notes"]
   },
   {
    "cards": [
     "Black Waltz No. 3",
     "Circle of Power"
    ],
-   "note": "Circle of Power adds a Wizard pinger so each noncreature spell burns twice over alongside Black Waltz"
+   "note": "Circle of Power adds a Wizard pinger so each noncreature spell burns twice over alongside Black Waltz",
+   "sourceIds": ["fin-limited-guide","fin-17lands","fin-release-notes"]
   },
   {
    "cards": [
     "Black Mage's Rod",
     "Circle of Power"
    ],
-   "note": "A board of Wizard tokens turns every noncreature spell into a barrage of pings"
+   "note": "A board of Wizard tokens turns every noncreature spell into a barrage of pings",
+   "sourceIds": ["fin-limited-guide","fin-17lands","fin-release-notes"]
   },
   {
    "cards": [
     "Town Greeter",
     "Cloud of Darkness"
    ],
-   "note": "Town Greeter's mill fills the graveyard so Cloud of Darkness wipes a big creature on entry"
+   "note": "Town Greeter's mill fills the graveyard so Cloud of Darkness wipes a big creature on entry",
+   "sourceIds": ["fin-limited-guide","fin-17lands","fin-release-notes"]
   },
   {
    "cards": [
     "Summon: Titan",
     "Exdeath, Void Warlock // Neo Exdeath, Dimension's End"
    ],
-   "note": "Summon: Titan's mill-five races Exdeath to its six-permanent transform"
+   "note": "Summon: Titan's mill-five races Exdeath to its six-permanent transform",
+   "sourceIds": ["fin-limited-guide","fin-17lands","fin-release-notes"]
   },
   {
    "cards": [
     "Chocobo Racetrack",
     "Gladiolus Amicitia"
    ],
-   "note": "Each land drop both spawns a Racetrack Bird and hands a creature +2/+2 and trample off Gladiolus"
+   "note": "Each land drop both spawns a Racetrack Bird and hands a creature +2/+2 and trample off Gladiolus",
+   "sourceIds": ["fin-limited-guide","fin-17lands","fin-release-notes"]
   },
   {
    "cards": [
     "Traveling Chocobo",
     "Chocobo Racetrack"
    ],
-   "note": "Traveling Chocobo doubles Racetrack's landfall so every land makes two Birds"
+   "note": "Traveling Chocobo doubles Racetrack's landfall so every land makes two Birds",
+   "sourceIds": ["fin-limited-guide","fin-17lands","fin-release-notes"]
   },
   {
    "cards": [
     "Town Greeter",
     "Travel the Overworld"
    ],
-   "note": "Town Greeter digs up the Towns that make Travel the Overworld a cheap draw-four"
+   "note": "Town Greeter digs up the Towns that make Travel the Overworld a cheap draw-four",
+   "sourceIds": ["fin-limited-guide","fin-17lands","fin-release-notes"]
   },
   {
    "cards": [
     "Balamb Garden, SeeD Academy // Balamb Garden, Airborne",
     "Travel the Overworld"
    ],
-   "note": "A pile of Towns both flips Balamb Garden cheaply and slashes Travel the Overworld's cost"
+   "note": "A pile of Towns both flips Balamb Garden cheaply and slashes Travel the Overworld's cost",
+   "sourceIds": ["fin-limited-guide","fin-17lands","fin-release-notes"]
   },
   {
    "cards": [
     "Cloud, Midgar Mercenary",
     "Thief's Knife"
    ],
-   "note": "Cloud doubles the triggered abilities of Equipment attached to it, so Thief's Knife's combat-damage draw fires twice per hit \u2014 and Cloud even tutors the Knife up on entry."
+   "note": "Cloud doubles the triggered abilities of Equipment attached to it, so Thief's Knife's combat-damage draw fires twice per hit \u2014 and Cloud even tutors the Knife up on entry.",
+   "sourceIds": ["fin-limited-guide","fin-17lands","fin-release-notes"]
   },
   {
    "cards": [
     "Vanille, Cheerful l'Cie",
     "Fang, Fearless l'Cie"
    ],
-   "note": "The two l'Cie meld into Ragnarok, Divine Deliverance once both are on the battlefield together."
+   "note": "The two l'Cie meld into Ragnarok, Divine Deliverance once both are on the battlefield together.",
+   "sourceIds": ["fin-limited-guide","fin-17lands","fin-release-notes"]
   },
   {
    "cards": [
     "Cloud, Planet's Champion",
     "Samurai's Katana"
    ],
-   "note": "Cloud makes equips targeting it cost {2} less, so Samurai's Katana attaches for {3} and turns the otherwise-plain Cloud into a hasty, trampling, double-striking, indestructible threat."
+   "note": "Cloud makes equips targeting it cost {2} less, so Samurai's Katana attaches for {3} and turns the otherwise-plain Cloud into a hasty, trampling, double-striking, indestructible threat.",
+   "sourceIds": ["fin-limited-guide","fin-17lands","fin-release-notes"]
   },
   {
    "cards": [
     "Firion, Wild Rose Warrior",
     "Dragoon's Lance"
    ],
-   "note": "Firion token-copies Dragoon's Lance as it enters and the copy's own Job select spawns a second Hero and equips it \u2014 two hasty flying Knights off one card."
+   "note": "Firion token-copies Dragoon's Lance as it enters and the copy's own Job select spawns a second Hero and equips it \u2014 two hasty flying Knights off one card.",
+   "sourceIds": ["fin-limited-guide","fin-17lands","fin-release-notes"]
   },
   {
    "cards": [
     "Rydia, Summoner of Mist",
     "Summon: Titan"
    ],
-   "note": "Rydia's Summon ability reanimates Summon: Titan from the graveyard with haste to re-run its chapters as an attacker."
+   "note": "Rydia's Summon ability reanimates Summon: Titan from the graveyard with haste to re-run its chapters as an attacker.",
+   "sourceIds": ["fin-limited-guide","fin-17lands","fin-release-notes"]
   },
   {
    "cards": [
     "Matoya, Archon Elder",
     "Ultimecia, Time Sorceress // Ultimecia, Omnipotent"
    ],
-   "note": "Ultimecia's repeated Surveil 2 draws a card each time through Matoya while stocking the graveyard toward Ultimecia's eight-card transform."
+   "note": "Ultimecia's repeated Surveil 2 draws a card each time through Matoya while stocking the graveyard toward Ultimecia's eight-card transform.",
+   "sourceIds": ["fin-limited-guide","fin-17lands","fin-release-notes"]
   },
   {
    "cards": [
     "Shantotto, Tactician Magician",
     "Thunder Magic"
    ],
-   "note": "Casting Thunder Magic's six-mana Thundaga tier pumps Shantotto +6/+0 and, as a 4+-mana noncreature spell, also draws a card."
+   "note": "Casting Thunder Magic's six-mana Thundaga tier pumps Shantotto +6/+0 and, as a 4+-mana noncreature spell, also draws a card.",
+   "sourceIds": ["fin-limited-guide","fin-17lands","fin-release-notes"]
   },
   {
    "cards": [
     "The Emperor of Palamecia // The Lord Master of Hell",
     "Ice Magic"
    ],
-   "note": "The Emperor taps for spell-only mana to fund Ice Magic's six-mana Blizzaga, which as a 4+-mana noncreature spell also puts it a counter closer to transforming."
+   "note": "The Emperor taps for spell-only mana to fund Ice Magic's six-mana Blizzaga, which as a 4+-mana noncreature spell also puts it a counter closer to transforming.",
+   "sourceIds": ["fin-limited-guide","fin-17lands","fin-release-notes"]
   },
   {
    "cards": [
     "Judge Magister Gabranth",
     "Sephiroth, Fabled SOLDIER // Sephiroth, One-Winged Angel"
    ],
-   "note": "Sephiroth's repeatable sacrifice-a-creature deaths each drop a +1/+1 counter on Gabranth while draining the opponent."
+   "note": "Sephiroth's repeatable sacrifice-a-creature deaths each drop a +1/+1 counter on Gabranth while draining the opponent.",
+   "sourceIds": ["fin-limited-guide","fin-17lands","fin-release-notes"]
   },
   {
    "cards": [
     "Beatrix, Loyal General",
     "Ninja's Blades"
    ],
-   "note": "Beatrix's combat-step attach moves Ninja's Blades off its 1/1 Hero onto a real body that keeps the loot-and-drain trigger, while the Hero stays on the board."
+   "note": "Beatrix's combat-step attach moves Ninja's Blades off its 1/1 Hero onto a real body that keeps the loot-and-drain trigger, while the Hero stays on the board.",
+   "sourceIds": ["fin-limited-guide","fin-17lands","fin-release-notes"]
   },
   {
    "cards": [
     "Kuja, Genome Sorcerer // Trance Kuja, Fate Defied",
     "Mysidian Elder"
    ],
-   "note": "Mysidian Elder's Wizard token helps reach Kuja's four-Wizard transform, after which Trance Kuja doubles every Wizard token's spell-triggered ping."
+   "note": "Mysidian Elder's Wizard token helps reach Kuja's four-Wizard transform, after which Trance Kuja doubles every Wizard token's spell-triggered ping.",
+   "sourceIds": ["fin-limited-guide","fin-17lands","fin-release-notes"]
   },
   {
    "cards": [
     "Y'shtola Rhul",
     "Ignis Scientia"
    ],
-   "note": "Y'shtola's end-step exile-and-return blinks Ignis, re-triggering its land ramp and six-card dig every turn."
+   "note": "Y'shtola's end-step exile-and-return blinks Ignis, re-triggering its land ramp and six-card dig every turn.",
+   "sourceIds": ["fin-limited-guide","fin-17lands","fin-release-notes"]
   },
   {
    "cards": [
     "Gladiolus Amicitia",
     "Reach the Horizon"
    ],
-   "note": "Reach the Horizon drops two lands at once, firing Gladiolus's landfall twice for +2/+2 and trample each time."
+   "note": "Reach the Horizon drops two lands at once, firing Gladiolus's landfall twice for +2/+2 and trample each time.",
+   "sourceIds": ["fin-limited-guide","fin-17lands","fin-release-notes"]
   }
  ]
 }

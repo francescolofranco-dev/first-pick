@@ -1,5 +1,6 @@
 package com.firstpick.advisor
 
+import com.firstpick.cards.BasicLandIdentity
 import com.firstpick.cards.CardMeta
 import com.firstpick.cards.CardRating
 import com.firstpick.cards.RankedCard
@@ -163,6 +164,32 @@ class DeckBuilderTest {
     }
 
     @Test
+    fun draftedBasicsDoNotConsumeFiniteNonbasicSlots() {
+        val metaMap = mutableMapOf<String, CardMeta>()
+        val pool = buildList {
+            repeat(12) { i ->
+                add(card(i, "W$i", 0.58, "W"))
+                metaMap["W$i"] = CardMeta("W$i", 3, true, false, coloredPips = mapOf('W' to 1))
+            }
+            repeat(12) { i ->
+                add(card(100 + i, "U$i", 0.58, "U"))
+                metaMap["U$i"] = CardMeta("U$i", 3, true, false, coloredPips = mapOf('U' to 1))
+            }
+            add(RankedCard(900, "Plains", null, BasicLandIdentity("Plains")))
+            metaMap["Plains"] = CardMeta("Plains", 0, false, true, producedColors = setOf('W'))
+            add(card(901, "AzoriusDual", 0.55, ""))
+            metaMap["AzoriusDual"] = CardMeta(
+                "AzoriusDual", 0, false, true, isFixing = true, producedColors = setOf('W', 'U'),
+            )
+        }
+
+        val top = DeckBuilder.build(pool, metrics, metaMap::get, maxOptions = 1).single()
+
+        assertEquals(listOf("AzoriusDual"), top.nonbasicLands.map { it.name })
+        assertEquals(16, top.manaSources!!.basicSources.values.sum())
+    }
+
+    @Test
     fun unresolvableCardsNeverTakeASpellSlot() {
         val pool = pool() + RankedCard(grpId = 999999, name = "", rating = null)
         val top = DeckBuilder.build(pool, metrics, meta).first()
@@ -183,7 +210,7 @@ class DeckBuilderTest {
         }
         val top = DeckBuilder.build(pool, metrics, metaFix).first()
         val names = top.spells.map { it.name }
-        assertTrue("DoubleWhite" !in names, "WW cards are uncastable off a splash")
+        assertTrue("DoubleWhite" !in names, "WW cards are uncastable off a splash: ${top.basePair}/${top.colors}")
         assertTrue("SingleWhite" in names, "single-pip splash is fine")
     }
 
@@ -215,7 +242,7 @@ class DeckBuilderTest {
             add(card(200, "MehBlack", 0.565, "B"))
         }
         val options = DeckBuilder.build(pool, metrics, meta)
-        assertTrue(options.none { it.colors == "WUB" }, "half a point of win rate does not justify a splash")
+        assertTrue(options.none { it.colors == "WUB" }, "half a point of win rate does not justify a splash: ${options.map { "${it.basePair}/${it.colors}/${it.spells.size}" }}")
     }
 
     @Test

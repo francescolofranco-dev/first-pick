@@ -2,30 +2,76 @@
  "set": "DSK",
  "setName": "Duskmourn: House of Horror",
  "generated": "2026-08-11",
+ "schemaVersion": 2,
+ "updatedAt": "2026-08-15",
+ "sources": [
+ {
+  "id": "dsk-mechanics",
+  "title": "Duskmourn: House of Horror Mechanics",
+  "publisher": "Wizards of the Coast",
+  "author": "Matt Tabak",
+  "date": "2024-08-31",
+  "url": "https://magic.wizards.com/en/news/feature/duskmourn-house-of-horror-mechanics",
+  "kind": "OFFICIAL_MECHANICS"
+ },
+ {
+  "id": "dsk-limited-guide",
+  "title": "Duskmourn: House of Horror Prerelease and Draft Guide",
+  "publisher": "Wizards of the Coast",
+  "author": "Jubilee Finnegan",
+  "date": "2024-09-13",
+  "url": "https://magic.wizards.com/en/news/feature/duskmourn-house-of-horror-prerelease-and-draft-guide",
+  "kind": "OFFICIAL_LIMITED_GUIDE"
+ },
+ {
+  "id": "dsk-release-notes",
+  "title": "Duskmourn: House of Horror Release Notes",
+  "publisher": "Wizards of the Coast",
+  "author": "Eric Levine",
+  "date": "2024-09-13",
+  "url": "https://magic.wizards.com/en/news/feature/duskmourn-house-of-horror-release-notes",
+  "kind": "OFFICIAL_RELEASE_NOTES"
+ },
+ {
+  "id": "dsk-17lands",
+  "title": "17Lands Public Limited Data (DSK)",
+  "publisher": "17Lands",
+  "author": "17Lands contributors",
+  "date": "2026-08-15",
+  "url": "https://www.17lands.com/public_datasets",
+  "kind": "LIMITED_DATA"
+ }
+ ],
  "mechanics": [
   {
    "name": "Rooms",
-   "summary": "Room cards are split enchantments with two doors: cast either half to unlock that door, then pay the other door's mana cost as a sorcery-speed special action to fully unlock the Room. For eerie abilities, casting a Room supplies the enchantment-entry trigger up front and a second trigger when the last locked door opens."
+   "summary": "Room cards are split enchantments with two doors: cast either half to unlock that door, then pay the other door's mana cost as a sorcery-speed special action to fully unlock the Room. For eerie abilities, casting a Room supplies the enchantment-entry trigger up front and a second trigger when the last locked door opens.",
+   "sourceIds": ["dsk-mechanics","dsk-release-notes"]
   },
   {
    "name": "Manifest dread",
-   "summary": "Look at the top two cards of your library, put one onto the battlefield face down as a colorless 2/2 creature with no name, creature types, or abilities, and put the other into your graveyard. If the manifested card is a creature, you may turn it face up as a special action by paying its mana cost, creating both board presence and graveyard fuel."
+   "summary": "Look at the top two cards of your library, put one onto the battlefield face down as a colorless 2/2 creature with no name, creature types, or abilities, and put the other into your graveyard. If the manifested card is a creature, you may turn it face up as a special action by paying its mana cost, creating both board presence and graveyard fuel.",
+   "sourceIds": ["dsk-mechanics","dsk-release-notes"]
   },
   {
    "name": "Survival",
-   "summary": "Survival abilities trigger at the beginning of your second main phase if their creature is tapped, then check that it is still tapped when the trigger resolves. Attacking, crewing, mana abilities, and other tap effects can all switch them on before that phase begins."
+   "summary": "Survival abilities trigger at the beginning of your second main phase if their creature is tapped, then check that it is still tapped when the trigger resolves. Attacking, crewing, mana abilities, and other tap effects can all switch them on before that phase begins.",
+   "sourceIds": ["dsk-mechanics","dsk-release-notes"]
   },
   {
    "name": "Eerie",
-   "summary": "Each eerie ability triggers whenever an enchantment you control enters and whenever a Room you control becomes fully unlocked. A cast Room can supply the enchantment-entry trigger and, after its other door opens, one later full-unlock trigger."
+   "summary": "Each eerie ability triggers whenever an enchantment you control enters and whenever a Room you control becomes fully unlocked. A cast Room can supply the enchantment-entry trigger and, after its other door opens, one later full-unlock trigger.",
+   "sourceIds": ["dsk-mechanics","dsk-release-notes"]
   },
   {
    "name": "Impending",
-   "summary": "The five mythic Overlords may be cast for an impending cost, entering with time counters and remaining noncreature enchantments while any counters remain; remove one at the beginning of each of your end steps. Their enters abilities still trigger immediately, and removing the final counter turns them into creatures."
+   "summary": "The five mythic Overlords may be cast for an impending cost, entering with time counters and remaining noncreature enchantments while any counters remain; remove one at the beginning of each of your end steps. Their enters abilities still trigger immediately, and removing the final counter turns them into creatures.",
+   "sourceIds": ["dsk-mechanics","dsk-release-notes"]
   },
   {
    "name": "Delirium",
-   "summary": "Delirium is active while four or more card types are represented among cards in your graveyard. Artifact creatures and enchantment creatures each supply two types, while Room is an enchantment subtype rather than another card type, so self-mill, manifest dread, and disposable mixed-type permanents are the cleanest setup."
+   "summary": "Delirium is active while four or more card types are represented among cards in your graveyard. Artifact creatures and enchantment creatures each supply two types, while Room is an enchantment subtype rather than another card type, so self-mill, manifest dread, and disposable mixed-type permanents are the cleanest setup.",
+   "sourceIds": ["dsk-mechanics","dsk-release-notes"]
   }
  ],
  "archetypes": [
@@ -34,6 +80,7 @@
    "name": "Eerie tempo",
    "playstyle": "Curve out with enchantment creatures, Auras, and Rooms to stack eerie triggers, then turn the resulting counters and tokens into a tempo clock. Bounce or lock blockers, protect the largest threat, and remember that fully unlocking a Room supplies a second eerie trigger.",
    "speed": "aggro",
+   "sourceIds": ["dsk-limited-guide","dsk-17lands"],
    "signposts": [
     "Gremlin Tamer",
     "Inquisitive Glimmer"
@@ -69,6 +116,7 @@
    "name": "Reanimator control",
    "playstyle": "Draft this as removal-heavy control with reanimation as its finisher: loot, surveil, or landcycle oversized creatures into the graveyard, then return them without paying their additional cast costs. Prioritize time-buying interaction and recyclable value over stuffing the deck with too many expensive targets.",
    "speed": "control",
+   "sourceIds": ["dsk-limited-guide","dsk-17lands"],
    "signposts": [
     "Rite of the Moth",
     "Shroudstomper"
@@ -107,6 +155,7 @@
    "name": "Power-two swarm",
    "playstyle": "Build a low curve of creatures with power 2 or less and token makers, then make every wide attack lethal through Arabella, Midnight Mayhem, attack anthems, and evasion. Cheap burn and pump should preserve tempo; avoid diluting the deck with slow cards that do not add bodies or clear blockers.",
    "speed": "aggro",
+   "sourceIds": ["dsk-limited-guide","dsk-17lands"],
    "signposts": [
     "Arabella, Abandoned Doll",
     "Midnight Mayhem"
@@ -143,6 +192,7 @@
    "name": "Survival tap value",
    "playstyle": "Attack when trades are favorable, but use crew, mana abilities, Coordinated Clobbering, and tap costs to turn on survival before the second main phase through stalled boards. The best builds keep a functional midrange curve and treat survival as repeatable value, not a reason to play every low-rate Survivor.",
    "speed": "midrange",
+   "sourceIds": ["dsk-limited-guide","dsk-17lands"],
    "signposts": [
     "Baseball Bat",
     "Shrewd Storyteller"
@@ -180,6 +230,7 @@
    "name": "Eerie attrition",
    "playstyle": "Stabilize with enchantment-based removal and Rooms, using each enchantment entry or fully unlocked Room to convert eerie into surveil, cards, drain, or recursive threats. Win by compounding small advantages behind blockers and instant-speed interaction rather than racing.",
    "speed": "control",
+   "sourceIds": ["dsk-limited-guide","dsk-17lands"],
    "signposts": [
     "Fear of Infinity",
     "Skullsnap Nuisance"
@@ -217,6 +268,7 @@
    "name": "Room value control",
    "playstyle": "Use early doors as modular removal, tempo, and card selection, then spend spare mana unlocking their late halves while holding the board. Preserve high-impact Rooms for cumulative value and cash in exhausted ones only when Intruding Soulrager's card and damage justify shrinking Smoky Lounge // Misty Salon.",
    "speed": "control",
+   "sourceIds": ["dsk-limited-guide","dsk-17lands"],
    "signposts": [
     "Intruding Soulrager",
     "Smoky Lounge // Misty Salon"
@@ -252,6 +304,7 @@
    "name": "Manifest dread value",
    "playstyle": "Manifest dread converts card selection into board presence while Oblivious Bookworm, Paranormal Analyst, and Threats Around Every Corner recoup the setup with cards or mana. Favor creatures worth turning face up, represent combat flips, and win through incremental advantage plus oversized manifested threats.",
    "speed": "midrange",
+   "sourceIds": ["dsk-limited-guide","dsk-17lands"],
    "signposts": [
     "Growing Dread",
     "Oblivious Bookworm"
@@ -289,6 +342,7 @@
    "name": "Sacrifice value grind",
    "playstyle": "Convert expendable creatures and used-up Auras or Rooms into removal, cards, and drain, while keeping outlets and fodder in balance. Trade repeatedly, pressure with menace between exchanges, and win by chaining death value rather than racing.",
    "speed": "midrange",
+   "sourceIds": ["dsk-limited-guide","dsk-17lands"],
    "signposts": [
     "Disturbing Mirth",
     "Sawblade Skinripper"
@@ -326,6 +380,7 @@
    "name": "Delirium attrition control",
    "playstyle": "Use surveil, manifest dread, and self-mill to assemble four card types while trading through the early game. Once delirium is online, discounted removal, recurring threats, and attrition engines dominate; prioritize diverse types, especially artifact and enchantment creatures, over redundant filler.",
    "speed": "control",
+   "sourceIds": ["dsk-limited-guide","dsk-17lands"],
    "signposts": [
     "Broodspinner",
     "Drag to the Roots"
@@ -361,6 +416,7 @@
    "name": "Delirium beatdown",
    "playstyle": "Curve out with artifact and enchantment creatures that contribute multiple graveyard types, then switch on delirium and attack with upgraded threats. Creatures, lands, and sorceries arrive naturally, so prioritize cheap artifacts, enchantments, and instants without sacrificing pressure.",
    "speed": "aggro",
+   "sourceIds": ["dsk-limited-guide","dsk-17lands"],
    "signposts": [
     "Beastie Beatdown",
     "Wildfire Wickerfolk"
@@ -401,175 +457,200 @@
     "Gremlin Tamer",
     "Inquisitive Glimmer"
    ],
-   "note": "Glimmer triggers Tamer on entry and discounts every later enchantment or unlock."
+   "note": "Glimmer triggers Tamer on entry and discounts every later enchantment or unlock.",
+   "sourceIds": ["dsk-limited-guide","dsk-17lands","dsk-release-notes"]
   },
   {
    "cards": [
     "Ghostly Dancers",
     "Grand Entryway // Elegant Rotunda"
    ],
-   "note": "Dancers unlocks the Room's second door to trigger its own eerie ability and create a 3/1 Spirit."
+   "note": "Dancers unlocks the Room's second door to trigger its own eerie ability and create a 3/1 Spirit.",
+   "sourceIds": ["dsk-limited-guide","dsk-17lands","dsk-release-notes"]
   },
   {
    "cards": [
     "Gremlin Tamer",
     "Glimmerburst"
    ],
-   "note": "Glimmerburst's enchantment token triggers Tamer to create an extra Gremlin."
+   "note": "Glimmerburst's enchantment token triggers Tamer to create an extra Gremlin.",
+   "sourceIds": ["dsk-limited-guide","dsk-17lands","dsk-release-notes"]
   },
   {
    "cards": [
     "Commune with Evil",
     "Rite of the Moth"
    ],
-   "note": "Commune stocks a creature for Rite to reanimate and can mill Rite for its flashback cost."
+   "note": "Commune stocks a creature for Rite to reanimate and can mill Rite for its flashback cost.",
+   "sourceIds": ["dsk-limited-guide","dsk-17lands","dsk-release-notes"]
   },
   {
    "cards": [
     "Rite of the Moth",
     "Shroudstomper"
    ],
-   "note": "Rite reanimates Shroudstomper and immediately triggers its drain, life gain, and card draw."
+   "note": "Rite reanimates Shroudstomper and immediately triggers its drain, life gain, and card draw.",
+   "sourceIds": ["dsk-limited-guide","dsk-17lands","dsk-release-notes"]
   },
   {
    "cards": [
     "Enduring Tenacity",
     "Shroudstomper"
    ],
-   "note": "Each Shroudstomper life-gain trigger makes Enduring Tenacity drain the opponent for 2 more."
+   "note": "Each Shroudstomper life-gain trigger makes Enduring Tenacity drain the opponent for 2 more.",
+   "sourceIds": ["dsk-limited-guide","dsk-17lands","dsk-release-notes"]
   },
   {
    "cards": [
     "Arabella, Abandoned Doll",
     "Midnight Mayhem"
    ],
-   "note": "Mayhem's three 1/1s add three to Arabella's attack-trigger damage and life gain."
+   "note": "Mayhem's three 1/1s add three to Arabella's attack-trigger damage and life gain.",
+   "sourceIds": ["dsk-limited-guide","dsk-17lands","dsk-release-notes"]
   },
   {
    "cards": [
     "Enduring Courage",
     "Midnight Mayhem"
    ],
-   "note": "Enduring Courage turns Mayhem's three Gremlins into hasty 3/1s for the turn."
+   "note": "Enduring Courage turns Mayhem's three Gremlins into hasty 3/1s for the turn.",
+   "sourceIds": ["dsk-limited-guide","dsk-17lands","dsk-release-notes"]
   },
   {
    "cards": [
     "Unidentified Hovership",
     "Shrewd Storyteller"
    ],
-   "note": "Crewing Hovership taps Storyteller for its second-main survival trigger without risking it in combat."
+   "note": "Crewing Hovership taps Storyteller for its second-main survival trigger without risking it in combat.",
+   "sourceIds": ["dsk-limited-guide","dsk-17lands","dsk-release-notes"]
   },
   {
    "cards": [
     "Tyvar, the Pummeler",
     "Shrewd Storyteller"
    ],
-   "note": "Tyvar taps Storyteller as its indestructible cost to guarantee Storyteller's survival trigger."
+   "note": "Tyvar taps Storyteller as its indestructible cost to guarantee Storyteller's survival trigger.",
+   "sourceIds": ["dsk-limited-guide","dsk-17lands","dsk-release-notes"]
   },
   {
    "cards": [
     "Fear of Isolation",
     "Nowhere to Run"
    ],
-   "note": "Fear returns a spent Nowhere to Run as its extra cost so the -3/-3 entry effect can be replayed."
+   "note": "Fear returns a spent Nowhere to Run as its extra cost so the -3/-3 entry effect can be replayed.",
+   "sourceIds": ["dsk-limited-guide","dsk-17lands","dsk-release-notes"]
   },
   {
    "cards": [
     "Fear of Infinity",
     "Defiled Crypt // Cadaver Lab"
    ],
-   "note": "Fear returning itself from the graveyard triggers Defiled Crypt to create a Horror."
+   "note": "Fear returning itself from the graveyard triggers Defiled Crypt to create a Horror.",
+   "sourceIds": ["dsk-limited-guide","dsk-17lands","dsk-release-notes"]
   },
   {
    "cards": [
     "Intruding Soulrager",
     "Meat Locker // Drowned Diner"
    ],
-   "note": "Soulrager cashes a fully unlocked Meat Locker into 2 damage and a card after both one-shot doors resolve."
+   "note": "Soulrager cashes a fully unlocked Meat Locker into 2 damage and a card after both one-shot doors resolve.",
+   "sourceIds": ["dsk-limited-guide","dsk-17lands","dsk-release-notes"]
   },
   {
    "cards": [
     "Fear of Isolation",
     "Glassworks // Shattered Yard"
    ],
-   "note": "Fear returns Glassworks after its 4-damage door resolves so that door can be cast again."
+   "note": "Fear returns Glassworks after its 4-damage door resolves so that door can be cast again.",
+   "sourceIds": ["dsk-limited-guide","dsk-17lands","dsk-release-notes"]
   },
   {
    "cards": [
     "Ghostly Keybearer",
     "Smoky Lounge // Misty Salon"
    ],
-   "note": "A Keybearer hit unlocks Misty Salon for free to create its unlocked-door-sized Spirit."
+   "note": "A Keybearer hit unlocks Misty Salon for free to create its unlocked-door-sized Spirit.",
+   "sourceIds": ["dsk-limited-guide","dsk-17lands","dsk-release-notes"]
   },
   {
    "cards": [
     "Oblivious Bookworm",
     "Unnerving Grasp"
    ],
-   "note": "Grasp's manifest satisfies Bookworm's end-step condition to turn its loot into a clean draw."
+   "note": "Grasp's manifest satisfies Bookworm's end-step condition to turn its loot into a clean draw.",
+   "sourceIds": ["dsk-limited-guide","dsk-17lands","dsk-release-notes"]
   },
   {
    "cards": [
     "Threats Around Every Corner",
     "Unnerving Grasp"
    ],
-   "note": "Grasp's manifest triggers Threats to put a basic land onto the battlefield tapped."
+   "note": "Grasp's manifest triggers Threats to put a basic land onto the battlefield tapped.",
+   "sourceIds": ["dsk-limited-guide","dsk-17lands","dsk-release-notes"]
   },
   {
    "cards": [
     "Growing Dread",
     "Hauntwoods Shrieker"
    ],
-   "note": "Shrieker turns a manifested creature face up for {1}{G}, triggering Growing Dread's counter."
+   "note": "Shrieker turns a manifested creature face up for {1}{G}, triggering Growing Dread's counter.",
+   "sourceIds": ["dsk-limited-guide","dsk-17lands","dsk-release-notes"]
   },
   {
    "cards": [
     "Disturbing Mirth",
     "Final Vengeance"
    ],
-   "note": "Final Vengeance sacrifices Mirth for its cost, triggering Mirth's manifest before the creature is exiled."
+   "note": "Final Vengeance sacrifices Mirth for its cost, triggering Mirth's manifest before the creature is exiled.",
+   "sourceIds": ["dsk-limited-guide","dsk-17lands","dsk-release-notes"]
   },
   {
    "cards": [
     "Vengeful Possession",
     "Final Vengeance"
    ],
-   "note": "Possession steals a creature that Final Vengeance can sacrifice while exiling a second target."
+   "note": "Possession steals a creature that Final Vengeance can sacrifice while exiling a second target.",
+   "sourceIds": ["dsk-limited-guide","dsk-17lands","dsk-release-notes"]
   },
   {
    "cards": [
     "Clockwork Percussionist",
     "Sawblade Skinripper"
    ],
-   "note": "Skinripper sacrifices Percussionist to grow, enable its end-step damage, and expose the next card to play."
+   "note": "Skinripper sacrifices Percussionist to grow, enable its end-step damage, and expose the next card to play.",
+   "sourceIds": ["dsk-limited-guide","dsk-17lands","dsk-release-notes"]
   },
   {
    "cards": [
     "Broodspinner",
     "The Swarmweaver"
    ],
-   "note": "At delirium, Swarmweaver gives Broodspinner and all the Insects it creates +1/+1 and deathtouch."
+   "note": "At delirium, Swarmweaver gives Broodspinner and all the Insects it creates +1/+1 and deathtouch.",
+   "sourceIds": ["dsk-limited-guide","dsk-17lands","dsk-release-notes"]
   },
   {
    "cards": [
     "Under the Skin",
     "Defiled Crypt // Cadaver Lab"
    ],
-   "note": "Under the Skin's graveyard return triggers Defiled Crypt to create a Horror alongside the manifest."
+   "note": "Under the Skin's graveyard return triggers Defiled Crypt to create a Horror alongside the manifest.",
+   "sourceIds": ["dsk-limited-guide","dsk-17lands","dsk-release-notes"]
   },
   {
    "cards": [
     "Fear of Missing Out",
     "Wildfire Wickerfolk"
    ],
-   "note": "At delirium, Fear untaps Wickerfolk after its first attack so the hasty trampler can attack again."
+   "note": "At delirium, Fear untaps Wickerfolk after its first attack so the hasty trampler can attack again.",
+   "sourceIds": ["dsk-limited-guide","dsk-17lands","dsk-release-notes"]
   },
   {
    "cards": [
     "The Rollercrusher Ride",
     "Beastie Beatdown"
    ],
-   "note": "At delirium, Rollercrusher doubles the damage Beastie Beatdown's boosted creature deals."
+   "note": "At delirium, Rollercrusher doubles the damage Beastie Beatdown's boosted creature deals.",
+   "sourceIds": ["dsk-limited-guide","dsk-17lands","dsk-release-notes"]
   }
  ]
 }

@@ -2,34 +2,81 @@
  "set": "TLA",
  "setName": "Avatar: The Last Airbender",
  "generated": "2026-07-16",
+ "schemaVersion": 2,
+ "updatedAt": "2026-08-15",
+ "sources": [
+ {
+  "id": "tla-mechanics",
+  "title": "Magic: The Gathering | Avatar: The Last Airbender Mechanics",
+  "publisher": "Wizards of the Coast",
+  "author": "Matt Tabak",
+  "date": "2025-10-28",
+  "url": "https://magic.wizards.com/en/news/feature/avatar-the-last-airbender-mechanics",
+  "kind": "OFFICIAL_MECHANICS"
+ },
+ {
+  "id": "tla-limited-guide",
+  "title": "Magic: The Gathering | Avatar: The Last Airbender Prerelease Guide",
+  "publisher": "Wizards of the Coast",
+  "author": "Jubilee Finnegan",
+  "date": "2025-11-07",
+  "url": "https://magic.wizards.com/en/news/feature/avatar-the-last-airbender-prerelease-guide",
+  "kind": "OFFICIAL_LIMITED_GUIDE"
+ },
+ {
+  "id": "tla-release-notes",
+  "title": "Magic: The Gathering® | Avatar: The Last Airbender™ Release Notes",
+  "publisher": "Wizards of the Coast",
+  "author": "Eliana Rabinowitz",
+  "date": "2025-11-07",
+  "url": "https://magic.wizards.com/en/news/feature/avatar-the-last-airbender-release-notes",
+  "kind": "OFFICIAL_RELEASE_NOTES"
+ },
+ {
+  "id": "tla-17lands",
+  "title": "17Lands Public Limited Data (TLA)",
+  "publisher": "17Lands",
+  "author": "17Lands contributors",
+  "date": "2026-08-15",
+  "url": "https://www.17lands.com/public_datasets",
+  "kind": "LIMITED_DATA"
+ }
+ ],
  "mechanics": [
   {
    "name": "Earthbend",
-   "summary": "Pay an earthbend cost to turn a land you control into a 0/0 haste creature with that many +1/+1 counters; it returns tapped when it dies. Green's ramp-into-beatdown and a counters payoff."
+   "summary": "Pay an earthbend cost to turn a land you control into a 0/0 haste creature with that many +1/+1 counters; it returns tapped when it dies. Green's ramp-into-beatdown and a counters payoff.",
+   "sourceIds": ["tla-mechanics","tla-release-notes"]
   },
   {
    "name": "Waterbend",
-   "summary": "An alternative cost you may pay by tapping untapped artifacts and creatures you control, each covering {1}. Rewards a wide board and cheap permanents \u2014 blue's tap-for-value engine."
+   "summary": "An alternative cost you may pay by tapping untapped artifacts and creatures you control, each covering {1}. Rewards a wide board and cheap permanents \u2014 blue's tap-for-value engine.",
+   "sourceIds": ["tla-mechanics","tla-release-notes"]
   },
   {
    "name": "Firebending",
-   "summary": "Whenever this creature attacks, add that much red mana until end of combat. An aggressive ritual that bankrolls combat tricks, extra spells, and activated abilities mid-attack."
+   "summary": "Whenever this creature attacks, add that much red mana until end of combat. An aggressive ritual that bankrolls combat tricks, extra spells, and activated abilities mid-attack.",
+   "sourceIds": ["tla-mechanics","tla-release-notes"]
   },
   {
    "name": "Airbend",
-   "summary": "Exile a nonland permanent; its owner may recast it for {2}. A tempo/blink tool that re-triggers your own enters-the-battlefield effects or resets a threat, and feeds cast-from-exile payoffs."
+   "summary": "Exile a nonland permanent; its owner may recast it for {2}. A tempo/blink tool that re-triggers your own enters-the-battlefield effects or resets a threat, and feeds cast-from-exile payoffs.",
+   "sourceIds": ["tla-mechanics","tla-release-notes"]
   },
   {
    "name": "Lessons",
-   "summary": "Instants and sorceries with the Lesson subtype; several payoffs scale with or switch on when three-plus Lessons sit in your graveyard (Combustion Technique, Gran-Gran, The Lion-Turtle, Bumi), a cheap-spell value engine in blue/red/green."
+   "summary": "Instants and sorceries with the Lesson subtype; several payoffs scale with or switch on when three-plus Lessons sit in your graveyard (Combustion Technique, Gran-Gran, The Lion-Turtle, Bumi), a cheap-spell value engine in blue/red/green.",
+   "sourceIds": ["tla-mechanics","tla-release-notes"]
   },
   {
    "name": "Ally typal",
-   "summary": "The set's dominant creature type (~31 cards). Go wide and lean on 'whenever an Ally enters or attacks' triggers, anthems, and token makers to convert a crowded board into damage and value."
+   "summary": "The set's dominant creature type (~31 cards). Go wide and lean on 'whenever an Ally enters or attacks' triggers, anthems, and token makers to convert a crowded board into damage and value.",
+   "sourceIds": ["tla-mechanics","tla-release-notes"]
   },
   {
    "name": "Avatar Sagas",
-   "summary": "'The Legend of X // Avatar X' double-faced Sagas advance three chapters of value, then transform into a legendary Avatar bomb \u2014 the format's premium rares and mythics."
+   "summary": "'The Legend of X // Avatar X' double-faced Sagas advance three chapters of value, then transform into a legendary Avatar bomb \u2014 the format's premium rares and mythics.",
+   "sourceIds": ["tla-mechanics","tla-release-notes"]
   }
  ],
  "archetypes": [
@@ -38,6 +85,7 @@
    "name": "Airbending fliers",
    "playstyle": "Deploy evasive Allies, then lean on airbend tempo (Aang, Airbending Lesson, Glider Staff) to reset blockers and untangle attacks that draw you extra cards off Sokka and Teo. Air Nomad Legacy and Momo turn a modest air force into lethal while blue bombs and card advantage bury any ground stall.",
    "speed": "midrange",
+   "sourceIds": ["tla-limited-guide","tla-17lands"],
    "signposts": [
     "Air Nomad Legacy",
     "Sokka, Lateral Strategist"
@@ -75,6 +123,7 @@
    "name": "Sacrifice grind",
    "playstyle": "Manufacture expendable bodies \u2014 Ally tokens, Clues, dying Vehicles \u2014 then cash them in with Tolls of War, Suki, and Phoenix Fleet Airship for incremental value and counters. Best-in-class W/B removal keeps the board flat while you grind out the long game on attrition, not tempo.",
    "speed": "midrange",
+   "sourceIds": ["tla-limited-guide","tla-17lands"],
    "signposts": [
     "Hei Bai, Spirit of Balance",
     "Tolls of War"
@@ -109,6 +158,7 @@
    "name": "Ally aggro",
    "playstyle": "Flood the board with cheap Allies and 1/1 tokens, then convert width into damage with anthems and \"creatures-you-control\" scalers like United Front and the signposts; efficient red removal clears blockers so the swarm closes before opponents stabilize.",
    "speed": "aggro",
+   "sourceIds": ["tla-limited-guide","tla-17lands"],
    "signposts": [
     "Sun Warriors",
     "Jet, Freedom Fighter"
@@ -145,6 +195,7 @@
    "name": "Ally go-wide",
    "playstyle": "Flood the board with cheap Allies, then stack anthems and +1/+1 counters until United Front or a Suki swing turns the wide board lethal. Every Ally-enters trigger (life, draw, counters) compounds, and the fixing lets a bomb slot in over the top.",
    "speed": "midrange",
+   "sourceIds": ["tla-limited-guide","tla-17lands"],
    "signposts": [
     "Suki, Kyoshi Warrior",
     "White Lotus Reinforcements"
@@ -178,6 +229,7 @@
    "name": "Draw-two control",
    "playstyle": "Chain Clue tokens to reliably hit your second card each turn, spinning up evasive Spirit tokens and +1/+1 counters while premium black removal and board wipes stall to your bombs. Clue density is the real engine \u2014 this is a grindy card-advantage control deck, not a tempo one.",
    "speed": "control",
+   "sourceIds": ["tla-limited-guide","tla-17lands"],
    "signposts": [
     "Hama, the Bloodbender",
     "Foggy Swamp Spirit Keeper"
@@ -212,6 +264,7 @@
    "name": "Lessons tempo",
    "playstyle": "Chain cheap Lessons to stock the graveyard and feed count-scaling payoffs (Combustion Technique, Ran and Shaw) plus noncreature-spell triggers, while burn and blue card advantage keep the tempo lead. Most of the burn is creature-only, so bombs and evasive beaters do the closing.",
    "speed": "midrange",
+   "sourceIds": ["tla-limited-guide","tla-17lands"],
    "signposts": [
     "Professor Zei, Anthropologist",
     "Dragonfly Swarm"
@@ -247,6 +300,7 @@
    "name": "Lessons ramp",
    "playstyle": "The set's greediest deck: chain green ramp and self-mill through the early turns, then bury them with blue Lessons value and X-spell bombs. Bank three Lessons in your graveyard to switch on Lion-Turtle, Gran-Gran, and Bumi.",
    "speed": "midrange",
+   "sourceIds": ["tla-limited-guide","tla-17lands"],
    "signposts": [
     "Guru Pathik",
     "Hermitic Herbalist"
@@ -281,6 +335,7 @@
    "name": "Firebending aggro",
    "playstyle": "Curve out with cheap firebending bodies and Raid attackers, then swing every turn while red burn and black removal blast blockers out of the way. Attack triggers and sacrifice payoffs snowball the board; stay aggressive and prioritize efficient two-drops plus removal over top-end.",
    "speed": "aggro",
+   "sourceIds": ["tla-limited-guide","tla-17lands"],
    "signposts": [
     "Zhao, Ruthless Admiral",
     "Cruel Administrator"
@@ -315,6 +370,7 @@
    "name": "Earthbend counters",
    "playstyle": "Grind a +1/+1 counter engine: turn lands into creatures with earthbend, pile counters, and recycle dying bodies into more counters via Beifong's Bounty Hunters and Long Feng. Out-size the board with green fatties while black's deep removal clears the path.",
    "speed": "midrange",
+   "sourceIds": ["tla-limited-guide","tla-17lands"],
    "signposts": [
     "Long Feng, Grand Secretariat",
     "Dai Li Agents"
@@ -350,6 +406,7 @@
    "name": "Earthbend stompy",
    "playstyle": "Curve out on power-4 bodies and earthbend your lands into counters, then turn everything sideways while \"four-power matters\" rewards snowball board and cards. Red removal clears blockers so the big green threats connect.",
    "speed": "midrange",
+   "sourceIds": ["tla-limited-guide","tla-17lands"],
    "signposts": [
     "Uncle Iroh",
     "Bitter Work"
@@ -388,266 +445,304 @@
     "Foggy Swamp Spirit Keeper",
     "Forecasting Fortune Teller"
    ],
-   "note": "The Clue's extra draw each turn trips Foggy Swamp's second-draw trigger for a Spirit token"
+   "note": "The Clue's extra draw each turn trips Foggy Swamp's second-draw trigger for a Spirit token",
+   "sourceIds": ["tla-limited-guide","tla-17lands","tla-release-notes"]
   },
   {
    "cards": [
     "Knowledge Seeker",
     "Forecasting Fortune Teller"
    ],
-   "note": "Cracking the Clue hits your second draw and grows Knowledge Seeker"
+   "note": "Cracking the Clue hits your second draw and grows Knowledge Seeker",
+   "sourceIds": ["tla-limited-guide","tla-17lands","tla-release-notes"]
   },
   {
    "cards": [
     "Messenger Hawk",
     "Foggy Swamp Spirit Keeper"
    ],
-   "note": "Messenger Hawk's Clue and second-draw bonus both feed the draw-two engine"
+   "note": "Messenger Hawk's Clue and second-draw bonus both feed the draw-two engine",
+   "sourceIds": ["tla-limited-guide","tla-17lands","tla-release-notes"]
   },
   {
    "cards": [
     "Teo, Spirited Glider",
     "Momo, Friendly Flier"
    ],
-   "note": "Momo discounts and pumps your fliers while Teo loots whenever they attack"
+   "note": "Momo discounts and pumps your fliers while Teo loots whenever they attack",
+   "sourceIds": ["tla-limited-guide","tla-17lands","tla-release-notes"]
   },
   {
    "cards": [
     "United Front",
     "Suki, Kyoshi Warrior"
    ],
-   "note": "United Front's token flood spikes Suki's power and each attack adds another attacker"
+   "note": "United Front's token flood spikes Suki's power and each attack adds another attacker",
+   "sourceIds": ["tla-limited-guide","tla-17lands","tla-release-notes"]
   },
   {
    "cards": [
     "White Lotus Reinforcements",
     "United Front"
    ],
-   "note": "The anthem turns United Front's 1/1 Allies into a real board"
+   "note": "The anthem turns United Front's 1/1 Allies into a real board",
+   "sourceIds": ["tla-limited-guide","tla-17lands","tla-release-notes"]
   },
   {
    "cards": [
     "Avatar Enthusiasts",
     "United Front"
    ],
-   "note": "Every Ally token United Front makes stacks a counter on Avatar Enthusiasts"
+   "note": "Every Ally token United Front makes stacks a counter on Avatar Enthusiasts",
+   "sourceIds": ["tla-limited-guide","tla-17lands","tla-release-notes"]
   },
   {
    "cards": [
     "Sokka, Lateral Strategist",
     "United Front"
    ],
-   "note": "A wide board keeps Sokka's attack-draw online every combat"
+   "note": "A wide board keeps Sokka's attack-draw online every combat",
+   "sourceIds": ["tla-limited-guide","tla-17lands","tla-release-notes"]
   },
   {
    "cards": [
     "Toph, the Blind Bandit",
     "Ba Sing Se"
    ],
-   "note": "Every land the two earthbend piles counters that set Toph's power"
+   "note": "Every land the two earthbend piles counters that set Toph's power",
+   "sourceIds": ["tla-limited-guide","tla-17lands","tla-release-notes"]
   },
   {
    "cards": [
     "Dai Li Agents",
     "Earthbender Ascension"
    ],
-   "note": "Dai Li's double earthbend triggers Ascension's landfall and grows the counter-creatures its attack drains from"
+   "note": "Dai Li's double earthbend triggers Ascension's landfall and grows the counter-creatures its attack drains from",
+   "sourceIds": ["tla-limited-guide","tla-17lands","tla-release-notes"]
   },
   {
    "cards": [
     "Combustion Technique",
     "Gran-Gran"
    ],
-   "note": "Each Lesson in the yard grows Combustion Technique and switches on Gran-Gran's discount"
+   "note": "Each Lesson in the yard grows Combustion Technique and switches on Gran-Gran's discount",
+   "sourceIds": ["tla-limited-guide","tla-17lands","tla-release-notes"]
   },
   {
    "cards": [
     "Ran and Shaw",
     "Combustion Technique"
    ],
-   "note": "Casting Lessons like Combustion Technique fills the yard so Ran and Shaw copies itself on entry"
+   "note": "Casting Lessons like Combustion Technique fills the yard so Ran and Shaw copies itself on entry",
+   "sourceIds": ["tla-limited-guide","tla-17lands","tla-release-notes"]
   },
   {
    "cards": [
     "The Lion-Turtle",
     "Hermitic Herbalist"
    ],
-   "note": "Herbalist pays for Lessons that fill the yard and free the Lion-Turtle to swing"
+   "note": "Herbalist pays for Lessons that fill the yard and free the Lion-Turtle to swing",
+   "sourceIds": ["tla-limited-guide","tla-17lands","tla-release-notes"]
   },
   {
    "cards": [
     "Bumi, King of Three Trials",
     "Hermitic Herbalist"
    ],
-   "note": "Every Lesson Herbalist casts widens Bumi's enters-the-battlefield choices"
+   "note": "Every Lesson Herbalist casts widens Bumi's enters-the-battlefield choices",
+   "sourceIds": ["tla-limited-guide","tla-17lands","tla-release-notes"]
   },
   {
    "cards": [
     "Appa, Steadfast Guardian",
     "Airbending Lesson"
    ],
-   "note": "Recasting the airbent permanent triggers Appa's cast-from-exile Ally token"
+   "note": "Recasting the airbent permanent triggers Appa's cast-from-exile Ally token",
+   "sourceIds": ["tla-limited-guide","tla-17lands","tla-release-notes"]
   },
   {
    "cards": [
     "Hei Bai, Spirit of Balance",
     "Tolls of War"
    ],
-   "note": "Hei Bai's attack sacrifice feeds a Tolls of War Ally token and grows Hei Bai"
+   "note": "Hei Bai's attack sacrifice feeds a Tolls of War Ally token and grows Hei Bai",
+   "sourceIds": ["tla-limited-guide","tla-17lands","tla-release-notes"]
   },
   {
    "cards": [
     "Tolls of War",
     "Obsessive Pursuit"
    ],
-   "note": "Sacrificing a Clue each turn spawns a Tolls Ally and stacks Obsessive Pursuit's attack counters"
+   "note": "Sacrificing a Clue each turn spawns a Tolls Ally and stacks Obsessive Pursuit's attack counters",
+   "sourceIds": ["tla-limited-guide","tla-17lands","tla-release-notes"]
   },
   {
    "cards": [
     "Boiling Rock Rioter",
     "Ozai, the Phoenix King"
    ],
-   "note": "Stacked firebending attack-mana keeps Ozai above the six-mana line for flying and indestructible"
+   "note": "Stacked firebending attack-mana keeps Ozai above the six-mana line for flying and indestructible",
+   "sourceIds": ["tla-limited-guide","tla-17lands","tla-release-notes"]
   },
   {
    "cards": [
     "Sun Warriors",
     "United Front"
    ],
-   "note": "A board full of United Front Allies turns Sun Warriors' attack into a mountain of red mana"
+   "note": "A board full of United Front Allies turns Sun Warriors' attack into a mountain of red mana",
+   "sourceIds": ["tla-limited-guide","tla-17lands","tla-release-notes"]
   },
   {
    "cards": [
     "Jet, Freedom Fighter",
     "United Front"
    ],
-   "note": "A wide Ally board turns Jet's entry into a huge burst of damage"
+   "note": "A wide Ally board turns Jet's entry into a huge burst of damage",
+   "sourceIds": ["tla-limited-guide","tla-17lands","tla-release-notes"]
   },
   {
    "cards": [
     "Appa, Loyal Sky Bison",
     "Earth Kingdom Jailer"
    ],
-   "note": "Appa's attack airbend re-blinks Jailer for a {2} recast, re-exiling the best enemy permanent each turn"
+   "note": "Appa's attack airbend re-blinks Jailer for a {2} recast, re-exiling the best enemy permanent each turn",
+   "sourceIds": ["tla-limited-guide","tla-17lands","tla-release-notes"]
   },
   {
    "cards": [
     "Katara, Water Tribe's Hope",
     "Gather the White Lotus"
    ],
-   "note": "the Ally token flood taps to pay Katara's waterbend {X}, turning every 1/1 into an X/X"
+   "note": "the Ally token flood taps to pay Katara's waterbend {X}, turning every 1/1 into an X/X",
+   "sourceIds": ["tla-limited-guide","tla-17lands","tla-release-notes"]
   },
   {
    "cards": [
     "Gran-Gran",
     "Katara, Bending Prodigy"
    ],
-   "note": "tapping Gran-Gran to pay Katara's waterbend {6} draw bolts a free loot onto every activation"
+   "note": "tapping Gran-Gran to pay Katara's waterbend {6} draw bolts a free loot onto every activation",
+   "sourceIds": ["tla-limited-guide","tla-17lands","tla-release-notes"]
   },
   {
    "cards": [
     "Messenger Hawk",
     "Raven Eagle"
    ],
-   "note": "Hawk's Clue cracks for the second draw each turn that triggers Raven Eagle's drain"
+   "note": "Hawk's Clue cracks for the second draw each turn that triggers Raven Eagle's drain",
+   "sourceIds": ["tla-limited-guide","tla-17lands","tla-release-notes"]
   },
   {
    "cards": [
     "Abandon Attachments",
     "Combustion Technique"
    ],
-   "note": "the loot Lesson stocks the graveyard with Lessons that scale Combustion Technique's exile-burn"
+   "note": "the loot Lesson stocks the graveyard with Lessons that scale Combustion Technique's exile-burn",
+   "sourceIds": ["tla-limited-guide","tla-17lands","tla-release-notes"]
   },
   {
    "cards": [
     "Firebending Lesson",
     "Fire Nation Cadets"
    ],
-   "note": "one cheap Lesson in the graveyard permanently switches on Cadets' firebending 2"
+   "note": "one cheap Lesson in the graveyard permanently switches on Cadets' firebending 2",
+   "sourceIds": ["tla-limited-guide","tla-17lands","tla-release-notes"]
   },
   {
    "cards": [
     "The Mechanist, Aerial Artisan",
     "Cunning Maneuver"
    ],
-   "note": "the trick makes a Clue off the Mechanist's trigger that he then animates into a 3/1 flier"
+   "note": "the trick makes a Clue off the Mechanist's trigger that he then animates into a 3/1 flier",
+   "sourceIds": ["tla-limited-guide","tla-17lands","tla-release-notes"]
   },
   {
    "cards": [
     "Guru Pathik",
     "Accumulate Wisdom"
    ],
-   "note": "each cheap Lesson cast drops a Pathik counter and fuels Wisdom's three-Lesson draw-three upgrade"
+   "note": "each cheap Lesson cast drops a Pathik counter and fuels Wisdom's three-Lesson draw-three upgrade",
+   "sourceIds": ["tla-limited-guide","tla-17lands","tla-release-notes"]
   },
   {
    "cards": [
     "Tolls of War",
     "June, Bounty Hunter"
    ],
-   "note": "every June sacrifice-into-Clue (or Clue crack) on your turn also nets an Ally token from Tolls"
+   "note": "every June sacrifice-into-Clue (or Clue crack) on your turn also nets an Ally token from Tolls",
+   "sourceIds": ["tla-limited-guide","tla-17lands","tla-release-notes"]
   },
   {
    "cards": [
     "Pretending Poxbearers",
     "Hei Bai, Spirit of Balance"
    ],
-   "note": "sacrificing Poxbearers to Hei Bai banks two +1/+1 counters while the body replaces itself with an Ally token"
+   "note": "sacrificing Poxbearers to Hei Bai banks two +1/+1 counters while the body replaces itself with an Ally token",
+   "sourceIds": ["tla-limited-guide","tla-17lands","tla-release-notes"]
   },
   {
    "cards": [
     "Earth King's Lieutenant",
     "Kyoshi Warriors"
    ],
-   "note": "Warriors' two Ally arrivals (body plus token) put two counters on the Lieutenant"
+   "note": "Warriors' two Ally arrivals (body plus token) put two counters on the Lieutenant",
+   "sourceIds": ["tla-limited-guide","tla-17lands","tla-release-notes"]
   },
   {
    "cards": [
     "Wartime Protestors",
     "Treetop Freedom Fighters"
    ],
-   "note": "Freedom Fighters plus its Ally token trigger Protestors twice for instant hasty counters"
+   "note": "Freedom Fighters plus its Ally token trigger Protestors twice for instant hasty counters",
+   "sourceIds": ["tla-limited-guide","tla-17lands","tla-release-notes"]
   },
   {
    "cards": [
     "Azula, On the Hunt",
     "Zhao, Ruthless Admiral"
    ],
-   "note": "cracking Azula's attack Clue with her own firebending mana triggers Zhao's team-wide +1/+0 mid-combat"
+   "note": "cracking Azula's attack Clue with her own firebending mana triggers Zhao's team-wide +1/+0 mid-combat",
+   "sourceIds": ["tla-limited-guide","tla-17lands","tla-release-notes"]
   },
   {
    "cards": [
     "Deadly Precision",
     "Beifong's Bounty Hunters"
    ],
-   "note": "sacrificing a creature to pay Precision has Beifong's earthbend for that creature's full power"
+   "note": "sacrificing a creature to pay Precision has Beifong's earthbend for that creature's full power",
+   "sourceIds": ["tla-limited-guide","tla-17lands","tla-release-notes"]
   },
   {
    "cards": [
     "Fatal Fissure",
     "Toph, the Blind Bandit"
    ],
-   "note": "the death-trigger earthbend 4 puts four land counters that directly grow Toph's power"
+   "note": "the death-trigger earthbend 4 puts four land counters that directly grow Toph's power",
+   "sourceIds": ["tla-limited-guide","tla-17lands","tla-release-notes"]
   },
   {
    "cards": [
     "Long Feng, Grand Secretariat",
     "Cycle of Renewal"
    ],
-   "note": "the land sacrificed to Cycle triggers Long Feng, converting double ramp into a free +1/+1 counter"
+   "note": "the land sacrificed to Cycle triggers Long Feng, converting double ramp into a free +1/+1 counter",
+   "sourceIds": ["tla-limited-guide","tla-17lands","tla-release-notes"]
   },
   {
    "cards": [
     "The Earth King",
     "Bitter Work"
    ],
-   "note": "the instant 4/4 Bear turns on Bitter Work's draw-per-attack with a power-4 creature"
+   "note": "the instant 4/4 Bear turns on Bitter Work's draw-per-attack with a power-4 creature",
+   "sourceIds": ["tla-limited-guide","tla-17lands","tla-release-notes"]
   },
   {
    "cards": [
     "Toph, Hardheaded Teacher",
     "Earthbending Lesson"
    ],
-   "note": "casting the Lesson earthbends with a bonus counter via Toph on top of the Lesson's own earthbend 4"
+   "note": "casting the Lesson earthbends with a bonus counter via Toph on top of the Lesson's own earthbend 4",
+   "sourceIds": ["tla-limited-guide","tla-17lands","tla-release-notes"]
   }
  ]
 }

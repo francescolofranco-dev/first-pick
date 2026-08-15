@@ -62,6 +62,12 @@ class DraftViewModelTest {
     }
 
     @Test
+    fun landLineShowsTheProjectedBasicSourceSplit() {
+        assertEquals("17 lands · 8W · 7U · 2 nonbasic", deckLandLine(17, 2, mapOf('W' to 8, 'U' to 7)))
+        assertEquals("17 lands · Arena adds 17 basics", deckLandLine(17, 0, null))
+    }
+
+    @Test
     fun pipelineScoresThePackFromALogLine() = runBlocking {
         val cache = createTempDirectory("fp-vm")
         val ratings = """{
@@ -74,7 +80,7 @@ class DraftViewModelTest {
             Files.writeString(cache.resolve("ratings3_SOS_$f.json"), ratings)
             Files.writeString(cache.resolve("colorratings_SOS_$f.json"), "[]")
         }
-        Files.writeString(cache.resolve("scryfall5_SOS.json"), "[]")
+        Files.writeString(cache.resolve("scryfall7_SOS.json"), "[]")
 
         val repo = CardRepository(SeventeenLandsClient(cacheDir = cache))
         val metaRepo = CardMetaRepository(ScryfallClient(cacheDir = cache))
@@ -123,7 +129,7 @@ class DraftViewModelTest {
             Files.writeString(cache.resolve("ratings3_DSK_$format.json"), ratings)
             Files.writeString(cache.resolve("colorratings_DSK_$format.json"), "[]")
         }
-        Files.writeString(cache.resolve("scryfall6_DSK.json"), "[]")
+        Files.writeString(cache.resolve("scryfall7_DSK.json"), "[]")
 
         val islandImage = "https://api.scryfall.com/cards/arena/92374?format=image&version=normal"
         val repo = CardRepository(

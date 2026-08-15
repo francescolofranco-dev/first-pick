@@ -99,4 +99,10 @@ class ScryfallClientTest {
         assertEquals("WU", ScryfallClient.heavyPipsOf("{W}{W}{U}{U}"))
         assertEquals("", ScryfallClient.heavyPipsOf("{U/W}{U/W}"), "hybrid pips are payable another way")
     }
+
+    @Test
+    fun exactPureAndRepeatedHybridPipsAreRetained() {
+        assertEquals("WWU", ScryfallClient.coloredPipsOf("{2}{W}{U}{W}"))
+        assertEquals(listOf("WU", "WU", "BR"), ScryfallClient.hybridPipsOf("{W/U}{U/W}{B/R}"))
+    }
 }

@@ -176,6 +176,28 @@ class ThemeSynergyTest {
     }
 
     @Test
+    fun establishedLaneCannotBorrowThemeFuelFromAnotherColorPair() {
+        val multiPair = SynergyIndex(
+            SetSynergyProfile(
+                set = "TST",
+                archetypes = listOf(
+                    SynergyArchetype(
+                        pair = "UR",
+                        name = "Spells",
+                        payoffs = listOf("Blue Payoff"),
+                        enablers = listOf("Red Enabler"),
+                    ),
+                ),
+            ),
+        )
+        val theme = ThemeSynergy(multiPair, listOf(card(100, "Red Enabler", 0.56, "R")))
+        val candidate = card(1, "Blue Payoff", 0.55, "U")
+
+        assertTrue(theme.evaluate(candidate, AdvisorEngine.Config(), activePair = "UR").points > 0.0)
+        assertEquals(0.0, theme.evaluate(candidate, AdvisorEngine.Config(), activePair = "WU").points)
+    }
+
+    @Test
     fun themePlusStatisticalSynergyRespectsTheTotalCap() {
         val config = AdvisorEngine.Config()
         val pack = listOf(card(1, "Payoff", 0.56))

@@ -78,6 +78,12 @@ class ScenarioSuiteTest {
         Scenario("Off-color BOMB overrides the hard lock",
             pool = bluePool(6), packNo = 3, pickNo = 4,
             pack = listOf(card("RedBomb", 0.64, "R", iwd = 0.06), card("BlueFiller", 0.555, "U")),
+            meta = metaOf(
+                listOf(
+                    CardMeta("RedBomb", 3, false, false, coloredPips = mapOf('R' to 1)),
+                    CardMeta("BlueFiller", 3, false, false, coloredPips = mapOf('U' to 1)),
+                ),
+            ),
             check = all(topIs("RedBomb"), bomb("RedBomb"))),
         Scenario("Colorless cards are never penalized",
             pool = bluePool(6), packNo = 3, pickNo = 8,

@@ -2,34 +2,71 @@
  "set": "LCI",
  "setName": "The Lost Caverns of Ixalan",
  "generated": "2026-07-04",
+ "schemaVersion": 2,
+ "updatedAt": "2026-08-15",
+ "sources": [
+ {
+  "id": "lci-mechanics",
+  "title": "The Lost Caverns of Ixalan Mechanics",
+  "publisher": "Wizards of the Coast",
+  "author": "Matt Tabak",
+  "date": "2023-10-24",
+  "url": "https://magic.wizards.com/en/news/feature/the-lost-caverns-of-ixalan-mechanics",
+  "kind": "OFFICIAL_MECHANICS"
+ },
+ {
+  "id": "lci-release-notes",
+  "title": "The Lost Caverns of Ixalan Release Notes",
+  "publisher": "Wizards of the Coast",
+  "author": "Jess Dunks and Eric Levine",
+  "date": "2023-11-03",
+  "url": "https://magic.wizards.com/en/news/feature/the-lost-caverns-of-ixalan-release-notes",
+  "kind": "OFFICIAL_RELEASE_NOTES"
+ },
+ {
+  "id": "lci-17lands",
+  "title": "17Lands Public Limited Data (LCI)",
+  "publisher": "17Lands",
+  "author": "17Lands contributors",
+  "date": "2026-08-15",
+  "url": "https://www.17lands.com/public_datasets",
+  "kind": "LIMITED_DATA"
+ }
+ ],
  "mechanics": [
-  {
-   "name": "Transform",
-   "summary": ""
+    {
+      "name": "Transform",
+      "summary": "A transforming double-faced card begins on its front face and turns to its back face only when an effect or its own instructions tell it to transform.",
+   "sourceIds": ["lci-mechanics","lci-release-notes"]
   },
-  {
-   "name": "Explore",
-   "summary": ""
+    {
+      "name": "Explore",
+      "summary": "Reveal the top card of your library: put a revealed land into your hand, or put a +1/+1 counter on the exploring creature and keep or mill the nonland card.",
+   "sourceIds": ["lci-mechanics","lci-release-notes"]
   },
-  {
-   "name": "Discover",
-   "summary": ""
+    {
+      "name": "Discover",
+      "summary": "Exile cards from the top until you find a nonland card within the stated mana value, then cast it for free or put it into your hand.",
+   "sourceIds": ["lci-mechanics","lci-release-notes"]
   },
-  {
-   "name": "Craft",
-   "summary": ""
+    {
+      "name": "Craft",
+      "summary": "At sorcery speed, pay a permanent's craft cost and exile it plus the listed materials from your battlefield or graveyard to return it transformed.",
+   "sourceIds": ["lci-mechanics","lci-release-notes"]
   },
-  {
-   "name": "Descend",
-   "summary": ""
+    {
+      "name": "Descend",
+      "summary": "You descend whenever a permanent card enters your graveyard; related abilities may check that event or count permanent cards there for descend thresholds.",
+   "sourceIds": ["lci-mechanics","lci-release-notes"]
   }
  ],
  "archetypes": [
-  {
-   "pair": "WU",
-   "name": "Explore artifacts",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "WU",
+      "name": "Explore artifacts",
+      "playstyle": "Build artifact count with Maps, Equipment, and craft pieces, then use explore smoothing and evasive artifact payoffs to maintain pressure.",
+      "speed": "tempo",
+   "sourceIds": ["lci-mechanics","lci-17lands"],
    "signposts": [
     "Master's Guide-Mural // Master's Manufactory"
    ],
@@ -65,11 +102,12 @@
     "Petrify"
    ]
   },
-  {
-   "pair": "WB",
-   "name": "Lifegain midrange",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "WB",
+      "name": "Lifegain midrange",
+      "playstyle": "Use small creatures and artifacts as sacrifice material, stabilize through life gain and removal, and recur value pieces for a longer game.",
+      "speed": "midrange",
+   "sourceIds": ["lci-mechanics","lci-17lands"],
    "signposts": [
     "Bartolom\u00e9 del Presidio"
    ],
@@ -105,11 +143,12 @@
     "Glorifier of Suffering"
    ]
   },
-  {
-   "pair": "WR",
-   "name": "Aggro",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "WR",
+      "name": "Aggro",
+      "playstyle": "Curve out with cheap creatures and artifacts, tap or transform those artifacts for bonuses, and use discover to reload without surrendering tempo.",
+      "speed": "aggro",
+   "sourceIds": ["lci-mechanics","lci-17lands"],
    "signposts": [
     "Caparocti Sunborn"
    ],
@@ -145,11 +184,12 @@
     "Brazen Blademaster"
    ]
   },
-  {
-   "pair": "WG",
-   "name": "Go-wide",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "WG",
+      "name": "Go-wide",
+      "playstyle": "Create Maps and extra bodies, turn explore results into +1/+1 counters, and grow a broad battlefield that wins through coordinated combat.",
+      "speed": "midrange",
+   "sourceIds": ["lci-mechanics","lci-17lands"],
    "signposts": [
     "Kutzil, Malamet Exemplar"
    ],
@@ -185,11 +225,12 @@
     "Hidden Nursery"
    ]
   },
-  {
-   "pair": "UB",
-   "name": "Artifacts/mill",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "UB",
+      "name": "Artifacts/mill",
+      "playstyle": "Mill permanent cards while defending with artifacts and removal, then unlock deeper descend rewards and graveyard-sized finishers.",
+      "speed": "control",
+   "sourceIds": ["lci-mechanics","lci-17lands"],
    "signposts": [
     "Uchbenbak, the Great Mistake"
    ],
@@ -225,11 +266,12 @@
     "Tithing Blade // Consuming Sepulcher"
    ]
   },
-  {
-   "pair": "UR",
-   "name": "Discover spells",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "UR",
+      "name": "Discover spells",
+      "playstyle": "Use cheap Pirates, artifacts, and interaction to get ahead, then chain discover and artifact payoffs into another wave of threats.",
+      "speed": "tempo",
+   "sourceIds": ["lci-mechanics","lci-17lands"],
    "signposts": [
     "Captain Storm, Cosmium Raider"
    ],
@@ -265,11 +307,12 @@
     "Geological Appraiser"
    ]
   },
-  {
-   "pair": "UG",
-   "name": "Explore ramp",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "UG",
+      "name": "Explore ramp",
+      "playstyle": "Use Maps and explore to find land drops or grow creatures, then spend that consistency on expensive value cards and large threats.",
+      "speed": "ramp",
+   "sourceIds": ["lci-mechanics","lci-17lands"],
    "signposts": [
     "Nicanzil, Current Conductor"
    ],
@@ -305,11 +348,12 @@
     "Marauding Brinefang"
    ]
   },
-  {
-   "pair": "BR",
-   "name": "Sacrifice descend",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "BR",
+      "name": "Sacrifice descend",
+      "playstyle": "Sacrifice cheap permanents and trade aggressively to descend on schedule, turning graveyard events into damage and efficient attackers.",
+      "speed": "aggro",
+   "sourceIds": ["lci-mechanics","lci-17lands"],
    "signposts": [
     "Zoyowa Lava-Tongue"
    ],
@@ -345,11 +389,12 @@
     "Primordial Gnawer"
    ]
   },
-  {
-   "pair": "BG",
-   "name": "Explore midrange",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "BG",
+      "name": "Explore midrange",
+      "playstyle": "Explore and self-mill to stock permanent cards in the graveyard, then combine descend payoffs, recursion, and durable creatures to outlast opponents.",
+      "speed": "midrange",
+   "sourceIds": ["lci-mechanics","lci-17lands"],
    "signposts": [
     "Akawalli, the Seething Tower"
    ],
@@ -385,11 +430,12 @@
     "Abyssal Gorestalker"
    ]
   },
-  {
-   "pair": "RG",
-   "name": "Dinosaurs",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "RG",
+      "name": "Dinosaurs",
+      "playstyle": "Accelerate with Treasure and utility permanents, then use large Dinosaurs and size-based interaction to dominate the battlefield.",
+      "speed": "ramp",
+   "sourceIds": ["lci-mechanics","lci-17lands"],
    "signposts": [
     "Itzquinth, Firstborn of Gishath"
    ],

@@ -34,10 +34,12 @@ class ThemeSynergy(
         }
     }
 
-    fun evaluate(card: RankedCard, config: AdvisorEngine.Config): Result {
+    fun evaluate(card: RankedCard, config: AdvisorEngine.Config, activePair: String? = null): Result {
         var bestPts = 0.0
         var bestTheme: String? = null
-        for (tag in index.tags(card.name)) {
+        val cardTags = index.tags(card.name)
+        for (tag in cardTags) {
+            if (activePair != null && tag.pair != activePair) continue
             val f = fuel[tag.pair] ?: continue
             val relevant = when (tag.role) {
                 SynergyRole.PAYOFF -> f.enabler
@@ -50,7 +52,12 @@ class ThemeSynergy(
             if (pts > bestPts) { bestPts = pts; bestTheme = tag.archetypeName }
         }
 
-        val partnersInPool = index.partners(card.name).filterKeys { it in poolNames }
+        val partnersInPool = index.partners(card.name)
+            .filterKeys { it in poolNames }
+            .filterValues { partner ->
+                activePair == null || cardTags.any { it.pair == activePair } ||
+                    index.tags(partner.name).any { it.pair == activePair }
+            }
         val comboPts = (partnersInPool.size * config.comboPts).coerceAtMost(config.comboCapPts)
 
         val reasons = buildList {

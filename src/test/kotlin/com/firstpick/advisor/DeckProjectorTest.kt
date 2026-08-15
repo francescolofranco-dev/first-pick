@@ -73,6 +73,9 @@ class DeckProjectorTest {
         val fit = DeckProjector.fit(pool, card(999, "BlackBomb", 0.62, "B"), metrics, meta)
         assertTrue(fit.makesDeck, "a short base takes the strong off-color card as its splash")
         assertEquals('B', fit.splashAdded, "the deck opened a black splash for this card")
+        assertEquals("WU", fit.afterBasePair)
+        assertEquals('B', fit.afterSplash)
+        assertTrue(fit.afterManaSources?.splashSupported == true)
     }
 
     @Test

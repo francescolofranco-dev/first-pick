@@ -45,11 +45,13 @@ class AdvisorEngineTest {
         pickNumber: Int,
         archetypeRating: (String, String) -> CardRating? = { _, _ -> null },
         meta: (String) -> CardMeta? = { null },
+        activeManaSources: ManaSourceReport? = null,
     ) = engine.score(
         pack, pool, packNumber, pickNumber, metrics,
         lane = LaneDetector.detect(pool, metrics),
         archetypeRating = archetypeRating,
         meta = meta,
+        activeManaSources = activeManaSources,
     )
 
     private fun scoreOf(result: List<ScoredCard>, name: String) = result.first { it.card.name == name }
@@ -69,7 +71,7 @@ class AdvisorEngineTest {
             card(1, "RedBomb", 0.64, "R", iwd = 0.06),
             card(2, "BlueFiller", 0.555, "U"),
         )
-        val result = run(pack, pool, packNumber = 3, pickNumber = 4)
+        val result = run(pack, pool, packNumber = 3, pickNumber = 4, meta = creatureMeta)
         assertTrue(scoreOf(result, "RedBomb").isBomb)
         assertTrue("Bomb" in scoreOf(result, "RedBomb").reasons)
         assertEquals("RedBomb", result.first().card.name)
@@ -111,6 +113,76 @@ class AdvisorEngineTest {
         val result = run(pack, pool, packNumber = 2, pickNumber = 5, meta = hybridMeta)
         val scored = scoreOf(result, "Seedpod Squire")
         assertTrue(scored.reasons.any { it.startsWith("Off-color") }, "expected an off-color penalty, got ${scored.reasons}")
+    }
+
+    @Test
+    fun overlappingHybridSymbolCannotHideAMandatoryPurePip() {
+        val pool = List(6) { card(100 + it, "AzoriusGuy$it", 0.58, if (it % 2 == 0) "W" else "U") }
+        val candidate = card(1, "BlackHybridSpell", 0.56, "BR")
+        val result = run(
+            listOf(candidate),
+            pool,
+            packNumber = 2,
+            pickNumber = 5,
+            meta = {
+                if (it == candidate.name) CardMeta(
+                    it, 4, false, false,
+                    coloredPips = mapOf('B' to 1),
+                    hybridColorGroups = listOf(setOf('B', 'R')),
+                    hybridPips = listOf(setOf('B', 'R')),
+                ) else null
+            },
+        ).single()
+
+        assertEquals(setOf('B'), result.guardrail.offColors)
+        assertEquals(ModelPromotionStatus.CONSTRAINED, result.guardrail.status)
+        assertTrue(GuideConstraint.HEAVY_SPLASH_PIPS in result.guardrail.constraints)
+        assertTrue(result.reasons.any { it.startsWith("Off-color") })
+    }
+
+    @Test
+    fun offBaseHybridBombIsASingleColorSplashCandidate() {
+        val pool = List(6) { card(100 + it, "AzoriusGuy$it", 0.58, if (it % 2 == 0) "W" else "U") }
+        val candidate = card(1, "FlexibleBomb", 0.66, "BR", iwd = 0.07)
+        val result = run(
+            listOf(candidate),
+            pool,
+            packNumber = 2,
+            pickNumber = 5,
+            meta = {
+                if (it == candidate.name) CardMeta(
+                    it, 6, true, false, isFinisher = true,
+                    hybridColorGroups = listOf(setOf('B', 'R')),
+                    hybridPips = listOf(setOf('B', 'R')),
+                ) else null
+            },
+        ).single()
+
+        assertEquals(ModelPromotionStatus.SPLASH_CANDIDATE, result.guardrail.status)
+        assertEquals(1, result.guardrail.offColors.size)
+        assertFalse(GuideConstraint.MULTIPLE_SPLASH_COLORS in result.guardrail.constraints)
+    }
+
+    @Test
+    fun effectiveDoubleHybridPipsAreNeverALightSpeculativeSplash() {
+        val pool = List(6) { card(100 + it, "AzoriusGuy$it", 0.58, if (it % 2 == 0) "W" else "U") }
+        val candidate = card(1, "DoubleHybridBomb", 0.70, "BR", iwd = 0.08)
+        val result = run(
+            listOf(candidate),
+            pool,
+            packNumber = 2,
+            pickNumber = 5,
+            meta = {
+                if (it == candidate.name) CardMeta(
+                    it, 6, true, false, isFinisher = true,
+                    hybridColorGroups = listOf(setOf('B', 'R')),
+                    hybridPips = listOf(setOf('B', 'R'), setOf('B', 'R')),
+                ) else null
+            },
+        ).single()
+
+        assertEquals(ModelPromotionStatus.CONSTRAINED, result.guardrail.status)
+        assertTrue(GuideConstraint.HEAVY_SPLASH_PIPS in result.guardrail.constraints)
     }
 
     @Test
@@ -164,7 +236,17 @@ class AdvisorEngineTest {
         val pool = List(8) { card(100 + it, "Guy$it", 0.58, if (it % 2 == 0) "B" else "G") } +
             listOf(card(200, "WhiteA", 0.57, "W"), card(201, "WhiteB", 0.57, "W"))
         val pack = listOf(card(1, "OrzhovDual", 0.57, color = ""))
-        val result = run(pack, pool, packNumber = 3, pickNumber = 4, meta = meta)
+        val activeMana = ManaSourceReport(
+            requiredSources = mapOf('B' to 7, 'G' to 7, 'W' to 4),
+            basicSources = mapOf('B' to 7, 'G' to 6, 'W' to 2),
+            nonbasicSources = mapOf('B' to 1, 'G' to 1, 'W' to 2),
+            fixerSources = mapOf('B' to 0, 'G' to 0, 'W' to 0),
+            totalSources = mapOf('B' to 8, 'G' to 7, 'W' to 4),
+            shortfalls = mapOf('B' to 0, 'G' to 0, 'W' to 0),
+            baseColors = setOf('B', 'G'),
+            splashColor = 'W',
+        )
+        val result = run(pack, pool, packNumber = 3, pickNumber = 4, meta = meta, activeManaSources = activeMana)
         val land = scoreOf(result, "OrzhovDual")
         assertEquals(0.0, land.breakdown!!.penalty, 0.001, "a W/B land that fixes main + splash should not be penalized")
         assertTrue(land.reasons.any { it.contains("splash") }, "should note it fixes the splash: ${land.reasons}")
@@ -313,6 +395,17 @@ class AdvisorEngineTest {
     private fun committedPool() = List(10) { card(100 + it, "BlueGuy$it", 0.58, "U") } +
         List(5) { card(200 + it, "WhiteGuy$it", 0.58, "W") }
 
+    private fun supportedBlackSplash() = ManaSourceReport(
+        requiredSources = mapOf('W' to 7, 'U' to 7, 'B' to 4),
+        basicSources = mapOf('W' to 7, 'U' to 6, 'B' to 2),
+        nonbasicSources = mapOf('W' to 1, 'U' to 1, 'B' to 2),
+        fixerSources = mapOf('W' to 0, 'U' to 0, 'B' to 0),
+        totalSources = mapOf('W' to 8, 'U' to 7, 'B' to 4),
+        shortfalls = mapOf('W' to 0, 'U' to 0, 'B' to 0),
+        baseColors = setOf('W', 'U'),
+        splashColor = 'B',
+    )
+
     @Test
     fun deckFitBreaksATieTowardTheCardThatMakesTheDeck() {
         val pool = committedPool()
@@ -354,7 +447,16 @@ class AdvisorEngineTest {
         val pool = committedPool()
         val pack = listOf(card(1, "SplashBomb", 0.62, "B"))
         val fit: (RankedCard) -> DeckProjector.Fit? = { _ ->
-            DeckProjector.Fit(true, listOf("WhiteGuy4"), false, splashAdded = 'B', powerDelta = 1.5)
+            DeckProjector.Fit(
+                true,
+                listOf("WhiteGuy4"),
+                false,
+                splashAdded = 'B',
+                powerDelta = 1.5,
+                afterBasePair = "WU",
+                afterSplash = 'B',
+                afterManaSources = supportedBlackSplash(),
+            )
         }
         val result = engine.score(
             pack, pool, packNumber = 2, pickNumber = 5, metrics = metrics,
@@ -375,5 +477,287 @@ class AdvisorEngineTest {
             lane = LaneDetector.detect(pool, metrics), meta = creatureMeta, deckFit = fit,
         )
         assertEquals(AdvisorEngine.Config().fitCapPts, result.first().breakdown!!.deckFitPoints, 1e-9)
+    }
+
+    @Test
+    fun modelGuardrailKeepsTheDraftFlexibleBeforeALaneIsEstablished() {
+        val pool = listOf(card(100, "FirstPick", 0.58, "U"))
+        val result = run(
+            pack = listOf(card(1, "RedOption", 0.57, "R")),
+            pool = pool,
+            packNumber = 1,
+            pickNumber = 2,
+        )
+
+        assertEquals(ModelPromotionStatus.FLEXIBLE, result.single().guardrail.status)
+        assertTrue(result.single().guardrail.modelPromotable)
+    }
+
+    @Test
+    fun modelGuardrailConstrainsUnsupportedOffColorCardInEstablishedLane() {
+        val result = run(
+            pack = listOf(card(1, "BlackFiller", 0.57, "B")),
+            pool = committedPool(),
+            packNumber = 2,
+            pickNumber = 5,
+            meta = creatureMeta,
+        ).single()
+
+        assertEquals(ModelPromotionStatus.CONSTRAINED, result.guardrail.status)
+        assertEquals(setOf('B'), result.guardrail.offColors)
+        assertTrue(GuideConstraint.UNSUPPORTED_SPLASH in result.guardrail.constraints)
+        assertFalse(result.guardrail.modelPromotable)
+    }
+
+    @Test
+    fun modelGuardrailAllowsUsefulLaneFixingButConstrainsIrrelevantFixing() {
+        val fixingMeta: (String) -> CardMeta? = { name ->
+            when (name) {
+                "AzoriusDual" -> CardMeta(name, 0, false, true, isFixing = true, producedColors = setOf('W', 'U'))
+                "GolgariDual" -> CardMeta(name, 0, false, true, isFixing = true, producedColors = setOf('B', 'G'))
+                else -> creatureMeta(name)
+            }
+        }
+        val result = run(
+            pack = listOf(
+                card(1, "AzoriusDual", 0.57),
+                card(2, "GolgariDual", 0.58),
+            ),
+            pool = committedPool(),
+            packNumber = 2,
+            pickNumber = 5,
+            meta = fixingMeta,
+        )
+
+        assertEquals(ModelPromotionStatus.ON_PLAN, scoreOf(result, "AzoriusDual").guardrail.status)
+        val irrelevant = scoreOf(result, "GolgariDual").guardrail
+        assertEquals(ModelPromotionStatus.CONSTRAINED, irrelevant.status)
+        assertTrue(GuideConstraint.OFF_PLAN_FIXING in irrelevant.constraints)
+    }
+
+    @Test
+    fun modelGuardrailKeepsLightBombAsSplashCandidateButRejectsHeavySplashBomb() {
+        val splashMeta: (String) -> CardMeta? = { name ->
+            CardMeta(
+                name = name,
+                cmc = 5,
+                isCreature = true,
+                isLand = false,
+                heavyPipColors = if (name == "HeavyBomb") setOf('B') else emptySet(),
+            )
+        }
+        val result = run(
+            pack = listOf(
+                card(1, "LightBomb", 0.64, "B", iwd = 0.06),
+                card(2, "HeavyBomb", 0.64, "B", iwd = 0.06),
+            ),
+            pool = committedPool(),
+            packNumber = 2,
+            pickNumber = 5,
+            meta = splashMeta,
+        )
+
+        val light = scoreOf(result, "LightBomb").guardrail
+        assertEquals(ModelPromotionStatus.SPLASH_CANDIDATE, light.status)
+        assertTrue(light.modelPromotable)
+
+        val heavy = scoreOf(result, "HeavyBomb")
+        assertEquals(ModelPromotionStatus.CONSTRAINED, heavy.guardrail.status)
+        assertTrue(GuideConstraint.HEAVY_SPLASH_PIPS in heavy.guardrail.constraints)
+        assertTrue(heavy.reasons.any { it == "Heavy B splash" }, "got ${heavy.reasons}")
+    }
+
+    @Test
+    fun modelGuardrailAllowsPositiveProjectedSplashUpgrade() {
+        val pool = committedPool()
+        val candidate = card(1, "BlackUpgrade", 0.57, "B")
+        val result = engine.score(
+            pack = listOf(candidate),
+            pool = pool,
+            packNumber = 2,
+            pickNumber = 5,
+            metrics = metrics,
+            lane = LaneDetector.detect(pool, metrics),
+            meta = creatureMeta,
+            deckFit = {
+                DeckProjector.Fit(
+                    makesDeck = true,
+                    displaced = listOf("WhiteGuy4"),
+                    baseShifted = false,
+                    splashAdded = 'B',
+                    powerDelta = 1.0,
+                    afterBasePair = "WU",
+                    afterSplash = 'B',
+                    afterManaSources = supportedBlackSplash(),
+                )
+            },
+        ).single()
+
+        assertEquals(ModelPromotionStatus.SUPPORTED_SPLASH, result.guardrail.status)
+        assertTrue(result.guardrail.modelPromotable)
+    }
+
+    @Test
+    fun projectedUpgradeMustMatchTheLaneSplashAndCarryCompleteSourceEvidence() {
+        val pool = committedPool()
+        val candidate = card(1, "BlackUpgrade", 0.57, "B")
+
+        fun status(fit: DeckProjector.Fit): ModelPromotionStatus = engine.score(
+            pack = listOf(candidate),
+            pool = pool,
+            packNumber = 3,
+            pickNumber = 8,
+            metrics = metrics,
+            lane = LaneDetector.detect(pool, metrics),
+            meta = creatureMeta,
+            deckFit = { fit },
+        ).single().guardrail.status
+
+        val base = DeckProjector.Fit(
+            makesDeck = true,
+            displaced = listOf("WhiteGuy4"),
+            baseShifted = false,
+            splashAdded = 'B',
+            powerDelta = 1.0,
+            afterBasePair = "WU",
+            afterSplash = 'B',
+            afterManaSources = supportedBlackSplash(),
+        )
+        assertEquals(ModelPromotionStatus.CONSTRAINED, status(base.copy(afterBasePair = "UB")))
+        assertEquals(ModelPromotionStatus.CONSTRAINED, status(base.copy(afterSplash = 'R')))
+        assertEquals(ModelPromotionStatus.CONSTRAINED, status(base.copy(afterManaSources = null)))
+    }
+
+    @Test
+    fun realSourceValidatedProjectionProducesSupportedSplashEvidence() {
+        val pool = List(9) { card(100 + it, "WhiteBase$it", 0.57, "W") } +
+            List(9) { card(200 + it, "BlueBase$it", 0.57, "U") }
+        val candidate = card(1, "LateBlackBomb", 0.66, "B", iwd = 0.07)
+        val lane = LaneDetector.detect(pool, metrics)
+
+        val result = engine.score(
+            pack = listOf(candidate),
+            pool = pool,
+            packNumber = 2,
+            pickNumber = 8,
+            metrics = metrics,
+            lane = lane,
+            meta = creatureMeta,
+            deckFit = { DeckProjector.fit(pool, it, metrics, creatureMeta) },
+        ).single()
+
+        assertEquals(ModelPromotionStatus.SUPPORTED_SPLASH, result.guardrail.status)
+    }
+
+    @Test
+    fun failedDeckProjectionEndsSpeculationOnAnOffColorBomb() {
+        val candidate = card(1, "BlackBombWithoutSources", 0.64, "B", iwd = 0.06)
+        val result = engine.score(
+            pack = listOf(candidate),
+            pool = committedPool(),
+            packNumber = 3,
+            pickNumber = 8,
+            metrics = metrics,
+            lane = LaneDetector.detect(committedPool(), metrics),
+            meta = creatureMeta,
+            deckFit = {
+                DeckProjector.Fit(
+                    makesDeck = false,
+                    displaced = emptyList(),
+                    baseShifted = false,
+                    splashAdded = null,
+                    powerDelta = 0.0,
+                )
+            },
+        ).single()
+
+        assertEquals(ModelPromotionStatus.CONSTRAINED, result.guardrail.status)
+        assertTrue(GuideConstraint.UNSUPPORTED_SPLASH in result.guardrail.constraints)
+        assertFalse(result.guardrail.modelPromotable)
+    }
+
+    @Test
+    fun hardGuideOrderAppliesWithoutAPickNetModel() {
+        val pool = committedPool()
+        val result = engine.score(
+            pack = listOf(
+                card(1, "UnsupportedBlackBomb", 0.75, "B", iwd = 0.08),
+                card(2, "CastableWhiteCard", 0.54, "W"),
+            ),
+            pool = pool,
+            packNumber = 3,
+            pickNumber = 8,
+            metrics = metrics,
+            lane = LaneDetector.detect(pool, metrics),
+            meta = creatureMeta,
+            deckFit = {
+                DeckProjector.Fit(false, emptyList(), false, null, 0.0)
+            },
+        )
+
+        assertEquals("CastableWhiteCard", result.first().card.name)
+        assertEquals(ModelPromotionStatus.CONSTRAINED, scoreOf(result, "UnsupportedBlackBomb").guardrail.status)
+    }
+
+    @Test
+    fun exactMetadataSuppliesColorsWhenRatingsAreMissing() {
+        val unrated = RankedCard(grpId = 999, name = "UnratedDoubleBlack", rating = null)
+        val result = engine.score(
+            pack = listOf(unrated),
+            pool = committedPool(),
+            packNumber = 2,
+            pickNumber = 8,
+            metrics = metrics,
+            lane = LaneDetector.detect(committedPool(), metrics),
+            meta = {
+                CardMeta(
+                    name = it,
+                    cmc = 4,
+                    isCreature = true,
+                    isLand = false,
+                    coloredPips = mapOf('B' to 2),
+                    heavyPipColors = setOf('B'),
+                )
+            },
+        ).single()
+
+        assertEquals(setOf('B'), result.guardrail.offColors)
+        assertTrue(GuideConstraint.HEAVY_SPLASH_PIPS in result.guardrail.constraints)
+    }
+
+    @Test
+    fun unknownManaFailsClosedAfterTheLaneIsEstablished() {
+        val unknown = RankedCard(grpId = 999, name = "UnresolvedCard", rating = null)
+        val result = engine.score(
+            pack = listOf(unknown),
+            pool = committedPool(),
+            packNumber = 2,
+            pickNumber = 8,
+            metrics = metrics,
+            lane = LaneDetector.detect(committedPool(), metrics),
+            meta = { null },
+        ).single()
+
+        assertEquals(ModelPromotionStatus.CONSTRAINED, result.guardrail.status)
+        assertTrue(GuideConstraint.UNKNOWN_MANA in result.guardrail.constraints)
+        assertTrue(result.reasons.any { it == "Mana requirements unavailable" })
+    }
+
+    @Test
+    fun offColorRatingWithoutExactCostMetadataFailsClosed() {
+        val rated = card(999, "RatedButUnresolvedBlackCard", 0.70, "B", iwd = 0.08)
+        val result = engine.score(
+            pack = listOf(rated),
+            pool = committedPool(),
+            packNumber = 2,
+            pickNumber = 8,
+            metrics = metrics,
+            lane = LaneDetector.detect(committedPool(), metrics),
+            meta = { null },
+        ).single()
+
+        assertEquals(ModelPromotionStatus.CONSTRAINED, result.guardrail.status)
+        assertEquals(setOf('B'), result.guardrail.offColors)
+        assertTrue(GuideConstraint.UNKNOWN_MANA in result.guardrail.constraints)
     }
 }

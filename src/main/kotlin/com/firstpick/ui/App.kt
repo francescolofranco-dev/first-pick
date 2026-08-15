@@ -32,6 +32,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.firstpick.model.DraftFormat
 import com.firstpick.model.DraftPhase
 
 enum class AppScreen { DRAFT_POOL, DECK_BUILDER, GUIDES }
@@ -211,7 +212,7 @@ private fun Header(
                     )
                 }
             }
-            FormatSelector(state.ratingsFormatChoice, onSelectFormat)
+            FormatSelector(state.ratingsFormatChoice, state.format, onSelectFormat)
             if (state.phase != DraftPhase.COMPLETE) {
                 Box(
                     modifier = Modifier
@@ -236,27 +237,30 @@ private fun Header(
 }
 
 @Composable
-private fun FormatSelector(current: String, onSelect: (String) -> Unit) {
+private fun FormatSelector(current: String, detected: DraftFormat, onSelect: (String) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
+    val lockedToEvent = detected == DraftFormat.SEALED
     Box {
         Row(
             modifier = Modifier
                 .clip(RoundedCornerShape(8.dp))
                 .background(MaterialTheme.colorScheme.surfaceVariant)
-                .clickable { expanded = true }
+                .clickable(enabled = !lockedToEvent) { expanded = true }
                 .padding(horizontal = 12.dp, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = "Data: ${RatingsFormat.label(current)}",
+                text = "Data: ${RatingsFormat.displayLabel(current, detected)}",
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface,
             )
-            Spacer(Modifier.width(4.dp))
-            Text("▾", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            if (!lockedToEvent) {
+                Spacer(Modifier.width(4.dp))
+                Text("▾", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
         }
-        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+        DropdownMenu(expanded = expanded && !lockedToEvent, onDismissRequest = { expanded = false }) {
             RatingsFormat.choices.forEach { choice ->
                 DropdownMenuItem(
                     text = { Text(RatingsFormat.label(choice), fontSize = 12.sp) },

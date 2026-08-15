@@ -2,34 +2,80 @@
  "set": "BLB",
  "setName": "Bloomburrow",
  "generated": "2026-07-04",
+ "schemaVersion": 2,
+ "updatedAt": "2026-08-15",
+ "sources": [
+ {
+  "id": "blb-mechanics",
+  "title": "Bloomburrow Mechanics",
+  "publisher": "Wizards of the Coast",
+  "author": "Matt Tabak",
+  "date": "2024-07-09",
+  "url": "https://magic.wizards.com/en/news/feature/bloomburrow-mechanics",
+  "kind": "OFFICIAL_MECHANICS"
+ },
+ {
+  "id": "blb-limited-guide",
+  "title": "Bloomburrow Prerelease Guide",
+  "publisher": "Wizards of the Coast",
+  "author": "Jubilee Finnegan",
+  "date": "2024-07-22",
+  "url": "https://magic.wizards.com/en/news/feature/bloomburrow-prerelease-guide",
+  "kind": "OFFICIAL_LIMITED_GUIDE"
+ },
+ {
+  "id": "blb-release-notes",
+  "title": "Bloomburrow Release Notes",
+  "publisher": "Wizards of the Coast",
+  "author": "Eric Levine and Eliana Rabinowitz",
+  "date": "2024-07-19",
+  "url": "https://magic.wizards.com/en/news/feature/bloomburrow-release-notes",
+  "kind": "OFFICIAL_RELEASE_NOTES"
+ },
+ {
+  "id": "blb-17lands",
+  "title": "17Lands Public Limited Data (BLB)",
+  "publisher": "17Lands",
+  "author": "17Lands contributors",
+  "date": "2026-08-15",
+  "url": "https://www.17lands.com/public_datasets",
+  "kind": "LIMITED_DATA"
+ }
+ ],
  "mechanics": [
-  {
-   "name": "Gift",
-   "summary": ""
+    {
+      "name": "Gift",
+      "summary": "As you cast the spell, you may promise its listed benefit to an opponent as an optional additional cost; doing so upgrades or changes the spell's other effect.",
+   "sourceIds": ["blb-mechanics","blb-release-notes"]
   },
-  {
-   "name": "Offspring",
-   "summary": ""
+    {
+      "name": "Offspring",
+      "summary": "You may pay the offspring cost as you cast a creature; when it enters, that payment creates a 1/1 token copy with the same abilities.",
+   "sourceIds": ["blb-mechanics","blb-release-notes"]
   },
-  {
-   "name": "Surveil",
-   "summary": ""
+    {
+      "name": "Surveil",
+      "summary": "Look at the top cards of your library, put any of them into your graveyard, and leave the rest on top in any order.",
+   "sourceIds": ["blb-mechanics","blb-release-notes"]
   },
-  {
-   "name": "Food",
-   "summary": ""
+    {
+      "name": "Food",
+      "summary": "A Food is an artifact token you can pay two mana, tap, and sacrifice to gain 3 life; it can instead supply the Food option when you forage.",
+   "sourceIds": ["blb-mechanics","blb-release-notes"]
   },
-  {
-   "name": "Valiant",
-   "summary": ""
+    {
+      "name": "Valiant",
+      "summary": "Valiant abilities trigger the first time each turn that your own spell or ability targets that creature, including during an opponent's turn.",
+   "sourceIds": ["blb-mechanics","blb-release-notes"]
   }
  ],
  "archetypes": [
-  {
-   "pair": "WU",
-   "name": "Birds flyers",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "WU",
+      "name": "Birds flyers",
+      "playstyle": "Deploy cheap ground creatures and evasive Birds, then use support effects and Gifts to turn small bodies and offspring into a fast aerial clock.",
+      "speed": "tempo",
+   "sourceIds": ["blb-limited-guide","blb-17lands"],
    "signposts": [
     "Plumecreed Mentor"
    ],
@@ -65,11 +111,12 @@
     "Plumecreed Escort"
    ]
   },
-  {
-   "pair": "WB",
-   "name": "Bats lifedrain",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "WB",
+      "name": "Bats lifedrain",
+      "playstyle": "Trade resources while gaining or losing life on your terms, then let Bat triggers and evasive creatures convert those life changes into incremental advantage.",
+      "speed": "midrange",
+   "sourceIds": ["blb-limited-guide","blb-17lands"],
    "signposts": [
     "Starseer Mentor"
    ],
@@ -105,11 +152,12 @@
     "Head of the Homestead"
    ]
   },
-  {
-   "pair": "WR",
-   "name": "Mice aggro",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "WR",
+      "name": "Mice aggro",
+      "playstyle": "Curve out with small attackers and repeatedly target them with Equipment, tricks, or abilities to trigger valiant and force profitable combat.",
+      "speed": "aggro",
+   "sourceIds": ["blb-limited-guide","blb-17lands"],
    "signposts": [
     "Seedglaive Mentor"
    ],
@@ -145,11 +193,12 @@
     "Crumb and Get It"
    ]
   },
-  {
-   "pair": "WG",
-   "name": "Rabbits go-wide",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "WG",
+      "name": "Rabbits go-wide",
+      "playstyle": "Build a wide board with offspring and token makers, then use team-wide bonuses and efficient combat to overwhelm single blockers.",
+      "speed": "aggro",
+   "sourceIds": ["blb-limited-guide","blb-17lands"],
    "signposts": [
     "Burrowguard Mentor"
    ],
@@ -185,11 +234,12 @@
     "Feather of Flight"
    ]
   },
-  {
-   "pair": "UB",
-   "name": "Threshold",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "UB",
+      "name": "Threshold",
+      "playstyle": "Use surveil, looting, and interaction to stock seven cards in the graveyard, then win a longer game with upgraded threshold threats.",
+      "speed": "control",
+   "sourceIds": ["blb-limited-guide","blb-17lands"],
    "signposts": [
     "Tidecaller Mentor"
    ],
@@ -225,11 +275,12 @@
     "Nightwhorl Hermit"
    ]
   },
-  {
-   "pair": "UR",
-   "name": "Otters spells",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "UR",
+      "name": "Otters spells",
+      "playstyle": "Keep a high instant-and-sorcery count so cheap interaction and tricks grow prowess-style threats while preserving combat tempo.",
+      "speed": "tempo",
+   "sourceIds": ["blb-limited-guide","blb-17lands"],
    "signposts": [
     "Stormcatch Mentor"
    ],
@@ -265,11 +316,12 @@
     "Mind Spiral"
    ]
   },
-  {
-   "pair": "UG",
-   "name": "Frogs/valiant",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "UG",
+      "name": "Frogs/valiant",
+      "playstyle": "Bounce and replay creatures to reuse enters-the-battlefield value, protect key Frogs, and keep the opponent off balance while your board improves.",
+      "speed": "tempo",
+   "sourceIds": ["blb-limited-guide","blb-17lands"],
    "signposts": [
     "Lilysplash Mentor"
    ],
@@ -305,11 +357,12 @@
     "Splash Lasher"
    ]
   },
-  {
-   "pair": "BR",
-   "name": "Lizards sacrifice",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "BR",
+      "name": "Lizards sacrifice",
+      "playstyle": "Attack early and use damage, expendable bodies, and sacrifice effects to make the opponent lose life each turn and turn on Lizard payoffs.",
+      "speed": "aggro",
+   "sourceIds": ["blb-limited-guide","blb-17lands"],
    "signposts": [
     "Fireglass Mentor"
    ],
@@ -345,11 +398,12 @@
     "Blooming Blast"
    ]
   },
-  {
-   "pair": "BG",
-   "name": "Squirrels food",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "BG",
+      "name": "Squirrels food",
+      "playstyle": "Fill the graveyard and make Food so forage costs stay available, then grind with creatures and effects that reward consuming those resources.",
+      "speed": "midrange",
+   "sourceIds": ["blb-limited-guide","blb-17lands"],
    "signposts": [
     "Vinereap Mentor"
    ],
@@ -385,11 +439,12 @@
     "Fountainport Bell"
    ]
   },
-  {
-   "pair": "RG",
-   "name": "Raccoons expend",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "RG",
+      "name": "Raccoons expend",
+      "playstyle": "Develop extra mana, sequence spells to hit expend thresholds, and finish with large creatures that reward spending heavily in one turn.",
+      "speed": "ramp",
+   "sourceIds": ["blb-limited-guide","blb-17lands"],
    "signposts": [
     "Wandertale Mentor"
    ],

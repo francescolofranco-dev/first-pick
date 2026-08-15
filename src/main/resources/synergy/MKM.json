@@ -2,34 +2,71 @@
  "set": "MKM",
  "setName": "Murders at Karlov Manor",
  "generated": "2026-07-04",
+ "schemaVersion": 2,
+ "updatedAt": "2026-08-15",
+ "sources": [
+ {
+  "id": "mkm-mechanics",
+  "title": "Murders at Karlov Manor Mechanics",
+  "publisher": "Wizards of the Coast",
+  "author": "Matt Tabak",
+  "date": "2024-01-16",
+  "url": "https://magic.wizards.com/en/news/feature/murders-at-karlov-manor-mechanics",
+  "kind": "OFFICIAL_MECHANICS"
+ },
+ {
+  "id": "mkm-release-notes",
+  "title": "Murders at Karlov Manor Release Notes",
+  "publisher": "Wizards of the Coast",
+  "author": "Eric Levine",
+  "date": "2024-01-26",
+  "url": "https://magic.wizards.com/en/news/feature/murders-at-karlov-manor-release-notes",
+  "kind": "OFFICIAL_RELEASE_NOTES"
+ },
+ {
+  "id": "mkm-17lands",
+  "title": "17Lands Public Limited Data (MKM)",
+  "publisher": "17Lands",
+  "author": "17Lands contributors",
+  "date": "2026-08-15",
+  "url": "https://www.17lands.com/public_datasets",
+  "kind": "LIMITED_DATA"
+ }
+ ],
  "mechanics": [
-  {
-   "name": "Investigate",
-   "summary": ""
+    {
+      "name": "Investigate",
+      "summary": "Investigating creates a Clue artifact token that can later be tapped and sacrificed for two mana to draw a card.",
+   "sourceIds": ["mkm-mechanics","mkm-release-notes"]
   },
-  {
-   "name": "Disguise",
-   "summary": ""
+    {
+      "name": "Disguise",
+      "summary": "A disguise card may be cast face down for three mana as a 2/2 creature with ward {2}, then turned face up by paying its disguise cost.",
+   "sourceIds": ["mkm-mechanics","mkm-release-notes"]
   },
-  {
-   "name": "Surveil",
-   "summary": ""
+    {
+      "name": "Surveil",
+      "summary": "Look at the top cards of your library, put any of them into your graveyard, and leave the rest on top in any order.",
+   "sourceIds": ["mkm-mechanics","mkm-release-notes"]
   },
-  {
-   "name": "Collect evidence",
-   "summary": ""
+    {
+      "name": "Collect evidence",
+      "summary": "To collect evidence N, exile cards from your graveyard whose combined mana values are at least N to pay the indicated cost.",
+   "sourceIds": ["mkm-mechanics","mkm-release-notes"]
   },
-  {
-   "name": "Suspect",
-   "summary": ""
+    {
+      "name": "Suspect",
+      "summary": "A suspected creature has menace and cannot block until it leaves the battlefield or an effect causes it to stop being suspected.",
+   "sourceIds": ["mkm-mechanics","mkm-release-notes"]
   }
  ],
  "archetypes": [
-  {
-   "pair": "WU",
-   "name": "Clues/disguise",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "WU",
+      "name": "Clues/disguise",
+      "playstyle": "Develop Detectives, Clues, and ambiguous face-down creatures, then use card advantage and evasive interaction to keep the opponent guessing.",
+      "speed": "tempo",
+   "sourceIds": ["mkm-mechanics","mkm-17lands"],
    "signposts": [
     "Private Eye",
     "No More Lies"
@@ -66,11 +103,12 @@
     "Novice Inspector"
    ]
   },
-  {
-   "pair": "WB",
-   "name": "Investigate",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "WB",
+      "name": "Investigate",
+      "playstyle": "Trade cheap creatures and removal early, investigate for replacement cards, and turn small permanents or Clues into sustained attrition value.",
+      "speed": "midrange",
+   "sourceIds": ["mkm-mechanics","mkm-17lands"],
    "signposts": [
     "Wispdrinker Vampire",
     "Soul Search"
@@ -105,11 +143,12 @@
     "Inside Source"
    ]
   },
-  {
-   "pair": "WR",
-   "name": "Aggro",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "WR",
+      "name": "Aggro",
+      "playstyle": "Flood the board with inexpensive creatures and disguise threats, then clear blockers or pump the team before slower Clue decks can stabilize.",
+      "speed": "aggro",
+   "sourceIds": ["mkm-mechanics","mkm-17lands"],
    "signposts": [
     "Lightning Helix",
     "Meddling Youths"
@@ -146,11 +185,12 @@
     "Red Herring"
    ]
   },
-  {
-   "pair": "WG",
-   "name": "Convoke tokens",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "WG",
+      "name": "Convoke tokens",
+      "playstyle": "Create multiple bodies, use them to help cast convoke spells, and turn that mana efficiency into a wide board backed by counters and protection.",
+      "speed": "midrange",
+   "sourceIds": ["mkm-mechanics","mkm-17lands"],
    "signposts": [
     "Sumala Sentry",
     "Buried in the Garden"
@@ -187,11 +227,12 @@
     "Sanitation Automaton"
    ]
   },
-  {
-   "pair": "UB",
-   "name": "Mill/surveil",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "UB",
+      "name": "Mill/surveil",
+      "playstyle": "Surveil and mill to stock the graveyard, answer opposing threats, and spend those cards on collect-evidence or recursion payoffs.",
+      "speed": "control",
+   "sourceIds": ["mkm-mechanics","mkm-17lands"],
    "signposts": [
     "Curious Cadaver",
     "Coerced to Kill"
@@ -228,11 +269,12 @@
     "Faerie Snoop"
    ]
   },
-  {
-   "pair": "UR",
-   "name": "Spells",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "UR",
+      "name": "Spells",
+      "playstyle": "Cast cheap interaction while creating and sacrificing Clues, letting spell and artifact payoffs grow into an evasive clock.",
+      "speed": "tempo",
+   "sourceIds": ["mkm-mechanics","mkm-17lands"],
    "signposts": [
     "Gleaming Geardrake",
     "Detective's Satchel"
@@ -269,11 +311,12 @@
     "Deduce"
    ]
   },
-  {
-   "pair": "UG",
-   "name": "Clues ramp",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "UG",
+      "name": "Clues ramp",
+      "playstyle": "Investigate for cards, develop mana and fixing, and use the resulting artifacts and resources to support expensive disguise creatures and finishers.",
+      "speed": "ramp",
+   "sourceIds": ["mkm-mechanics","mkm-17lands"],
    "signposts": [
     "Evidence Examiner",
     "Repulsive Mutation"
@@ -310,11 +353,12 @@
     "Deduce"
    ]
   },
-  {
-   "pair": "BR",
-   "name": "Sacrifice",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "BR",
+      "name": "Sacrifice",
+      "playstyle": "Push damage with suspected attackers, then sacrifice disposable creatures and artifacts so death triggers and removal keep the path clear.",
+      "speed": "aggro",
+   "sourceIds": ["mkm-mechanics","mkm-17lands"],
    "signposts": [
     "Deadly Complication",
     "Rune-Brand Juggler"
@@ -351,11 +395,12 @@
     "Murder"
    ]
   },
-  {
-   "pair": "BG",
-   "name": "Graveyard",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "BG",
+      "name": "Graveyard",
+      "playstyle": "Fill the graveyard through trades and self-mill, then collect evidence or move cards out of it to trigger recursive value engines.",
+      "speed": "midrange",
+   "sourceIds": ["mkm-mechanics","mkm-17lands"],
    "signposts": [
     "Kraul Whipcracker",
     "Insidious Roots"
@@ -392,11 +437,12 @@
     "They Went This Way"
    ]
   },
-  {
-   "pair": "RG",
-   "name": "Aggro",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "RG",
+      "name": "Aggro",
+      "playstyle": "Curve face-down creatures into efficient attackers, using combat tricks and timely disguise turns to win blocks and maintain pressure.",
+      "speed": "aggro",
+   "sourceIds": ["mkm-mechanics","mkm-17lands"],
    "signposts": [
     "Tin Street Gossip",
     "Break Out"

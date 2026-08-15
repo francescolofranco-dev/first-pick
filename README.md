@@ -15,9 +15,11 @@ your archetype, your curve, and the roles your pool still needs. When the draft
 ends, it proposes 2–3 finished decks with a power estimate.
 
 Every draft also has an always-available set guide: mechanics, color-pair plans,
-and the strongest commons and non-commons in each color. A separate Sealed guide
-turns proven Limited fundamentals into a practical deck-building checklist. The
-same archetype profiles and construction policy are used by the advisor itself.
+combos, and the strongest commons and non-commons in each color. Every curated
+claim links to its supporting sources, and live rankings link to their exact data
+query. A separate Sealed guide turns proven Limited fundamentals into a practical
+deck-building checklist. The same cited archetype profiles and typed construction
+policies are used by the advisor itself.
 
 > Unofficial fan project. Not affiliated with or endorsed by Wizards of the Coast.
 
@@ -50,8 +52,9 @@ mana curve, and your pool — all updating as you pick.
 **Draft and Sealed guides.** Open the Guide tab at any time for the current set's
 mechanics, color-pair themes, signposts, enablers, payoffs, and per-color top commons
 and non-commons. The card lists use the selected 17Lands format; the strategy text is
-bundled for reliable offline access, and its underlying Limited principles link to
-the expert and official sources. The Sealed page remains available even before a draft starts.
+bundled for reliable offline access, and mechanics, archetypes, combos, and general
+principles each link directly to the supporting expert, official, or observed-data
+source. The Sealed page remains available even before a draft starts.
 
 **Post-draft deck builder.** When the final pick is confirmed, get 2–3 buildable decks
 ranked by power, each with a letter tier, deck type, archetype, confidence, and an
@@ -63,7 +66,8 @@ build**; the choice can be changed or guidance can be stopped at any time.
 </picture>
 
 **The full deck list.** Each build is laid out by mana value and WUBRG color, with role
-tags (removal · fixing · finisher · draw · evasion), copy counts, and a suggested manabase.
+tags (removal · fixing · finisher · draw · evasion), copy counts, and a source-checked
+manabase with an exact basic-land split.
 
 <picture>
   <img src="docs/screenshots/deck-list.png" width="820" alt="Deck list with roles and manabase" />
@@ -93,8 +97,15 @@ when the deck matches.
 - **Shared Limited guide** — the visible set archetypes and deck-construction
   principles are also consumed by pick scoring and deck projection, so explanations
   and recommendations follow the same model rather than a disconnected article.
-- **Sealed construction reference** — a source-linked checklist for comparing color
-  cores, building a 40-card curve, choosing mana, splashing carefully, and sideboarding.
+- **Model guardrails** — the learned PickNet model can refine guide-compliant choices,
+  but it cannot promote unsupported off-lane cards, heavy splashes, or irrelevant
+  fixing above viable cards once the lane and deck are established.
+- **Exact colored-source planning** — pure and hybrid mana pips, casting timing,
+  drafted dual lands, the available land slots, and timely nonland fixing determine
+  whether a splash is actually castable. Unsupported splashes are rejected.
+- **Distinct Sealed construction** — Sealed uses its own 17Lands population and typed
+  policy, with more weight on reliable mana, removal, bombs, finishers, and ways to
+  break board stalls—not Draft lane or pick-progress assumptions.
 - **At-a-glance dashboard** — your lane, ranked archetypes, open-lane signals,
   mana curve, pool, and current deck needs.
 - **On-card overlay** — a transparent, click-through layer pinned to the Arena
@@ -201,10 +212,13 @@ Brand assets live in `packaging/icon/` (SVG source + `AppIcon.iconset`) and `doc
 
 - Win-rate and archetype data from [17Lands](https://www.17lands.com/), licensed
   CC-BY-4.0. Fetched politely (cached, throttled, descriptive User-Agent).
-- Limited principles are original summaries based on source-linked articles by
-  Reid Duke and Mark Rosewater on Magic's official site, Ben Stark's *Drafting the
-  Hard Way* discussion, and 17Lands' metric definitions. FirstPick links out; it does
-  not scrape or reproduce articles, videos, podcasts, or transcripts at runtime.
+- Every bundled set-profile claim has a validated source ID. Mechanics and card
+  interactions cite Wizards' mechanics articles and release notes; color-pair plans
+  cite official prerelease/Limited guides where available and 17Lands observations.
+- General Limited principles are original summaries based on source-linked work by
+  Reid Duke, Nate Price, Gavin Verhey, Mark Rosewater, Frank Karsten, and Ben Stark,
+  plus 17Lands' metric definitions. FirstPick links out; it does not scrape or
+  reproduce articles, videos, podcasts, datasets, or transcripts at runtime.
 - Card metadata, the `otag:removal` role tag, and the mana symbol SVGs in
   `src/main/resources/symbols/` from [Scryfall](https://scryfall.com/).
 - Magic: The Gathering is © Wizards of the Coast. This is an unofficial fan tool.

@@ -97,6 +97,30 @@ class LaneDetectorTest {
     }
 
     @Test
+    fun exactPurePipIsNotErasedWhenItsColorAlsoAppearsInAHybridSymbol() {
+        val options = LaneDetector.uncastableColorOptions(
+            colors = setOf('B', 'R'),
+            available = setOf('R', 'G'),
+            hybridGroups = listOf(setOf('B', 'R')),
+            pureColors = setOf('B'),
+        )
+
+        assertEquals(listOf(setOf('B')), options, "{B}{B/R} still needs black in a red deck")
+    }
+
+    @Test
+    fun offBaseHybridSymbolKeepsEitherSingleColorCastingOption() {
+        val options = LaneDetector.uncastableColorOptions(
+            colors = setOf('B', 'R'),
+            available = setOf('W', 'U'),
+            hybridGroups = listOf(setOf('B', 'R')),
+            pureColors = emptySet(),
+        )
+
+        assertEquals(listOf(setOf('B'), setOf('R')), options)
+    }
+
+    @Test
     fun noHybridGroupsBehavesLikePlainSetDifference() {
         val uncastable = LaneDetector.uncastableColors(colors = setOf('U', 'R'), available = setOf('U', 'G'))
         assertEquals(setOf('R'), uncastable)

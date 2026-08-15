@@ -25,7 +25,11 @@ class PickNetRankerTest {
         return PickNet.load(file)
     }
 
-    private fun scored(name: String, value: Double) = ScoredCard(
+    private fun scored(
+        name: String,
+        value: Double,
+        guardrail: PickGuardrail = PickGuardrail.OPEN,
+    ) = ScoredCard(
         card = RankedCard(grpId = name.hashCode(), name = name, rating = null),
         value = value,
         z = 0.0,
@@ -33,6 +37,14 @@ class PickNetRankerTest {
         reasons = listOf("On-color"),
         breakdown = ValueBreakdown(0.0, 0.0, 0.0, 0.0, 0.0, finalScore = value),
         rawValue = value,
+        guardrail = guardrail,
+    )
+
+    private fun constrained() = PickGuardrail(
+        status = ModelPromotionStatus.CONSTRAINED,
+        laneColors = setOf('W', 'U'),
+        offColors = setOf('B'),
+        constraints = setOf(GuideConstraint.UNSUPPORTED_SPLASH),
     )
 
     @Test
@@ -86,5 +98,57 @@ class PickNetRankerTest {
         val ranked = PickNetRanker.rerank(net(), pack, emptyList())
         assertNotNull(ranked)
         assertEquals("Mystery", ranked.last().card.name)
+    }
+
+    @Test
+    fun `model favorite cannot leapfrog viable cards when guide constrains it`() {
+        val pack = listOf(
+            scored("Angel", 80.0),
+            scored("Bolt", 60.0),
+            // Its display reason deliberately says On-color: policy must use typed metadata, not prose.
+            scored("Carrion", 40.0, constrained()),
+        )
+
+        val ranked = PickNetRanker.rerank(net(), pack, emptyList())
+
+        assertNotNull(ranked)
+        assertEquals(listOf("Bolt", "Angel", "Carrion"), ranked.map { it.card.name })
+        assertEquals(listOf(80.0, 60.0, 40.0), ranked.map { it.value })
+        assertEquals(PickNetRanker.MODEL_PICK_REASON, ranked.first().reasons.first())
+        assertEquals(1, ranked.last().modelRank, "raw model rank remains visible after the guide veto")
+    }
+
+    @Test
+    fun `light splash candidate remains promotable by the model`() {
+        val splash = PickGuardrail(
+            status = ModelPromotionStatus.SPLASH_CANDIDATE,
+            laneColors = setOf('W', 'U'),
+            offColors = setOf('B'),
+        )
+        val pack = listOf(
+            scored("Angel", 80.0),
+            scored("Bolt", 60.0),
+            scored("Carrion", 40.0, splash),
+        )
+
+        val ranked = PickNetRanker.rerank(net(), pack, emptyList())
+
+        assertNotNull(ranked)
+        assertEquals("Carrion", ranked.first().card.name)
+    }
+
+    @Test
+    fun `all-constrained pack keeps heuristic order instead of manufacturing a model promotion`() {
+        val pack = listOf(
+            scored("Angel", 80.0, constrained()),
+            scored("Bolt", 60.0, constrained()),
+            scored("Carrion", 40.0, constrained()),
+        )
+
+        val ranked = PickNetRanker.rerank(net(), pack, emptyList())
+
+        assertNotNull(ranked)
+        assertEquals(listOf("Angel", "Bolt", "Carrion"), ranked.map { it.card.name })
+        assertTrue(ranked.first().reasons.none { it == PickNetRanker.MODEL_PICK_REASON })
     }
 }

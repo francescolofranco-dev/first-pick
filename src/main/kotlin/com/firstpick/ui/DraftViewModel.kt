@@ -10,6 +10,7 @@ import com.firstpick.advisor.PickNetRanker
 import com.firstpick.advisor.PoolNeeds
 import com.firstpick.advisor.ScoredCard
 import com.firstpick.advisor.WUBRG
+import com.firstpick.advisor.canonicalPair
 import com.firstpick.model.DraftPhase
 import com.firstpick.cards.ArchetypeRepository
 import com.firstpick.cards.CardMeta
@@ -29,6 +30,7 @@ import com.firstpick.model.PickNetRepository
 import com.firstpick.signals.SignalsEngine
 import com.firstpick.sim.DraftSimulator
 import com.firstpick.guide.LimitedPolicy
+import com.firstpick.guide.LimitedMode
 import com.firstpick.guide.SetDraftGuideBuilder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -175,6 +177,7 @@ class DraftViewModel(
 
     private fun buildUi(state: DraftState): DraftUiState {
         val format = RatingsFormat.resolve(formatChoice, state.format)
+        val constructionMode = LimitedMode.fromFormat(state.format)
         val dataKey = state.setCode?.let { "${it.uppercase()}_$format" }
         val loaded = dataKey != null && repo.loadedKey == dataKey
         val archetypesLoaded = dataKey != null && archetypeRepo.loadedKey == dataKey
@@ -214,10 +217,14 @@ class DraftViewModel(
 
 
         val liveProjection = if (loaded && lane.isEstablished) {
-            DeckProjector.project(pool, repo.setMetrics, meta, archetypeRating, pairStrength, synergy)
+            DeckProjector.project(pool, repo.setMetrics, meta, archetypeRating, pairStrength, synergy, constructionMode)
         } else {
             null
         }
+        val activeManaSources = liveProjection?.takeIf { projection ->
+            projection.basePair == (lane.pair ?: canonicalPair(lane.colors)) &&
+                projection.manaSources?.allRequirementsMet == true
+        }?.manaSources
         val rows = if (loaded && state.packCards.isNotEmpty()) {
             val resolvedPack = repo.resolvePack(state.packCards)
             val basicLands = resolvedPack.filter { it.isBasicLand }
@@ -231,7 +238,8 @@ class DraftViewModel(
                 archetypeRating = archetypeRating,
                 meta = meta,
                 synergy = synergy,
-                deckFit = deckFitProbe(pool, liveProjection, pairStrength, synergy, meta, archetypeRating),
+                deckFit = deckFitProbe(pool, liveProjection, pairStrength, synergy, meta, archetypeRating, constructionMode),
+                activeManaSources = activeManaSources,
             )
             val ranked = net?.let { PickNetRanker.rerank(it, scored, pool.map { c -> c.name }) } ?: scored
             packRows(ranked, basicLands, state.packCards)
@@ -256,6 +264,7 @@ class DraftViewModel(
                     archetypeRating = archetypeRating,
                     pairStrength = pairStrength,
                     synergy = synergy,
+                    mode = constructionMode,
                 ).map { it.toUi() }
             }.getOrElse { Log.warn(TAG, "deck build failed: $it"); emptyList() }
         } else {
@@ -313,10 +322,11 @@ class DraftViewModel(
         synergy: com.firstpick.cards.SynergyIndex?,
         meta: (String) -> CardMeta?,
         archetypeRating: (String, String) -> com.firstpick.cards.CardRating?,
+        mode: LimitedMode,
     ): ((com.firstpick.cards.RankedCard) -> DeckProjector.Fit?)? {
         if (before == null) return null
         return { card ->
-            DeckProjector.fit(pool, card, repo.setMetrics, meta, archetypeRating, pairStrength, synergy, before)
+            DeckProjector.fit(pool, card, repo.setMetrics, meta, archetypeRating, pairStrength, synergy, before, mode)
         }
     }
 
@@ -331,12 +341,7 @@ class DraftViewModel(
 
     private fun DeckOption.toUi(): DeckOptionUi {
         val nonbasicCount = nonbasicLands.size
-        val basics = (landCount - nonbasicCount).coerceAtLeast(0)
-        val landLine = buildString {
-            append("$landCount lands")
-            if (nonbasicCount > 0) append(" · $nonbasicCount nonbasic")
-            append(" · Arena adds $basics basics")
-        }
+        val landLine = deckLandLine(landCount, nonbasicCount, manaSources?.basicSources)
         return DeckOptionUi(
             colors = colors,
             basePair = basePair,
@@ -473,6 +478,20 @@ class DraftViewModel(
         private const val TOTAL_PICKS = LimitedPolicy.DRAFT_TOTAL_PICKS
         private val WUBRG_ORDER = listOf('W', 'U', 'B', 'R', 'G')
     }
+}
+
+internal fun deckLandLine(
+    landCount: Int,
+    nonbasicCount: Int,
+    basicSources: Map<Char, Int>?,
+): String = buildString {
+    append("$landCount lands")
+    val split = "WUBRG".mapNotNull { color ->
+        basicSources?.get(color)?.takeIf { it > 0 }?.let { "$it$color" }
+    }
+    if (split.isNotEmpty()) append(" · ${split.joinToString(" · ")}")
+    if (nonbasicCount > 0) append(" · $nonbasicCount nonbasic")
+    if (split.isEmpty()) append(" · Arena adds ${(landCount - nonbasicCount).coerceAtLeast(0)} basics")
 }
 
 internal fun ratingsErrorMessage(reason: FetchFailure?, set: String): String = when (reason) {

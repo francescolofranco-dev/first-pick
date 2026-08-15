@@ -2,26 +2,71 @@
  "set": "TMT",
  "setName": "Teenage Mutant Ninja Turtles",
  "generated": "2026-07-04",
+ "schemaVersion": 2,
+ "updatedAt": "2026-08-15",
+ "sources": [
+ {
+  "id": "tmt-mechanics",
+  "title": "Magic: The Gathering | Teenage Mutant Ninja Turtles Mechanics",
+  "publisher": "Wizards of the Coast",
+  "author": "Matt Tabak",
+  "date": "2026-02-17",
+  "url": "https://magic.wizards.com/en/news/feature/teenage-mutant-ninja-turtles-mechanics",
+  "kind": "OFFICIAL_MECHANICS"
+ },
+ {
+  "id": "tmt-limited-guide",
+  "title": "Magic: The Gathering | Teenage Mutant Ninja Turtles Prerelease Guide",
+  "publisher": "Wizards of the Coast",
+  "author": "Jubilee Finnegan",
+  "date": "2026-02-20",
+  "url": "https://magic.wizards.com/en/news/feature/teenage-mutant-ninja-turtles-prerelease-guide",
+  "kind": "OFFICIAL_LIMITED_GUIDE"
+ },
+ {
+  "id": "tmt-release-notes",
+  "title": "Magic: The Gathering® | Teenage Mutant Ninja Turtles Release Notes",
+  "publisher": "Wizards of the Coast",
+  "author": "Eric Levine",
+  "date": "2026-02-20",
+  "url": "https://magic.wizards.com/en/news/feature/teenage-mutant-ninja-turtles-release-notes",
+  "kind": "OFFICIAL_RELEASE_NOTES"
+ },
+ {
+  "id": "tmt-17lands",
+  "title": "17Lands Public Limited Data (TMT)",
+  "publisher": "17Lands",
+  "author": "17Lands contributors",
+  "date": "2026-08-15",
+  "url": "https://www.17lands.com/public_datasets",
+  "kind": "LIMITED_DATA"
+ }
+ ],
  "mechanics": [
   {
    "name": "Sneak",
-   "summary": "Cast cheaper by returning an unblocked attacker; creatures enter tapped and attacking."
+   "summary": "Cast cheaper by returning an unblocked attacker; creatures enter tapped and attacking.",
+   "sourceIds": ["tmt-mechanics","tmt-release-notes"]
   },
   {
    "name": "Alliance",
-   "summary": "Triggers whenever another creature you control enters \u2014 rewards go-wide token streams."
+   "summary": "Triggers whenever another creature you control enters \u2014 rewards go-wide token streams.",
+   "sourceIds": ["tmt-mechanics","tmt-release-notes"]
   },
   {
    "name": "Disappear",
-   "summary": "End-step reward if a permanent left the battlefield under your control this turn."
+   "summary": "End-step reward if a permanent left the battlefield under your control this turn.",
+   "sourceIds": ["tmt-mechanics","tmt-release-notes"]
   },
   {
    "name": "Mutagen",
-   "summary": "A token that sacrifices for a +1/+1 counter \u2014 the green/blue counters engine."
+   "summary": "A token that sacrifices for a +1/+1 counter \u2014 the green/blue counters engine.",
+   "sourceIds": ["tmt-mechanics","tmt-release-notes"]
   },
   {
    "name": "Food",
-   "summary": "Sacrificial artifacts (the pizza cycle) that fuel lifegain and Disappear."
+   "summary": "Sacrificial artifacts (the pizza cycle) that fuel lifegain and Disappear.",
+   "sourceIds": ["tmt-mechanics","tmt-release-notes"]
   }
  ],
  "archetypes": [
@@ -30,6 +75,7 @@
    "name": "Sneak Ninja aggro",
    "playstyle": "Connect with evasive Ninjas, replay Sneak-returned ETBs, and grind value.",
    "speed": "aggro",
+   "sourceIds": ["tmt-limited-guide","tmt-17lands"],
    "signposts": [
     "Karai, Future of the Foot",
     "Karai's Technique"
@@ -64,6 +110,7 @@
    "name": "Alliance go-wide",
    "playstyle": "Stream creature ETBs to fire Alliance payoffs and swarm wide.",
    "speed": "aggro",
+   "sourceIds": ["tmt-limited-guide","tmt-17lands"],
    "signposts": [
     "The Neutrinos",
     "Go Ninja Go"
@@ -96,6 +143,7 @@
    "name": "Artifacts tempo",
    "playstyle": "Cheap artifacts and Robots feed artifact-count checks behind premium red removal.",
    "speed": "aggro",
+   "sourceIds": ["tmt-limited-guide","tmt-17lands"],
    "signposts": [
     "Baxter Stockman",
     "Brilliance Unleashed"
@@ -130,6 +178,7 @@
    "name": "Mutagen counters",
    "playstyle": "Mutant ETBs make Mutagen tokens that snowball +1/+1 counters; splash removal.",
    "speed": "midrange",
+   "sourceIds": ["tmt-limited-guide","tmt-17lands"],
    "signposts": [
     "Genghis Frog",
     "Lessons from Life"
@@ -163,6 +212,7 @@
    "name": "Food sacrifice",
    "playstyle": "Expendable Foods, tokens and Mutagens leave the battlefield to switch on Disappear.",
    "speed": "midrange",
+   "sourceIds": ["tmt-limited-guide","tmt-17lands"],
    "signposts": [
     "Pizza Face, Gastromancer",
     "Tainted Treats"
@@ -196,42 +246,48 @@
     "Genghis Frog",
     "Michelangelo, Mutant BFF"
    ],
-   "note": "Mutagen tokens become counters that make Mutants unblockable"
+   "note": "Mutagen tokens become counters that make Mutants unblockable",
+   "sourceIds": ["tmt-limited-guide","tmt-17lands","tmt-release-notes"]
   },
   {
    "cards": [
     "Karai, Future of the Foot",
     "Dream Beavers"
    ],
-   "note": "Sneak re-buys the flying drain ETB"
+   "note": "Sneak re-buys the flying drain ETB",
+   "sourceIds": ["tmt-limited-guide","tmt-17lands","tmt-release-notes"]
   },
   {
    "cards": [
     "The Neutrinos",
     "Old Hob, Alleycat Blues"
    ],
-   "note": "A hasty token every combat keeps Alliance firing"
+   "note": "A hasty token every combat keeps Alliance firing",
+   "sourceIds": ["tmt-limited-guide","tmt-17lands","tmt-release-notes"]
   },
   {
    "cards": [
     "Baxter Stockman",
     "Fugitive Droid"
    ],
-   "note": "The Robot token turns on artifact-count and unblockable"
+   "note": "The Robot token turns on artifact-count and unblockable",
+   "sourceIds": ["tmt-limited-guide","tmt-17lands","tmt-release-notes"]
   },
   {
    "cards": [
     "Pizza Face, Gastromancer",
     "Ice Cream Kitty"
    ],
-   "note": "Sacrifice fodder leaves the battlefield for Disappear"
+   "note": "Sacrifice fodder leaves the battlefield for Disappear",
+   "sourceIds": ["tmt-limited-guide","tmt-17lands","tmt-release-notes"]
   },
   {
    "cards": [
     "Quintessential Katana",
     "Splinter, Hamato Yoshi"
    ],
-   "note": "The Katana auto-equips each entering Ninja under the lord"
+   "note": "The Katana auto-equips each entering Ninja under the lord",
+   "sourceIds": ["tmt-limited-guide","tmt-17lands","tmt-release-notes"]
   }
  ]
 }

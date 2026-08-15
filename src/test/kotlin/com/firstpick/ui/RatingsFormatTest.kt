@@ -7,7 +7,7 @@ import kotlin.test.assertEquals
 class RatingsFormatTest {
     @Test
     fun explicitChoicesIgnoreDetectedFormat() {
-        for (detected in DraftFormat.entries) {
+        for (detected in DraftFormat.entries.filterNot { it == DraftFormat.SEALED }) {
             assertEquals("PremierDraft", RatingsFormat.resolve(RatingsFormat.PREMIER, detected))
             assertEquals("QuickDraft", RatingsFormat.resolve(RatingsFormat.QUICK, detected))
             assertEquals("TradDraft", RatingsFormat.resolve(RatingsFormat.TRAD, detected))
@@ -22,10 +22,18 @@ class RatingsFormatTest {
     }
 
     @Test
-    fun autoFallsBackToPremierForFormatsWithoutCardRatings() {
-        assertEquals("PremierDraft", RatingsFormat.resolve(RatingsFormat.AUTO, DraftFormat.SEALED))
+    fun autoUsesSealedAndFallsBackToPremierForOtherNonDraftFormats() {
+        assertEquals("Sealed", RatingsFormat.resolve(RatingsFormat.AUTO, DraftFormat.SEALED))
         assertEquals("PremierDraft", RatingsFormat.resolve(RatingsFormat.AUTO, DraftFormat.CUBE))
         assertEquals("PremierDraft", RatingsFormat.resolve(RatingsFormat.AUTO, DraftFormat.UNKNOWN))
+    }
+
+    @Test
+    fun sealedDetectionOverridesPersistedDraftDataChoices() {
+        for (choice in listOf(RatingsFormat.PREMIER, RatingsFormat.QUICK, RatingsFormat.TRAD, RatingsFormat.AUTO)) {
+            assertEquals("Sealed", RatingsFormat.resolve(choice, DraftFormat.SEALED))
+            assertEquals("Sealed · match event", RatingsFormat.displayLabel(choice, DraftFormat.SEALED))
+        }
     }
 
     @Test

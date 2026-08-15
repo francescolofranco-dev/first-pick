@@ -70,11 +70,13 @@ class ScryfallClient(
         val hybridGroups: List<String> = emptyList(),
         val produced: String = "",
         val heavyPips: String = "",
+        val coloredPips: String = "",
+        val hybridPips: List<String> = emptyList(),
     )
 
     suspend fun setMeta(set: String, names: Collection<String> = emptyList()): Map<String, CardMeta> = withContext(Dispatchers.IO) {
         Files.createDirectories(cacheDir)
-        val cache = cacheDir.resolve("scryfall6_${set.uppercase()}.json")
+        val cache = cacheDir.resolve("scryfall7_${set.uppercase()}.json")
         val dtos: List<MetaDto> = if (isFresh(cache)) {
             runCatching { json.decodeFromString(LIST_SERIALIZER, Files.readString(cache)) }.getOrDefault(emptyList())
         } else {
@@ -98,6 +100,8 @@ class ScryfallClient(
         hybridColorGroups = hybridGroups.map { it.toSet() },
         producedColors = produced.toSet(),
         heavyPipColors = heavyPips.toSet(),
+        coloredPips = coloredPips.groupingBy { it }.eachCount(),
+        hybridPips = hybridPips.map { it.toSet() },
     )
 
     private fun build(set: String, names: Collection<String>): List<MetaDto>? {
@@ -172,6 +176,7 @@ class ScryfallClient(
         return MetaDto(
             name, cmc, r.creature, r.land, r.removal, r.fixing, r.finisher, r.evasion, r.draw,
             hybridGroupsOf(c.manaCost), produced, heavyPipsOf(c.manaCost),
+            coloredPipsOf(c.manaCost), hybridPipsOf(c.manaCost),
         )
     }
 
@@ -246,6 +251,19 @@ class ScryfallClient(
             for (m in PURE_PIP_RE.findAll(manaCost)) counts.merge(m.groupValues[1][0], 1, Int::plus)
             return "WUBRG".filter { (counts[it] ?: 0) >= 2 }
         }
+
+        internal fun coloredPipsOf(manaCost: String): String = buildString {
+            val counts = PURE_PIP_RE.findAll(manaCost)
+                .map { it.groupValues[1][0] }
+                .groupingBy { it }
+                .eachCount()
+            for (color in "WUBRG") repeat(counts[color] ?: 0) { append(color) }
+        }
+
+        internal fun hybridPipsOf(manaCost: String): List<String> =
+            HYBRID_RE.findAll(manaCost)
+                .map { m -> listOf(m.groupValues[1][0], m.groupValues[2][0]).sortedBy { "WUBRG".indexOf(it) }.joinToString("") }
+                .toList()
 
 
         internal fun hybridGroupsOf(manaCost: String): List<String> =

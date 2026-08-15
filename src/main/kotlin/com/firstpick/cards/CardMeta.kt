@@ -13,4 +13,8 @@ data class CardMeta(
     val hybridColorGroups: List<Set<Char>> = emptyList(),
     val producedColors: Set<Char> = emptySet(),
     val heavyPipColors: Set<Char> = emptySet(),
+    /** Exact pure colored symbols from the printed mana cost. */
+    val coloredPips: Map<Char, Int> = emptyMap(),
+    /** One entry per hybrid symbol; duplicates preserve pip intensity. */
+    val hybridPips: List<Set<Char>> = emptyList(),
 )

@@ -2,30 +2,76 @@
  "set": "ECL",
  "setName": "Lorwyn Eclipsed",
  "generated": "2026-07-04",
+ "schemaVersion": 2,
+ "updatedAt": "2026-08-15",
+ "sources": [
+ {
+  "id": "ecl-mechanics",
+  "title": "Lorwyn Eclipsed Mechanics",
+  "publisher": "Wizards of the Coast",
+  "author": "Matt Tabak",
+  "date": "2026-01-05",
+  "url": "https://magic.wizards.com/en/news/feature/lorwyn-eclipsed-mechanics",
+  "kind": "OFFICIAL_MECHANICS"
+ },
+ {
+  "id": "ecl-limited-guide",
+  "title": "Lorwyn Eclipsed Prerelease Guide",
+  "publisher": "Wizards of the Coast",
+  "author": "Jubilee Finnegan",
+  "date": "2026-01-09",
+  "url": "https://magic.wizards.com/en/news/feature/lorwyn-eclipsed-prerelease-guide",
+  "kind": "OFFICIAL_LIMITED_GUIDE"
+ },
+ {
+  "id": "ecl-release-notes",
+  "title": "Lorwyn Eclipsed Release Notes",
+  "publisher": "Wizards of the Coast",
+  "author": "Eric Levine",
+  "date": "2026-01-09",
+  "url": "https://magic.wizards.com/en/news/feature/lorwyn-eclipsed-release-notes",
+  "kind": "OFFICIAL_RELEASE_NOTES"
+ },
+ {
+  "id": "ecl-17lands",
+  "title": "17Lands Public Limited Data (ECL)",
+  "publisher": "17Lands",
+  "author": "17Lands contributors",
+  "date": "2026-08-15",
+  "url": "https://www.17lands.com/public_datasets",
+  "kind": "LIMITED_DATA"
+ }
+ ],
  "mechanics": [
   {
    "name": "Blight",
-   "summary": "Pay a cost by putting a -1/-1 counter on a creature you control; enables removal and value triggers."
+   "summary": "Pay a cost by putting a -1/-1 counter on a creature you control; enables removal and value triggers.",
+   "sourceIds": ["ecl-mechanics","ecl-release-notes"]
   },
   {
    "name": "Changeling",
-   "summary": "This card is every creature type \u2014 universal typal glue."
+   "summary": "This card is every creature type \u2014 universal typal glue.",
+   "sourceIds": ["ecl-mechanics","ecl-release-notes"]
   },
   {
    "name": "Convoke",
-   "summary": "Tap creatures to help pay for a spell; concentrated in blue/white Merfolk."
+   "summary": "Tap creatures to help pay for a spell; concentrated in blue/white Merfolk.",
+   "sourceIds": ["ecl-mechanics","ecl-release-notes"]
   },
   {
    "name": "Vivid",
-   "summary": "Effects scale with the number of colors among permanents you control."
+   "summary": "Effects scale with the number of colors among permanents you control.",
+   "sourceIds": ["ecl-mechanics","ecl-release-notes"]
   },
   {
    "name": "Behold",
-   "summary": "Reveal or control a creature of a type as an additional cost, on the typal-lord cycle."
+   "summary": "Reveal or control a creature of a type as an additional cost, on the typal-lord cycle.",
+   "sourceIds": ["ecl-mechanics","ecl-release-notes"]
   },
   {
    "name": "Evoke",
-   "summary": "Cast for a cheaper cost, sacrificing the creature on entry \u2014 the five gold Incarnations."
+   "summary": "Cast for a cheaper cost, sacrificing the creature on entry \u2014 the five gold Incarnations.",
+   "sourceIds": ["ecl-mechanics","ecl-release-notes"]
   }
  ],
  "archetypes": [
@@ -34,6 +80,7 @@
    "name": "Merfolk convoke-tempo",
    "playstyle": "Cheap fliers and tap-synergy artifacts turn a wide board into convoke value and untap tricks.",
    "speed": "midrange",
+   "sourceIds": ["ecl-limited-guide","ecl-17lands"],
    "signposts": [
     "Deepchannel Duelist",
     "Eclipsed Merrow"
@@ -69,6 +116,7 @@
    "name": "Counters attrition",
    "playstyle": "Blight your own creatures as fuel and profit as the -1/-1 counters are placed, removed and recurred.",
    "speed": "midrange",
+   "sourceIds": ["ecl-limited-guide","ecl-17lands"],
    "signposts": [
     "Emptiness",
     "Prideful Feastling"
@@ -104,6 +152,7 @@
    "name": "Giants counter-aggro",
    "playstyle": "Giants enter with -1/-1 counters and convert them into combat swings and evasion.",
    "speed": "aggro",
+   "sourceIds": ["ecl-limited-guide","ecl-17lands"],
    "signposts": [
     "Catharsis",
     "Feisty Spikeling"
@@ -136,6 +185,7 @@
    "name": "Kithkin go-wide",
    "playstyle": "Count Kithkin and creatures entering each turn for cumulative anthems and trample.",
    "speed": "aggro",
+   "sourceIds": ["ecl-limited-guide","ecl-17lands"],
    "signposts": [
     "Eclipsed Kithkin",
     "Thoughtweft Lieutenant"
@@ -169,6 +219,7 @@
    "name": "Faerie flash",
    "playstyle": "Do everything at instant speed and cash in the cast-on-opponent's-turn payoffs.",
    "speed": "control",
+   "sourceIds": ["ecl-limited-guide","ecl-17lands"],
    "signposts": [
     "Deceit",
     "Mischievous Sneakling"
@@ -203,6 +254,7 @@
    "name": "Elementals tempo",
    "playstyle": "Stack Elemental ETB and triggered abilities, doubled by Twinflame Travelers, behind premium red removal.",
    "speed": "midrange",
+   "sourceIds": ["ecl-limited-guide","ecl-17lands"],
    "signposts": [
     "Twinflame Travelers",
     "Eclipsed Flamekin"
@@ -235,6 +287,7 @@
    "name": "Vivid ramp",
    "playstyle": "Accumulate colors among your permanents and fixing to power the Vivid scaling payoffs.",
    "speed": "midrange",
+   "sourceIds": ["ecl-limited-guide","ecl-17lands"],
    "signposts": [
     "Wistfulness",
     "Chitinous Graspling"
@@ -269,6 +322,7 @@
    "name": "Goblins sacrifice",
    "playstyle": "Goblins die profitably and blight fuels the death-and-drain engine.",
    "speed": "aggro",
+   "sourceIds": ["ecl-limited-guide","ecl-17lands"],
    "signposts": [
     "Boggart Cursecrafter",
     "Eclipsed Boggart"
@@ -303,6 +357,7 @@
    "name": "Elves midrange",
    "playstyle": "Efficient interaction and typal recursion out-value the opponent with an Elf shell.",
    "speed": "midrange",
+   "sourceIds": ["ecl-limited-guide","ecl-17lands"],
    "signposts": [
     "Eclipsed Elf",
     "Morcant's Loyalist"
@@ -336,6 +391,7 @@
    "name": "Giants ramp",
    "playstyle": "Treasure and ramp into oversized Giants with fight and power-matters removal.",
    "speed": "midrange",
+   "sourceIds": ["ecl-limited-guide","ecl-17lands"],
    "signposts": [
     "Vibrance",
     "Gangly Stompling"
@@ -371,63 +427,72 @@
     "Springleaf Drum",
     "Deepchannel Duelist"
    ],
-   "note": "Tap for mana, untap at end step for a second use"
+   "note": "Tap for mana, untap at end step for a second use",
+   "sourceIds": ["ecl-limited-guide","ecl-17lands","ecl-release-notes"]
   },
   {
    "cards": [
     "Bile-Vial Boggart",
     "Retched Wretch"
    ],
-   "note": "A -1/-1 counter turns Retched Wretch's death into a return"
+   "note": "A -1/-1 counter turns Retched Wretch's death into a return",
+   "sourceIds": ["ecl-limited-guide","ecl-17lands","ecl-release-notes"]
   },
   {
    "cards": [
     "Lasting Tarfire",
     "Blighted Blackthorn"
    ],
-   "note": "Placing any counter pings each opponent for 2"
+   "note": "Placing any counter pings each opponent for 2",
+   "sourceIds": ["ecl-limited-guide","ecl-17lands","ecl-release-notes"]
   },
   {
    "cards": [
     "Boggart Cursecrafter",
     "Bile-Vial Boggart"
    ],
-   "note": "Goblin deaths drain and place counters"
+   "note": "Goblin deaths drain and place counters",
+   "sourceIds": ["ecl-limited-guide","ecl-17lands","ecl-release-notes"]
   },
   {
    "cards": [
     "Twinflame Travelers",
     "Champion of the Path"
    ],
-   "note": "Elemental ETB damage triggers twice"
+   "note": "Elemental ETB damage triggers twice",
+   "sourceIds": ["ecl-limited-guide","ecl-17lands","ecl-release-notes"]
   },
   {
    "cards": [
     "Twinflame Travelers",
     "Soulbright Seeker"
    ],
-   "note": "Every Elemental trigger fires an additional time"
+   "note": "Every Elemental trigger fires an additional time",
+   "sourceIds": ["ecl-limited-guide","ecl-17lands","ecl-release-notes"]
   },
   {
    "cards": [
     "Shimmerwilds Growth",
     "Glister Bairn"
    ],
-   "note": "Extra colors among permanents scale the Vivid pump"
+   "note": "Extra colors among permanents scale the Vivid pump",
+   "sourceIds": ["ecl-limited-guide","ecl-17lands","ecl-release-notes"]
   },
   {
    "cards": [
     "Boggart Mischief",
     "Goatnap"
    ],
-   "note": "Sacrificed Goblins each drain an opponent"
+   "note": "Sacrificed Goblins each drain an opponent",
+   "sourceIds": ["ecl-limited-guide","ecl-17lands","ecl-release-notes"]
   },
   {
    "cards": [
     "Reaping Willow",
     "Moonlit Lamenter"
    ],
-   "note": "Remove -1/-1 counters to reanimate the cheap counter-bearers"
+   "note": "Remove -1/-1 counters to reanimate the cheap counter-bearers",
+   "sourceIds": ["ecl-limited-guide","ecl-17lands","ecl-release-notes"]
   }
  ]
 }

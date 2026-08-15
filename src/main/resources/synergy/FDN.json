@@ -2,34 +2,80 @@
  "set": "FDN",
  "setName": "Foundations",
  "generated": "2026-07-04",
+ "schemaVersion": 2,
+ "updatedAt": "2026-08-15",
+ "sources": [
+ {
+  "id": "fdn-mechanics",
+  "title": "Magic: The Gathering Foundations Mechanics",
+  "publisher": "Wizards of the Coast",
+  "author": "Matt Tabak",
+  "date": "2024-10-25",
+  "url": "https://magic.wizards.com/en/news/feature/foundations-mechanics",
+  "kind": "OFFICIAL_MECHANICS"
+ },
+ {
+  "id": "fdn-limited-guide",
+  "title": "Magic: The Gathering Foundations Prerelease Guide",
+  "publisher": "Wizards of the Coast",
+  "author": "Jubilee Finnegan",
+  "date": "2024-11-01",
+  "url": "https://magic.wizards.com/en/news/feature/foundations-prerelease-guide",
+  "kind": "OFFICIAL_LIMITED_GUIDE"
+ },
+ {
+  "id": "fdn-release-notes",
+  "title": "Magic: The Gathering Foundations Release Notes",
+  "publisher": "Wizards of the Coast",
+  "author": "Eric Levine",
+  "date": "2024-11-01",
+  "url": "https://magic.wizards.com/en/news/feature/foundations-release-notes",
+  "kind": "OFFICIAL_RELEASE_NOTES"
+ },
+ {
+  "id": "fdn-17lands",
+  "title": "17Lands Public Limited Data (FDN)",
+  "publisher": "17Lands",
+  "author": "17Lands contributors",
+  "date": "2026-08-15",
+  "url": "https://www.17lands.com/public_datasets",
+  "kind": "LIMITED_DATA"
+ }
+ ],
  "mechanics": [
-  {
-   "name": "Raid",
-   "summary": ""
+    {
+      "name": "Raid",
+      "summary": "Raid abilities reward you for having attacked during the current turn, whether or not the attacker connected or survived combat.",
+   "sourceIds": ["fdn-mechanics","fdn-release-notes"]
   },
-  {
-   "name": "Kicker",
-   "summary": ""
+    {
+      "name": "Kicker",
+      "summary": "Kicker is an optional extra cost paid while casting a spell; paying it unlocks the additional effect printed on that card.",
+   "sourceIds": ["fdn-mechanics","fdn-release-notes"]
   },
-  {
-   "name": "Landfall",
-   "summary": ""
+    {
+      "name": "Landfall",
+      "summary": "Landfall abilities trigger whenever a land enters the battlefield under your control, rewarding land drops beyond simply making mana.",
+   "sourceIds": ["fdn-mechanics","fdn-release-notes"]
   },
-  {
-   "name": "Treasure",
-   "summary": ""
+    {
+      "name": "Treasure",
+      "summary": "A Treasure is an artifact token you can tap and sacrifice to add one mana of any color, providing temporary acceleration or fixing.",
+   "sourceIds": ["fdn-mechanics","fdn-release-notes"]
   },
-  {
-   "name": "Flashback",
-   "summary": ""
+    {
+      "name": "Flashback",
+      "summary": "You may cast a card with flashback from your graveyard for its flashback cost; after that spell leaves the stack, it is exiled.",
+   "sourceIds": ["fdn-mechanics","fdn-release-notes"]
   }
  ],
  "archetypes": [
-  {
-   "pair": "WU",
-   "name": "Flyers tempo",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "WU",
+      "name": "Flyers tempo",
+      "playstyle": "Establish an evasive clock with efficient fliers, then use bounce, counters, and anthem effects to keep attacks profitable.",
+      "speed": "tempo",
+   "sourceIds": ["fdn-limited-guide","fdn-17lands"],
    "signposts": [
     "Empyrean Eagle",
     "Cloudblazer"
@@ -66,11 +112,12 @@
     "Tranquil Cove"
    ]
   },
-  {
-   "pair": "WB",
-   "name": "Lifegain",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "WB",
+      "name": "Lifegain",
+      "playstyle": "Combine repeatable life gain with sturdy creatures and removal, allowing life-total triggers and attrition threats to take over combat.",
+      "speed": "midrange",
+   "sourceIds": ["fdn-limited-guide","fdn-17lands"],
    "signposts": [
     "Fiendish Panda",
     "Mortify"
@@ -107,11 +154,12 @@
     "Juggernaut"
    ]
   },
-  {
-   "pair": "WR",
-   "name": "Aggro",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "WR",
+      "name": "Aggro",
+      "playstyle": "Curve out with cheap creatures and tokens, then use combat boosts and direct damage to finish before larger decks stabilize.",
+      "speed": "aggro",
+   "sourceIds": ["fdn-limited-guide","fdn-17lands"],
    "signposts": [
     "Heroic Reinforcements",
     "Boros Charm"
@@ -148,11 +196,12 @@
     "Bloodfell Caves"
    ]
   },
-  {
-   "pair": "WG",
-   "name": "Go-wide",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "WG",
+      "name": "Go-wide",
+      "playstyle": "Develop several creatures, distribute counters and protection, then convert the broad board into a decisive attack with team-wide pumps.",
+      "speed": "midrange",
+   "sourceIds": ["fdn-limited-guide","fdn-17lands"],
    "signposts": [
     "Good-Fortune Unicorn",
     "Dryad Militant"
@@ -189,11 +238,12 @@
     "Bite Down"
    ]
   },
-  {
-   "pair": "UB",
-   "name": "Control",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "UB",
+      "name": "Control",
+      "playstyle": "Trade early with blockers and interaction while looting or milling cards, then exploit the stocked graveyard with recursion and large finishers.",
+      "speed": "control",
+   "sourceIds": ["fdn-limited-guide","fdn-17lands"],
    "signposts": [
     "Dreadwing Scavenger"
    ],
@@ -229,11 +279,12 @@
     "Think Twice"
    ]
   },
-  {
-   "pair": "UR",
-   "name": "Spells",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "UR",
+      "name": "Spells",
+      "playstyle": "Pair cheap noncreature spells with prowess-style threats, using removal and card selection to create high-impact combat turns.",
+      "speed": "tempo",
+   "sourceIds": ["fdn-limited-guide","fdn-17lands"],
    "signposts": [
     "Balmor, Battlemage Captain",
     "Enigma Drake"
@@ -270,11 +321,12 @@
     "Tolarian Terror"
    ]
   },
-  {
-   "pair": "UG",
-   "name": "Ramp",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "UG",
+      "name": "Ramp",
+      "playstyle": "Accelerate and fix mana with creatures and land search, then pull ahead with card advantage and oversized multicolor threats.",
+      "speed": "ramp",
+   "sourceIds": ["fdn-limited-guide","fdn-17lands"],
    "signposts": [
     "Tatyova, Benthic Druid",
     "Trygon Predator"
@@ -311,11 +363,12 @@
     "Heraldic Banner"
    ]
   },
-  {
-   "pair": "BR",
-   "name": "Sacrifice",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "BR",
+      "name": "Sacrifice",
+      "playstyle": "Attack to enable raid, create expendable bodies, and cash them in for damage or value so every trade advances your clock.",
+      "speed": "aggro",
+   "sourceIds": ["fdn-limited-guide","fdn-17lands"],
    "signposts": [
     "Perforating Artist",
     "Garna, Bloodfist of Keld"
@@ -352,11 +405,12 @@
     "Axgard Cavalry"
    ]
   },
-  {
-   "pair": "BG",
-   "name": "Midrange",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "BG",
+      "name": "Midrange",
+      "playstyle": "Trade creatures and removal early, then use graveyard recursion and resilient threats to win a resource-heavy battlefield.",
+      "speed": "midrange",
+   "sourceIds": ["fdn-limited-guide","fdn-17lands"],
    "signposts": [
     "Wardens of the Cycle",
     "Deadly Brew"
@@ -393,11 +447,12 @@
     "Gutless Plunderer"
    ]
   },
-  {
-   "pair": "RG",
-   "name": "Aggro",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "RG",
+      "name": "Aggro",
+      "playstyle": "Pressure with efficient creatures and combat tricks, using light acceleration to deploy high-power attackers and hasty top end ahead of curve.",
+      "speed": "aggro",
+   "sourceIds": ["fdn-limited-guide","fdn-17lands"],
    "signposts": [
     "Ruby, Daring Tracker",
     "Savage Ventmaw"

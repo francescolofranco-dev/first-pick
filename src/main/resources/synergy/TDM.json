@@ -2,34 +2,81 @@
  "set": "TDM",
  "setName": "Tarkir: Dragonstorm",
  "generated": "2026-07-31",
+ "schemaVersion": 2,
+ "updatedAt": "2026-08-15",
+ "sources": [
+ {
+  "id": "tdm-mechanics",
+  "title": "Tarkir: Dragonstorm Mechanics",
+  "publisher": "Wizards of the Coast",
+  "author": "Matt Tabak",
+  "date": "2025-03-18",
+  "url": "https://magic.wizards.com/en/news/feature/tarkir-dragonstorm-mechanics",
+  "kind": "OFFICIAL_MECHANICS"
+ },
+ {
+  "id": "tdm-limited-guide",
+  "title": "Tarkir: Dragonstorm Prerelease Guide: What You Need to Know",
+  "publisher": "Wizards of the Coast",
+  "author": "Jubilee Finnegan",
+  "date": "2025-03-28",
+  "url": "https://magic.wizards.com/en/news/feature/tarkir-dragonstorm-prerelease-guide",
+  "kind": "OFFICIAL_LIMITED_GUIDE"
+ },
+ {
+  "id": "tdm-release-notes",
+  "title": "Tarkir: Dragonstorm Release Notes",
+  "publisher": "Wizards of the Coast",
+  "author": "Jess Dunks and Eric Levine",
+  "date": "2025-03-28",
+  "url": "https://magic.wizards.com/en/news/feature/tarkir-dragonstorm-release-notes",
+  "kind": "OFFICIAL_RELEASE_NOTES"
+ },
+ {
+  "id": "tdm-17lands",
+  "title": "17Lands Public Limited Data (TDM)",
+  "publisher": "17Lands",
+  "author": "17Lands contributors",
+  "date": "2026-08-15",
+  "url": "https://www.17lands.com/public_datasets",
+  "kind": "LIMITED_DATA"
+ }
+ ],
  "mechanics": [
   {
    "name": "Endure",
-   "summary": "When a creature endures N, choose either N +1/+1 counters on it or an N/N white Spirit token; if the creature is gone when the ability resolves, you still get the token. This lets Abzan pivot between building tall and going wide."
+   "summary": "When a creature endures N, choose either N +1/+1 counters on it or an N/N white Spirit token; if the creature is gone when the ability resolves, you still get the token. This lets Abzan pivot between building tall and going wide.",
+   "sourceIds": ["tdm-mechanics","tdm-release-notes"]
   },
   {
    "name": "Flurry",
-   "summary": "Flurry triggers when you cast your second spell each turn, regardless of what happened to the first spell, and only once per turn. Cheap spells, mana boosts, and recastable effects turn the trigger into Jeskai tempo and pressure."
+   "summary": "Flurry triggers when you cast your second spell each turn, regardless of what happened to the first spell, and only once per turn. Cheap spells, mana boosts, and recastable effects turn the trigger into Jeskai tempo and pressure.",
+   "sourceIds": ["tdm-mechanics","tdm-release-notes"]
   },
   {
    "name": "Renew",
-   "summary": "Renew abilities exile their card from your graveyard as part of a sorcery-speed activation; every renew effect puts counters on a creature, often +1/+1 or keyword counters, and some add another effect. Self-mill turns fallen creatures into Sultai value while cards leaving the graveyard feed overlap payoffs."
+   "summary": "Renew abilities exile their card from your graveyard as part of a sorcery-speed activation; every renew effect puts counters on a creature, often +1/+1 or keyword counters, and some add another effect. Self-mill turns fallen creatures into Sultai value while cards leaving the graveyard feed overlap payoffs.",
+   "sourceIds": ["tdm-mechanics","tdm-release-notes"]
   },
   {
    "name": "Mobilize",
-   "summary": "When a creature with mobilize N attacks, it creates N tapped and attacking 1/1 red Warrior tokens, then sacrifices them at the beginning of the next end step. Mardu exploits the temporary bodies with go-wide bonuses, sacrifice outlets, and death triggers."
+   "summary": "When a creature with mobilize N attacks, it creates N tapped and attacking 1/1 red Warrior tokens, then sacrifices them at the beginning of the next end step. Mardu exploits the temporary bodies with go-wide bonuses, sacrifice outlets, and death triggers.",
+   "sourceIds": ["tdm-mechanics","tdm-release-notes"]
   },
   {
    "name": "Harmonize",
-   "summary": "You may cast a harmonize spell from your graveyard for its harmonize cost, optionally tapping one untapped creature you control to reduce only the generic portion by that creature's power; it is exiled whenever it leaves the stack. Temur turns big creatures into discounted graveyard spells, while the cast also fuels flurry and leaves-the-graveyard triggers."
+   "summary": "You may cast a harmonize spell from your graveyard for its harmonize cost, optionally tapping one untapped creature you control to reduce only the generic portion by that creature's power; it is exiled whenever it leaves the stack. Temur turns big creatures into discounted graveyard spells, while the cast also fuels flurry and leaves-the-graveyard triggers.",
+   "sourceIds": ["tdm-mechanics","tdm-release-notes"]
   },
   {
    "name": "Omens + Behold",
-   "summary": "Omen cards may be cast using their instant or sorcery Omen characteristics and shuffle into their owner's library if they resolve; in other zones, only their Dragon creature characteristics apply. To behold a Dragon, choose one you control or reveal a Dragon card from hand, discounting or upgrading several spells."
+   "summary": "Omen cards may be cast using their instant or sorcery Omen characteristics and shuffle into their owner's library if they resolve; in other zones, only their Dragon creature characteristics apply. To behold a Dragon, choose one you control or reveal a Dragon card from hand, discounting or upgrading several spells.",
+   "sourceIds": ["tdm-mechanics","tdm-release-notes"]
   },
   {
    "name": "Dragons + Dragonstorms",
-   "summary": "The five monocolor Dragonstorm enchantments each have an enters effect and return to their owner's hand whenever a Dragon you control enters, letting you replay that effect. Dragons and Omen cards also turn on behold and reward decks that can support a critical mass."
+   "summary": "The five monocolor Dragonstorm enchantments each have an enters effect and return to their owner's hand whenever a Dragon you control enters, letting you replay that effect. Dragons and Omen cards also turn on behold and reward decks that can support a critical mass.",
+   "sourceIds": ["tdm-mechanics","tdm-release-notes"]
   }
  ],
  "archetypes": [
@@ -38,6 +85,7 @@
    "name": "Token sacrifice grind",
    "playstyle": "Build expendable Spirit and Warrior tokens through endure and mobilize, attack wide, then cash temporary bodies into cards or drain before the end-step sacrifice. Efficient white-black removal lets the deck trade aggressively and grind longer than the red-white swarm.",
    "speed": "midrange",
+   "sourceIds": ["tdm-limited-guide","tdm-17lands"],
    "signposts": [
     "Hardened Tactician",
     "Marshal of the Lost"
@@ -76,6 +124,7 @@
    "name": "Mobilize go-wide aggro",
    "playstyle": "Curve out with cheap mobilize creatures, flood combat with temporary Warriors, and turn width into pings, scaling attackers, or a lethal Frontline Rush. Keep the curve low enough to double-spell for the flurry package, but prioritize bodies and attacks over a fragile spells-only build.",
    "speed": "aggro",
+   "sourceIds": ["tdm-limited-guide","tdm-17lands"],
    "signposts": [
     "Cori Mountain Stalwart",
     "Frontline Rush"
@@ -115,6 +164,7 @@
    "name": "Two-spell value",
    "playstyle": "Bank cheap cantrips, mana effects, and harmonize spells to double-spell on demand, turning each second cast into flying tokens, cards, or burst damage. Trade tempo early, then let repeatable flurry value take over the midgame.",
    "speed": "midrange",
+   "sourceIds": ["tdm-limited-guide","tdm-17lands"],
    "signposts": [
     "Effortless Master",
     "Glacial Dragonhunt"
@@ -151,6 +201,7 @@
    "name": "Graveyard recycling value",
    "playstyle": "Stock the graveyard with selective self-mill, then cash those cards out through renew, harmonize, and recursion to trigger card draw and scaling threats. Cheap interaction buys time for repeated graveyard exchanges to bury the opponent.",
    "speed": "control",
+   "sourceIds": ["tdm-limited-guide","tdm-17lands"],
    "signposts": [
     "Auroral Procession",
     "Kishla Skimmer"
@@ -187,6 +238,7 @@
    "name": "Counters midrange",
    "playstyle": "Layer endure and renew counters onto resilient attackers, then convert that growth into cards, evasion, and snowballing combat advantages. Trade early, stock the graveyard, and back the largest threat with efficient removal.",
    "speed": "midrange",
+   "sourceIds": ["tdm-limited-guide","tdm-17lands"],
    "signposts": [
     "Host of the Hereafter",
     "Stalwart Successor"
@@ -227,168 +279,192 @@
     "Elspeth, Storm Slayer",
     "Teeming Dragonstorm"
    ],
-   "note": "Elspeth doubles Teeming Dragonstorm's two Soldier tokens into four."
+   "note": "Elspeth doubles Teeming Dragonstorm's two Soldier tokens into four.",
+   "sourceIds": ["tdm-limited-guide","tdm-17lands","tdm-release-notes"]
   },
   {
    "cards": [
     "Hardened Tactician",
     "Teeming Dragonstorm"
    ],
-   "note": "Teeming Dragonstorm supplies two 2/2 tokens for Tactician to cash into cards."
+   "note": "Teeming Dragonstorm supplies two 2/2 tokens for Tactician to cash into cards.",
+   "sourceIds": ["tdm-limited-guide","tdm-17lands","tdm-release-notes"]
   },
   {
    "cards": [
     "Venerated Stormsinger",
     "Hardened Tactician"
    ],
-   "note": "Tactician turns each creature token into a card and a Stormsinger drain."
+   "note": "Tactician turns each creature token into a card and a Stormsinger drain.",
+   "sourceIds": ["tdm-limited-guide","tdm-17lands","tdm-release-notes"]
   },
   {
    "cards": [
     "Marshal of the Lost",
     "Dalkovan Packbeasts"
    ],
-   "note": "Resolve mobilize first so Packbeasts' Warriors enlarge Marshal's attack-count pump."
+   "note": "Resolve mobilize first so Packbeasts' Warriors enlarge Marshal's attack-count pump.",
+   "sourceIds": ["tdm-limited-guide","tdm-17lands","tdm-release-notes"]
   },
   {
    "cards": [
     "Duty Beyond Death",
     "Dalkovan Packbeasts"
    ],
-   "note": "Sacrifice a temporary Warrior to put a counter on and protect the attacking team."
+   "note": "Sacrifice a temporary Warrior to put a counter on and protect the attacking team.",
+   "sourceIds": ["tdm-limited-guide","tdm-17lands","tdm-release-notes"]
   },
   {
    "cards": [
     "Windcrag Siege",
     "Dalkovan Packbeasts"
    ],
-   "note": "Windcrag Siege's Mardu mode doubles Packbeasts' mobilize output from three tokens to six."
+   "note": "Windcrag Siege's Mardu mode doubles Packbeasts' mobilize output from three tokens to six.",
+   "sourceIds": ["tdm-limited-guide","tdm-17lands","tdm-release-notes"]
   },
   {
    "cards": [
     "Shocking Sharpshooter",
     "Dalkovan Packbeasts"
    ],
-   "note": "Packbeasts' three mobilized entrants trigger Sharpshooter three times."
+   "note": "Packbeasts' three mobilized entrants trigger Sharpshooter three times.",
+   "sourceIds": ["tdm-limited-guide","tdm-17lands","tdm-release-notes"]
   },
   {
    "cards": [
     "Stadium Headliner",
     "Frontline Rush"
    ],
-   "note": "Frontline Rush adds two bodies to Headliner's creature-count damage."
+   "note": "Frontline Rush adds two bodies to Headliner's creature-count damage.",
+   "sourceIds": ["tdm-limited-guide","tdm-17lands","tdm-release-notes"]
   },
   {
    "cards": [
     "Cori-Steel Cutter",
     "Rally the Monastery"
    ],
-   "note": "Casting Rally second discounts it while Cutter adds an auto-equipped prowess Monk."
+   "note": "Casting Rally second discounts it while Cutter adds an auto-equipped prowess Monk.",
+   "sourceIds": ["tdm-limited-guide","tdm-17lands","tdm-release-notes"]
   },
   {
    "cards": [
     "Salt Road Packbeast",
     "Dalkovan Packbeasts"
    ],
-   "note": "Cast Packbeast after combat while the mobilized Warriors still discount affinity."
+   "note": "Cast Packbeast after combat while the mobilized Warriors still discount affinity.",
+   "sourceIds": ["tdm-limited-guide","tdm-17lands","tdm-release-notes"]
   },
   {
    "cards": [
     "Taigam, Master Opportunist",
     "Glacial Dragonhunt"
    ],
-   "note": "Taigam copies a second-spell Dragonhunt now and suspends the original for later."
+   "note": "Taigam copies a second-spell Dragonhunt now and suspends the original for later.",
+   "sourceIds": ["tdm-limited-guide","tdm-17lands","tdm-release-notes"]
   },
   {
    "cards": [
     "Highspire Bell-Ringer",
     "Focus the Mind"
    ],
-   "note": "Bell-Ringer and Focus's discounts stack to make second-spell Focus cost {1}{U}."
+   "note": "Bell-Ringer and Focus's discounts stack to make second-spell Focus cost {1}{U}.",
+   "sourceIds": ["tdm-limited-guide","tdm-17lands","tdm-release-notes"]
   },
   {
    "cards": [
     "Sarkhan, Dragon Ascendant",
     "Stormscale Scion"
    ],
-   "note": "Every storm-copy Scion entering grows Sarkhan and adds another Dragon anthem."
+   "note": "Every storm-copy Scion entering grows Sarkhan and adds another Dragon anthem.",
+   "sourceIds": ["tdm-limited-guide","tdm-17lands","tdm-release-notes"]
   },
   {
    "cards": [
     "Wingblade Disciple",
     "Cori-Steel Cutter"
    ],
-   "note": "One second spell makes Disciple's Bird and Cutter's auto-equipped prowess Monk."
+   "note": "One second spell makes Disciple's Bird and Cutter's auto-equipped prowess Monk.",
+   "sourceIds": ["tdm-limited-guide","tdm-17lands","tdm-release-notes"]
   },
   {
    "cards": [
     "Roiling Dragonstorm",
     "Runescale Stormbrood // Chilling Screech"
    ],
-   "note": "Runescale returns Roiling to hand, then replaying it loots and pumps the Dragon."
+   "note": "Runescale returns Roiling to hand, then replaying it loots and pumps the Dragon.",
+   "sourceIds": ["tdm-limited-guide","tdm-17lands","tdm-release-notes"]
   },
   {
    "cards": [
     "Kishla Skimmer",
     "Auroral Procession"
    ],
-   "note": "Cast Procession on your turn to return any card and trigger Skimmer's once-per-turn draw."
+   "note": "Cast Procession on your turn to return any card and trigger Skimmer's once-per-turn draw.",
+   "sourceIds": ["tdm-limited-guide","tdm-17lands","tdm-release-notes"]
   },
   {
    "cards": [
     "Attuned Hunter",
     "Agent of Kotis"
    ],
-   "note": "Agent's renew gives Hunter two counters plus Hunter's leaves-the-graveyard counter."
+   "note": "Agent's renew gives Hunter two counters plus Hunter's leaves-the-graveyard counter.",
+   "sourceIds": ["tdm-limited-guide","tdm-17lands","tdm-release-notes"]
   },
   {
    "cards": [
     "Essence Anchor",
     "Unending Whisper"
    ],
-   "note": "Harmonizing Whisper turns on Anchor's Zombie activation while replacing itself."
+   "note": "Harmonizing Whisper turns on Anchor's Zombie activation while replacing itself.",
+   "sourceIds": ["tdm-limited-guide","tdm-17lands","tdm-release-notes"]
   },
   {
    "cards": [
     "Traveling Botanist",
     "Winternight Stories"
    ],
-   "note": "Tapping Botanist to harmonize Winternight Stories triggers its land selection."
+   "note": "Tapping Botanist to harmonize Winternight Stories triggers its land selection.",
+   "sourceIds": ["tdm-limited-guide","tdm-17lands","tdm-release-notes"]
   },
   {
    "cards": [
     "Kishla Skimmer",
     "Synchronized Charge"
    ],
-   "note": "Casting Charge with harmonize triggers Skimmer before the counter-fueled attack."
+   "note": "Casting Charge with harmonize triggers Skimmer before the counter-fueled attack.",
+   "sourceIds": ["tdm-limited-guide","tdm-17lands","tdm-release-notes"]
   },
   {
    "cards": [
     "Host of the Hereafter",
     "Worthy Cost"
    ],
-   "note": "Sacrificing a creature with counters to Worthy Cost lets Host transplant those counters."
+   "note": "Sacrificing a creature with counters to Worthy Cost lets Host transplant those counters.",
+   "sourceIds": ["tdm-limited-guide","tdm-17lands","tdm-release-notes"]
   },
   {
    "cards": [
     "Stalwart Successor",
     "Synchronized Charge"
    ],
-   "note": "Charge putting two counters on a fresh creature makes Successor supply the third."
+   "note": "Charge putting two counters on a fresh creature makes Successor supply the third.",
+   "sourceIds": ["tdm-limited-guide","tdm-17lands","tdm-release-notes"]
   },
   {
    "cards": [
     "Qarsi Revenant",
     "Hundred-Battle Veteran"
    ],
-   "note": "Qarsi's renew supplies the three counter kinds that switch on Veteran's +2/+4."
+   "note": "Qarsi's renew supplies the three counter kinds that switch on Veteran's +2/+4.",
+   "sourceIds": ["tdm-limited-guide","tdm-17lands","tdm-release-notes"]
   },
   {
    "cards": [
     "Hollowmurk Siege",
     "Snakeskin Veil"
    ],
-   "note": "Veil protects a threat while triggering Hollowmurk Siege's Sultai draw."
+   "note": "Veil protects a threat while triggering Hollowmurk Siege's Sultai draw.",
+   "sourceIds": ["tdm-limited-guide","tdm-17lands","tdm-release-notes"]
   }
  ]
 }

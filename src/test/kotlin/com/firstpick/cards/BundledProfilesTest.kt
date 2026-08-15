@@ -23,13 +23,54 @@ class BundledProfilesTest {
             assertTrue(body != null, "missing bundled profile for ${entry.code}")
             val profile = json.decodeFromString<SetSynergyProfile>(body)
             assertEquals(entry.code, profile.set, "${entry.code}: profile.set must match its filename")
+            assertEquals(
+                emptyList(),
+                SynergyProfileValidator.errors(profile, entry.code),
+                "${entry.code}: provenance schema must be complete and internally consistent",
+            )
             assertTrue(profile.archetypes.isNotEmpty(), "${entry.code}: needs archetypes")
 
+            val sourceIds = profile.sources.mapTo(mutableSetOf()) { it.id }
+            assertTrue(profile.mechanics.all { it.sourceIds.isNotEmpty() && sourceIds.containsAll(it.sourceIds) })
+            assertTrue(profile.archetypes.all { it.sourceIds.isNotEmpty() && sourceIds.containsAll(it.sourceIds) })
+            assertTrue(profile.combos.all { it.sourceIds.isNotEmpty() && sourceIds.containsAll(it.sourceIds) })
+
+            val sourceKinds = profile.sources.associate { it.id to it.kind }
+            assertTrue(
+                profile.mechanics.all { mechanic ->
+                    mechanic.sourceIds.mapNotNull(sourceKinds::get).containsAll(
+                        setOf(SynergySourceKind.OFFICIAL_MECHANICS, SynergySourceKind.OFFICIAL_RELEASE_NOTES),
+                    )
+                },
+                "${entry.code}: every mechanic must cite official mechanics and release notes",
+            )
+            assertTrue(
+                profile.archetypes.all { archetype ->
+                    SynergySourceKind.LIMITED_DATA in archetype.sourceIds.mapNotNull(sourceKinds::get)
+                },
+                "${entry.code}: every archetype must cite Limited data",
+            )
+            assertTrue(
+                profile.combos.all { combo ->
+                    SynergySourceKind.OFFICIAL_RELEASE_NOTES in combo.sourceIds.mapNotNull(sourceKinds::get)
+                },
+                "${entry.code}: every combo must cite official release notes",
+            )
+
             val seen = mutableSetOf<String>()
+            assertTrue(
+                profile.mechanics.all { it.summary.isNotBlank() },
+                "${entry.code}: every mechanic needs usable guide prose",
+            )
             for (arch in profile.archetypes) {
                 assertTrue(arch.pair in pairs, "${entry.code}: bad pair '${arch.pair}'")
                 assertTrue(seen.add(arch.pair), "${entry.code}: duplicate pair '${arch.pair}'")
                 assertTrue(arch.name.isNotBlank(), "${entry.code} ${arch.pair}: needs a name")
+                assertTrue(arch.playstyle.isNotBlank(), "${entry.code} ${arch.pair}: needs a plan")
+                assertTrue(
+                    arch.speed.lowercase() in setOf("aggro", "tempo", "midrange", "control", "ramp"),
+                    "${entry.code} ${arch.pair}: needs a supported speed label",
+                )
                 val roleCards = arch.signposts + arch.payoffs + arch.enablers + arch.keyCards
                 assertTrue(roleCards.size >= 4, "${entry.code} ${arch.pair}: archetype too thin")
                 assertTrue(roleCards.none { it.isBlank() }, "${entry.code} ${arch.pair}: blank card name")

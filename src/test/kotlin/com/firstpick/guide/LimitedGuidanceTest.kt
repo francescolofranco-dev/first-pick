@@ -5,8 +5,11 @@ import com.firstpick.advisor.DeckNeeds
 import com.firstpick.cards.CardRating
 import com.firstpick.cards.SetSynergyProfile
 import com.firstpick.cards.SynergyArchetype
+import com.firstpick.cards.SynergyCombo
 import com.firstpick.cards.SynergyIndex
 import com.firstpick.cards.SynergyMechanic
+import com.firstpick.cards.SynergySource
+import com.firstpick.cards.SynergySourceKind
 import java.net.URI
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -69,6 +72,17 @@ class LimitedGuidanceTest {
             assertEquals("https", uri.scheme, "${source.title} must use HTTPS")
             assertFalse(uri.host.isNullOrBlank(), "${source.title} must have a valid host")
         }
+
+        fun assertClaimSources(principles: List<GuidePrinciple>, guideSources: List<GuideSource>) {
+            val sourceIds = guideSources.map { it.id }
+            assertEquals(sourceIds.size, sourceIds.toSet().size, "source ids must be unique within a guide")
+            for (principle in principles) {
+                assertTrue(principle.sourceIds.isNotEmpty(), "${principle.id} must cite its guidance")
+                assertTrue(sourceIds.containsAll(principle.sourceIds), "${principle.id} has a dangling source")
+            }
+        }
+        assertClaimSources(LimitedGuidance.draftPrinciples, LimitedGuidance.draftSources)
+        assertClaimSources(LimitedGuidance.sealedPrinciples, LimitedGuidance.sealedSources)
     }
 
     @Test
@@ -107,6 +121,14 @@ class LimitedGuidanceTest {
             white.nonCommons.map { it.name },
         )
         assertEquals(listOf("Blue Common"), guide.topCards.single { it.color == 'U' }.commons.map { it.name })
+        val cardSourceIds = guide.topCards.single { it.color == 'W' }.sourceIds
+        assertEquals(2, cardSourceIds.size)
+        assertTrue(LimitedGuidance.metricsSourceId in cardSourceIds)
+        val exactCardSource = guide.sources.single { it.id == cardSourceIds.first() }
+        assertTrue(exactCardSource.url.contains("/api/card_data"))
+        assertTrue(exactCardSource.url.contains("expansion=TST"))
+        assertTrue(exactCardSource.url.contains("event_type=PremierDraft"))
+        assertTrue(guide.sources.any { it.id == LimitedGuidance.metricsSourceId })
 
         val includedNames = guide.topCards.flatMap { it.commons + it.nonCommons }.map { it.name }
         assertFalse("Gold Common" in includedNames)
@@ -117,22 +139,43 @@ class LimitedGuidanceTest {
 
     @Test
     fun builderMapsSetProfileMechanicsAndArchetypes() {
+        val profileSource = SynergySource(
+            id = "tst-limited-guide",
+            title = "Test Set Limited Guide",
+            publisher = "Wizards of the Coast",
+            author = "Test Author",
+            date = "2026-08-14",
+            url = "https://magic.wizards.com/en/news/feature/test-set-limited-guide",
+            kind = SynergySourceKind.OFFICIAL_LIMITED_GUIDE,
+        )
         val synergy = SynergyIndex(
             SetSynergyProfile(
                 set = "TST",
                 setName = "Test Set",
                 generated = "2026-08-14",
-                mechanics = listOf(SynergyMechanic("Investigate", "Create Clue tokens.")),
+                updatedAt = "2026-08-14",
+                sources = listOf(profileSource),
+                mechanics = listOf(
+                    SynergyMechanic("Investigate", "Create Clue tokens.", listOf(profileSource.id)),
+                ),
                 archetypes = listOf(
                     SynergyArchetype(
                         pair = "UG",
                         name = "Clue Value",
                         playstyle = "Accumulate artifacts, then turn them into cards and threats.",
                         speed = "midrange",
+                        sourceIds = listOf(profileSource.id),
                         signposts = listOf("Signpost Sleuth"),
                         enablers = listOf("Clue Maker"),
                         payoffs = listOf("Evidence Expert"),
                         keyCards = listOf("Case Cracker"),
+                    ),
+                ),
+                combos = listOf(
+                    SynergyCombo(
+                        cards = listOf("Clue Maker", "Evidence Expert"),
+                        note = "Turn setup into a payoff.",
+                        sourceIds = listOf(profileSource.id),
                     ),
                 ),
             ),
@@ -148,7 +191,10 @@ class LimitedGuidanceTest {
 
         assertEquals("Test Set", guide.setName)
         assertEquals("2026-08-14", guide.generated)
-        assertEquals(listOf(GuideMechanic("Investigate", "Create Clue tokens.")), guide.mechanics)
+        assertEquals(
+            listOf(GuideMechanic("Investigate", "Create Clue tokens.", listOf(profileSource.id))),
+            guide.mechanics,
+        )
         assertEquals(
             GuideArchetype(
                 pair = "UG",
@@ -160,8 +206,50 @@ class LimitedGuidanceTest {
                 enablers = listOf("Clue Maker"),
                 payoffs = listOf("Evidence Expert"),
                 keyCards = listOf("Case Cracker"),
+                sourceIds = listOf(profileSource.id),
             ),
             guide.archetypes.single(),
+        )
+        assertEquals(
+            listOf(
+                GuideCombo(
+                    cards = listOf("Clue Maker", "Evidence Expert"),
+                    note = "Turn setup into a payoff.",
+                    sourceIds = listOf(profileSource.id),
+                ),
+            ),
+            guide.combos,
+        )
+        assertTrue(guide.sources.any { it.id == profileSource.id && it.author == profileSource.author })
+    }
+
+    @Test
+    fun profileCannotHijackAGeneralPrincipleSourceId() {
+        val collidingSource = SynergySource(
+            id = "draft-basics",
+            title = "Impostor",
+            publisher = "Unknown",
+            author = "Unknown",
+            date = "2026-08-15",
+            url = "https://example.com/impostor",
+            kind = SynergySourceKind.OFFICIAL_LIMITED_GUIDE,
+        )
+        val synergy = SynergyIndex(
+            SetSynergyProfile(
+                set = "TST",
+                setName = "Hijacked Guide",
+                sources = listOf(collidingSource),
+                mechanics = listOf(SynergyMechanic("Fake", "Fake guidance", listOf(collidingSource.id))),
+            ),
+        )
+
+        val guide = SetDraftGuideBuilder.build("TST", "PremierDraft", emptyList(), synergy)
+
+        assertEquals("TST", guide.setName, "a colliding profile must fail closed to data-only guidance")
+        assertTrue(guide.mechanics.isEmpty())
+        assertEquals(
+            "The Basics of Booster Draft",
+            guide.sources.single { it.id == "draft-basics" }.title,
         )
     }
 }

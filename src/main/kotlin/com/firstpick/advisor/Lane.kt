@@ -68,13 +68,40 @@ object LaneDetector {
     fun colorsOf(card: RankedCard): Set<Char> =
         card.rating?.color.orEmpty().filter { it in WUBRG }.toSet()
 
-    fun uncastableColors(colors: Set<Char>, available: Set<Char>, hybridGroups: List<Set<Char>> = emptyList()): Set<Char> {
-        if (hybridGroups.isEmpty()) return colors - available
+    fun uncastableColors(
+        colors: Set<Char>,
+        available: Set<Char>,
+        hybridGroups: List<Set<Char>> = emptyList(),
+        pureColors: Set<Char>? = null,
+    ): Set<Char> = uncastableColorOptions(colors, available, hybridGroups, pureColors).flatten().toSet()
+
+    /**
+     * Returns every minimal set of additional colors that can cast the card.
+     * Keeping hybrid alternatives separate prevents `{B/R}` from becoming a
+     * false two-color requirement and prevents `{B}{B/R}` from hiding pure B.
+     */
+    fun uncastableColorOptions(
+        colors: Set<Char>,
+        available: Set<Char>,
+        hybridGroups: List<Set<Char>> = emptyList(),
+        pureColors: Set<Char>? = null,
+    ): List<Set<Char>> {
         val hybridColors = hybridGroups.flatten().toSet()
-        val offPure = (colors - hybridColors) - available
-        val offHybrid = hybridGroups.filter { group -> group.none { it in available } }.flatten().toSet()
-        return offPure + offHybrid
+        val mandatory = ((pureColors ?: (colors - hybridColors)) - available).filterTo(mutableSetOf()) { it in WUBRG }
+        var options = listOf<Set<Char>>(mandatory)
+        for (group in hybridGroups.map { it.filterTo(mutableSetOf()) { color -> color in WUBRG } }.filter { it.isNotEmpty() }) {
+            options = options.flatMap { current ->
+                if (group.any { it in available || it in current }) listOf(current)
+                else group.map { current + it }
+            }.distinct().filterMinimalColorSets()
+        }
+        return options.filterMinimalColorSets().sortedWith(
+            compareBy<Set<Char>> { it.size }.thenBy { option -> WUBRG_ORDER.filter(option::contains) },
+        )
     }
+
+    private fun List<Set<Char>>.filterMinimalColorSets(): List<Set<Char>> =
+        filter { candidate -> none { other -> other !== candidate && other.size < candidate.size && candidate.containsAll(other) } }
 
     private fun poolFit(pool: List<RankedCard>, metrics: SetMetrics, pair: String): Double {
         val pairSet = pair.toSet()

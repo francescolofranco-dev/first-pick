@@ -2,34 +2,80 @@
  "set": "OTJ",
  "setName": "Outlaws of Thunder Junction",
  "generated": "2026-07-04",
+ "schemaVersion": 2,
+ "updatedAt": "2026-08-15",
+ "sources": [
+ {
+  "id": "otj-mechanics",
+  "title": "Outlaws of Thunder Junction Mechanics",
+  "publisher": "Wizards of the Coast",
+  "author": "Matt Tabak",
+  "date": "2024-03-26",
+  "url": "https://magic.wizards.com/en/news/feature/outlaws-of-thunder-junction-mechanics",
+  "kind": "OFFICIAL_MECHANICS"
+ },
+ {
+  "id": "otj-limited-guide",
+  "title": "Outlaws of Thunder Junction Prerelease Primer",
+  "publisher": "Wizards of the Coast",
+  "author": "Gavin Verhey",
+  "date": "2024-04-10",
+  "url": "https://magic.wizards.com/en/news/feature/outlaws-of-thunder-junction-prerelease-primer",
+  "kind": "OFFICIAL_LIMITED_GUIDE"
+ },
+ {
+  "id": "otj-release-notes",
+  "title": "Outlaws of Thunder Junction Release Notes",
+  "publisher": "Wizards of the Coast",
+  "author": "Eric Levine",
+  "date": "2024-04-05",
+  "url": "https://magic.wizards.com/en/news/feature/outlaws-of-thunder-junction-release-notes",
+  "kind": "OFFICIAL_RELEASE_NOTES"
+ },
+ {
+  "id": "otj-17lands",
+  "title": "17Lands Public Limited Data (OTJ)",
+  "publisher": "17Lands",
+  "author": "17Lands contributors",
+  "date": "2026-08-15",
+  "url": "https://www.17lands.com/public_datasets",
+  "kind": "LIMITED_DATA"
+ }
+ ],
  "mechanics": [
-  {
-   "name": "Plot",
-   "summary": ""
+    {
+      "name": "Plot",
+      "summary": "At sorcery speed, pay a card's plot cost to exile it from your hand; on a later turn, you may cast it from exile for free as a sorcery.",
+   "sourceIds": ["otj-mechanics","otj-release-notes"]
   },
-  {
-   "name": "Spree",
-   "summary": ""
+    {
+      "name": "Spree",
+      "summary": "A spree spell asks you to choose one or more modes and pay each chosen mode's additional cost, with every selected mode used once.",
+   "sourceIds": ["otj-mechanics","otj-release-notes"]
   },
-  {
-   "name": "Saddle",
-   "summary": ""
+    {
+      "name": "Saddle",
+      "summary": "At sorcery speed, tap other creatures with enough total power to saddle a Mount for the turn and enable its saddled rewards when it attacks.",
+   "sourceIds": ["otj-mechanics","otj-release-notes"]
   },
-  {
-   "name": "Treasure",
-   "summary": ""
+    {
+      "name": "Treasure",
+      "summary": "A Treasure is an artifact token you can tap and sacrifice to add one mana of any color, providing temporary acceleration or fixing.",
+   "sourceIds": ["otj-mechanics","otj-release-notes"]
   },
-  {
-   "name": "Surveil",
-   "summary": ""
+    {
+      "name": "Surveil",
+      "summary": "Look at the top cards of your library, put any of them into your graveyard, and leave the rest on top in any order.",
+   "sourceIds": ["otj-mechanics","otj-release-notes"]
   }
  ],
  "archetypes": [
-  {
-   "pair": "WU",
-   "name": "Plot tempo",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "WU",
+      "name": "Plot tempo",
+      "playstyle": "Plot spells during quiet turns, then cast them for free alongside interaction or evasive threats to create a decisive tempo swing.",
+      "speed": "tempo",
+   "sourceIds": ["otj-limited-guide","otj-17lands"],
    "signposts": [
     "Jem Lightfoote, Sky Explorer",
     "Wrangler of the Damned"
@@ -66,11 +112,12 @@
     "Oasis Gardener"
    ]
   },
-  {
-   "pair": "WB",
-   "name": "Mercenaries",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "WB",
+      "name": "Mercenaries",
+      "playstyle": "Build a board of Mercenaries and other expendable Outlaws, using attack boosts, sacrifice, and recursion to extract value from every body.",
+      "speed": "midrange",
+   "sourceIds": ["otj-limited-guide","otj-17lands"],
    "signposts": [
     "Ruthless Lawbringer",
     "Baron Bertram Graywater"
@@ -107,11 +154,12 @@
     "Forlorn Flats"
    ]
   },
-  {
-   "pair": "WR",
-   "name": "Aggro",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "WR",
+      "name": "Aggro",
+      "playstyle": "Create multiple attackers quickly, then use combat tricks, removal, and Mercenary support to keep blockers from stopping the assault.",
+      "speed": "aggro",
+   "sourceIds": ["otj-limited-guide","otj-17lands"],
    "signposts": [
     "Ertha Jo, Frontier Mentor",
     "Form a Posse"
@@ -148,11 +196,12 @@
     "Bristling Backwoods"
    ]
   },
-  {
-   "pair": "WG",
-   "name": "Tokens",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "WG",
+      "name": "Tokens",
+      "playstyle": "Develop token riders and sturdy Mounts, using spare creature power to saddle attacks while maintaining a broad battlefield.",
+      "speed": "midrange",
+   "sourceIds": ["otj-limited-guide","otj-17lands"],
    "signposts": [
     "Congregation Gryff",
     "Miriam, Herd Whisperer"
@@ -189,11 +238,12 @@
     "Prosperity Tycoon"
    ]
   },
-  {
-   "pair": "UB",
-   "name": "Crime control",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "UB",
+      "name": "Crime control",
+      "playstyle": "Commit crimes with targeted removal, counters, and abilities, then let repeated crime triggers provide the cards and threats for a long game.",
+      "speed": "control",
+   "sourceIds": ["otj-limited-guide","otj-17lands"],
    "signposts": [
     "Lazav, Familiar Stranger",
     "Intimidation Campaign"
@@ -230,11 +280,12 @@
     "Stop Cold"
    ]
   },
-  {
-   "pair": "UR",
-   "name": "Spells/plot",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "UR",
+      "name": "Spells/plot",
+      "playstyle": "Combine plot and cheap noncreature spells to double-spell efficiently, grow spell payoffs, and attack while holding up interaction.",
+      "speed": "tempo",
+   "sourceIds": ["otj-limited-guide","otj-17lands"],
    "signposts": [
     "Kraum, Violent Cacophony",
     "Slick Sequence"
@@ -271,11 +322,12 @@
     "Nimble Brigand"
    ]
   },
-  {
-   "pair": "UG",
-   "name": "Ramp",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "UG",
+      "name": "Ramp",
+      "playstyle": "Fix and accelerate mana, use plot to bank expensive cards, and take over with large threats plus card-advantage spells.",
+      "speed": "ramp",
+   "sourceIds": ["otj-limited-guide","otj-17lands"],
    "signposts": [
     "Doc Aurlock, Grizzled Genius",
     "Make Your Own Luck"
@@ -312,11 +364,12 @@
     "Daring Thunder-Thief"
    ]
   },
-  {
-   "pair": "BR",
-   "name": "Outlaws sacrifice",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "BR",
+      "name": "Outlaws sacrifice",
+      "playstyle": "Pressure with Outlaws, create disposable bodies, and sacrifice or trade them so type and death payoffs continue dealing damage.",
+      "speed": "aggro",
+   "sourceIds": ["otj-limited-guide","otj-17lands"],
    "signposts": [
     "Vial Smasher, Gleeful Grenadier",
     "At Knifepoint"
@@ -353,11 +406,12 @@
     "Resilient Roadrunner"
    ]
   },
-  {
-   "pair": "BG",
-   "name": "Graveyard",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "BG",
+      "name": "Graveyard",
+      "playstyle": "Stock the graveyard through self-mill and trades, then recur efficient creatures and leverage cards that become cheaper or stronger from that setup.",
+      "speed": "midrange",
+   "sourceIds": ["otj-limited-guide","otj-17lands"],
    "signposts": [
     "Honest Rutstein",
     "Badlands Revival"
@@ -394,11 +448,12 @@
     "Bucolic Ranch"
    ]
   },
-  {
-   "pair": "RG",
-   "name": "Saddle aggro",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "RG",
+      "name": "Saddle aggro",
+      "playstyle": "Curve capable riders into high-power Mounts, saddle them without giving up pressure, and use tricks to force through damaging attacks.",
+      "speed": "aggro",
+   "sourceIds": ["otj-limited-guide","otj-17lands"],
    "signposts": [
     "Cactusfolk Sureshot",
     "Jolene, Plundering Pugilist"

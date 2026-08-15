@@ -2,22 +2,66 @@
  "set": "DFT",
  "setName": "Aetherdrift",
  "generated": "2026-07-20",
+ "schemaVersion": 2,
+ "updatedAt": "2026-08-15",
+ "sources": [
+ {
+  "id": "dft-mechanics",
+  "title": "Aetherdrift Mechanics",
+  "publisher": "Wizards of the Coast",
+  "author": "Matt Tabak",
+  "date": "2025-01-21",
+  "url": "https://magic.wizards.com/en/news/feature/aetherdrift-mechanics",
+  "kind": "OFFICIAL_MECHANICS"
+ },
+ {
+  "id": "dft-limited-guide",
+  "title": "The Guide to Your First Prerelease with Aetherdrift",
+  "publisher": "Wizards of the Coast",
+  "author": "Jubilee Finnegan",
+  "date": "2025-01-31",
+  "url": "https://magic.wizards.com/en/news/feature/the-guide-to-your-first-prerelease-with-aetherdrift",
+  "kind": "OFFICIAL_LIMITED_GUIDE"
+ },
+ {
+  "id": "dft-release-notes",
+  "title": "Aetherdrift Release Notes",
+  "publisher": "Wizards of the Coast",
+  "author": "Jess Dunks",
+  "date": "2025-01-31",
+  "url": "https://magic.wizards.com/en/news/feature/aetherdrift-release-notes",
+  "kind": "OFFICIAL_RELEASE_NOTES"
+ },
+ {
+  "id": "dft-17lands",
+  "title": "17Lands Public Limited Data (DFT)",
+  "publisher": "17Lands",
+  "author": "17Lands contributors",
+  "date": "2026-08-15",
+  "url": "https://www.17lands.com/public_datasets",
+  "kind": "LIMITED_DATA"
+ }
+ ],
  "mechanics": [
   {
    "name": "Start your engines! / Speed",
-   "summary": "Your speed starts at 1 and ticks up once each of your turns that an opponent loses life, to a max of 4. 40 cards start your engines and 34 have Max speed abilities that turn on (or upgrade) once you hit speed 4 \u2014 rewarding a fast, damage-every-turn clock."
+   "summary": "Your speed starts at 1 and ticks up once each of your turns that an opponent loses life, to a max of 4. 40 cards start your engines and 34 have Max speed abilities that turn on (or upgrade) once you hit speed 4 \u2014 rewarding a fast, damage-every-turn clock.",
+   "sourceIds": ["dft-mechanics","dft-release-notes"]
   },
   {
    "name": "Vehicles + Mounts",
-   "summary": "41 Vehicles and 14 Mounts. Crew taps creatures to animate Vehicles; Saddle taps creatures (total power N) to power up a Mount for the turn. Both want a wide, expendable board and turn spare bodies into evasive damage."
+   "summary": "41 Vehicles and 14 Mounts. Crew taps creatures to animate Vehicles; Saddle taps creatures (total power N) to power up a Mount for the turn. Both want a wide, expendable board and turn spare bodies into evasive damage.",
+   "sourceIds": ["dft-mechanics","dft-release-notes"]
   },
   {
    "name": "Exhaust",
-   "summary": "Exhaust abilities can each be activated only once ever; several payoffs trigger 'whenever you activate an exhaust ability.' A grindy value axis \u2014 get one big activation, then reward the click."
+   "summary": "Exhaust abilities can each be activated only once ever; several payoffs trigger 'whenever you activate an exhaust ability.' A grindy value axis \u2014 get one big activation, then reward the click.",
+   "sourceIds": ["dft-mechanics","dft-release-notes"]
   },
   {
    "name": "Cycling",
-   "summary": "28 cards with Cycling (including cycling lands): pay to discard for a card, smoothing draws and feeding graveyard/discard payoffs while never being a dead card."
+   "summary": "28 cards with Cycling (including cycling lands): pay to discard for a card, smoothing draws and feeding graveyard/discard payoffs while never being a dead card.",
+   "sourceIds": ["dft-mechanics","dft-release-notes"]
   }
  ],
  "archetypes": [
@@ -26,6 +70,7 @@
    "name": "Artifact affinity value",
    "playstyle": "Flood the board with cheap artifacts and Vehicles, then cash them in: affinity spells come down nearly free while per-artifact scalers snowball the count. Removal and card advantage grind the midgame \u2014 a high-ceiling engine that needs real artifact density to pay off.",
    "speed": "midrange",
+   "sourceIds": ["dft-limited-guide","dft-17lands"],
    "signposts": [
     "Guidelight Pathmaker",
     "Voyage Home"
@@ -60,6 +105,7 @@
    "name": "Max-speed drain",
    "playstyle": "Flood a wide Zombie board, then turn every dying body into drain once speed hits max. Cheap sacrifice fodder, premium removal, and graveyard recursion out-attrition the removal-light field into a slow bleed-out.",
    "speed": "midrange",
+   "sourceIds": ["dft-limited-guide","dft-17lands"],
    "signposts": [
     "Dune Drifter",
     "Embalmed Ascendant"
@@ -95,6 +141,7 @@
    "name": "Speedway go-wide",
    "playstyle": "Curve out cheap Pilots and Goblins, then crew Vehicles and saddle Mounts to convert spare bodies into evasive damage every turn. Chip in each combat to tick up your speed and cash in the max-speed payoffs before the grind sets in.",
    "speed": "aggro",
+   "sourceIds": ["dft-limited-guide","dft-17lands"],
    "signposts": [
     "Cloudspire Coordinator",
     "Cloudspire Skycycle"
@@ -130,6 +177,7 @@
    "name": "Saddle-up counters",
    "playstyle": "Chain cheap bodies into saddled Mounts and crewed Vehicles, then snowball +1/+1 counters \u2014 Caradora doubles them \u2014 and swing with ever-growing, evasive threats. White removal buys the time to out-size the midrange race.",
    "speed": "midrange",
+   "sourceIds": ["dft-limited-guide","dft-17lands"],
    "signposts": [
     "Lagorin, Soul of Alacria",
     "Veteran Beastrider"
@@ -162,6 +210,7 @@
    "name": "Artifact drain",
    "playstyle": "Flood the board with cheap artifacts and Thopter tokens, then convert them into repeated life swings with Pactdoll Terror and Haunt the Network. Grind behind removal, card advantage, and lifelink while the incremental drain closes the game.",
    "speed": "midrange",
+   "sourceIds": ["dft-limited-guide","dft-17lands"],
    "signposts": [
     "Haunt the Network",
     "Haunted Hellride"
@@ -194,6 +243,7 @@
    "name": "Loot-and-swing discard",
    "playstyle": "Loot and cycle every turn to pile +1/+1 counters onto Marauding Mako and Scrounging Skyray and fuel Captain Howler's alpha strikes; the card filtering is the engine, so prize discard outlets over raw tempo. Rummage away dead lands and cyclers into pressure while your rares carry the top end.",
    "speed": "midrange",
+   "sourceIds": ["dft-limited-guide","dft-17lands"],
    "signposts": [
     "Boosted Sloop",
     "Broadside Barrage"
@@ -227,6 +277,7 @@
    "name": "Exhaust ramp",
    "playstyle": "Ramp early with dorks and land-fetch, then dump mana into pricey one-time Exhaust abilities that snowball +1/+1 counters and refill your hand. Reuse Exhausts with Elvish Refueler and close with a Sita Varma counter-transfer swing or an over-the-top bomb.",
    "speed": "midrange",
+   "sourceIds": ["dft-limited-guide","dft-17lands"],
    "signposts": [
     "Rangers' Aetherhive",
     "Skyserpent Seeker"
@@ -261,6 +312,7 @@
    "name": "Max-speed aggro",
    "playstyle": "Deploy a cheap aggressive board and chip every turn to sprint to max speed, flipping on double strike, doubled damage, and speed-fueled card draw. Black removal and drain clear blockers so the clock never stalls.",
    "speed": "aggro",
+   "sourceIds": ["dft-limited-guide","dft-17lands"],
    "signposts": [
     "Apocalypse Runner",
     "Gastal Thrillseeker"
@@ -295,6 +347,7 @@
    "name": "Graveyard reanimator",
    "playstyle": "Self-mill and surveil to stock the yard, then reanimate creatures and Vehicles for grindy value and life drain. Lean on efficient black removal to survive into a late game where a single returned bomb closes it out.",
    "speed": "midrange",
+   "sourceIds": ["dft-limited-guide","dft-17lands"],
    "signposts": [
     "Broodheart Engine",
     "Thundering Broodwagon"
@@ -329,6 +382,7 @@
    "name": "Exhaust midrange",
    "playstyle": "Curve out with green beaters, then sink Treasure and floated mana into repeatable exhaust activations for +1/+1 counters, haste, and card advantage. Grind a removal-light format with recurring value engines into game-ending bombs.",
    "speed": "midrange",
+   "sourceIds": ["dft-limited-guide","dft-17lands"],
    "signposts": [
     "Boom Scholar",
     "Rocketeer Boostbuggy"
@@ -364,154 +418,176 @@
     "Caradora, Heart of Alacria",
     "Lagorin, Soul of Alacria"
    ],
-   "note": "Caradora tutors up Lagorin and adds one to every +1/+1 counter Lagorin's saddled attack hands out"
+   "note": "Caradora tutors up Lagorin and adds one to every +1/+1 counter Lagorin's saddled attack hands out",
+   "sourceIds": ["dft-limited-guide","dft-17lands","dft-release-notes"]
   },
   {
    "cards": [
     "Lagorin, Soul of Alacria",
     "Autarch Mammoth"
    ],
-   "note": "Lagorin's flying saddled attack drops counters on the Mammoth, which also spits out a 3/3 whenever it attacks saddled"
+   "note": "Lagorin's flying saddled attack drops counters on the Mammoth, which also spits out a 3/3 whenever it attacks saddled",
+   "sourceIds": ["dft-limited-guide","dft-17lands","dft-release-notes"]
   },
   {
    "cards": [
     "Caradora, Heart of Alacria",
     "Autarch Mammoth"
    ],
-   "note": "Caradora fetches the Mammoth and turbo-charges its counter output"
+   "note": "Caradora fetches the Mammoth and turbo-charges its counter output",
+   "sourceIds": ["dft-limited-guide","dft-17lands","dft-release-notes"]
   },
   {
    "cards": [
     "Veteran Beastrider",
     "Autarch Mammoth"
    ],
-   "note": "Beastrider's end-step untap frees the creatures you tapped to saddle the Mammoth to block or crew again"
+   "note": "Beastrider's end-step untap frees the creatures you tapped to saddle the Mammoth to block or crew again",
+   "sourceIds": ["dft-limited-guide","dft-17lands","dft-release-notes"]
   },
   {
    "cards": [
     "Cloudspire Coordinator",
     "Kolodin, Triumph Caster"
    ],
-   "note": "Kolodin's enters-saddled/crewed Mounts and Vehicles count for a flood of Coordinator Pilot tokens"
+   "note": "Kolodin's enters-saddled/crewed Mounts and Vehicles count for a flood of Coordinator Pilot tokens",
+   "sourceIds": ["dft-limited-guide","dft-17lands","dft-release-notes"]
   },
   {
    "cards": [
     "Cloudspire Captain",
     "Cloudspire Coordinator"
    ],
-   "note": "The Captain lets the Coordinator's 1/1 Pilots crew and saddle above their weight while anthem-pumping the fleet"
+   "note": "The Captain lets the Coordinator's 1/1 Pilots crew and saddle above their weight while anthem-pumping the fleet",
+   "sourceIds": ["dft-limited-guide","dft-17lands","dft-release-notes"]
   },
   {
    "cards": [
     "Thopter Fabricator",
     "Haunt the Network"
    ],
-   "note": "A wide Thopter board makes Haunt the Network's artifact-count drain lethal, and it adds two more Thopters"
+   "note": "A wide Thopter board makes Haunt the Network's artifact-count drain lethal, and it adds two more Thopters",
+   "sourceIds": ["dft-limited-guide","dft-17lands","dft-release-notes"]
   },
   {
    "cards": [
     "Pactdoll Terror",
     "Nimble Thopterist"
    ],
-   "note": "Each Thopter token entering pings the opponent for one and gains you a life through Pactdoll Terror"
+   "note": "Each Thopter token entering pings the opponent for one and gains you a life through Pactdoll Terror",
+   "sourceIds": ["dft-limited-guide","dft-17lands","dft-release-notes"]
   },
   {
    "cards": [
     "Pactdoll Terror",
     "Thopter Fabricator"
    ],
-   "note": "Every Thopter Fabricator token is another Pactdoll Terror drain trigger"
+   "note": "Every Thopter Fabricator token is another Pactdoll Terror drain trigger",
+   "sourceIds": ["dft-limited-guide","dft-17lands","dft-release-notes"]
   },
   {
    "cards": [
     "Mendicant Core, Guidelight",
     "Guidelight Synergist"
    ],
-   "note": "Both scale straight off artifact count, growing huge in a dense artifact deck"
+   "note": "Both scale straight off artifact count, growing huge in a dense artifact deck",
+   "sourceIds": ["dft-limited-guide","dft-17lands","dft-release-notes"]
   },
   {
    "cards": [
     "Captain Howler, Sea Scourge",
     "Marauding Mako"
    ],
-   "note": "One discard both pumps Captain Howler's target and stacks counters on the Mako"
+   "note": "One discard both pumps Captain Howler's target and stacks counters on the Mako",
+   "sourceIds": ["dft-limited-guide","dft-17lands","dft-release-notes"]
   },
   {
    "cards": [
     "Boosted Sloop",
     "Scrounging Skyray"
    ],
-   "note": "The Sloop's attack-step loot feeds a counter onto the Skyray every combat"
+   "note": "The Sloop's attack-step loot feeds a counter onto the Skyray every combat",
+   "sourceIds": ["dft-limited-guide","dft-17lands","dft-release-notes"]
   },
   {
    "cards": [
     "Fearless Swashbuckler",
     "Marauding Mako"
    ],
-   "note": "Swashbuckler's attack loot dumps two cards to spike the Mako with counters"
+   "note": "Swashbuckler's attack loot dumps two cards to spike the Mako with counters",
+   "sourceIds": ["dft-limited-guide","dft-17lands","dft-release-notes"]
   },
   {
    "cards": [
     "Elvish Refueler",
     "Afterburner Expert"
    ],
-   "note": "Elvish Refueler resets exhaust abilities so Afterburner Expert can fire its counter pump twice in a turn"
+   "note": "Elvish Refueler resets exhaust abilities so Afterburner Expert can fire its counter pump twice in a turn",
+   "sourceIds": ["dft-limited-guide","dft-17lands","dft-release-notes"]
   },
   {
    "cards": [
     "Elvish Refueler",
     "Sita Varma, Masked Racer"
    ],
-   "note": "Refueler lets Sita Varma exhaust twice, doubling the counters and the team-wide power swing"
+   "note": "Refueler lets Sita Varma exhaust twice, doubling the counters and the team-wide power swing",
+   "sourceIds": ["dft-limited-guide","dft-17lands","dft-release-notes"]
   },
   {
    "cards": [
     "Sita Varma, Masked Racer",
     "Rangers' Refueler"
    ],
-   "note": "Every exhaust activation draws a card off Rangers' Refueler while Sita Varma piles on counters"
+   "note": "Every exhaust activation draws a card off Rangers' Refueler while Sita Varma piles on counters",
+   "sourceIds": ["dft-limited-guide","dft-17lands","dft-release-notes"]
   },
   {
    "cards": [
     "Boom Scholar",
     "Rocketeer Boostbuggy"
    ],
-   "note": "Boom Scholar makes the Boostbuggy's exhaust cheaper, and its Treasure helps pay the rest"
+   "note": "Boom Scholar makes the Boostbuggy's exhaust cheaper, and its Treasure helps pay the rest",
+   "sourceIds": ["dft-limited-guide","dft-17lands","dft-release-notes"]
   },
   {
    "cards": [
     "Gastal Thrillseeker",
     "Far Fortune, End Boss"
    ],
-   "note": "Thrillseeker's enter-damage and Far Fortune's attack pings both tick your speed toward max every turn"
+   "note": "Thrillseeker's enter-damage and Far Fortune's attack pings both tick your speed toward max every turn",
+   "sourceIds": ["dft-limited-guide","dft-17lands","dft-release-notes"]
   },
   {
    "cards": [
     "Embalmed Ascendant",
     "Gas Guzzler"
    ],
-   "note": "The Zombie tokens feed Gas Guzzler's max-speed sacrifice drain while both race speed to 4"
+   "note": "The Zombie tokens feed Gas Guzzler's max-speed sacrifice drain while both race speed to 4",
+   "sourceIds": ["dft-limited-guide","dft-17lands","dft-release-notes"]
   },
   {
    "cards": [
     "Dune Drifter",
     "Nesting Bot"
    ],
-   "note": "Dune Drifter reanimates a dead body \u2014 the Servo-making Nesting Bot is happy to come back and die again"
+   "note": "Dune Drifter reanimates a dead body \u2014 the Servo-making Nesting Bot is happy to come back and die again",
+   "sourceIds": ["dft-limited-guide","dft-17lands","dft-release-notes"]
   },
   {
    "cards": [
     "Boom Scholar",
     "Afterburner Expert"
    ],
-   "note": "Boom Scholar makes Afterburner Expert's exhaust cheaper, and firing it returns the Expert from the graveyard for another body"
+   "note": "Boom Scholar makes Afterburner Expert's exhaust cheaper, and firing it returns the Expert from the graveyard for another body",
+   "sourceIds": ["dft-limited-guide","dft-17lands","dft-release-notes"]
   },
   {
    "cards": [
     "Kolodin, Triumph Caster",
     "Voyager Glidecar"
    ],
-   "note": "Kolodin turns the Glidecar into a hasty artifact creature the moment it enters"
+   "note": "Kolodin turns the Glidecar into a hasty artifact creature the moment it enters",
+   "sourceIds": ["dft-limited-guide","dft-17lands","dft-release-notes"]
   }
  ]
 }

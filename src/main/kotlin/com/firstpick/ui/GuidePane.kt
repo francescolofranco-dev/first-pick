@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -31,6 +32,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -38,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.firstpick.guide.GuideArchetype
 import com.firstpick.guide.GuideCard
+import com.firstpick.guide.GuideCombo
 import com.firstpick.guide.GuidePrinciple
 import com.firstpick.guide.GuideSource
 import com.firstpick.guide.LimitedGuidance
@@ -87,6 +94,10 @@ private fun GuidePageButton(label: String, selected: Boolean, onClick: () -> Uni
         Modifier
             .clip(RoundedCornerShape(6.dp))
             .background(if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.18f) else Color.Transparent)
+            .semantics {
+                role = Role.Tab
+                this.selected = selected
+            }
             .clickable(onClick = onClick)
             .padding(horizontal = 14.dp, vertical = 6.dp),
     ) {
@@ -141,6 +152,7 @@ private fun SetGuideReady(guide: SetDraftGuide, onOpenSource: (String) -> Unit) 
         mutableStateOf(guide.topCards.firstOrNull()?.color ?: 'W')
     }
     val colorCards = guide.topCards.firstOrNull { it.color == selectedColor }
+    val observedDataSources = guideSourcesFor(guide.topCards.flatMap { it.sourceIds }, guide.sources)
 
     LazyColumn(
         Modifier.fillMaxSize(),
@@ -173,7 +185,12 @@ private fun SetGuideReady(guide: SetDraftGuide, onOpenSource: (String) -> Unit) 
         if (guide.mechanics.isNotEmpty()) {
             item { GuideSectionLabel("Set mechanics", "Rules and practical draft implications") }
             items(guide.mechanics, key = { it.name }) { mechanic ->
-                GuideTextCard(mechanic.name, mechanic.summary)
+                GuideTextCard(
+                    mechanic.name,
+                    mechanic.summary,
+                    guideSourcesFor(mechanic.sourceIds, guide.sources),
+                    onOpenSource,
+                )
             }
         }
 
@@ -186,6 +203,19 @@ private fun SetGuideReady(guide: SetDraftGuide, onOpenSource: (String) -> Unit) 
                     onToggle = {
                         expandedPair = if (expandedPair == archetype.pair) null else archetype.pair
                     },
+                    sources = guideSourcesFor(archetype.sourceIds, guide.sources),
+                    onOpenSource = onOpenSource,
+                )
+            }
+        }
+
+        if (guide.combos.isNotEmpty()) {
+            item { GuideSectionLabel("Combos & interactions", "Curated card relationships used by the synergy engine") }
+            items(guide.combos) { combo ->
+                GuideComboCard(
+                    combo,
+                    guideSourcesFor(combo.sourceIds, guide.sources),
+                    onOpenSource,
                 )
             }
         }
@@ -200,6 +230,10 @@ private fun SetGuideReady(guide: SetDraftGuide, onOpenSource: (String) -> Unit) 
                     guide.topCards.forEach { cards ->
                         ColorGuideButton(cards.color, selectedColor == cards.color) { selectedColor = cards.color }
                     }
+                }
+                if (observedDataSources.isNotEmpty()) {
+                    Spacer(Modifier.height(7.dp))
+                    GuideCitations(observedDataSources, onOpenSource)
                 }
             }
             item {
@@ -216,12 +250,18 @@ private fun SetGuideReady(guide: SetDraftGuide, onOpenSource: (String) -> Unit) 
 
         if (guide.principles.isNotEmpty()) {
             item { GuideSectionLabel("Draft fundamentals", "The principles also used by FirstPick's engine") }
-            items(guide.principles, key = { it.id }) { principle -> GuidePrincipleCard(principle) }
+            items(guide.principles, key = { it.id }) { principle ->
+                GuidePrincipleCard(
+                    principle,
+                    guideSourcesFor(principle.sourceIds, guide.sources),
+                    onOpenSource,
+                )
+            }
         }
 
         if (guide.sources.isNotEmpty()) {
             item { GuideSectionLabel("Sources", "Open the original articles, data references, and shows") }
-            items(guide.sources, key = { it.url }) { source -> GuideSourceRow(source, onOpenSource) }
+            items(guide.sources, key = { it.id.ifBlank { it.url } }) { source -> GuideSourceRow(source, onOpenSource) }
         }
     }
 }
@@ -250,9 +290,15 @@ private fun SealedGuideContent(onOpenSource: (String) -> Unit) {
             }
         }
         item { GuideSectionLabel("Build checklist", "Work through these in order, then compare alternatives") }
-        items(LimitedGuidance.sealedPrinciples, key = { it.id }) { principle -> GuidePrincipleCard(principle) }
+        items(LimitedGuidance.sealedPrinciples, key = { it.id }) { principle ->
+            GuidePrincipleCard(
+                principle,
+                guideSourcesFor(principle.sourceIds, LimitedGuidance.sealedSources),
+                onOpenSource,
+            )
+        }
         item { GuideSectionLabel("Sources", "Authoritative Limited guidance behind this checklist") }
-        items(LimitedGuidance.sealedSources, key = { it.url }) { source -> GuideSourceRow(source, onOpenSource) }
+        items(LimitedGuidance.sealedSources, key = { it.id.ifBlank { it.url } }) { source -> GuideSourceRow(source, onOpenSource) }
     }
 }
 
@@ -265,14 +311,26 @@ private fun GuideSectionLabel(title: String, subtitle: String) {
 }
 
 @Composable
-private fun GuideTextCard(title: String, body: String) {
+private fun GuideTextCard(
+    title: String,
+    body: String,
+    sources: List<GuideSource> = emptyList(),
+    onOpenSource: (String) -> Unit = {},
+) {
     Panel(title) {
         Text(body, fontSize = 12.sp, lineHeight = 17.sp, color = MaterialTheme.colorScheme.onSurface)
+        GuideCitations(sources, onOpenSource)
     }
 }
 
 @Composable
-private fun ArchetypeGuideCard(archetype: GuideArchetype, expanded: Boolean, onToggle: () -> Unit) {
+private fun ArchetypeGuideCard(
+    archetype: GuideArchetype,
+    expanded: Boolean,
+    onToggle: () -> Unit,
+    sources: List<GuideSource> = emptyList(),
+    onOpenSource: (String) -> Unit = {},
+) {
     Column(
         Modifier
             .fillMaxWidth()
@@ -311,6 +369,41 @@ private fun ArchetypeGuideCard(archetype: GuideArchetype, expanded: Boolean, onT
             GuideNames("Enablers", archetype.enablers)
             GuideNames("Payoffs", archetype.payoffs)
             GuideNames("Other key cards", archetype.keyCards)
+            GuideCitations(sources, onOpenSource)
+        }
+    }
+}
+
+@Composable
+private fun GuideCitations(sources: List<GuideSource>, onOpenSource: (String) -> Unit) {
+    if (sources.isEmpty()) return
+    Spacer(Modifier.height(8.dp))
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        sources.forEach { source ->
+            Row(
+                Modifier
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.09f))
+                    .heightIn(min = 44.dp)
+                    .semantics {
+                        role = Role.Button
+                        contentDescription = "Open source: ${source.title}"
+                    }
+                    .clickable { onOpenSource(source.url) }
+                    .padding(horizontal = 7.dp, vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    "${source.kind} · ${source.title}",
+                    modifier = Modifier.weight(1f),
+                    fontSize = 9.sp,
+                    color = MaterialTheme.colorScheme.primary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Spacer(Modifier.width(6.dp))
+                Text("↗", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+            }
         }
     }
 }
@@ -324,17 +417,36 @@ private fun GuideNames(label: String, names: List<String>) {
 }
 
 @Composable
+private fun GuideComboCard(
+    combo: GuideCombo,
+    sources: List<GuideSource>,
+    onOpenSource: (String) -> Unit,
+) {
+    Panel(combo.cards.joinToString(" + ")) {
+        if (combo.note.isNotBlank()) {
+            Text(combo.note, fontSize = 12.sp, lineHeight = 17.sp, color = MaterialTheme.colorScheme.onSurface)
+        }
+        GuideCitations(sources, onOpenSource)
+    }
+}
+
+@Composable
 private fun ColorGuideButton(color: Char, selected: Boolean, onClick: () -> Unit) {
     Box(
         Modifier
-            .size(34.dp)
+            .size(44.dp)
             .clip(CircleShape)
             .background(if (selected) pipColor(color).copy(alpha = 0.22f) else MaterialTheme.colorScheme.surface)
             .border(if (selected) 1.dp else 0.dp, pipColor(color).copy(alpha = 0.65f), CircleShape)
+            .semantics {
+                role = Role.RadioButton
+                this.selected = selected
+                contentDescription = "${guideColorName(color)} cards"
+            }
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
-        Pip(color, 19.dp)
+        Pip(color, 21.dp)
     }
 }
 
@@ -386,7 +498,11 @@ private fun GuideCardRow(card: GuideCard) {
 }
 
 @Composable
-private fun GuidePrincipleCard(principle: GuidePrinciple) {
+private fun GuidePrincipleCard(
+    principle: GuidePrinciple,
+    sources: List<GuideSource> = emptyList(),
+    onOpenSource: (String) -> Unit = {},
+) {
     Panel(principle.title) {
         Text(principle.summary, fontSize = 12.sp, lineHeight = 17.sp, color = MaterialTheme.colorScheme.onSurface)
         if (principle.appliedByFirstPick.isNotBlank()) {
@@ -399,6 +515,7 @@ private fun GuidePrincipleCard(principle: GuidePrinciple) {
                 color = MaterialTheme.colorScheme.primary,
             )
         }
+        GuideCitations(sources, onOpenSource)
     }
 }
 
@@ -429,10 +546,34 @@ private fun GuideSourceRow(source: GuideSource, onOpenSource: (String) -> Unit) 
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
+            if (source.author.isNotBlank() || source.date.isNotBlank()) {
+                Text(
+                    listOf(source.author, source.date).filter(String::isNotBlank).joinToString(" · "),
+                    fontSize = 9.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
         }
         Spacer(Modifier.width(8.dp))
         Text("↗", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
     }
+}
+
+internal fun guideSourcesFor(sourceIds: List<String>, sources: List<GuideSource>): List<GuideSource> {
+    if (sourceIds.isEmpty()) return emptyList()
+    val byId = sources.filter { it.id.isNotBlank() }.associateBy { it.id }
+    return sourceIds.mapNotNull(byId::get).distinctBy { it.id }
+}
+
+internal fun guideColorName(color: Char): String = when (color) {
+    'W' -> "White"
+    'U' -> "Blue"
+    'B' -> "Black"
+    'R' -> "Red"
+    'G' -> "Green"
+    else -> "Unknown"
 }
 
 internal fun guideFormatLabel(format: String): String = when (format) {

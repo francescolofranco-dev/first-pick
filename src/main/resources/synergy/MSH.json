@@ -2,26 +2,62 @@
  "set": "MSH",
  "setName": "Marvel Super Heroes",
  "generated": "2026-07-02",
+ "schemaVersion": 2,
+ "updatedAt": "2026-08-15",
+ "sources": [
+ {
+  "id": "msh-mechanics",
+  "title": "Magic: The Gathering | Marvel Super Heroes Mechanics",
+  "publisher": "Wizards of the Coast",
+  "author": "Matt Tabak",
+  "date": "2026-06-02",
+  "url": "https://magic.wizards.com/en/news/feature/marvel-super-heroes-mechanics",
+  "kind": "OFFICIAL_MECHANICS"
+ },
+ {
+  "id": "msh-release-notes",
+  "title": "Magic: The Gathering® | Marvel Super Heroes Release Notes",
+  "publisher": "Wizards of the Coast",
+  "author": "Eric Levine",
+  "date": "2026-06-12",
+  "url": "https://magic.wizards.com/en/news/feature/marvel-super-heroes-release-notes",
+  "kind": "OFFICIAL_RELEASE_NOTES"
+ },
+ {
+  "id": "msh-17lands",
+  "title": "17Lands Public Limited Data (MSH)",
+  "publisher": "17Lands",
+  "author": "17Lands contributors",
+  "date": "2026-08-15",
+  "url": "https://www.17lands.com/public_datasets",
+  "kind": "LIMITED_DATA"
+ }
+ ],
  "mechanics": [
   {
    "name": "Power-up",
-   "summary": "One-shot activated ability granting +1/+1 counters (plus riders); costs the card's mana cost less if activated the turn it entered."
+   "summary": "One-shot activated ability granting +1/+1 counters (plus riders); costs the card's mana cost less if activated the turn it entered.",
+   "sourceIds": ["msh-mechanics","msh-release-notes"]
   },
   {
    "name": "Teamwork",
-   "summary": "Optional additional cost on instants/sorceries: tap creatures with total power N for an upgraded effect."
+   "summary": "Optional additional cost on instants/sorceries: tap creatures with total power N for an upgraded effect.",
+   "sourceIds": ["msh-mechanics","msh-release-notes"]
   },
   {
    "name": "Connive",
-   "summary": "Draw a card, then discard a card; if you discarded a nonland card, put a +1/+1 counter on the creature."
+   "summary": "Draw a card, then discard a card; if you discarded a nonland card, put a +1/+1 counter on the creature.",
+   "sourceIds": ["msh-mechanics","msh-release-notes"]
   },
   {
    "name": "Plan",
-   "summary": "Enchantment subtype: repeatable trigger adds plan counters; the Nth counter sacrifices it for a large one-shot payoff."
+   "summary": "Enchantment subtype: repeatable trigger adds plan counters; the Nth counter sacrifices it for a large one-shot payoff.",
+   "sourceIds": ["msh-mechanics","msh-release-notes"]
   },
   {
    "name": "Hero/Villain typal",
-   "summary": "Hero is W-centered (allies G/U), Villain is B-centered (allies R/U); ~50 cards reference one of the two types."
+   "summary": "Hero is W-centered (allies G/U), Villain is B-centered (allies R/U); ~50 cards reference one of the two types.",
+   "sourceIds": ["msh-mechanics","msh-release-notes"]
   }
  ],
  "archetypes": [
@@ -30,6 +66,7 @@
    "name": "Teamwork tempo",
    "playstyle": "Best-cards tempo: fliers and cheap Equipment with tap synergies \u2014 Teamwork spells and Vehicles convert a wide board into free value.",
    "speed": "midrange",
+   "sourceIds": ["msh-mechanics","msh-17lands"],
    "signposts": [
     "Captain America, Living Legend",
     "Spider-Woman, Secret Agent"
@@ -63,6 +100,7 @@
    "name": "Lone-attacker Equipment",
    "playstyle": "Suit up one evasive attacker and swing alone for cumulative bonuses and drain; Equipment density is the real engine.",
    "speed": "midrange",
+   "sourceIds": ["msh-mechanics","msh-17lands"],
    "signposts": [
     "Black Widow, Double Agent",
     "U.S.Agent, John Walker"
@@ -96,6 +134,7 @@
    "name": "Teamwork spells aggro",
    "playstyle": "Low-curve attackers plus a dense suite of tricks and Teamwork removal; prowess-style payoffs reward casting noncreature spells mid-combat.",
    "speed": "aggro",
+   "sourceIds": ["msh-mechanics","msh-17lands"],
    "signposts": [
     "Thor Odinson",
     "War Machine, Legacy of Iron"
@@ -133,6 +172,7 @@
    "name": "Heroes midrange",
    "playstyle": "Hero-typal ETB payoffs stacked on big bodies \u2014 the data says go tall with fat creatures and pump, not wide with tokens.",
    "speed": "midrange",
+   "sourceIds": ["msh-mechanics","msh-17lands"],
    "signposts": [
     "Black Panther, Vanguard",
     "Spider-Man, To the Rescue"
@@ -168,6 +208,7 @@
    "name": "Connive draw-two grind",
    "playstyle": "Black-heavy Villain attrition: connive and cheap draw trigger second-draw payoffs while the graveyard fuels recursion.",
    "speed": "control",
+   "sourceIds": ["msh-mechanics","msh-17lands"],
    "signposts": [
     "Kang, Temporal Tyrant",
     "Ghost, Spectral Saboteur"
@@ -206,6 +247,7 @@
    "name": "Artifacts matter",
    "playstyle": "The format's one true build-around: artifact density feeds count- and ETB-payoffs; commit fully or stay out.",
    "speed": "aggro",
+   "sourceIds": ["msh-mechanics","msh-17lands"],
    "signposts": [
     "Iron Man, Master of Machines",
     "Speedball, New Warrior"
@@ -244,6 +286,7 @@
    "name": "+1/+1 counters",
    "playstyle": "Every counter source compounds: power-up, connive and draw triggers grow the board while token- and hexproof-payoffs cash them in.",
    "speed": "midrange",
+   "sourceIds": ["msh-mechanics","msh-17lands"],
    "signposts": [
     "Ant-Man, Colony Commander",
     "Beast, Erudite Aerialist"
@@ -280,6 +323,7 @@
    "name": "Villain token aggro",
    "playstyle": "Swarm with menace Villain tokens and typal ETB triggers, greasing the wheels with sacrifice and discard; needs a critical mass of Villains.",
    "speed": "aggro",
+   "sourceIds": ["msh-mechanics","msh-17lands"],
    "signposts": [
     "Madame Hydra",
     "Bullseye, Death Dealer"
@@ -315,6 +359,7 @@
    "name": "Graveyard sacrifice",
    "playstyle": "Fill the yard with two-plus creature cards to switch on cheap threshold payoffs; recursion turns every trade into value. Wants 16+ creatures.",
    "speed": "midrange",
+   "sourceIds": ["msh-mechanics","msh-17lands"],
    "signposts": [
     "Killmonger, Scourge of Wakanda",
     "Titania, Rugged Rumbler"
@@ -353,6 +398,7 @@
    "name": "Power-up stompy",
    "playstyle": "Oversized bodies with one-shot Power-up abilities, backed by burn and rummage; the data favors the spell-velocity half over pure ramp.",
    "speed": "midrange",
+   "sourceIds": ["msh-mechanics","msh-17lands"],
    "signposts": [
     "Hulk, Gamma Goliath",
     "Abomination, Terrifying Titan"
@@ -388,161 +434,184 @@
     "Agent Maria Hill",
     "Helicarrier Strike"
    ],
-   "note": "Tapping Maria Hill to pay the teamwork cost draws a card and grows her"
+   "note": "Tapping Maria Hill to pay the teamwork cost draws a card and grows her",
+   "sourceIds": ["msh-mechanics","msh-17lands","msh-release-notes"]
   },
   {
    "cards": [
     "Agent Maria Hill",
     "Murdock's Crusade"
    ],
-   "note": "Tapping Maria Hill to pay the teamwork cost draws a card and grows her"
+   "note": "Tapping Maria Hill to pay the teamwork cost draws a card and grows her",
+   "sourceIds": ["msh-mechanics","msh-17lands","msh-release-notes"]
   },
   {
    "cards": [
     "Agent Maria Hill",
     "We Say Thee Nay!"
    ],
-   "note": "Tapping Maria Hill to pay the teamwork cost draws a card and grows her"
+   "note": "Tapping Maria Hill to pay the teamwork cost draws a card and grows her",
+   "sourceIds": ["msh-mechanics","msh-17lands","msh-release-notes"]
   },
   {
    "cards": [
     "Captain America, Living Legend",
     "S.H.I.E.L.D. Helicarrier"
    ],
-   "note": "Crewing taps creatures for the first time \u2014 Captain America untaps them all"
+   "note": "Crewing taps creatures for the first time \u2014 Captain America untaps them all",
+   "sourceIds": ["msh-mechanics","msh-17lands","msh-release-notes"]
   },
   {
    "cards": [
     "Captain America, Living Legend",
     "Dependable Quinjet"
    ],
-   "note": "Crewing taps creatures for the first time \u2014 Captain America untaps them"
+   "note": "Crewing taps creatures for the first time \u2014 Captain America untaps them",
+   "sourceIds": ["msh-mechanics","msh-17lands","msh-release-notes"]
   },
   {
    "cards": [
     "Baron Strucker, HYDRA Overlord",
     "Agents of HYDRA"
    ],
-   "note": "Discounted Villain spells that connive on entry"
+   "note": "Discounted Villain spells that connive on entry",
+   "sourceIds": ["msh-mechanics","msh-17lands","msh-release-notes"]
   },
   {
    "cards": [
     "Baron Strucker, HYDRA Overlord",
     "HYDRA Troopers"
    ],
-   "note": "Discounted Villain spells that connive on entry"
+   "note": "Discounted Villain spells that connive on entry",
+   "sourceIds": ["msh-mechanics","msh-17lands","msh-release-notes"]
   },
   {
    "cards": [
     "Madame Hydra",
     "Agents of HYDRA"
    ],
-   "note": "Every Villain spell cast becomes an extra 2/1 menace token"
+   "note": "Every Villain spell cast becomes an extra 2/1 menace token",
+   "sourceIds": ["msh-mechanics","msh-17lands","msh-release-notes"]
   },
   {
    "cards": [
     "Killmonger, Scourge of Wakanda",
     "Decoy Ploy"
    ],
-   "note": "Sacrifice for removal, then regrow the Villain from the graveyard"
+   "note": "Sacrifice for removal, then regrow the Villain from the graveyard",
+   "sourceIds": ["msh-mechanics","msh-17lands","msh-release-notes"]
   },
   {
    "cards": [
     "Killmonger, Scourge of Wakanda",
     "Agents of HYDRA"
    ],
-   "note": "Sacrificing it to Killmonger leaves a token and feeds the graveyard count"
+   "note": "Sacrificing it to Killmonger leaves a token and feeds the graveyard count",
+   "sourceIds": ["msh-mechanics","msh-17lands","msh-release-notes"]
   },
   {
    "cards": [
     "The Astonishing Ant-Man",
     "Ant-Man, Colony Commander"
    ],
-   "note": "Draw-triggered counters also trigger Colony Commander's Insect token"
+   "note": "Draw-triggered counters also trigger Colony Commander's Insect token",
+   "sourceIds": ["msh-mechanics","msh-17lands","msh-release-notes"]
   },
   {
    "cards": [
     "Visions of Villainy",
     "Madame Masque"
    ],
-   "note": "Instant-speed draw two triggers the second-draw Villain token"
+   "note": "Instant-speed draw two triggers the second-draw Villain token",
+   "sourceIds": ["msh-mechanics","msh-17lands","msh-release-notes"]
   },
   {
    "cards": [
     "Visions of Villainy",
     "Construct a Cosmic Cube"
    ],
-   "note": "Instant-speed draw two adds a token and a plan counter"
+   "note": "Instant-speed draw two adds a token and a plan counter",
+   "sourceIds": ["msh-mechanics","msh-17lands","msh-release-notes"]
   },
   {
    "cards": [
     "Iron Man, Master of Machines",
     "Machinesmith Automaton"
    ],
-   "note": "Every artifact entering grows both the count and the counters"
+   "note": "Every artifact entering grows both the count and the counters",
+   "sourceIds": ["msh-mechanics","msh-17lands","msh-release-notes"]
   },
   {
    "cards": [
     "Winter Soldier, Icy Assassin",
     "S.H.I.E.L.D. Spy Kit"
    ],
-   "note": "+2/+0 per Equipment; the Spy Kit untaps him after solo attacks"
+   "note": "+2/+0 per Equipment; the Spy Kit untaps him after solo attacks",
+   "sourceIds": ["msh-mechanics","msh-17lands","msh-release-notes"]
   },
   {
    "cards": [
     "Swordsman, Sharp Scoundrel",
     "Stolen Stark Tech"
    ],
-   "note": "Flash Equipment re-attaches on Villain entry and connives on attack"
+   "note": "Flash Equipment re-attaches on Villain entry and connives on attack",
+   "sourceIds": ["msh-mechanics","msh-17lands","msh-release-notes"]
   },
   {
    "cards": [
     "Black Widow, Double Agent",
     "Luke Cage, Power Man"
    ],
-   "note": "Two lone-attacker payoffs stacking first strike, menace and indestructible"
+   "note": "Two lone-attacker payoffs stacking first strike, menace and indestructible",
+   "sourceIds": ["msh-mechanics","msh-17lands","msh-release-notes"]
   },
   {
    "cards": [
     "Agent 13, Sharon Carter",
     "S.H.I.E.L.D. Spy Kit"
    ],
-   "note": "Solo attack investigates, untaps the attacker and scrys"
+   "note": "Solo attack investigates, untaps the attacker and scrys",
+   "sourceIds": ["msh-mechanics","msh-17lands","msh-release-notes"]
   },
   {
    "cards": [
     "Hulk, Gamma Goliath",
     "Volcanic Villain"
    ],
-   "note": "Power-up discounted by {3} turns commons into late-game engines"
+   "note": "Power-up discounted by {3} turns commons into late-game engines",
+   "sourceIds": ["msh-mechanics","msh-17lands","msh-release-notes"]
   },
   {
    "cards": [
     "Hulk, Gamma Goliath",
     "Ultron Drone"
    ],
-   "note": "Power-up discounted by {3} turns commons into late-game engines"
+   "note": "Power-up discounted by {3} turns commons into late-game engines",
+   "sourceIds": ["msh-mechanics","msh-17lands","msh-release-notes"]
   },
   {
    "cards": [
     "Truck Toss",
     "Dependable Quinjet"
    ],
-   "note": "Controlling a Vehicle makes Truck Toss a 2-mana Bolt for 4"
+   "note": "Controlling a Vehicle makes Truck Toss a 2-mana Bolt for 4",
+   "sourceIds": ["msh-mechanics","msh-17lands","msh-release-notes"]
   },
   {
    "cards": [
     "Tigra, Feline Fury",
     "Ant-Man's Army"
    ],
-   "note": "Food token lifegain converts into +1/+1 counters"
+   "note": "Food token lifegain converts into +1/+1 counters",
+   "sourceIds": ["msh-mechanics","msh-17lands","msh-release-notes"]
   },
   {
    "cards": [
     "Leader, Super-Genius",
     "Red Room Recruit"
    ],
-   "note": "Every connive draws an extra card first"
+   "note": "Every connive draws an extra card first",
+   "sourceIds": ["msh-mechanics","msh-17lands","msh-release-notes"]
   }
  ]
 }

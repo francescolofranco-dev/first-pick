@@ -2,30 +2,76 @@
  "set": "SOS",
  "setName": "Secrets of Strixhaven",
  "generated": "2026-07-04",
+ "schemaVersion": 2,
+ "updatedAt": "2026-08-15",
+ "sources": [
+ {
+  "id": "sos-mechanics",
+  "title": "Secrets of Strixhaven Mechanics",
+  "publisher": "Wizards of the Coast",
+  "author": "Matt Tabak",
+  "date": "2026-03-31",
+  "url": "https://magic.wizards.com/en/news/feature/secrets-of-strixhaven-mechanics",
+  "kind": "OFFICIAL_MECHANICS"
+ },
+ {
+  "id": "sos-limited-guide",
+  "title": "Secrets of Strixhaven Prerelease Guide",
+  "publisher": "Wizards of the Coast",
+  "author": "Jubilee Finnegan",
+  "date": "2026-04-10",
+  "url": "https://magic.wizards.com/en/news/feature/secrets-of-strixhaven-prerelease-guide",
+  "kind": "OFFICIAL_LIMITED_GUIDE"
+ },
+ {
+  "id": "sos-release-notes",
+  "title": "Secrets of Strixhaven Release Notes",
+  "publisher": "Wizards of the Coast",
+  "author": "Eric Levine",
+  "date": "2026-04-10",
+  "url": "https://magic.wizards.com/en/news/feature/secrets-of-strixhaven-release-notes",
+  "kind": "OFFICIAL_RELEASE_NOTES"
+ },
+ {
+  "id": "sos-17lands",
+  "title": "17Lands Public Limited Data (SOS)",
+  "publisher": "17Lands",
+  "author": "17Lands contributors",
+  "date": "2026-08-15",
+  "url": "https://www.17lands.com/public_datasets",
+  "kind": "LIMITED_DATA"
+ }
+ ],
  "mechanics": [
   {
    "name": "Prepared",
-   "summary": "A creature-front DFC that lets you cast a free copy of its back-face spell while prepared."
+   "summary": "A creature-front DFC that lets you cast a free copy of its back-face spell while prepared.",
+   "sourceIds": ["sos-mechanics","sos-release-notes"]
   },
   {
    "name": "Repartee",
-   "summary": "Triggers when you cast an instant/sorcery targeting a creature \u2014 the Silverquill counters engine."
+   "summary": "Triggers when you cast an instant/sorcery targeting a creature \u2014 the Silverquill counters engine.",
+   "sourceIds": ["sos-mechanics","sos-release-notes"]
   },
   {
    "name": "Infusion",
-   "summary": "Bonus when you gained life this turn \u2014 the Witherbloom lifegain payoff."
+   "summary": "Bonus when you gained life this turn \u2014 the Witherbloom lifegain payoff.",
+   "sourceIds": ["sos-mechanics","sos-release-notes"]
   },
   {
    "name": "Opus",
-   "summary": "Rewards casting instants/sorceries, with a bonus if five or more mana was spent."
+   "summary": "Rewards casting instants/sorceries, with a bonus if five or more mana was spent.",
+   "sourceIds": ["sos-mechanics","sos-release-notes"]
   },
   {
    "name": "Increment",
-   "summary": "Put a +1/+1 counter whenever a spell's mana spent exceeds this creature's power or toughness."
+   "summary": "Put a +1/+1 counter whenever a spell's mana spent exceeds this creature's power or toughness.",
+   "sourceIds": ["sos-mechanics","sos-release-notes"]
   },
   {
    "name": "Flashback",
-   "summary": "Cast from the graveyard, then exile \u2014 feeds Lorehold's graveyard-leaves payoffs."
+   "summary": "Cast from the graveyard, then exile \u2014 feeds Lorehold's graveyard-leaves payoffs.",
+   "sourceIds": ["sos-mechanics","sos-release-notes"]
   }
  ],
  "archetypes": [
@@ -34,6 +80,7 @@
    "name": "Silverquill drain",
    "playstyle": "Cheap creature-targeting spells double as Repartee fuel while drain bodies close.",
    "speed": "aggro",
+   "sourceIds": ["sos-limited-guide","sos-17lands"],
    "signposts": [
     "Abigale, Poet Laureate // Heroic Stanza",
     "Silverquill Charm"
@@ -69,6 +116,7 @@
    "name": "Lorehold graveyard",
    "playstyle": "Fill the graveyard, then make cards leave it to fire the payoffs while Spirits go wide.",
    "speed": "midrange",
+   "sourceIds": ["sos-limited-guide","sos-17lands"],
    "signposts": [
     "Kirol, History Buff // Pack a Punch",
     "Lorehold Charm"
@@ -106,6 +154,7 @@
    "name": "Prismari spells",
    "playstyle": "Chain instants and sorceries with ritual mana to pay the Opus five-mana kickers.",
    "speed": "control",
+   "sourceIds": ["sos-limited-guide","sos-17lands"],
    "signposts": [
     "Sanar, Unfinished Genius // Wild Idea",
     "Prismari Charm"
@@ -141,6 +190,7 @@
    "name": "Quandrix counters",
    "playstyle": "Ramp so every spell overspends its cost, snowballing Increment and Fractal counters.",
    "speed": "midrange",
+   "sourceIds": ["sos-limited-guide","sos-17lands"],
    "signposts": [
     "Tam, Observant Sequencer // Deep Sight",
     "Quandrix Charm"
@@ -177,6 +227,7 @@
    "name": "Witherbloom lifegain",
    "playstyle": "Gain life every turn with Pest tokens and ETB drains to switch on the Infusion payoffs.",
    "speed": "midrange",
+   "sourceIds": ["sos-limited-guide","sos-17lands"],
    "signposts": [
     "Lluwen, Exchange Student // Pest Friend",
     "Witherbloom Charm"
@@ -215,49 +266,56 @@
     "Dissection Practice",
     "Scolding Administrator"
    ],
-   "note": "A cheap creature-targeting spell triggers Repartee counters"
+   "note": "A cheap creature-targeting spell triggers Repartee counters",
+   "sourceIds": ["sos-limited-guide","sos-17lands","sos-release-notes"]
   },
   {
    "cards": [
     "Rubble Rouser",
     "Owlin Historian"
    ],
-   "note": "Exiling a card from your graveyard for mana fires graveyard-leaves payoffs"
+   "note": "Exiling a card from your graveyard for mana fires graveyard-leaves payoffs",
+   "sourceIds": ["sos-limited-guide","sos-17lands","sos-release-notes"]
   },
   {
    "cards": [
     "Bogwater Lumaret",
     "Old-Growth Educator"
    ],
-   "note": "Incidental lifegain turns on Infusion"
+   "note": "Incidental lifegain turns on Infusion",
+   "sourceIds": ["sos-limited-guide","sos-17lands","sos-release-notes"]
   },
   {
    "cards": [
     "Bogwater Lumaret",
     "Efflorescence"
    ],
-   "note": "Gaining life makes the Infusion trample/indestructible live"
+   "note": "Gaining life makes the Infusion trample/indestructible live",
+   "sourceIds": ["sos-limited-guide","sos-17lands","sos-release-notes"]
   },
   {
    "cards": [
     "Abstract Paintmage",
     "Spectacular Skywhale"
    ],
-   "note": "Ritual mana pushes the Opus five-mana kicker"
+   "note": "Ritual mana pushes the Opus five-mana kicker",
+   "sourceIds": ["sos-limited-guide","sos-17lands","sos-release-notes"]
   },
   {
    "cards": [
     "Topiary Lecturer",
     "Hungry Graffalon"
    ],
-   "note": "Ramp makes each spell overspend and grow Increment"
+   "note": "Ramp makes each spell overspend and grow Increment",
+   "sourceIds": ["sos-limited-guide","sos-17lands","sos-release-notes"]
   },
   {
    "cards": [
     "Teacher's Pest",
     "Pest Mascot"
    ],
-   "note": "Attacking Pests gain life that becomes counters"
+   "note": "Attacking Pests gain life that becomes counters",
+   "sourceIds": ["sos-limited-guide","sos-17lands","sos-release-notes"]
   }
  ]
 }

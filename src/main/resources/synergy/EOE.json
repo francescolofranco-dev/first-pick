@@ -2,30 +2,76 @@
  "set": "EOE",
  "setName": "Edge of Eternities",
  "generated": "2026-07-20",
+ "schemaVersion": 2,
+ "updatedAt": "2026-08-15",
+ "sources": [
+ {
+  "id": "eoe-mechanics",
+  "title": "Edge of Eternities Mechanics",
+  "publisher": "Wizards of the Coast",
+  "author": "Matt Tabak",
+  "date": "2025-07-08",
+  "url": "https://magic.wizards.com/en/news/feature/edge-of-eternities-mechanics",
+  "kind": "OFFICIAL_MECHANICS"
+ },
+ {
+  "id": "eoe-limited-guide",
+  "title": "Edge of Eternities Prerelease Guide",
+  "publisher": "Wizards of the Coast",
+  "author": "Jubilee Finnegan",
+  "date": "2025-07-18",
+  "url": "https://magic.wizards.com/en/news/feature/edge-of-eternities-prerelease-guide",
+  "kind": "OFFICIAL_LIMITED_GUIDE"
+ },
+ {
+  "id": "eoe-release-notes",
+  "title": "Edge of Eternities Release Notes",
+  "publisher": "Wizards of the Coast",
+  "author": "Eric Levine",
+  "date": "2025-07-21",
+  "url": "https://magic.wizards.com/en/news/feature/edge-of-eternities-release-notes",
+  "kind": "OFFICIAL_RELEASE_NOTES"
+ },
+ {
+  "id": "eoe-17lands",
+  "title": "17Lands Public Limited Data (EOE)",
+  "publisher": "17Lands",
+  "author": "17Lands contributors",
+  "date": "2026-08-15",
+  "url": "https://www.17lands.com/public_datasets",
+  "kind": "LIMITED_DATA"
+ }
+ ],
  "mechanics": [
   {
    "name": "Warp",
-   "summary": "An alternative cost: cast the card from hand for its warp cost, exile it at the beginning of the next end step, then cast it later from exile for its full cost. Cheap tempo and ETB value now, a real threat later \u2014 and every warped spell switches on Void that turn."
+   "summary": "An alternative cost: cast the card from hand for its warp cost, exile it at the beginning of the next end step, then cast it later from exile for its full cost. Cheap tempo and ETB value now, a real threat later \u2014 and every warped spell switches on Void that turn.",
+   "sourceIds": ["eoe-mechanics","eoe-release-notes"]
   },
   {
    "name": "Station",
-   "summary": "Tap another creature you control (sorcery-speed) to put charge counters equal to its power on a Spacecraft or Planet; hitting printed thresholds unlocks abilities and usually turns the Spacecraft into an attacking creature. Wants expendable bodies and rewards going wide \u2014 22 Spacecraft in the set."
+   "summary": "Tap another creature you control (sorcery-speed) to put charge counters equal to its power on a Spacecraft or Planet; hitting printed thresholds unlocks abilities and usually turns the Spacecraft into an attacking creature. Wants expendable bodies and rewards going wide \u2014 22 Spacecraft in the set.",
+   "sourceIds": ["eoe-mechanics","eoe-release-notes"]
   },
   {
    "name": "Void",
-   "summary": "Ability word: a bonus if a nonland permanent left the battlefield this turn or a spell was warped this turn. Fed by warp, sacrifice, removal, and bounce \u2014 the blue/black axis of the set."
+   "summary": "Ability word: a bonus if a nonland permanent left the battlefield this turn or a spell was warped this turn. Fed by warp, sacrifice, removal, and bounce \u2014 the blue/black axis of the set.",
+   "sourceIds": ["eoe-mechanics","eoe-release-notes"]
   },
   {
    "name": "Landfall + Landers",
-   "summary": "Classic landfall triggers plus Lander artifact tokens ('{2}, {T}, Sacrifice: search a basic, put it in tapped'); ~20 cards make or use Landers, letting any deck bank instant-speed landfall triggers."
+   "summary": "Classic landfall triggers plus Lander artifact tokens ('{2}, {T}, Sacrifice: search a basic, put it in tapped'); ~20 cards make or use Landers, letting any deck bank instant-speed landfall triggers.",
+   "sourceIds": ["eoe-mechanics","eoe-release-notes"]
   },
   {
    "name": "Surveil",
-   "summary": "A small blue/black graveyard-smoothing theme; several payoffs care about cards entering the graveyard."
+   "summary": "A small blue/black graveyard-smoothing theme; several payoffs care about cards entering the graveyard.",
+   "sourceIds": ["eoe-mechanics","eoe-release-notes"]
   },
   {
    "name": "Planets",
-   "summary": "Five legendary Planet lands that can themselves be stationed to unlock powerful effects; free spell-lands for the aggressive decks and mana sinks for the slow ones."
+   "summary": "Five legendary Planet lands that can themselves be stationed to unlock powerful effects; free spell-lands for the aggressive decks and mana sinks for the slow ones.",
+   "sourceIds": ["eoe-mechanics","eoe-release-notes"]
   }
  ],
  "archetypes": [
@@ -34,6 +80,7 @@
    "name": "Second-spell aggro",
    "playstyle": "Curve out and chain cheap spells so you double-spell from turn three onward; Station Monitor and Cosmogrand Zenith convert every second spell into flying Drones, Soldier tokens, and +1/+1 counters while one-mana interaction and cantrips keep the count alive.",
    "speed": "aggro",
+   "sourceIds": ["eoe-limited-guide","eoe-17lands"],
    "signposts": [
     "Station Monitor"
    ],
@@ -70,6 +117,7 @@
    "name": "Token go-wide attrition",
    "playstyle": "Flood the board with Soldier and Robot tokens and creatures that leave a body behind, then turn the pile lethal with Syr Vondam's deathtouch pump and death-trigger drain. Token makers are thin at common, so a clean curve plus black's removal does most of the actual winning.",
    "speed": "midrange",
+   "sourceIds": ["eoe-limited-guide","eoe-17lands"],
    "signposts": [
     "Syr Vondam, the Lucent"
    ],
@@ -105,6 +153,7 @@
    "name": "Station aggro",
    "playstyle": "Flood the board with cheap bodies and Robot tokens, attack relentlessly, and tap spare creatures to station Spacecraft that finish the job as fliers; end-step triggers then pay you off for the tapped team. Curve out and stay tapped \u2014 the deck rewards committing, not holding back.",
    "speed": "aggro",
+   "sourceIds": ["eoe-limited-guide","eoe-17lands"],
    "signposts": [
     "Sami, Ship's Engineer"
    ],
@@ -140,6 +189,7 @@
    "name": "+1/+1 counters aggro",
    "playstyle": "Lead with above-rate two- and three-drops, then stack +1/+1 counters until they outclass every blocker and keep attacking; Haliya converts counter-carrier damage into cards, so force bad blocks and punish them with tricks.",
    "speed": "aggro",
+   "sourceIds": ["eoe-limited-guide","eoe-17lands"],
    "signposts": [
     "Haliya, Ascendant Cadet"
    ],
@@ -174,6 +224,7 @@
    "name": "Void control",
    "playstyle": "Churn cheap artifacts through sacrifice, bounce, and warp to keep Void switched on, then answer everything with upgraded Void removal while out-drawing the opponent; a sweeper or stationed Spacecraft closes the grind.",
    "speed": "control",
+   "sourceIds": ["eoe-limited-guide","eoe-17lands"],
    "signposts": [
     "Alpharael, Dreaming Acolyte"
    ],
@@ -209,6 +260,7 @@
    "name": "Artifact aggro",
    "playstyle": "Flood the board with cheap artifacts and Robot/Drone tokens so every entry grows a threat through Mm'menon and pumps Warmaker Gunship's artifact count; curve low, double-spell early, and convert the tempo before slower decks stabilize.",
    "speed": "aggro",
+   "sourceIds": ["eoe-limited-guide","eoe-17lands"],
    "signposts": [
     "Mm'menon, Uthros Exile"
    ],
@@ -246,6 +298,7 @@
    "name": "Lander ramp",
    "playstyle": "Ramp with Lander tokens and cheap fixers into an oversized top end, holding Landers to crack at instant speed for landfall blowouts with Genemorph Imago and Glacier Godmaw. Skew the curve high \u2014 the deck wins the late game it inevitably reaches.",
    "speed": "midrange",
+   "sourceIds": ["eoe-limited-guide","eoe-17lands"],
    "signposts": [
     "Biomechan Engineer"
    ],
@@ -282,6 +335,7 @@
    "name": "Void sacrifice",
    "playstyle": "Trade, sacrifice, and warp something every turn so Void never switches off, upgrading Plasma Bolt and Tragic Trajectory into premium removal while Elegy Acolyte and Interceptor Mechan grind the card advantage. Cheap expendable bodies plus sac outlets are the engine; the opponent runs out of creatures and cards first.",
    "speed": "midrange",
+   "sourceIds": ["eoe-limited-guide","eoe-17lands"],
    "signposts": [
     "Interceptor Mechan"
    ],
@@ -318,6 +372,7 @@
    "name": "Graveyard value",
    "playstyle": "Green ramp bodies plus black removal, with Broodtender and Fell Gravship stocking the yard to rebuy your best creature or Spacecraft. The recursion is a value layer on a good-stuff midrange shell, not a dedicated engine \u2014 win the long game on card quality.",
    "speed": "midrange",
+   "sourceIds": ["eoe-limited-guide","eoe-17lands"],
    "signposts": [
     "Seedship Broodtender"
    ],
@@ -352,6 +407,7 @@
    "name": "Lander landfall",
    "playstyle": "Bank Lander tokens early, then crack them at instant speed for second land drops that double-trigger landfall \u2014 Tannuk pings into card draw, Harmonizer doubles power, Godmaw alpha-strikes. Ramp into oversized trampers while efficient red removal clears the road.",
    "speed": "midrange",
+   "sourceIds": ["eoe-limited-guide","eoe-17lands"],
    "signposts": [
     "Tannuk, Memorial Ensign"
    ],
@@ -389,140 +445,160 @@
     "Sinister Cryologist",
     "Station Monitor"
    ],
-   "note": "a {U} warp cast is the cheapest possible second spell for Monitor's Drone trigger, and the later exile recast triggers it again"
+   "note": "a {U} warp cast is the cheapest possible second spell for Monitor's Drone trigger, and the later exile recast triggers it again",
+   "sourceIds": ["eoe-limited-guide","eoe-17lands","eoe-release-notes"]
   },
   {
    "cards": [
     "Starfield Vocalist",
     "Codecracker Hound"
    ],
-   "note": "Vocalist doubles the Hound's ETB dig, and the warp recast from exile serves up the doubled trigger a second time"
+   "note": "Vocalist doubles the Hound's ETB dig, and the warp recast from exile serves up the doubled trigger a second time",
+   "sourceIds": ["eoe-limited-guide","eoe-17lands","eoe-release-notes"]
   },
   {
    "cards": [
     "Haliya, Guided by Light",
     "Auxiliary Boosters"
    ],
-   "note": "one Boosters cast is two permanents entering (Equipment plus Robot token), covering most of Haliya's three-life end-step draw"
+   "note": "one Boosters cast is two permanents entering (Equipment plus Robot token), covering most of Haliya's three-life end-step draw",
+   "sourceIds": ["eoe-limited-guide","eoe-17lands","eoe-release-notes"]
   },
   {
    "cards": [
     "Syr Vondam, Sunstar Exemplar",
     "Umbral Collar Zealot"
    ],
-   "note": "Zealot's free instant-speed creature sacrifice converts spare bodies into Vondam counters and lifegain while surveilling"
+   "note": "Zealot's free instant-speed creature sacrifice converts spare bodies into Vondam counters and lifegain while surveilling",
+   "sourceIds": ["eoe-limited-guide","eoe-17lands","eoe-release-notes"]
   },
   {
    "cards": [
     "Sunstar Chaplain",
     "Wurmwall Sweeper"
    ],
-   "note": "sorcery-speed stationing keeps two creatures tapped so Chaplain's end-step counter always fires while the Sweeper charges to its 4+ flier"
+   "note": "sorcery-speed stationing keeps two creatures tapped so Chaplain's end-step counter always fires while the Sweeper charges to its 4+ flier",
+   "sourceIds": ["eoe-limited-guide","eoe-17lands","eoe-release-notes"]
   },
   {
    "cards": [
     "Sami, Ship's Engineer",
     "Kavaron Turbodrone"
    ],
-   "note": "Turbodrone's sorcery-speed self-tap switches on Sami's two-tapped-creatures check, and the tapped Robot she mints keeps it on"
+   "note": "Turbodrone's sorcery-speed self-tap switches on Sami's two-tapped-creatures check, and the tapped Robot she mints keeps it on",
+   "sourceIds": ["eoe-limited-guide","eoe-17lands","eoe-release-notes"]
   },
   {
    "cards": [
     "Cosmogrand Zenith",
     "Exalted Sunborn"
    ],
-   "note": "Sunborn's token doubling turns Zenith's second-spell mode into four Soldiers per trigger"
+   "note": "Sunborn's token doubling turns Zenith's second-spell mode into four Soldiers per trigger",
+   "sourceIds": ["eoe-limited-guide","eoe-17lands","eoe-release-notes"]
   },
   {
    "cards": [
     "Ouroboroid",
     "Loading Zone"
    ],
-   "note": "Loading Zone doubles Ouroboroid's power-equal counter dump on every creature, tripling its own power each combat"
+   "note": "Loading Zone doubles Ouroboroid's power-equal counter dump on every creature, tripling its own power each combat",
+   "sourceIds": ["eoe-limited-guide","eoe-17lands","eoe-release-notes"]
   },
   {
    "cards": [
     "Elegy Acolyte",
     "Timeline Culler"
    ],
-   "note": "Culler's recastable graveyard warp switches on Elegy's Void every single turn for an end-step 2/2 Robot"
+   "note": "Culler's recastable graveyard warp switches on Elegy's Void every single turn for an end-step 2/2 Robot",
+   "sourceIds": ["eoe-limited-guide","eoe-17lands","eoe-release-notes"]
   },
   {
    "cards": [
     "Nanoform Sentinel",
     "Synthesizer Labship"
    ],
-   "note": "tapping Sentinel to station untaps another creature so it can station the Labship again the same turn"
+   "note": "tapping Sentinel to station untaps another creature so it can station the Labship again the same turn",
+   "sourceIds": ["eoe-limited-guide","eoe-17lands","eoe-release-notes"]
   },
   {
    "cards": [
     "Roving Actuator",
     "Cryogen Relic"
    ],
-   "note": "cracking Relic at instant speed draws a card and switches on Actuator's enters-Void flashback of a cheap spell"
+   "note": "cracking Relic at instant speed draws a card and switches on Actuator's enters-Void flashback of a cheap spell",
+   "sourceIds": ["eoe-limited-guide","eoe-17lands","eoe-release-notes"]
   },
   {
    "cards": [
     "Mechan Assembler",
     "Pinnacle Emissary"
    ],
-   "note": "Emissary's cast-trigger Drone is itself an artifact entering, chaining into Assembler's once-a-turn 2/2 Robot"
+   "note": "Emissary's cast-trigger Drone is itself an artifact entering, chaining into Assembler's once-a-turn 2/2 Robot",
+   "sourceIds": ["eoe-limited-guide","eoe-17lands","eoe-release-notes"]
   },
   {
    "cards": [
     "Biomechan Engineer",
     "Genemorph Imago"
    ],
-   "note": "Engineer's Lander cracks at instant speed to fire Imago's landfall for a surprise 3/3-or-6/6 mid-combat"
+   "note": "Engineer's Lander cracks at instant speed to fire Imago's landfall for a surprise 3/3-or-6/6 mid-combat",
+   "sourceIds": ["eoe-limited-guide","eoe-17lands","eoe-release-notes"]
   },
   {
    "cards": [
     "Seedship Agrarian",
     "Uthros Scanship"
    ],
-   "note": "every tap of Agrarian to station the Scanship mints a Lander whose crack feeds his landfall counters, raising future charge"
+   "note": "every tap of Agrarian to station the Scanship mints a Lander whose crack feeds his landfall counters, raising future charge",
+   "sourceIds": ["eoe-limited-guide","eoe-17lands","eoe-release-notes"]
   },
   {
    "cards": [
     "Faller's Faithful",
     "Plasma Bolt"
    ],
-   "note": "a pre-combat Bolt marks the target with damage so Faithful's ETB kill gives the opponent no consolation cards"
+   "note": "a pre-combat Bolt marks the target with damage so Faithful's ETB kill gives the opponent no consolation cards",
+   "sourceIds": ["eoe-limited-guide","eoe-17lands","eoe-release-notes"]
   },
   {
    "cards": [
     "Drill Too Deep",
     "Galvanizing Sawship"
    ],
-   "note": "an instant-speed five charge counters flips the Sawship past its 3+ threshold into a surprise flying haste attacker"
+   "note": "an instant-speed five charge counters flips the Sawship past its 3+ threshold into a surprise flying haste attacker",
+   "sourceIds": ["eoe-limited-guide","eoe-17lands","eoe-release-notes"]
   },
   {
    "cards": [
     "Mightform Harmonizer",
     "Galactic Wayfarer"
    ],
-   "note": "cracking Wayfarer's Lander mid-combat fires Harmonizer's landfall to double an attacker's power at instant speed"
+   "note": "cracking Wayfarer's Lander mid-combat fires Harmonizer's landfall to double an attacker's power at instant speed",
+   "sourceIds": ["eoe-limited-guide","eoe-17lands","eoe-release-notes"]
   },
   {
    "cards": [
     "Tannuk, Memorial Ensign",
     "Larval Scoutlander"
    ],
-   "note": "Scoutlander's sac-a-Lander double basic fetch resolves Tannuk's landfall twice in one shot, upgrading it into the draw"
+   "note": "Scoutlander's sac-a-Lander double basic fetch resolves Tannuk's landfall twice in one shot, upgrading it into the draw",
+   "sourceIds": ["eoe-limited-guide","eoe-17lands","eoe-release-notes"]
   },
   {
    "cards": [
     "Biotech Specialist",
     "Slagdrill Scrapper"
    ],
-   "note": "Scrapper's repeatable artifact sacrifice draws cards while machine-gunning the Specialist's 2-damage pings"
+   "note": "Scrapper's repeatable artifact sacrifice draws cards while machine-gunning the Specialist's 2-damage pings",
+   "sourceIds": ["eoe-limited-guide","eoe-17lands","eoe-release-notes"]
   },
   {
    "cards": [
     "Full Bore",
     "Bygone Colossus"
    ],
-   "note": "Full Bore's warp-cast bonus gives the turn-3 warped Colossus haste and trample so its one warped turn actually attacks"
+   "note": "Full Bore's warp-cast bonus gives the turn-3 warped Colossus haste and trample so its one warped turn actually attacks",
+   "sourceIds": ["eoe-limited-guide","eoe-17lands","eoe-release-notes"]
   }
  ]
 }

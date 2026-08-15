@@ -56,7 +56,6 @@ class AdvisorEngine(
         val dupCapPts: Double = 12.0,
 
 
-        val splashMinCards: Int = 2,
 
 
         val creatureFloorPts: Double = 0.0,
@@ -80,6 +79,7 @@ class AdvisorEngine(
         meta: (String) -> CardMeta? = { null },
         synergy: SynergyIndex? = null,
         deckFit: ((RankedCard) -> DeckProjector.Fit?)? = null,
+        activeManaSources: ManaSourceReport? = null,
     ): List<ScoredCard> {
         val poolMetas = pool.mapNotNull { meta(it.name) }
         val needs = PoolNeeds.analyze(poolMetas, pool.size)
@@ -95,13 +95,20 @@ class AdvisorEngine(
             }
         }
         val poolCounts = pool.groupingBy { it.name }.eachCount()
-        val splashColors = splashColorsOf(pool, lane, meta)
+        val splashColors = activeManaSources
+            ?.takeIf { lane.isEstablished && it.baseColors == lane.colors && it.allRequirementsMet }
+            ?.splashColor
+            ?.let(::setOf)
+            .orEmpty()
         val fitW = fitWeight(progress, lane)
 
-        return pack.map { card ->
+        val heuristicOrder = pack.map { card ->
             val fit = if (fitW > 0.0) deckFit?.invoke(card) else null
             evaluate(card, lane, metrics, archetypeRating, meta, progress, needs, theme, poolCounts[card.name] ?: 0, splashColors, fit, fitW)
         }.sortedWith(compareByDescending<ScoredCard> { it.rawValue }.thenBy { it.card.displayName })
+        // Hard guide feasibility applies even when PickNet is unavailable or
+        // lacks enough pack coverage to run.
+        return PickNetRanker.applyGuideOrder(heuristicOrder, heuristicOrder)
     }
 
     private fun evaluate(
@@ -132,7 +139,8 @@ class AdvisorEngine(
         val blendedZ = baseZ + archShiftZ
         val statSynergyPts = synergyBonus(card, globalWr, archWr, archSamples, reasons)
 
-        val themeResult = theme?.evaluate(card, config) ?: ThemeSynergy.Result.NONE
+        val activeGuidePair = if (lane.isEstablished) lane.pair ?: canonicalPair(lane.colors) else null
+        val themeResult = theme?.evaluate(card, config, activeGuidePair) ?: ThemeSynergy.Result.NONE
 
 
         val totalSynergyPts = if (themeResult.points > 0.0) {
@@ -144,7 +152,8 @@ class AdvisorEngine(
         if (themePts > 0.0) reasons += themeResult.reasons
 
         val cardMeta = meta(card.name)
-        val colors = LaneDetector.colorsOf(card)
+        val colors = castingColorsOf(card, cardMeta)
+        val identityKnown = card.rating != null || cardMeta != null
         val hybridGroups = cardMeta?.hybridColorGroups.orEmpty()
 
 
@@ -162,13 +171,31 @@ class AdvisorEngine(
             }
             colorDenom = produced.size
         } else {
-            offColors = if (lane.isEstablished) LaneDetector.uncastableColors(colors, lane.colors, hybridGroups) else emptySet()
+            offColors = if (lane.isEstablished) {
+                val pureColors = cardMeta?.exactPureColorsOrNull()
+                val options = LaneDetector.uncastableColorOptions(colors, lane.colors, hybridGroups, pureColors)
+                val projectedSplash = fit?.afterSplash
+                options.minWithOrNull(
+                    compareBy<Set<Char>> { option ->
+                        when {
+                            projectedSplash != null && projectedSplash in option -> 0
+                            option.any(splashColors::contains) -> 1
+                            else -> 2
+                        }
+                    }.thenBy { it.size }
+                        .thenBy { option -> "WUBRG".filter(option::contains) },
+                ).orEmpty()
+            } else {
+                emptySet()
+            }
             colorDenom = colors.size
         }
+        val guardrail = pickGuardrail(lane, offColors, cardMeta, identityKnown, isFixingLand, isBomb, fit)
         val onColor = colors.isNotEmpty() && lane.isEstablished && offColors.isEmpty()
         val splashable = offColors.size <= 1 || needs.fixing > 0
         val penaltyScale = when {
             !isBomb -> 1.0
+            !guardrail.modelPromotable -> 1.0
             splashable -> 0.0
             else -> config.bombUnsplashablePenaltyScale
         }
@@ -185,6 +212,18 @@ class AdvisorEngine(
                 reasons.add(0, if (isFixingLand) "Off-color fixing (${lane.pair} lane)" else "Off-color (${lane.pair} lane)")
             splashFixed.isNotEmpty() ->
                 reasons.add(0, "Fixes ${splashFixed.sortedBy { "WUBRG".indexOf(it) }.joinToString("")} splash")
+        }
+        if (!guardrail.modelPromotable &&
+            (isBomb || reasons.none { it.startsWith("Off-color") })
+        ) {
+            val off = guardrail.offColors.sortedBy { "WUBRG".indexOf(it) }.joinToString("")
+            val constraintReason = when {
+                GuideConstraint.UNKNOWN_MANA in guardrail.constraints -> "Mana requirements unavailable"
+                GuideConstraint.OFF_PLAN_FIXING in guardrail.constraints -> "Off-plan $off fixing"
+                GuideConstraint.HEAVY_SPLASH_PIPS in guardrail.constraints -> "Heavy $off splash"
+                else -> "Unsupported $off splash"
+            }
+            reasons.add(if (reasons.firstOrNull() == "Bomb") 1 else 0, constraintReason)
         }
 
         val needsResult = DeckNeeds.evaluateCard(cardMeta, needs, config.totalPicks)
@@ -240,7 +279,111 @@ class AdvisorEngine(
             scoreCap = value - rawValue,
         )
 
-        return ScoredCard(card, value, blendedZ, isBomb, reasons.take(MAX_REASONS), breakdown, rawValue)
+        return ScoredCard(
+            card = card,
+            value = value,
+            z = blendedZ,
+            isBomb = isBomb,
+            reasons = reasons.take(MAX_REASONS),
+            breakdown = breakdown,
+            rawValue = rawValue,
+            guardrail = guardrail,
+        )
+    }
+
+    private fun pickGuardrail(
+        lane: Lane,
+        offColors: Set<Char>,
+        meta: CardMeta?,
+        identityKnown: Boolean,
+        isFixingLand: Boolean,
+        isBomb: Boolean,
+        fit: DeckProjector.Fit?,
+    ): PickGuardrail {
+        if (!lane.isEstablished) return PickGuardrail.OPEN
+        if (!identityKnown) {
+            return PickGuardrail(
+                status = ModelPromotionStatus.CONSTRAINED,
+                laneColors = lane.colors,
+                constraints = setOf(GuideConstraint.UNKNOWN_MANA),
+            )
+        }
+        if (offColors.isEmpty()) {
+            return PickGuardrail(ModelPromotionStatus.ON_PLAN, lane.colors)
+        }
+        // A color label identifies the lane, but only Scryfall metadata tells us
+        // whether the splash costs one pip, two pips, or hybrid mana.
+        if (meta == null) {
+            return PickGuardrail(
+                status = ModelPromotionStatus.CONSTRAINED,
+                laneColors = lane.colors,
+                offColors = offColors,
+                constraints = setOf(GuideConstraint.UNKNOWN_MANA),
+            )
+        }
+
+        val heavy = offColors.filterTo(mutableSetOf()) { color ->
+            color in meta?.heavyPipColors.orEmpty() || (meta?.effectiveSplashPips(color, lane.colors) ?: 0) >= 2
+        }
+        val expectedBasePair = lane.pair ?: canonicalPair(lane.colors)
+        val expectedSplash = offColors.singleOrNull()
+        val projectedUpgrade = fit?.let {
+            val mana = it.afterManaSources
+            it.makesDeck && !it.baseShifted && it.powerDelta > 0.0 &&
+                expectedBasePair != null && it.afterBasePair == expectedBasePair &&
+                expectedSplash != null && it.afterSplash == expectedSplash &&
+                mana != null && mana.splashColor == expectedSplash && mana.allRequirementsMet
+        } == true
+        // A bomb is only speculative while no complete deck can be projected.
+        // Once projection has answered, a failed source/fit check is a hard
+        // constraint rather than an invitation for the learned model to guess.
+        val lightSplashBomb = fit == null && isBomb && offColors.size == 1 && heavy.isEmpty()
+        if (!isFixingLand && heavy.isEmpty() && offColors.size == 1 && (projectedUpgrade || lightSplashBomb)) {
+            return PickGuardrail(
+                status = if (projectedUpgrade) {
+                    ModelPromotionStatus.SUPPORTED_SPLASH
+                } else {
+                    ModelPromotionStatus.SPLASH_CANDIDATE
+                },
+                laneColors = lane.colors,
+                offColors = offColors,
+            )
+        }
+
+        val constraints = buildSet {
+            if (isFixingLand) add(GuideConstraint.OFF_PLAN_FIXING)
+            if (offColors.size > 1) add(GuideConstraint.MULTIPLE_SPLASH_COLORS)
+            if (heavy.isNotEmpty()) add(GuideConstraint.HEAVY_SPLASH_PIPS)
+            if (!isFixingLand) add(GuideConstraint.UNSUPPORTED_SPLASH)
+        }
+        return PickGuardrail(
+            status = ModelPromotionStatus.CONSTRAINED,
+            laneColors = lane.colors,
+            offColors = offColors,
+            constraints = constraints,
+        )
+    }
+
+    private fun castingColorsOf(card: RankedCard, meta: CardMeta?): Set<Char> {
+        val metadataColors = buildSet {
+            addAll(meta?.coloredPips.orEmpty().keys)
+            meta?.hybridPips.orEmpty().forEach(::addAll)
+            meta?.hybridColorGroups.orEmpty().forEach(::addAll)
+            addAll(meta?.heavyPipColors.orEmpty())
+        }
+        return metadataColors.ifEmpty { LaneDetector.colorsOf(card) }
+    }
+
+    private fun CardMeta.exactPureColorsOrNull(): Set<Char>? =
+        coloredPips.keys.takeIf { coloredPips.isNotEmpty() || hybridPips.isNotEmpty() || hybridColorGroups.isNotEmpty() }
+
+    private fun CardMeta.effectiveSplashPips(color: Char, baseColors: Set<Char>): Int {
+        var pips = coloredPips[color] ?: 0
+        val hybrids = hybridPips.ifEmpty { hybridColorGroups }
+        for (group in hybrids) {
+            if (color in group && group.none(baseColors::contains)) pips++
+        }
+        return pips
     }
 
     private fun effectiveZ(card: RankedCard, metrics: SetMetrics): Double {
@@ -297,23 +440,6 @@ class AdvisorEngine(
         val pts = (deltaPct * if (glue) config.glueMult else config.synergyMult).coerceAtMost(config.synergyCapPts)
         if (pts > 1.0) reasons += if (glue) "Archetype glue" else "Archetype synergy"
         return pts
-    }
-
-
-    private fun splashColorsOf(
-        pool: List<RankedCard>,
-        lane: Lane,
-        meta: (String) -> CardMeta?,
-    ): Set<Char> {
-        if (!lane.isEstablished) return emptySet()
-        val counts = HashMap<Char, Int>()
-        for (card in pool) {
-            if (meta(card.name)?.isLand == true) continue
-            for (ch in LaneDetector.colorsOf(card)) {
-                if (ch !in lane.colors) counts.merge(ch, 1, Int::plus)
-            }
-        }
-        return counts.filterValues { it >= config.splashMinCards }.keys
     }
 
     private fun duplicatePenalty(copiesInPool: Int, meta: CardMeta?): Double {

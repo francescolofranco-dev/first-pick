@@ -2,34 +2,71 @@
  "set": "WOE",
  "setName": "Wilds of Eldraine",
  "generated": "2026-07-04",
+ "schemaVersion": 2,
+ "updatedAt": "2026-08-15",
+ "sources": [
+ {
+  "id": "woe-mechanics",
+  "title": "Wilds of Eldraine Mechanics",
+  "publisher": "Wizards of the Coast",
+  "author": "Matt Tabak",
+  "date": "2023-08-15",
+  "url": "https://magic.wizards.com/en/news/feature/wilds-of-eldraine-mechanics",
+  "kind": "OFFICIAL_MECHANICS"
+ },
+ {
+  "id": "woe-release-notes",
+  "title": "Wilds of Eldraine Release Notes",
+  "publisher": "Wizards of the Coast",
+  "author": "Eric Levine",
+  "date": "2023-08-24",
+  "url": "https://magic.wizards.com/en/news/feature/wilds-of-eldraine-release-notes",
+  "kind": "OFFICIAL_RELEASE_NOTES"
+ },
+ {
+  "id": "woe-17lands",
+  "title": "17Lands Public Limited Data (WOE)",
+  "publisher": "17Lands",
+  "author": "17Lands contributors",
+  "date": "2026-08-15",
+  "url": "https://www.17lands.com/public_datasets",
+  "kind": "LIMITED_DATA"
+ }
+ ],
  "mechanics": [
-  {
-   "name": "Role token",
-   "summary": ""
+    {
+      "name": "Role token",
+      "summary": "A Role is an Aura token that changes the enchanted creature; if one player attaches a second Role to that creature, their older Role is put into the graveyard.",
+   "sourceIds": ["woe-mechanics","woe-release-notes"]
   },
-  {
-   "name": "Food",
-   "summary": ""
+    {
+      "name": "Food",
+      "summary": "A Food is an artifact token you can pay two mana, tap, and sacrifice to gain 3 life, or spend as artifact and token fodder.",
+   "sourceIds": ["woe-mechanics","woe-release-notes"]
   },
-  {
-   "name": "Bargain",
-   "summary": ""
+    {
+      "name": "Bargain",
+      "summary": "As an additional cost to cast a bargain spell, you may sacrifice an artifact, enchantment, or token to unlock its upgraded effect.",
+   "sourceIds": ["woe-mechanics","woe-release-notes"]
   },
-  {
-   "name": "Celebration",
-   "summary": ""
+    {
+      "name": "Celebration",
+      "summary": "Celebration abilities turn on after two or more nonland permanents have entered the battlefield under your control during the turn.",
+   "sourceIds": ["woe-mechanics","woe-release-notes"]
   },
-  {
-   "name": "Treasure",
-   "summary": ""
+    {
+      "name": "Treasure",
+      "summary": "A Treasure is an artifact token you can tap and sacrifice to add one mana of any color, providing temporary acceleration, fixing, or bargain fodder.",
+   "sourceIds": ["woe-mechanics","woe-release-notes"]
   }
  ],
  "archetypes": [
-  {
-   "pair": "WU",
-   "name": "Flyers tempo",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "WU",
+      "name": "Flyers tempo",
+      "playstyle": "Attack in the air while tapping, stunning, or bouncing opposing creatures, letting a modest evasive board win the race.",
+      "speed": "tempo",
+   "sourceIds": ["woe-mechanics","woe-17lands"],
    "signposts": [
     "Sharae of Numbing Depths"
    ],
@@ -65,11 +102,12 @@
     "Archive Dragon"
    ]
   },
-  {
-   "pair": "WB",
-   "name": "Wicked lifedrain",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "WB",
+      "name": "Wicked lifedrain",
+      "playstyle": "Use Roles and other enchantments for value, then bargain or trade them so death and life-drain triggers grind down the opponent.",
+      "speed": "midrange",
+   "sourceIds": ["woe-mechanics","woe-17lands"],
    "signposts": [
     "Neva, Stalked by Nightmares"
    ],
@@ -105,11 +143,12 @@
     "Dutiful Griffin"
    ]
   },
-  {
-   "pair": "WR",
-   "name": "Prowess aggro",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "WR",
+      "name": "Prowess aggro",
+      "playstyle": "Curve out with cheap threats and cast multiple nonland permanents in a turn, using tricks and Adventure cards to trigger celebration and sustain pressure.",
+      "speed": "aggro",
+   "sourceIds": ["woe-mechanics","woe-17lands"],
    "signposts": [
     "Ash, Party Crasher"
    ],
@@ -145,11 +184,12 @@
     "Belligerent of the Ball"
    ]
   },
-  {
-   "pair": "WG",
-   "name": "Go-wide tokens",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "WG",
+      "name": "Go-wide tokens",
+      "playstyle": "Create several bodies, enhance them with Roles and counters, and turn enchantment synergies into a board-wide combat advantage.",
+      "speed": "midrange",
+   "sourceIds": ["woe-mechanics","woe-17lands"],
    "signposts": [
     "Syr Armont, the Redeemer"
    ],
@@ -185,11 +225,12 @@
     "Unassuming Sage"
    ]
   },
-  {
-   "pair": "UB",
-   "name": "Faeries",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "UB",
+      "name": "Faeries",
+      "playstyle": "Deploy evasive Faeries around instant-speed interaction, disrupting the opponent while small flying attacks steadily reduce their life total.",
+      "speed": "tempo",
+   "sourceIds": ["woe-mechanics","woe-17lands"],
    "signposts": [
     "Obyra, Dreaming Duelist"
    ],
@@ -225,11 +266,12 @@
     "Three Bowls of Porridge"
    ]
   },
-  {
-   "pair": "UR",
-   "name": "Spellslinger",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "UR",
+      "name": "Spellslinger",
+      "playstyle": "Maintain enough instants, sorceries, and Adventure halves to trigger spell payoffs, using card selection and removal to set up explosive turns.",
+      "speed": "tempo",
+   "sourceIds": ["woe-mechanics","woe-17lands"],
    "signposts": [
     "Johann, Apprentice Sorcerer"
    ],
@@ -265,11 +307,12 @@
     "Grabby Giant // That's Mine"
    ]
   },
-  {
-   "pair": "UG",
-   "name": "Bargain ramp",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "UG",
+      "name": "Bargain ramp",
+      "playstyle": "Accelerate and fix mana, produce expendable artifacts or tokens for bargain, and finish with large creatures and value-heavy Adventures.",
+      "speed": "ramp",
+   "sourceIds": ["woe-mechanics","woe-17lands"],
    "signposts": [
     "Troyan, Gutsy Explorer"
    ],
@@ -305,11 +348,12 @@
     "Howling Galefang"
    ]
   },
-  {
-   "pair": "BR",
-   "name": "Sacrifice",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "BR",
+      "name": "Sacrifice",
+      "playstyle": "Generate Rats, Roles, and other expendable permanents, then sacrifice them to bargain and death payoffs while keeping damage flowing.",
+      "speed": "aggro",
+   "sourceIds": ["woe-mechanics","woe-17lands"],
    "signposts": [
     "Totentanz, Swarm Piper"
    ],
@@ -345,11 +389,12 @@
     "Kindled Heroism"
    ]
   },
-  {
-   "pair": "BG",
-   "name": "Food",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "BG",
+      "name": "Food",
+      "playstyle": "Produce Food to stabilize, bargain, and fuel artifact payoffs, then use efficient removal and large creatures to dominate a resource game.",
+      "speed": "midrange",
+   "sourceIds": ["woe-mechanics","woe-17lands"],
    "signposts": [
     "Greta, Sweettooth Scourge"
    ],
@@ -385,11 +430,12 @@
     "Tough Cookie"
    ]
   },
-  {
-   "pair": "RG",
-   "name": "Adventure midrange",
-   "playstyle": "",
-   "speed": "",
+    {
+      "pair": "RG",
+      "name": "Adventure midrange",
+      "playstyle": "Cast Adventure halves for early interaction or value, then deploy the same cards as creatures to maintain pressure without running out of threats.",
+      "speed": "midrange",
+   "sourceIds": ["woe-mechanics","woe-17lands"],
    "signposts": [
     "Ruby, Daring Tracker"
    ],
