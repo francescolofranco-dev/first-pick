@@ -48,7 +48,9 @@ class EventParserTest {
     @Test
     fun deriveSetAndFormatFromEventName() {
         assertEquals("SOS", setCodeFromEventName("QuickDraftEmblem_SOS_20260611"))
+        assertEquals("HOB", setCodeFromEventName("PremierDraft_HOB_20260811"))
         assertEquals(DraftFormat.QUICK, DraftFormat.fromEventName("QuickDraftEmblem_SOS_20260611"))
+        assertEquals(DraftFormat.PREMIER, DraftFormat.fromEventName("PremierDraft_HOB_20260811"))
         assertEquals(DraftFormat.PREMIER, DraftFormat.fromEventName("PremierDraft_OTJ_20240416"))
         assertEquals(DraftFormat.TRADITIONAL, DraftFormat.fromEventName("TradDraft_DSK_20240924"))
     }

@@ -81,6 +81,40 @@ class BundledProfilesTest {
     }
 
     @Test
+    fun hobProfileMatchesTheOfficialLimitedStructureAtResearchedDepth() {
+        val profile = json.decodeFromString<SetSynergyProfile>(resource("/synergy/HOB.json")!!)
+
+        assertTrue(StandardSets.isSupported("hob"))
+        assertEquals(SynergyTierLevel.RESEARCHED, StandardSets.tier("HOB"))
+        assertEquals(setOf("WU", "BR", "BG", "WR", "UG"), profile.archetypes.mapTo(mutableSetOf()) { it.pair })
+
+        val mechanics = profile.mechanics.map { it.name.lowercase() }
+        for (required in listOf("storied", "recruit", "hone", "adventure", "amass", "landfall")) {
+            assertTrue(mechanics.any { required in it }, "HOB must cover the $required mechanic")
+        }
+
+        val officialHighlights = mapOf(
+            "WU" to setOf("Bard the Bowman", "Long Lake Nuisance"),
+            "BR" to setOf("Bolg of the North", "Misty Mountains Raider"),
+            "BG" to setOf("The Chief Warg", "Nighthowl Pursuer"),
+            "WR" to setOf("Thorin Oakenshield", "Iron Hills Blacksmith"),
+            "UG" to setOf("Silvan Reveler", "Mirkwood Pathmaker"),
+        )
+        val archetypes = profile.archetypes.associateBy { it.pair }
+        for ((pair, highlighted) in officialHighlights) {
+            val archetype = archetypes.getValue(pair)
+            val roleCards = archetype.signposts + archetype.payoffs + archetype.enablers + archetype.keyCards
+            assertTrue(roleCards.containsAll(highlighted), "HOB $pair must include Wizards' highlighted cards")
+            assertTrue(roleCards.size >= 12, "HOB $pair needs researched-depth role coverage")
+            assertTrue(
+                profile.combos.any { combo -> combo.cards.all(roleCards::contains) },
+                "HOB $pair needs a researched interaction within the lane",
+            )
+        }
+        assertTrue(profile.combos.size >= 5, "HOB needs researched interaction depth")
+    }
+
+    @Test
     fun noOrphanProfilesOutsideTheManifest() {
 
 

@@ -20,6 +20,17 @@ curl -o data/$SET.csv.gz \
 .venv/bin/python train_picker.py --set $SET --fmt PremierDraft --data data/$SET.csv.gz
 ```
 
+For a newly released set, live 17Lands ratings can be available before the raw
+pick-by-pick draft dump. Never train a replacement model from aggregate ratings
+or copy another set's weights: add the set profile and manifest entry first, and
+let the weekly `retrain-models` workflow pick it up once the public
+`draft_data_public.<SET>.PremierDraft.csv.gz` file exists. You can check the same
+selection path locally with:
+
+```bash
+python3 ci_retrain.py select --sets "$SET"
+```
+
 Outputs under `out/`:
 
 - **`<SET>_<FMT>.fpnet`** — weights for the Kotlin runtime

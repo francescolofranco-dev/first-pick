@@ -1,7 +1,12 @@
 {
- "checked": "2026-07-04",
+ "checked": "2026-08-20",
  "note": "Standard-legal sets with 17Lands draft data and a bundled synergy profile. tier: researched=deeply verified archetypes+combos, data=grounded from 17Lands overperformance. Drop a set when it rotates out of Standard (./gradlew auditSets).",
  "sets": [
+  {
+   "code": "HOB",
+   "rotatesYear": 2029,
+   "tier": "researched"
+  },
   {
    "code": "MSH",
    "rotatesYear": 2028,

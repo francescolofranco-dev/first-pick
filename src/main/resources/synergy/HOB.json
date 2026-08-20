@@ -1,0 +1,434 @@
+{
+ "set": "HOB",
+ "setName": "The Hobbit",
+ "generated": "2026-08-20",
+ "schemaVersion": 2,
+ "updatedAt": "2026-08-20",
+ "sources": [
+ {
+  "id": "hob-mechanics",
+  "title": "Magic: The Gathering | The Hobbit Mechanics",
+  "publisher": "Wizards of the Coast",
+  "author": "Matt Tabak",
+  "date": "2026-07-18",
+  "url": "https://magic.wizards.com/en/news/feature/the-hobbit-mechanics",
+  "kind": "OFFICIAL_MECHANICS"
+ },
+ {
+  "id": "hob-limited-guide",
+  "title": "Magic: The Gathering | The Hobbit Prerelease Guide",
+  "publisher": "Wizards of the Coast",
+  "author": "Jubilee Finnegan",
+  "date": "2026-07-31",
+  "url": "https://magic.wizards.com/en/news/feature/the-hobbit-prerelease-guide",
+  "kind": "OFFICIAL_LIMITED_GUIDE"
+ },
+ {
+  "id": "hob-release-notes",
+  "title": "Magic: The Gathering | The Hobbit Release Notes",
+  "publisher": "Wizards of the Coast",
+  "author": "Eliana Rabinowitz and Eric Levine",
+  "date": "2026-07-31",
+  "url": "https://magic.wizards.com/en/news/feature/the-hobbit-release-notes",
+  "kind": "OFFICIAL_RELEASE_NOTES"
+ },
+ {
+  "id": "hob-17lands",
+  "title": "17Lands Card Data (HOB Premier Draft)",
+  "publisher": "17Lands",
+  "author": "17Lands contributors",
+  "date": "2026-08-20",
+  "url": "https://www.17lands.com/card_data?expansion=HOB&format=PremierDraft&start=2026-08-11",
+  "kind": "LIMITED_DATA"
+ }
+ ],
+ "mechanics": [
+  {
+   "name": "Storied",
+   "summary": "A permanent with storied gives you an enduring story once you control three or more artifacts, legendary permanents, and/or Sagas; that designation lasts for the rest of the game.",
+   "sourceIds": ["hob-mechanics","hob-limited-guide","hob-release-notes"]
+  },
+  {
+   "name": "Recruit",
+   "summary": "Draw a card, then discard a card; discarding a nonland card also creates a 1/1 white Human Soldier token, joining card selection to go-wide pressure.",
+   "sourceIds": ["hob-mechanics","hob-release-notes"]
+  },
+  {
+   "name": "Hone counters",
+   "summary": "Each hone counter on an Equipment gives the equipped creature +1/+0, letting repeated honing turn modest weapons into serious threats.",
+   "sourceIds": ["hob-mechanics","hob-release-notes"]
+  },
+  {
+   "name": "Adventures",
+   "summary": "Cast the Adventure half first and exile the card as it resolves, then cast its permanent half from exile for two spells and flexible curve coverage from one card.",
+   "sourceIds": ["hob-mechanics","hob-release-notes"]
+  },
+  {
+   "name": "Amass",
+   "summary": "Put +1/+1 counters on an Army you control, or create a 0/0 black Goblin Army token first if you have none; repeated amass effects build one scalable sacrifice body.",
+   "sourceIds": ["hob-mechanics","hob-release-notes"]
+  },
+  {
+   "name": "Landfall",
+   "summary": "Triggers whenever a land you control enters, rewarding extra land drops, land recursion, and holding lands to generate tempo or creature growth on demand.",
+   "sourceIds": ["hob-mechanics","hob-limited-guide","hob-release-notes"]
+  }
+ ],
+ "archetypes": [
+  {
+   "pair": "WU",
+   "name": "Humans recruit and draw-two",
+   "playstyle": "Recruit after the draw step to turn the turn's second card into counters, lifelink, mill, and combat pressure while the discarded nonlands become Human Soldier tokens. Cheap Adventures and efficient interaction keep mana moving as the token board grows.",
+   "speed": "midrange",
+   "sourceIds": ["hob-limited-guide","hob-17lands"],
+   "signposts": [
+    "Bard the Bowman",
+    "Long Lake Nuisance"
+   ],
+   "payoffs": [
+    "Lakeshore Apothecary",
+    "Master's Councillors",
+    "Lake-town Toymaker",
+    "Esgaroth Garrison",
+    "Bard's Company"
+   ],
+   "enablers": [
+    "Patient Instructor",
+    "Celebrate the Mountain-king",
+    "The Mountain-king's Return",
+    "Bilbo, Luckwearer",
+    "Sound the Trumpets",
+    "Lake-town Lookout",
+    "Great Gilded Boat"
+   ],
+   "keyCards": [
+    "Stone by Sunlight",
+    "Plunder the Trollshaws",
+    "Bilbo Baggins, Burglar",
+    "Eagle's Rescue",
+    "Magnificent End",
+    "Enchanted River's Grasp",
+    "Lake-town",
+    "Hobbit Hole"
+   ]
+  },
+  {
+   "pair": "BR",
+   "name": "Goblins amass-sacrifice",
+   "playstyle": "Build a counter-laden Goblin Army, attack to amass again, and cash in expendable creatures, artifacts, or the Army when removal and impulse-draw outlets make the exchange profitable. Death triggers and menace keep damage flowing through trades.",
+   "speed": "aggro",
+   "sourceIds": ["hob-limited-guide","hob-17lands"],
+   "signposts": [
+    "Bolg of the North",
+    "Misty Mountains Raider"
+   ],
+   "payoffs": [
+    "Bothersome Noisemaker",
+    "Great Ugly-Looking Goblin",
+    "Snowslope Hunter",
+    "Fearsome Goblin Pair",
+    "The Great Goblin"
+   ],
+   "enablers": [
+    "Goblin Plate Mail",
+    "Rage into the Valley",
+    "Gathering of Darkness",
+    "Down, Down to Goblin-town",
+    "Tidings of War",
+    "Goblin-town Flunkies",
+    "Stir Up Trouble",
+    "Front Porch Sentries"
+   ],
+   "keyCards": [
+    "Desolation Prowler",
+    "Crude Bent Blade",
+    "Pinecone Strike",
+    "Burn, Burn, Tree and Fern",
+    "Gandalf, Spark Starter",
+    "Glóin the Mighty",
+    "Bilbo's Deadly Slice",
+    "Gollum, Silent Slinker",
+    "Goblin-town"
+   ]
+  },
+  {
+   "pair": "BG",
+   "name": "Wolves ferocious midrange",
+   "playstyle": "Establish a creature with power 4 or greater, then send the pack to switch on attack-draw, counters, trample, and lifegain. Efficient black removal protects the ferocious engine while green's large bodies and ramp dominate combat.",
+   "speed": "midrange",
+   "sourceIds": ["hob-limited-guide","hob-17lands"],
+   "signposts": [
+    "The Chief Warg",
+    "Nighthowl Pursuer"
+   ],
+   "payoffs": [
+    "Nasty Little Rabbit",
+    "Ravening Warg",
+    "Wargling",
+    "Wilderland Scrounger"
+   ],
+   "enablers": [
+    "Large Bear",
+    "Ordinary Bear",
+    "Gollum, Silent Slinker",
+    "Desolation Prowler",
+    "Duskwatch Hunter",
+    "Beorn, Reluctant Host",
+    "Long-Bodied Grey Dog"
+   ],
+   "keyCards": [
+    "Mirkwood Pathmaker",
+    "Crude Bent Blade",
+    "Down, Down to Goblin-town",
+    "Quarrel",
+    "Bilbo's Deadly Slice",
+    "Attercop",
+    "Troll Negotiations",
+    "Hobbit Hole",
+    "Mirkwood"
+   ]
+  },
+  {
+   "pair": "WR",
+   "name": "Dwarves storied Equipment",
+   "playstyle": "Curve legendary Dwarves, Equipment, and Sagas into an enduring story, then collect ward, stats, attack taxes, and doubled Dwarf triggers. Treasure and Equipment makers reach the three-permanent threshold without sacrificing combat tempo.",
+   "speed": "midrange",
+   "sourceIds": ["hob-limited-guide","hob-17lands"],
+   "signposts": [
+    "Thorin Oakenshield",
+    "Iron Hills Blacksmith"
+   ],
+   "payoffs": [
+    "Dáin, Lord of the Iron Hills",
+    "Bifur, Melodic Rider",
+    "Bombur, Gentle Dreamer",
+    "Óin the Brave",
+    "Ori, Keeper of Songs",
+    "Kíli the Resourceful",
+    "Fíli the Pathfinder"
+   ],
+   "enablers": [
+    "Dori, Bearer of Friends",
+    "The Mountain-king's Return",
+    "Dwarven Shortsword",
+    "Dwarven Mattock",
+    "Ragged Short Spear",
+    "Nori, Teller of Tales",
+    "Bofur, Reliable Guardian",
+    "Burn, Burn, Tree and Fern"
+   ],
+   "keyCards": [
+    "Celebrate the Mountain-king",
+    "Stone by Sunlight",
+    "Bothersome Noisemaker",
+    "Pinecone Strike",
+    "Gandalf, Spark Starter",
+    "Glóin the Mighty",
+    "Dwarven Mauler",
+    "Magnificent End",
+    "Iron Hills"
+   ]
+  },
+  {
+   "pair": "UG",
+   "name": "Elves landfall-control",
+   "playstyle": "Develop lands and preserve extra land drops to trigger tap-and-untap tempo, creature growth, and Elf production exactly when needed. Land-finding, land recursion, and a compact Elf subtheme build toward Mirkwood Pathmaker while interaction controls the air and ground.",
+   "speed": "control",
+   "sourceIds": ["hob-limited-guide","hob-17lands"],
+   "signposts": [
+    "Silvan Reveler",
+    "Mirkwood Pathmaker"
+   ],
+   "payoffs": [
+    "Thranduil, Sindarin Liege",
+    "Woodland Weavemaster",
+    "Elven Raft-Steerer",
+    "Mirkwood Meditator",
+    "Beorn's Hospitality",
+    "Boughside Wanderers",
+    "Attercop"
+   ],
+   "enablers": [
+    "Wood Elves",
+    "Mirkwood Nurturer",
+    "Troop of Ponies",
+    "Beorn, Reluctant Host",
+    "Elvenking's Halls",
+    "Mirkwood"
+   ],
+   "keyCards": [
+    "Bilbo, Luckwearer",
+    "Quarrel",
+    "Nasty Little Rabbit",
+    "Hobbit Hole",
+    "Plunder the Trollshaws",
+    "Large Bear",
+    "Uneasy Partings",
+    "Enchanted River's Grasp",
+    "Troll Negotiations"
+   ]
+  }
+ ],
+ "combos": [
+  {
+   "cards": [
+    "Bard the Bowman",
+    "Patient Instructor"
+   ],
+   "note": "Recruit after your draw step supplies the second draw for Bard, a Soldier token when you discard a nonland, and a +1/+1 counter with lifelink",
+   "sourceIds": ["hob-limited-guide","hob-17lands","hob-release-notes"]
+  },
+  {
+   "cards": [
+    "Lakeshore Apothecary",
+    "Long Lake Nuisance"
+   ],
+   "note": "Long Lake Nuisance recruits on entry, turning the turn's second draw into an Apothecary counter while potentially adding a Soldier",
+   "sourceIds": ["hob-limited-guide","hob-17lands","hob-release-notes"]
+  },
+  {
+   "cards": [
+    "Master's Councillors",
+    "Celebrate the Mountain-king"
+   ],
+   "note": "Celebrate recruits to trigger Councillors' mill, and both the mill and recruit discard accelerate its seven-card-graveyard bonus",
+   "sourceIds": ["hob-limited-guide","hob-17lands","hob-release-notes"]
+  },
+  {
+   "cards": [
+    "Esgaroth Garrison",
+    "Patient Instructor"
+   ],
+   "note": "Patient Instructor recruits on entry and a nonland discard creates another creature, immediately increasing Garrison's power",
+   "sourceIds": ["hob-limited-guide","hob-17lands","hob-release-notes"]
+  },
+  {
+   "cards": [
+    "Snowslope Hunter",
+    "Fearsome Goblin Pair"
+   ],
+   "note": "Sacrifice the Pair to Hunter for an impulse card and its death trigger amasses Goblins 4",
+   "sourceIds": ["hob-limited-guide","hob-17lands","hob-release-notes"]
+  },
+  {
+   "cards": [
+    "Stir Up Trouble",
+    "Fearsome Goblin Pair"
+   ],
+   "note": "The Pair pays Stir Up Trouble's sacrifice cost, so one exchange destroys a creature and leaves four +1/+1 counters on your Army",
+   "sourceIds": ["hob-limited-guide","hob-17lands","hob-release-notes"]
+  },
+  {
+   "cards": [
+    "Bothersome Noisemaker",
+    "Tidings of War"
+   ],
+   "note": "Casting Tidings triggers Noisemaker before the spell amasses again; flashback repeats the trigger and upgrades Tidings to amass 3",
+   "sourceIds": ["hob-limited-guide","hob-17lands","hob-release-notes"]
+  },
+  {
+   "cards": [
+    "Bolg of the North",
+    "Front Porch Sentries"
+   ],
+   "note": "Sacrificing Sentries to Bolg adds its death-trigger -1/-1 to Bolg's damage, improving the kill and the chance of excess-damage amass",
+   "sourceIds": ["hob-limited-guide","hob-17lands","hob-release-notes"]
+  },
+  {
+   "cards": [
+    "The Chief Warg",
+    "Large Bear"
+   ],
+   "note": "The hasty 4-power Bear immediately switches on the Chief Warg's attack trigger for a card",
+   "sourceIds": ["hob-limited-guide","hob-17lands","hob-release-notes"]
+  },
+  {
+   "cards": [
+    "Nighthowl Pursuer",
+    "Ordinary Bear"
+   ],
+   "note": "The on-curve 4-power Bear enables Pursuer's ferocious attack pump",
+   "sourceIds": ["hob-limited-guide","hob-17lands","hob-release-notes"]
+  },
+  {
+   "cards": [
+    "Nasty Little Rabbit",
+    "Desolation Prowler"
+   ],
+   "note": "Pump Prowler before combat to reach 4 power and lock in Rabbit's beginning-of-combat +1/+1 counter",
+   "sourceIds": ["hob-limited-guide","hob-17lands","hob-release-notes"]
+  },
+  {
+   "cards": [
+    "Wilderland Scrounger",
+    "Mirkwood Pathmaker"
+   ],
+   "note": "At four lands Pathmaker turns on ferocious, so Scrounger's attack grows the whole team",
+   "sourceIds": ["hob-limited-guide","hob-17lands","hob-release-notes"]
+  },
+  {
+   "cards": [
+    "Thorin Oakenshield",
+    "Dori, Bearer of Friends"
+   ],
+   "note": "Thorin and legendary Dori count twice toward storied, and Dori's Treasure is the third permanent that establishes an enduring story",
+   "sourceIds": ["hob-limited-guide","hob-17lands","hob-release-notes"]
+  },
+  {
+   "cards": [
+    "Dáin, Lord of the Iron Hills",
+    "Dori, Bearer of Friends"
+   ],
+   "note": "Dáin, legendary Dori, and Dori's Treasure reach the storied threshold and switch on Dáin's attack tax",
+   "sourceIds": ["hob-limited-guide","hob-17lands","hob-release-notes"]
+  },
+  {
+   "cards": [
+    "Bifur, Melodic Rider",
+    "Iron Hills Blacksmith"
+   ],
+   "note": "With an enduring story, Bifur doubles the Blacksmith Dwarf's enter trigger to create two Axe Equipment tokens",
+   "sourceIds": ["hob-limited-guide","hob-17lands","hob-release-notes"]
+  },
+  {
+   "cards": [
+    "Kíli the Resourceful",
+    "Dwarven Shortsword"
+   ],
+   "note": "Shortsword's Equipment entry triggers Kíli's draw and its Dwarf token supplies another body; an enduring story also makes the first equip free",
+   "sourceIds": ["hob-limited-guide","hob-17lands","hob-release-notes"]
+  },
+  {
+   "cards": [
+    "Thranduil, Sindarin Liege",
+    "Silvan Reveler"
+   ],
+   "note": "Discarding a land to Reveler's entry puts it onto the battlefield, triggering Thranduil to create an Elf that immediately receives his anthem",
+   "sourceIds": ["hob-limited-guide","hob-17lands","hob-release-notes"]
+  },
+  {
+   "cards": [
+    "Thranduil, Sindarin Liege",
+    "Wood Elves"
+   ],
+   "note": "Wood Elves puts a Forest onto the battlefield to trigger Thranduil's Elf token, and his anthem boosts both Elves",
+   "sourceIds": ["hob-limited-guide","hob-17lands","hob-release-notes"]
+  },
+  {
+   "cards": [
+    "Mirkwood Nurturer",
+    "Elven Raft-Steerer"
+   ],
+   "note": "Nurturer can return a land you control; replay it to trigger Raft-Steerer and tap a blocker or untap a creature",
+   "sourceIds": ["hob-limited-guide","hob-17lands","hob-release-notes"]
+  },
+  {
+   "cards": [
+    "Beorn's Hospitality",
+    "Boughside Wanderers"
+   ],
+   "note": "Every landfall gives Wanderers +2/+2 for the turn and Hospitality adds a permanent +1/+1 counter",
+   "sourceIds": ["hob-limited-guide","hob-17lands","hob-release-notes"]
+  }
+ ]
+}
