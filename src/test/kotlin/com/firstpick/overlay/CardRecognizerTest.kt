@@ -94,6 +94,22 @@ class CardRecognizerTest {
     }
 
     @Test
+    fun doesNotSwapArcaneOmensAndKilliansConfidence() {
+        val frame = fixture("sos-arcane-killian-offset-capture.jpg")
+        val referenceStrip = fixture("sos-arcane-killian-references.jpg")
+        val refs = listOf(
+            CardRecognizer.ofCard(referenceStrip.getSubimage(0, 0, 336, 468)),
+            CardRecognizer.ofCard(referenceStrip.getSubimage(336, 0, 336, 468)),
+        )
+        val rects = listOf(
+            CardDetector.CardRect(0, 0, 0, 220, 318),
+            CardDetector.CardRect(1, 220, 0, 220, 318),
+        )
+
+        assertEquals(mapOf(0 to 0, 1 to 1), CardRecognizer.match(frame, rects, refs))
+    }
+
+    @Test
     fun missingSwampReferenceDoesNotDisplaceWhiteTigerOrSwordsman() {
         val frame = fixture("msh-p3p4-swordsman-white-tiger-swamp.jpg")
         val referenceStrip = fixture("msh-p3p4-swordsman-white-tiger-references.jpg")

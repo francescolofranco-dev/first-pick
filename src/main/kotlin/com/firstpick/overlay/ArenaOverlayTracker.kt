@@ -74,20 +74,29 @@ private data class Mark(val x: Int, val y: Int, val w: Int, val h: Int, val valu
 internal data class RecognitionAttempt(
     val match: CardRecognizer.MatchResult,
     val calibration: PackGridCalibration?,
+    val titleAnchors: Map<Int, Int> = emptyMap(),
 )
 
 internal class RecognitionSettler(private val required: Int) {
-    private var best: RecognitionAttempt? = null
+    private val attempts = mutableListOf<RecognitionAttempt>()
     private var latestCalibration: PackGridCalibration? = null
     var fullRecognitions: Int = 0
         private set
 
     fun observe(attempt: RecognitionAttempt): RecognitionAttempt? {
         fullRecognitions++
+        attempts += attempt
         if (attempt.calibration != null) latestCalibration = attempt.calibration
-        val previous = best
-        if (previous == null || attempt.match.totalDistance < previous.match.totalDistance) best = attempt
-        return best?.copy(calibration = latestCalibration).takeIf { fullRecognitions >= required }
+        if (fullRecognitions < required) return null
+        val settled = attempts.groupBy { it.match.assignment }
+            .values
+            .sortedWith(
+                compareByDescending<List<RecognitionAttempt>> { it.size }
+                    .thenBy { group -> group.minOf { it.match.totalDistance } },
+            )
+            .first()
+            .minBy { it.match.totalDistance }
+        return settled.copy(calibration = latestCalibration)
     }
 }
 
@@ -98,11 +107,13 @@ fun ArenaOverlayTracker(
     locator: WindowLocator = WindowLocator(),
     capturer: WindowCapture = WindowCapture(),
     calibrationStore: PackGridCalibrationStore = PackGridCalibrationStore(),
+    ocr: VisionOcr = VisionOcr(),
     onHealthChanged: (OverlayHealth) -> Unit = {},
 ) {
     val loc = remember { locator }
     val cap = remember { capturer }
     val store = remember { calibrationStore }
+    val reader = remember { ocr }
 
 
     var bounds by remember { mutableStateOf<WindowBounds?>(null) }
@@ -228,7 +239,22 @@ fun ArenaOverlayTracker(
 
                 val rects = grid?.cards(cards.size)
                     ?: PackGeometry.rects(store.get(b.w, b.h) ?: PackGeometry.DEFAULT, frame.width, frame.height, cards.size)
-                RecognitionAttempt(CardRecognizer.matchDetailed(frame, rects, refs), freshCal)
+                val match = CardRecognizer.matchDetailed(frame, rects, refs)
+                RecognitionAttempt(
+                    match = match,
+                    calibration = freshCal,
+                    // Early complete assignments can still be from cards flying into place.
+                    titleAnchors = if (
+                        match.assignment.size >= expected &&
+                        settler.fullRecognitions == REQUIRED_FULL_RECOGNITIONS - 1
+                    ) {
+                        reader.recognize(frame)
+                            ?.let { PackCardTitleMatcher.anchors(it, rects, cards.map(OverlayCard::name)) }
+                            .orEmpty()
+                    } else {
+                        emptyMap()
+                    },
+                )
             }
             val result = attempt?.match
             when {
@@ -251,13 +277,17 @@ fun ArenaOverlayTracker(
 
                 else -> {
                     capturedFrames++
-                    val settled = settler.observe(requireNotNull(attempt))
+                    val completedAttempt = requireNotNull(attempt)
+                    val settled = settler.observe(completedAttempt)
                     if (settled != null) {
                         settled.calibration?.let {
                             store.put(b.w, b.h, it)
                             calVersion++
                         }
-                        assignmentState.value = settled.match.assignment
+                        assignmentState.value = PackCardTitleMatcher.applyAnchors(
+                            settled.match.assignment,
+                            completedAttempt.titleAnchors,
+                        )
                         recognitionHealth = OverlayHealth(
                             OverlayHealthState.ACTIVE,
                             "Draft overlay is synced to Arena's pack.",

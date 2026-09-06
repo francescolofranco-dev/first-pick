@@ -11,8 +11,8 @@ object CardRecognizer {
 
     private data class Crop(val x0: Double, val x1: Double, val y0: Double, val y1: Double)
 
-    private val REFERENCE_ART = Crop(0.08, 0.92, 0.11, 0.44)
-    private val CAPTURE_ART = Crop(0.05, 0.96, 0.13, 0.48)
+    private val REFERENCE_ART = Crop(0.08, 0.92, 0.20, 0.52)
+    private val CAPTURE_ART = Crop(0.05, 0.96, 0.20, 0.52)
     private val REFERENCE_LAYOUT = Crop(0.04, 0.96, 0.02, 0.98)
     private val CAPTURE_LAYOUT = Crop(0.01, 0.99, 0.01, 0.99)
 

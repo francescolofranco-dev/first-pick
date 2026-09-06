@@ -24,4 +24,16 @@ class RecognitionSettlerTest {
         assertEquals(detectedGeometry, settled?.calibration)
         assertEquals(3, settler.fullRecognitions)
     }
+
+    @Test
+    fun repeatedAssignmentBeatsOneSuspiciouslyCheapOutlier() {
+        val settler = RecognitionSettler(required = 3)
+
+        assertNull(settler.observe(attempt(card = 4, distance = 240.0)))
+        assertNull(settler.observe(attempt(card = 8, distance = 20.0)))
+        val settled = settler.observe(attempt(card = 4, distance = 210.0))
+
+        assertEquals(mapOf(0 to 4), settled?.match?.assignment)
+        assertEquals(210.0, settled?.match?.totalDistance)
+    }
 }
