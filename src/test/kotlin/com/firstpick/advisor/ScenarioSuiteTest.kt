@@ -36,7 +36,7 @@ class ScenarioSuiteTest {
         return { n, p -> m[n to p] }
     }
 
-    private fun bluePool(n: Int) = List(n) { card("Blue$it", 0.58, "U") }
+    private fun bluePool(n: Int) = List(n) { card("Dimir$it", 0.58, if (it % 2 == 0) "U" else "B") }
     private fun ubPool(n: Int) = List(n) { card("Pool$it", 0.58, if (it % 2 == 0) "U" else "B") }
 
 

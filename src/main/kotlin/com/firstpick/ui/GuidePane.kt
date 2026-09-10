@@ -356,7 +356,11 @@ private fun ArchetypeGuideCard(
                         Text(it.replaceFirstChar(Char::uppercaseChar), fontSize = 10.sp, color = MaterialTheme.colorScheme.primary)
                     }
                     archetype.winRate?.let {
-                        Text("${it.asPct()} pair WR", fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(
+                            "${it.asPct()} estimated pair WR",
+                            fontSize = 10.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                     }
                 }
             }

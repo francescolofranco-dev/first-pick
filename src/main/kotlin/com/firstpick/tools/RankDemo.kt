@@ -10,6 +10,7 @@ import com.firstpick.cards.CardRepository
 import com.firstpick.cards.SynergyRepository
 import com.firstpick.draft.DraftTracker
 import com.firstpick.model.DraftPhase
+import com.firstpick.signals.SignalsEngine
 import kotlinx.coroutines.runBlocking
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
@@ -58,7 +59,15 @@ fun main(args: Array<String>) = runBlocking {
 
     val pack = repo.resolvePack(state.packCards)
     val pool = state.pool.map(repo::resolve)
-    val lane = LaneDetector.detect(pool, repo.setMetrics, archRepo.strengthMap())
+    val signals = SignalsEngine.openLanes(state.seen, repo::resolve)
+    val lane = LaneDetector.detect(
+        pool,
+        repo.setMetrics,
+        archRepo.strengthMap(),
+        signals,
+        metaRepo::meta,
+        useRecency = state.poolOrderKnown,
+    )
     lane.pair?.let { archRepo.ensurePair(set, format, it) }
     println("Lane: ${lane.pair ?: "undecided"}   Top archetypes: " +
         archRepo.rankedPairs().take(3).joinToString { "${it.pair} ${"%.1f".format(it.winRate * 100)}%" })

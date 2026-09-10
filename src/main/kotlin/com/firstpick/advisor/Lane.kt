@@ -1,5 +1,6 @@
 package com.firstpick.advisor
 
+import com.firstpick.cards.CardMeta
 import com.firstpick.cards.RankedCard
 import com.firstpick.cards.SetMetrics
 import kotlin.math.sqrt
@@ -10,7 +11,8 @@ data class Lane(
     val commitment: Map<Char, Double>,
     val topPairs: List<String> = emptyList(),
 ) {
-    val isEstablished: Boolean get() = poolSize > 0 && colors.isNotEmpty()
+    val isEstablished: Boolean get() = pair != null
+    val hasBaseColorEvidence: Boolean get() = colors.isNotEmpty()
     var poolSize: Int = 0
 }
 
@@ -31,8 +33,12 @@ object LaneDetector {
         metrics: SetMetrics,
         pairStrength: Map<String, Double> = emptyMap(),
         signals: Map<Char, Double> = emptyMap(),
+        meta: (String) -> CardMeta? = { null },
+        useRecency: Boolean = true,
     ): Lane {
-        val commitment = colorCommitment(pool, metrics)
+        val commitmentColors = pool.map { card -> commitmentColorsOf(card, meta(card.name)) }
+        val commitment = colorCommitment(pool, metrics, commitmentColors, useRecency)
+        val colorCounts = colorCounts(commitmentColors)
 
         val strengthValues = pairStrength.values
         val meanStrength = if (strengthValues.isEmpty()) 0.0 else strengthValues.average()
@@ -40,28 +46,52 @@ object LaneDetector {
 
         val signalZ = zByColor(signals)
 
-        val pairScores = mutableListOf<Pair<String, Double>>()
-        for (pair in COLOR_PAIRS) {
-            val fit = poolFit(pool, metrics, pair)
-            val archZ = pairStrength[pair]?.let { if (sdStrength > 1e-9) (it - meanStrength) / sdStrength else 0.0 } ?: 0.0
-            val sig = (signalZ[pair[0]] ?: 0.0) + (signalZ[pair[1]] ?: 0.0)
-            val score = fit + ARCH_BIAS * archZ + SIGNAL_BIAS * sig
-            pairScores.add(pair to score)
+        val poolPairScores = COLOR_PAIRS.map { pair ->
+            pair to poolFit(pool, metrics, pair, commitmentColors, useRecency)
         }
+            .sortedByDescending { it.second }
+        val supportedPairScores = poolPairScores.filter { (pair, _) ->
+            pair.all { color -> hasMeaningfulSupport(color, colorCounts, commitment) }
+        }
+        val bestSupported = supportedPairScores.firstOrNull()
+        val runnerUpSupported = supportedPairScores.getOrNull(1)
+        val hasScoreMargin = bestSupported != null && (
+            runnerUpSupported == null ||
+                bestSupported.second - runnerUpSupported.second >= bestSupported.second * MIN_PAIR_SCORE_MARGIN
+            )
+        val bestPair = bestSupported?.first?.takeIf { pool.size >= MIN_POOL_SIZE && hasScoreMargin }
 
-        pairScores.sortByDescending { it.second }
-        val topPairs = pairScores.take(3).map { it.first }
-        val bestPairCandidate = if (pool.isNotEmpty()) topPairs.firstOrNull() else null
-
-        val bestPair = if (pool.size >= 5 && bestPairCandidate != null &&
-                           (commitment[bestPairCandidate[0]] ?: 0.0) > 0.0 &&
-                           (commitment[bestPairCandidate[1]] ?: 0.0) > 0.0) {
-            bestPairCandidate
+        // Archetype strength and passed-card signals are useful while reading the
+        // table, but they must not overwrite an identity supported by drafted cards.
+        val guidancePairScores = if (bestPair == null) {
+            COLOR_PAIRS.map { pair ->
+                val fit = poolPairScores.first { it.first == pair }.second
+                val archZ = pairStrength[pair]?.let { if (sdStrength > 1e-9) (it - meanStrength) / sdStrength else 0.0 } ?: 0.0
+                val sig = (signalZ[pair[0]] ?: 0.0) + (signalZ[pair[1]] ?: 0.0)
+                pair to (fit + ARCH_BIAS * archZ + SIGNAL_BIAS * sig)
+            }.sortedByDescending { it.second }
         } else {
-            null
+            poolPairScores
+        }
+        val topPairs = if (bestPair == null) {
+            guidancePairScores.take(3).map { it.first }
+        } else {
+            listOf(bestPair) + guidancePairScores.asSequence()
+                .map { it.first }
+                .filterNot { it == bestPair }
+                .take(2)
         }
 
-        val colors = if (pool.size < 5) emptySet() else (bestPair?.toSet() ?: commitment.entries.sortedByDescending { it.value }.take(2).map { it.key }.toSet())
+        val colors = if (pool.size < MIN_POOL_SIZE) {
+            emptySet()
+        } else {
+            bestPair?.toSet() ?: commitment.entries
+                .filter { (color, _) -> hasMeaningfulSupport(color, colorCounts, commitment) }
+                .sortedByDescending { it.value }
+                .take(2)
+                .map { it.key }
+                .toSet()
+        }
         return Lane(colors, bestPair, commitment, topPairs).apply { poolSize = pool.size }
     }
 
@@ -103,33 +133,76 @@ object LaneDetector {
     private fun List<Set<Char>>.filterMinimalColorSets(): List<Set<Char>> =
         filter { candidate -> none { other -> other !== candidate && other.size < candidate.size && candidate.containsAll(other) } }
 
-    private fun poolFit(pool: List<RankedCard>, metrics: SetMetrics, pair: String): Double {
+    private fun poolFit(
+        pool: List<RankedCard>,
+        metrics: SetMetrics,
+        pair: String,
+        commitmentColors: List<Set<Char>>,
+        useRecency: Boolean,
+    ): Double {
         val pairSet = pair.toSet()
         val n = pool.size
         var sum = 0.0
         pool.forEachIndexed { i, card ->
-            val colors = colorsOf(card)
+            val colors = commitmentColors[i]
             if (colors.isEmpty() || !pairSet.containsAll(colors)) return@forEachIndexed
-            sum += recency(i, n) * power(card, metrics)
+            sum += recency(i, n, useRecency) * power(card, metrics)
         }
         return sum
     }
 
-    private fun colorCommitment(pool: List<RankedCard>, metrics: SetMetrics): Map<Char, Double> {
+    private fun colorCommitment(
+        pool: List<RankedCard>,
+        metrics: SetMetrics,
+        commitmentColors: List<Set<Char>>,
+        useRecency: Boolean,
+    ): Map<Char, Double> {
         val commitment = mutableMapOf<Char, Double>()
         val n = pool.size
         pool.forEachIndexed { i, card ->
-            val w = recency(i, n) * power(card, metrics)
-            for (ch in colorsOf(card)) commitment.merge(ch, w, Double::plus)
+            val w = recency(i, n, useRecency) * power(card, metrics)
+            for (ch in commitmentColors[i]) commitment.merge(ch, w, Double::plus)
         }
         return commitment
     }
 
-    private fun recency(index: Int, n: Int): Double =
-        if (n <= 1) MAX_RECENCY else MIN_RECENCY + (MAX_RECENCY - MIN_RECENCY) * (index.toDouble() / (n - 1))
+    private fun commitmentColorsOf(card: RankedCard, meta: CardMeta?): Set<Char> {
+        val hasExactManaCost = meta != null && (
+            meta.coloredPips.isNotEmpty() ||
+                meta.hybridPips.isNotEmpty() ||
+                meta.hybridColorGroups.isNotEmpty()
+            )
+        // Flexible hybrid symbols do not commit a drafter to both printed colors.
+        // Pure pips still count, so {B}{B/R} contributes to black but not red.
+        if (!hasExactManaCost) return colorsOf(card)
+        return meta?.coloredPips.orEmpty().keys.filterTo(mutableSetOf()) { it in WUBRG }
+    }
 
-    private fun power(card: RankedCard, metrics: SetMetrics): Double =
-        (metrics.z(card.gihWr) ?: DEFAULT_POWER).coerceAtLeast(FLOOR_POWER)
+    private fun colorCounts(commitmentColors: List<Set<Char>>): Map<Char, Int> {
+        val counts = mutableMapOf<Char, Int>()
+        for (colors in commitmentColors) for (color in colors) counts.merge(color, 1, Int::plus)
+        return counts
+    }
+
+    private fun hasMeaningfulSupport(
+        color: Char,
+        colorCounts: Map<Char, Int>,
+        commitment: Map<Char, Double>,
+    ): Boolean {
+        if ((colorCounts[color] ?: 0) < MIN_COLOR_CARD_COUNT) return false
+        val totalCommitment = commitment.values.sum()
+        return totalCommitment > 0.0 && (commitment[color] ?: 0.0) / totalCommitment >= MIN_COLOR_COMMITMENT_SHARE
+    }
+
+    private fun recency(index: Int, n: Int, useRecency: Boolean): Double =
+        if (!useRecency) NEUTRAL_RECENCY
+        else if (n <= 1) MAX_RECENCY
+        else MIN_RECENCY + (MAX_RECENCY - MIN_RECENCY) * (index.toDouble() / (n - 1))
+
+    private fun power(card: RankedCard, metrics: SetMetrics): Double {
+        val qualityZ = metrics.z(card.gihWr)?.takeIf { it.isFinite() }?.coerceIn(0.0, MAX_QUALITY_Z) ?: 0.0
+        return BASE_PICK_WEIGHT + QUALITY_WEIGHT * qualityZ
+    }
 
     private fun stdDev(values: Collection<Double>, mean: Double): Double {
         if (values.size < 2) return 0.0
@@ -146,8 +219,15 @@ object LaneDetector {
 
     private const val MIN_RECENCY = 1.0
     private const val MAX_RECENCY = 2.5
-    private const val DEFAULT_POWER = -0.5
-    private const val FLOOR_POWER = 0.1
+    private const val NEUTRAL_RECENCY = 1.0
+    private const val BASE_PICK_WEIGHT = 1.0
+    private const val QUALITY_WEIGHT = 0.35
+    private const val MAX_QUALITY_Z = 2.0
+
+    private const val MIN_POOL_SIZE = 5
+    private const val MIN_COLOR_CARD_COUNT = 2
+    private const val MIN_COLOR_COMMITMENT_SHARE = 0.10
+    private const val MIN_PAIR_SCORE_MARGIN = 0.10
 
     private const val ARCH_BIAS = 2.0
 

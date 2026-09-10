@@ -68,6 +68,8 @@ data class DraftState(
     val pick: Int = 0,
     val packCards: List<Int> = emptyList(),
     val pool: List<Int> = emptyList(),
+    /** False when some pool cards came from an unordered snapshot rather than PickMade events. */
+    val poolOrderKnown: Boolean = true,
     val seen: Map<Pair<Int, Int>, List<Int>> = emptyMap(),
 ) {
     fun reduce(event: DraftEvent): DraftState = when (event) {
@@ -84,6 +86,7 @@ data class DraftState(
         is DraftEvent.Snapshot -> {
             val resettingForNewEvent = event.eventName.isNotEmpty() && eventName != null && eventName != event.eventName
             val base = if (resettingForNewEvent) DraftState() else this
+            val reconciled = base.reconcilePool(event.pool)
             base.copy(
                 phase = if (event.complete) DraftPhase.COMPLETE else DraftPhase.DRAFTING,
                 format = if (event.eventName.isNotEmpty()) DraftFormat.fromEventName(event.eventName) else base.format,
@@ -92,7 +95,8 @@ data class DraftState(
                 pack = event.pack,
                 pick = event.pick,
                 packCards = event.packCards,
-                pool = event.pool,
+                pool = reconciled.cards,
+                poolOrderKnown = base.poolOrderKnown && reconciled.addedCardCount <= 1,
                 seen = base.recordSeen(event.pack, event.pick, event.packCards),
             )
         }
@@ -135,4 +139,33 @@ data class DraftState(
 
     private fun recordSeen(pack: Int, pick: Int, cards: List<Int>): Map<Pair<Int, Int>, List<Int>> =
         if (cards.isEmpty()) seen else seen + (Pair(pack, pick) to cards)
+
+    /**
+     * Arena's PickedCards snapshots are authoritative multisets, but their order is unstable.
+     * Retain the chronology learned from PickMade events and deterministically append any
+     * occurrences first discovered in a snapshot.
+     */
+    private fun reconcilePool(snapshot: List<Int>): ReconciledPool {
+        val remaining = snapshot.groupingBy { it }.eachCount().toMutableMap()
+        val reconciled = buildList(snapshot.size) {
+            for (cardId in pool) {
+                val count = remaining[cardId] ?: continue
+                add(cardId)
+                if (count == 1) remaining.remove(cardId) else remaining[cardId] = count - 1
+            }
+            for ((cardId, count) in remaining.toSortedMap()) {
+                repeat(count) { add(cardId) }
+            }
+        }
+        return ReconciledPool(
+            cards = reconciled,
+            addedCardCount = remaining.values.sum(),
+        )
+    }
+
+    private data class ReconciledPool(
+        val cards: List<Int>,
+        /** One multiset delta has an unambiguous latest position; two or more do not. */
+        val addedCardCount: Int,
+    )
 }

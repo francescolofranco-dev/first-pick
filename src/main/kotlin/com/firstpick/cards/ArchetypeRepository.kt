@@ -21,11 +21,33 @@ class ArchetypeRepository(
         val key = dataKey(setCode, format)
         if (key == loadedKey && strengths.isNotEmpty()) return
         val rows = client.colorRatings(setCode, format)
-        strengths = rows
+        val validRows = rows.filter { row -> row.games > 0 && row.wins in 0..row.games }
+        val observations = validRows
             .mapNotNull { row ->
                 val pair = pairFromColorName(row.colorName) ?: return@mapNotNull null
-                val wr = row.winRate ?: return@mapNotNull null
-                if (row.games >= MIN_GAMES) pair to ArchetypeStrength(pair, wr, row.games) else null
+                PairObservation(pair, row.wins, row.games)
+            }
+        val aggregatePrior = validRows
+            .firstOrNull { it.colorName.trim().equals(TWO_COLOR_AGGREGATE, ignoreCase = true) }
+            ?.winRate
+        val totalGames = observations.sumOf { it.games.toLong() }
+        val totalWins = observations.sumOf { it.wins.toLong() }
+        strengths = observations
+            .map { observation ->
+                val peerGames = totalGames - observation.games
+                val priorWinRate = aggregatePrior ?: if (peerGames > 0L) {
+                    (totalWins - observation.wins).toDouble() / peerGames
+                } else {
+                    DEFAULT_PAIR_WIN_RATE
+                }
+                val shrunkWinRate = (
+                    observation.wins + PAIR_PRIOR_GAMES * priorWinRate
+                ) / (observation.games + PAIR_PRIOR_GAMES)
+                observation.pair to ArchetypeStrength(
+                    pair = observation.pair,
+                    winRate = shrunkWinRate,
+                    games = observation.games,
+                )
             }
             .toMap()
         loadedKey = key
@@ -70,9 +92,21 @@ class ArchetypeRepository(
 
     private fun normalize(name: String): String = name.lowercase().substringBefore(" //").trim()
 
+    private data class PairObservation(
+        val pair: String,
+        val wins: Int,
+        val games: Int,
+    )
+
     companion object {
         private const val TEST_KEY = "TEST"
-        private const val MIN_GAMES = 800
+        private const val TWO_COLOR_AGGREGATE = "Two-color"
+        private const val DEFAULT_PAIR_WIN_RATE = 0.5
+        // The former reliability cutoff was 800 games. Treating that as prior
+        // strength turns the hard cutoff into a smooth empirical-Bayes estimate:
+        // a pair at 800 games gets equal weight with the observed two-color field,
+        // while high-volume pairs are effectively unchanged.
+        private const val PAIR_PRIOR_GAMES = 800.0
         private val PAIR_RE = Regex("\\(([WUBRG]{2})\\)")
     }
 }

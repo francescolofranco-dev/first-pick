@@ -9,6 +9,7 @@ import com.firstpick.cards.SynergyCombo
 import com.firstpick.cards.SynergyIndex
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class ThemeSynergyTest {
@@ -116,7 +117,8 @@ class ThemeSynergyTest {
         )
         val scored = run(pack, pool, pick = 6)
 
-        assertTrue(lane.isEstablished)
+        assertTrue(lane.hasBaseColorEvidence)
+        assertFalse(lane.isEstablished)
         assertEquals(
             scoreOf(baseline, "Enabler1").breakdown!!.themeBonus,
             scoreOf(scored, "Enabler1").breakdown!!.themeBonus,

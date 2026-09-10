@@ -10,7 +10,6 @@ import com.firstpick.advisor.PickNetRanker
 import com.firstpick.advisor.PoolNeeds
 import com.firstpick.advisor.ScoredCard
 import com.firstpick.advisor.WUBRG
-import com.firstpick.advisor.canonicalPair
 import com.firstpick.model.DraftPhase
 import com.firstpick.cards.ArchetypeRepository
 import com.firstpick.cards.CardMeta
@@ -207,7 +206,14 @@ class DraftViewModel(
         val pool = state.pool.map(repo::resolve)
         val signals = SignalsEngine.openLanes(state.seen, repo::resolve)
         val strength = archetypeRepo.strengthMap().takeIf { archetypeRepo.loadedKey == dataKey }.orEmpty()
-        val pair = LaneDetector.detect(pool, repo.setMetrics, strength, signals).pair ?: return
+        val pair = LaneDetector.detect(
+            pool,
+            repo.setMetrics,
+            strength,
+            signals,
+            metaRepo::meta,
+            useRecency = state.poolOrderKnown,
+        ).pair ?: return
         runCatching { archetypeRepo.ensurePair(set, format, pair) }
     }
 
@@ -240,7 +246,14 @@ class DraftViewModel(
         val pool = if (loaded) state.pool.map(repo::resolve) else emptyList()
         val signals = if (loaded) SignalsEngine.openLanes(state.seen, repo::resolve) else emptyMap()
         val lane = if (loaded) {
-            LaneDetector.detect(pool, repo.setMetrics, pairStrength, signals)
+            LaneDetector.detect(
+                pool,
+                repo.setMetrics,
+                pairStrength,
+                signals,
+                meta,
+                useRecency = state.poolOrderKnown,
+            )
         } else {
             Lane(emptySet(), null, emptyMap())
         }
@@ -262,13 +275,14 @@ class DraftViewModel(
         }
 
 
-        val liveProjection = if (loaded && lane.isEstablished) {
+        val liveProjection = if (loaded && lane.hasBaseColorEvidence) {
             DeckProjector.project(pool, repo.setMetrics, meta, archetypeRating, pairStrength, synergy, constructionMode)
         } else {
             null
         }
         val activeManaSources = liveProjection?.takeIf { projection ->
-            projection.basePair == (lane.pair ?: canonicalPair(lane.colors)) &&
+            (lane.pair?.let { projection.basePair == it }
+                ?: projection.basePair.toSet().containsAll(lane.colors)) &&
                 projection.manaSources?.allRequirementsMet == true
         }?.manaSources
         val rows = if (loaded && state.packCards.isNotEmpty()) {

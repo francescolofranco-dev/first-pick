@@ -24,6 +24,19 @@ class DraftTrackerTest {
         return "{\"CurrentModule\":\"BotDraft\",\"Payload\":\"$payload\"}"
     }
 
+    private fun pickLine(
+        cardIds: List<Int>,
+        pack: Int,
+        pick: Int,
+        eventName: String = "QuickDraftEmblem_SOS_20260611",
+    ): String {
+        val ids = cardIds.joinToString(",") { "\\\"$it\\\"" }
+        val request = "{\\\"EventName\\\":\\\"$eventName\\\",\\\"PickInfo\\\":" +
+            "{\\\"EventName\\\":\\\"$eventName\\\",\\\"CardIds\\\":[$ids]," +
+            "\\\"PackNumber\\\":$pack,\\\"PickNumber\\\":$pick}}"
+        return "[UnityCrossThreadLogger]==> BotDraftDraftPick {\"id\":\"test\",\"request\":\"$request\"}"
+    }
+
     @Test
     fun reconstructsQuickDraftFromSnapshots() {
         val tracker = DraftTracker()
@@ -39,6 +52,51 @@ class DraftTrackerTest {
         assertEquals(3, s.pick)
         assertEquals(listOf(13), s.packCards)
         assertEquals(listOf(11, 12), s.pool)
+        assertTrue(s.poolOrderKnown, "single-card snapshot deltas reconstruct exact chronology")
+    }
+
+    @Test
+    fun reorderedSnapshotsDoNotRewriteKnownPickChronology() {
+        val tracker = DraftTracker()
+        tracker.onLine(snapshotLine(0, 0, listOf(10, 20, 30), emptyList()))
+        tracker.onLine(pickLine(listOf(30), pack = 0, pick = 0))
+        tracker.onLine(snapshotLine(0, 1, listOf(10, 20), listOf(30)))
+        tracker.onLine(pickLine(listOf(10), pack = 0, pick = 1))
+
+        tracker.onLine(snapshotLine(0, 2, listOf(20), listOf(10, 30)))
+        assertEquals(listOf(30, 10), tracker.state.value.pool)
+        assertTrue(tracker.state.value.poolOrderKnown)
+
+        tracker.onLine(snapshotLine(0, 2, listOf(20), listOf(30, 10)))
+        assertEquals(listOf(30, 10), tracker.state.value.pool)
+    }
+
+    @Test
+    fun reorderedSnapshotsPreserveDuplicatePickMultiplicityAndChronology() {
+        val tracker = DraftTracker()
+        tracker.onLine(snapshotLine(0, 0, listOf(10, 30), emptyList()))
+        tracker.onLine(pickLine(listOf(30), pack = 0, pick = 0))
+        tracker.onLine(snapshotLine(0, 1, listOf(10, 30), listOf(30)))
+        tracker.onLine(pickLine(listOf(10), pack = 0, pick = 1))
+        tracker.onLine(snapshotLine(0, 2, listOf(30), listOf(10, 30)))
+        tracker.onLine(pickLine(listOf(30), pack = 0, pick = 2))
+
+        tracker.onLine(snapshotLine(0, 3, emptyList(), listOf(30, 30, 10)))
+
+        assertEquals(listOf(30, 10, 30), tracker.state.value.pool)
+    }
+
+    @Test
+    fun coldSnapshotAndLaterReconciliationUseExactAuthoritativeMultiset() {
+        val tracker = DraftTracker()
+        tracker.onLine(snapshotLine(1, 4, listOf(60), listOf(40, 20, 20, 10)))
+        assertEquals(listOf(10, 20, 20, 40), tracker.state.value.pool)
+        assertTrue(!tracker.state.value.poolOrderKnown)
+
+        tracker.onLine(pickLine(listOf(30), pack = 1, pick = 4))
+        tracker.onLine(snapshotLine(1, 5, listOf(61), listOf(50, 20, 30, 10, 20)))
+
+        assertEquals(listOf(10, 20, 20, 30, 50), tracker.state.value.pool)
     }
 
     @Test

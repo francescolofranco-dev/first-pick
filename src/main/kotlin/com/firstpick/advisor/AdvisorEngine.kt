@@ -87,7 +87,7 @@ class AdvisorEngine(
         val progress = (picksTaken.toDouble() / config.totalPicks).coerceIn(0.0, 1.0)
         val theme = synergy?.let {
             ThemeSynergy(it, pool) { card ->
-                if (!lane.isEstablished && isBomb(card, metrics)) {
+                if (!lane.hasBaseColorEvidence && isBomb(card, metrics)) {
                     1.0 + config.earlyBombThemeFuelBonus.coerceAtLeast(0.0)
                 } else {
                     1.0
@@ -96,7 +96,11 @@ class AdvisorEngine(
         }
         val poolCounts = pool.groupingBy { it.name }.eachCount()
         val splashColors = activeManaSources
-            ?.takeIf { lane.isEstablished && it.baseColors == lane.colors && it.allRequirementsMet }
+            ?.takeIf {
+                lane.hasBaseColorEvidence &&
+                    it.baseColors.containsAll(lane.colors) &&
+                    it.allRequirementsMet
+            }
             ?.splashColor
             ?.let(::setOf)
             .orEmpty()
@@ -162,16 +166,17 @@ class AdvisorEngine(
         val offColors: Set<Char>
         val colorDenom: Int
         if (isFixingLand) {
+            val unsupportedProduced = produced - lane.colors - splashColors
             offColors = when {
-                !lane.isEstablished -> emptySet()
+                !lane.hasBaseColorEvidence -> emptySet()
                 produced.containsAll(lane.colors) -> emptySet()
-
-
-                else -> produced - lane.colors - splashColors
+                lane.isEstablished -> unsupportedProduced
+                lane.colors.size == 1 && unsupportedProduced.size > 1 -> unsupportedProduced
+                else -> emptySet()
             }
             colorDenom = produced.size
         } else {
-            offColors = if (lane.isEstablished) {
+            val unsupportedColors = if (lane.colors.isNotEmpty()) {
                 val pureColors = cardMeta?.exactPureColorsOrNull()
                 val options = LaneDetector.uncastableColorOptions(colors, lane.colors, hybridGroups, pureColors)
                 val projectedSplash = fit?.afterSplash
@@ -187,6 +192,16 @@ class AdvisorEngine(
                 ).orEmpty()
             } else {
                 emptySet()
+            }
+            val heavyUnsupportedColor = cardMeta != null && unsupportedColors.any { color ->
+                color in cardMeta.heavyPipColors || cardMeta.effectiveSplashPips(color, lane.colors) >= 2
+            }
+            offColors = when {
+                lane.isEstablished -> unsupportedColors
+                // A meaningful mono-color base leaves one second color open, but
+                // multiple new colors or a heavy single-color cost are off-plan.
+                lane.colors.size == 1 && (unsupportedColors.size > 1 || heavyUnsupportedColor) -> unsupportedColors
+                else -> emptySet()
             }
             colorDenom = colors.size
         }
@@ -209,7 +224,11 @@ class AdvisorEngine(
             isBomb -> reasons.add(0, "Bomb")
             onColor -> reasons.add(0, "On-color")
             penalty >= PENALTY_REASON_THRESHOLD ->
-                reasons.add(0, if (isFixingLand) "Off-color fixing (${lane.pair} lane)" else "Off-color (${lane.pair} lane)")
+                reasons.add(
+                    0,
+                    if (isFixingLand) "Off-color fixing (${lane.description()})"
+                    else "Off-color (${lane.description()})",
+                )
             splashFixed.isNotEmpty() ->
                 reasons.add(0, "Fixes ${splashFixed.sortedBy { "WUBRG".indexOf(it) }.joinToString("")} splash")
         }
@@ -300,7 +319,7 @@ class AdvisorEngine(
         isBomb: Boolean,
         fit: DeckProjector.Fit?,
     ): PickGuardrail {
-        if (!lane.isEstablished) return PickGuardrail.OPEN
+        if (lane.colors.isEmpty() || (!lane.isEstablished && offColors.isEmpty())) return PickGuardrail.OPEN
         if (!identityKnown) {
             return PickGuardrail(
                 status = ModelPromotionStatus.CONSTRAINED,
@@ -373,6 +392,9 @@ class AdvisorEngine(
         }
         return metadataColors.ifEmpty { LaneDetector.colorsOf(card) }
     }
+
+    private fun Lane.description(): String = pair?.let { "$it lane" }
+        ?: "${"WUBRG".filter(colors::contains)} base"
 
     private fun CardMeta.exactPureColorsOrNull(): Set<Char>? =
         coloredPips.keys.takeIf { coloredPips.isNotEmpty() || hybridPips.isNotEmpty() || hybridColorGroups.isNotEmpty() }
@@ -456,7 +478,7 @@ class AdvisorEngine(
 
 
     private fun fitWeight(progress: Double, lane: Lane): Double {
-        if (!lane.isEstablished || config.fitPerPowerDelta <= 0.0) return 0.0
+        if (!lane.hasBaseColorEvidence || config.fitPerPowerDelta <= 0.0) return 0.0
         return ((progress - config.fitRampStart) / config.fitRampSpan).coerceIn(0.0, 1.0)
     }
 

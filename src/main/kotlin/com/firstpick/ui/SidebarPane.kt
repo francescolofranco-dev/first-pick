@@ -50,7 +50,7 @@ internal fun Sidebar(state: DraftUiState, modifier: Modifier = Modifier.width(23
                 }
             }
         } else {
-            Panel("Your lane") {
+            Panel("Likely base colors") {
                 if (state.laneColors.isEmpty()) {
                     Text("Undecided", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 } else {
@@ -62,13 +62,23 @@ internal fun Sidebar(state: DraftUiState, modifier: Modifier = Modifier.width(23
                                 Spacer(Modifier.width(8.dp))
                                 Text(name, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface)
                             }
+                        } ?: run {
+                            Spacer(Modifier.width(8.dp))
+                            Text(
+                                if (state.laneColors.size == 1) "Second color open" else "Unsettled",
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
                         }
                     }
                 }
             }
         }
         if (state.archetypes.isNotEmpty()) {
-            Panel("Color pair win rate") {
+            Panel(
+                title = "Estimated pair strength",
+                tooltip = "Sample-adjusted two-color win-rate estimates. Low-sample pairs are pulled toward the overall field average.",
+            ) {
                 val max = state.archetypes.maxOfOrNull { it.winRate } ?: 0.0
                 val min = state.archetypes.minOfOrNull { it.winRate } ?: 0.0
                 Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
@@ -99,8 +109,8 @@ internal fun Sidebar(state: DraftUiState, modifier: Modifier = Modifier.width(23
         }
         Panel("Deck needs") { NeedsContent(state.deckNeeds, state.poolSize) }
         Panel(
-            title = "Open lanes",
-            tooltip = "Which color pairs are open, based on the quality of cards being passed to you. A high bar means a strong lane to move into.",
+            title = "Open colors",
+            tooltip = "Which individual colors appear open, based on the quality of cards being passed to you. These are pivot signals, not your current deck.",
         ) {
             if (state.openLanes.isEmpty()) {
                 Text("Reading signals…", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)

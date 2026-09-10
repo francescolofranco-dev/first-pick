@@ -19,7 +19,7 @@ data class ScoredCard(
 
 
 enum class ModelPromotionStatus {
-    /** The lane is not established, so the model remains free to find a better direction. */
+    /** No current base-color constraint applies, so the model may still find a better direction. */
     FLEXIBLE,
 
     /** The card is castable in the established lane, including useful fixing and colorless cards. */

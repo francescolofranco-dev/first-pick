@@ -33,8 +33,8 @@ policies are used by the advisor itself.
 
 **Live draft assistant.** Every card in the pack is graded **A+ → F** with a 0–100 value,
 best pick on top, and a confidence banner when the call is close. The sidebar (above) tracks
-your lane, the set's color-pair win rates, the roles your deck still needs, open lanes, your
-mana curve, and your pool — all updating as you pick.
+your likely base colors, sample-adjusted color-pair strength, the roles your deck still needs,
+open colors, your mana curve, and your pool — all updating as you pick.
 
 **Hover for the card.** Mouse over any card to see its full image while you read the ranking.
 
@@ -88,9 +88,9 @@ when the deck matches.
   pair win rates) and blends a card's global win rate with its win rate *in your
   colors*, weighting the archetype more as the draft commits. Cards that
   overperform in your pair get a synergy/glue bonus.
-- **Smart lane detection** — your lane is the best color pair given both your
-  picks and the set's archetypes: strong archetypes guide an open early draft,
-  your actual picks take over later.
+- **Smart deck-color detection** — your likely base pair follows the cards you have
+  actually drafted, with meaningful support required in both colors before it is
+  treated as established. Passed-card signals stay separate as possible pivots.
 - **Dynamic deck-needs** — tracks removal, creatures, 2-drops, fixing, and
   finishers; nudges cards that fill gaps. The pressure ramps up through the draft,
   so early picks stay value-driven and late picks build a balanced deck.
@@ -106,7 +106,7 @@ when the deck matches.
 - **Distinct Sealed construction** — Sealed uses its own 17Lands population and typed
   policy, with more weight on reliable mana, removal, bombs, finishers, and ways to
   break board stalls—not Draft lane or pick-progress assumptions.
-- **At-a-glance dashboard** — your lane, ranked archetypes, open-lane signals,
+- **At-a-glance dashboard** — your likely base colors, ranked archetypes, open-color signals,
   mana curve, pool, and current deck needs.
 - **On-card overlay** — a transparent, click-through layer pinned to the Arena
   window that draws each card's grade (A+→F + 0–100) right on the card, locating

@@ -105,7 +105,7 @@ fun main(args: Array<String>) = runBlocking {
 
 
     fun fitProbe(pool: List<RankedCard>, lane: Lane): ((RankedCard) -> DeckProjector.Fit?)? {
-        if (cfg.fitPerPowerDelta <= 0.0 || !lane.isEstablished) return null
+        if (cfg.fitPerPowerDelta <= 0.0 || !lane.hasBaseColorEvidence) return null
         val before = DeckProjector.project(pool, repo.setMetrics, meta, archRepo::archetypeRating, pairStrength, synergyIndex)
         return { c -> DeckProjector.fit(pool, c, repo.setMetrics, meta, archRepo::archetypeRating, pairStrength, synergyIndex, before) }
     }
@@ -125,7 +125,7 @@ fun main(args: Array<String>) = runBlocking {
             val pack = row.packCards.map(repo::resolveName)
             seen[(row.pack + 1) to (row.pick + 1)] = pack
             val signals = SignalsEngine.openLanesResolved(seen)
-            val lane = LaneDetector.detect(pool, repo.setMetrics, pairStrength, signals)
+            val lane = LaneDetector.detect(pool, repo.setMetrics, pairStrength, signals, meta)
             val scored = engine.score(pack, pool, row.pack + 1, row.pick + 1, repo.setMetrics, lane, archRepo::archetypeRating, meta, synergyIndex, fitProbe(pool, lane))
             scored.firstOrNull()?.let { top ->
                 diag.record(
@@ -191,7 +191,7 @@ fun main(args: Array<String>) = runBlocking {
             val pack = row.packCards.map(repo::resolveName)
             seen[(row.pack + 1) to (row.pick + 1)] = pack
             val signals = SignalsEngine.openLanesResolved(seen)
-            val lane = LaneDetector.detect(enginePool, repo.setMetrics, pairStrength, signals)
+            val lane = LaneDetector.detect(enginePool, repo.setMetrics, pairStrength, signals, meta)
             val scored = engine.score(pack, enginePool, row.pack + 1, row.pick + 1, repo.setMetrics, lane, archRepo::archetypeRating, meta, synergyIndex, fitProbe(enginePool, lane))
             enginePool.add(scored.firstOrNull()?.card ?: pack.first())
         }

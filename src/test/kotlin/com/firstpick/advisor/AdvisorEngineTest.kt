@@ -66,7 +66,7 @@ class AdvisorEngineTest {
 
     @Test
     fun bombIsFlaggedAndImmuneToOffColorPenalty() {
-        val pool = List(6) { card(100 + it, "BlueGuy$it", 0.58, "U") }
+        val pool = List(6) { card(100 + it, "DimirGuy$it", 0.58, if (it % 2 == 0) "U" else "B") }
         val pack = listOf(
             card(1, "RedBomb", 0.64, "R", iwd = 0.06),
             card(2, "BlueFiller", 0.555, "U"),
@@ -79,12 +79,107 @@ class AdvisorEngineTest {
 
     @Test
     fun offColorIsPenalizedLateWhenNotABomb() {
-        val pool = List(6) { card(100 + it, "BlueGuy$it", 0.58, "U") }
+        val pool = List(6) { card(100 + it, "DimirGuy$it", 0.58, if (it % 2 == 0) "U" else "B") }
         val pack = listOf(card(1, "OnColor", 0.57, "U"), card(2, "OffColor", 0.575, "R"))
         val result = run(pack, pool, packNumber = 2, pickNumber = 5)
         assertTrue(scoreOf(result, "OnColor").value > scoreOf(result, "OffColor").value)
         assertTrue(scoreOf(result, "OffColor").reasons.any { it.startsWith("Off-color") })
         assertFalse(scoreOf(result, "OffColor").isBomb)
+    }
+
+    @Test
+    fun monoColorPoolKeepsTheSecondColorOpen() {
+        val pool = List(6) { card(100 + it, "BlueGuy$it", 0.58, "U") }
+        val pack = listOf(card(1, "BlueCard", 0.57, "U"), card(2, "RedCandidate", 0.575, "R"))
+
+        val result = run(pack, pool, packNumber = 2, pickNumber = 5, meta = { name ->
+            CardMeta(
+                name = name,
+                cmc = 2,
+                isCreature = true,
+                isLand = false,
+                coloredPips = mapOf((if (name == "RedCandidate") 'R' else 'U') to 1),
+            )
+        })
+
+        assertEquals("RedCandidate", result.first().card.name)
+        assertFalse(scoreOf(result, "RedCandidate").reasons.any { it.startsWith("Off-color") })
+    }
+
+    @Test
+    fun monoColorPoolConstrainsACardThatNeedsTwoNewColors() {
+        val pool = List(6) { card(100 + it, "BlueGuy$it", 0.58, "U") }
+        val pack = listOf(
+            card(1, "BlueCard", 0.57, "U"),
+            card(2, "GruulCandidate", 0.59, "RG"),
+        )
+        val meta: (String) -> CardMeta? = { name ->
+            CardMeta(
+                name = name,
+                cmc = 3,
+                isCreature = true,
+                isLand = false,
+                coloredPips = when (name) {
+                    "GruulCandidate" -> mapOf('R' to 1, 'G' to 1)
+                    else -> mapOf('U' to 1)
+                },
+            )
+        }
+
+        val result = run(pack, pool, packNumber = 2, pickNumber = 5, meta = meta)
+        val candidate = scoreOf(result, "GruulCandidate")
+
+        assertEquals(ModelPromotionStatus.CONSTRAINED, candidate.guardrail.status)
+        assertEquals(setOf('R', 'G'), candidate.guardrail.offColors)
+        assertTrue(GuideConstraint.MULTIPLE_SPLASH_COLORS in candidate.guardrail.constraints)
+        assertTrue(candidate.reasons.any { it == "Off-color (U base)" })
+    }
+
+    @Test
+    fun monoColorPoolConstrainsAHeavySecondColorCost() {
+        val pool = List(6) { card(100 + it, "BlueGuy$it", 0.58, "U") }
+        val pack = listOf(card(1, "RedCommitment", 0.59, "R"))
+        val result = run(pack, pool, packNumber = 2, pickNumber = 5, meta = { name ->
+            CardMeta(
+                name = name,
+                cmc = 4,
+                isCreature = true,
+                isLand = false,
+                coloredPips = mapOf('R' to 3),
+            )
+        })
+        val candidate = result.single()
+
+        assertEquals(ModelPromotionStatus.CONSTRAINED, candidate.guardrail.status)
+        assertEquals(setOf('R'), candidate.guardrail.offColors)
+        assertTrue(GuideConstraint.HEAVY_SPLASH_PIPS in candidate.guardrail.constraints)
+    }
+
+    @Test
+    fun monoColorPoolConstrainsFixingForTwoUnrelatedColors() {
+        val pool = List(6) { card(100 + it, "BlueGuy$it", 0.58, "U") }
+        val land = card(1, "GolgariLand", 0.59, "")
+        val result = run(
+            pack = listOf(land),
+            pool = pool,
+            packNumber = 2,
+            pickNumber = 5,
+            meta = { name ->
+                CardMeta(
+                    name = name,
+                    cmc = 0,
+                    isCreature = false,
+                    isLand = true,
+                    isFixing = true,
+                    producedColors = setOf('B', 'G'),
+                )
+            },
+        )
+        val candidate = result.single()
+
+        assertEquals(ModelPromotionStatus.CONSTRAINED, candidate.guardrail.status)
+        assertEquals(setOf('B', 'G'), candidate.guardrail.offColors)
+        assertTrue(GuideConstraint.OFF_PLAN_FIXING in candidate.guardrail.constraints)
     }
 
     @Test
@@ -104,7 +199,7 @@ class AdvisorEngineTest {
 
     @Test
     fun hybridManaCardIsStillPenalizedWhenNeitherHybridColorMatchesTheLane() {
-        val pool = List(6) { card(100 + it, "BlackGuy$it", 0.58, "B") }
+        val pool = List(6) { card(100 + it, "GolgariGuy$it", 0.58, if (it % 2 == 0) "B" else "G") }
         val hybridMeta: (String) -> CardMeta? = { name ->
             if (name == "Seedpod Squire") CardMeta("Seedpod Squire", cmc = 5, isCreature = true, isLand = false, hybridColorGroups = listOf(setOf('U', 'W')))
             else null
@@ -440,6 +535,32 @@ class AdvisorEngineTest {
         )
         assertTrue(!called, "P1 early picks are pure power — the projector must not even run")
         assertEquals(0.0, result.first().breakdown!!.deckFitPoints, 1e-9)
+    }
+
+    @Test
+    fun deckFitCanEvaluateAMatureMonoColorBase() {
+        var called = false
+        val fit: (RankedCard) -> DeckProjector.Fit? = { _ ->
+            called = true
+            DeckProjector.Fit(true, emptyList(), false, null, 1.0)
+        }
+        val pool = List(6) { card(100 + it, "BlueGuy$it", 0.58, "U") }
+        val lane = LaneDetector.detect(pool, metrics)
+
+        engine.score(
+            pack = listOf(card(1, "Candidate", 0.57, "R")),
+            pool = pool,
+            packNumber = 2,
+            pickNumber = 5,
+            metrics = metrics,
+            lane = lane,
+            meta = creatureMeta,
+            deckFit = fit,
+        )
+
+        assertTrue(lane.hasBaseColorEvidence)
+        assertFalse(lane.isEstablished)
+        assertTrue(called, "a mature mono-color base should use deck projection to evaluate its second color")
     }
 
     @Test
