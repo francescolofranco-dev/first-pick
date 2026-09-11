@@ -11,6 +11,22 @@ import kotlin.test.assertTrue
 class PickNetRepositoryTest {
 
     @Test
+    fun `bundled HOB model loads and scores real draft cards`() = runBlocking {
+        val repo = PickNetRepository(cacheDir = createTempDirectory("picknet-test"))
+        assertTrue("HOB" in repo.bundledSets(listOf("HOB"), "PremierDraft"))
+        repo.load("HOB", "PremierDraft")
+        val net = assertNotNull(repo.netFor("HOB", "PremierDraft"))
+        assertEquals("HOB", net.set)
+        assertEquals(193, net.cards.size)
+        val pack = listOf("Forest", "Bilbo Baggins, Burglar")
+        val ranked = net.score(emptyList(), pack)
+        assertEquals(pack.toSet(), ranked.map { it.first }.toSet())
+        assertTrue(ranked.all { it.second.isFinite() })
+        assertEquals("Bilbo Baggins, Burglar", ranked.first().first)
+        assertNull(repo.netFor("HOB", "TradDraft"))
+    }
+
+    @Test
     fun `loads bundled MKM model and ranks bombs over basics P1P1`() = runBlocking {
         val repo = PickNetRepository(cacheDir = createTempDirectory("picknet-test"))
         repo.load("MKM", "PremierDraft")
