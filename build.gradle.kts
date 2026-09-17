@@ -1,4 +1,5 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import java.io.File
 
 plugins {
     alias(libs.plugins.kotlin.jvm)
@@ -66,6 +67,86 @@ compose.desktop {
 tasks.withType<JavaExec>().matching { it.name == "run" }.configureEach {
     environment("FIRSTPICK_DEMO", "1")
     if (project.hasProperty("track")) systemProperty("firstpick.overlayTrack", "true")
+}
+
+val buildNativeHelpers = tasks.register<Exec>("buildNativeHelpers") {
+    group = "build"
+    description = "Build optimized macOS helpers (host architecture, or -PnativeArchitecture=universal)."
+    val architectureMode = providers.gradleProperty("nativeArchitecture").orElse("host").get()
+    inputs.files(fileTree("native/macos") { include("*.swift", "build.sh") })
+    inputs.property("architectureMode", architectureMode)
+    inputs.property("sdkRoot", providers.environmentVariable("SDKROOT").orElse(""))
+    inputs.property("developerDir", providers.environmentVariable("DEVELOPER_DIR").orElse(""))
+    if (System.getProperty("os.name").startsWith("Mac")) {
+        inputs.property("hostArchitecture", providers.exec {
+            commandLine("uname", "-m")
+        }.standardOutput.asText)
+        inputs.property("swiftVersion", providers.exec {
+            commandLine("swiftc", "--version")
+        }.standardOutput.asText)
+        val defaultSdk = providers.exec {
+            commandLine("xcrun", "--sdk", "macosx", "--show-sdk-path")
+        }.standardOutput.asText.map(String::trim)
+        val effectiveSdk = providers.environmentVariable("SDKROOT")
+            .filter { it.isNotEmpty() }.orElse(defaultSdk)
+        inputs.property("macosSdk", effectiveSdk)
+        inputs.file(effectiveSdk.map { File(it, "SDKSettings.json") })
+            .withPropertyName("sdkSettings")
+    }
+    outputs.files(
+        "src/main/resources/native/macos/window-locator",
+        "src/main/resources/native/macos/window-capture",
+        "src/main/resources/native/macos/vision-ocr",
+    )
+    workingDir(layout.projectDirectory)
+    val nativeCommand = mutableListOf("bash", "native/macos/build.sh")
+    if (architectureMode == "host") nativeCommand.add("--host")
+    commandLine(nativeCommand)
+    doFirst {
+        check(System.getProperty("os.name").startsWith("Mac")) {
+            "Production app builds require macOS and the Xcode command-line tools."
+        }
+        check(architectureMode in setOf("host", "universal")) {
+            "nativeArchitecture must be 'host' or 'universal'."
+        }
+    }
+}
+
+// Order native resources before the shared JVM resource/JAR tasks, without
+// requiring Xcode for ordinary development builds or unit tests.
+tasks.named("processResources") { mustRunAfter(buildNativeHelpers) }
+tasks.matching { it.name == "createDistributable" }.configureEach {
+    dependsOn(buildNativeHelpers, "test")
+}
+
+val productionApp = layout.buildDirectory.dir("compose/binaries/main/app/FirstPick.app")
+
+val buildProduction = tasks.register("buildProduction") {
+    group = "build"
+    description = "Test and build the shipping-equivalent FirstPick.app with its bundled JVM and native helpers."
+    dependsOn(buildNativeHelpers, "test", "createDistributable")
+    val appPath = productionApp.get().asFile.absolutePath
+    doLast {
+        logger.lifecycle("Production app: $appPath")
+        logger.lifecycle("Open it with ./gradlew runProduction, or launch it from Finder.")
+    }
+}
+
+tasks.register<Exec>("runProduction") {
+    group = "application"
+    description = "Build and open the production app, with development/preview flags disabled."
+    dependsOn(buildProduction)
+    commandLine(
+        "open", "-n",
+        "--env", "FIRSTPICK_DEMO=0",
+        "--env", "FIRSTPICK_OVERLAY_TRACK=0",
+        "--env", "FIRSTPICK_FORCE_DECKS=0",
+        "--env", "FIRSTPICK_SMOKE=0",
+        "--env", "JAVA_TOOL_OPTIONS=",
+        "--env", "_JAVA_OPTIONS=",
+        "--env", "JDK_JAVA_OPTIONS=",
+        productionApp.get().asFile.absolutePath,
+    )
 }
 
 tasks.register<JavaExec>("locateArena") {

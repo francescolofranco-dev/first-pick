@@ -129,11 +129,6 @@ jobs:
           security list-keychains -d user -s "$keychain_path"
           rm -f "$certificate_path"
 
-      # These gitignored helpers are compiled as universal binaries so either app
-      # architecture can launch them from its bundled resources.
-      - name: Build native helpers (universal)
-        run: bash native/macos/build.sh
-
       - name: Build, sign, and notarize dmg
         if: steps.signing.outputs.configured == 'true'
         env:
@@ -143,6 +138,7 @@ jobs:
           NOTARIZATION_TEAM_ID: ${{ secrets.NOTARIZATION_TEAM_ID }}
         run: >-
           ./gradlew notarizeDmg
+          -PnativeArchitecture=universal
           -PpackageVersion=${{ steps.ver.outputs.version }}
           -PcomposeJdk="$JAVA_HOME"
           --stacktrace
@@ -151,6 +147,7 @@ jobs:
         if: steps.signing.outputs.configured != 'true'
         run: >-
           ./gradlew packageDmg
+          -PnativeArchitecture=universal
           -PpackageVersion=${{ steps.ver.outputs.version }}
           -PcomposeJdk="$JAVA_HOME"
           --stacktrace

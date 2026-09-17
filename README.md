@@ -182,6 +182,39 @@ Done button, or retains or uploads frames.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the architecture.
 
+## Build an app for everyday use
+
+From your up-to-date repository checkout on macOS:
+
+```bash
+./gradlew buildProduction      # compile native helpers, run tests, and build FirstPick.app
+./gradlew runProduction        # do the same, then open the newly built app
+```
+
+The app is written to `build/compose/binaries/main/app/FirstPick.app`. Open it from
+Finder, or copy it to Applications after quitting an older FirstPick instance.
+It bundles its own JVM and the optimized capture/OCR helpers for your Mac's
+architecture, and does not enable the development demo launcher. `runProduction`
+also disables the demo, overlay tracking, deck-preview, and smoke-test environment
+flags. The first build needs
+the Xcode command-line tools and can take several minutes; unchanged native
+helpers and tests are reused on later builds. Changes to the Swift toolchain,
+SDK, or native sources trigger a rebuild. To force all build steps to run again,
+add `--rerun-tasks`. `createDistributable` also includes these native-build and
+test checks; ordinary `run` and `test` do not require a native rebuild.
+Local builds target this Mac. For cross-architecture packaging, use a matching
+JDK and add `-PnativeArchitecture=universal`; the release workflow uses that
+option to bundle both native architectures (which requires an SDK supporting
+both).
+
+This is the same build type used by the shipped DMG, not the experimental
+ProGuard `*Release` tasks. Both development and packaged apps use JVM JIT
+optimization; packaging is not a different OCR algorithm and does not itself fix
+card-recognition errors. Local builds are not notarized unless signing and
+notarization are configured (see [the distribution runbook](docs/distribution.md)).
+If packaging cannot find a full JDK, pass `-PcomposeJdk=/path/to/full/jdk21` to
+either command, or set `COMPOSE_JDK`.
+
 ## Development
 
 ```bash

@@ -77,9 +77,14 @@ MACOS_SIGNING_IDENTITY="Developer ID Application: … (TEAMID)" \
 NOTARIZATION_APPLE_ID="you@example.com" \
 NOTARIZATION_PASSWORD="abcd-efgh-ijkl-mnop" \
 NOTARIZATION_TEAM_ID="TEAMID" \
-./gradlew notarizeDmg -PpackageVersion=1.0.0
+./gradlew notarizeDmg -PpackageVersion=1.0.0 -PnativeArchitecture=universal
 # → build/compose/binaries/main/dmg/FirstPick-1.0.0.dmg
 ```
+
+Packaging compiles the native helpers and runs unit tests before creating the
+app. For everyday local use, `./gradlew buildProduction` uses only this Mac's
+native architecture; distributable cross-architecture artifacts use the
+`nativeArchitecture=universal` option above and an SDK that supports both targets.
 
 ## Homebrew cask
 
