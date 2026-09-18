@@ -66,3 +66,18 @@ descriptive `User-Agent`. The app must remain read-only with respect to Arena.
 - Add or update tests for logic changes; keep `./gradlew test` green.
 - Keep the advisor's reasoning explainable — every score should map to a reason a
   drafter would recognize.
+
+## App versions
+
+`VERSION` is the single source of truth for the visible app version and package
+version. Set up the commit guard once per clone:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+Before committing an app change, bump and stage `VERSION`: patch for fixes or
+internal changes, minor for backward-compatible features, major for breaking
+changes. Bump before testing. Documentation-only and test-only commits do not
+need a new version. Release tags and any `-PpackageVersion` override must match
+`VERSION`. The guard checks the staged version, so unstaged bumps do not count.

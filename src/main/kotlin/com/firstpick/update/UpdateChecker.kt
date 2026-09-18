@@ -1,5 +1,6 @@
 package com.firstpick.update
 
+import com.firstpick.core.AppVersion
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -150,7 +151,7 @@ class UpdateChecker(
     private val architecture: CpuArchitecture = CpuArchitecture.current(),
 ) {
     suspend fun check(
-        currentVersion: String? = System.getProperty(APP_VERSION_PROPERTY),
+        currentVersion: String? = AppVersion.value,
     ): UpdateCheckResult {
         val current = SemanticVersion.parse(currentVersion)
             ?: return UpdateCheckResult.NotCheckable(currentVersion)

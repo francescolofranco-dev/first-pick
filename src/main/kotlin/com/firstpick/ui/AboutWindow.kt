@@ -39,13 +39,14 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogWindow
 import androidx.compose.ui.window.rememberDialogState
 import com.firstpick.update.UpdateCheckResult
+import com.firstpick.core.AppVersion
 import com.firstpick.update.UpdateChecker
 import kotlinx.coroutines.launch
 import java.awt.Desktop
 import java.awt.EventQueue
 import java.net.URI
 
-private const val APP_VERSION_PROPERTY = "firstpick.version"
+
 
 @Composable
 internal fun FirstPickAboutMenu(onOpenAbout: () -> Unit) {
@@ -100,7 +101,7 @@ internal fun FirstPickAboutWindow(onCloseRequest: () -> Unit) {
                     )
                     Spacer(Modifier.height(4.dp))
                     Text(
-                        text = aboutVersionLabel(System.getProperty(APP_VERSION_PROPERTY)),
+                        text = aboutVersionLabel(AppVersion.value),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 14.sp,
                     )

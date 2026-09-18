@@ -43,6 +43,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.firstpick.core.AppVersion
 import com.firstpick.model.DraftFormat
 import com.firstpick.model.DraftPhase
 import com.firstpick.overlay.OverlayHealth
@@ -215,6 +216,13 @@ private fun Header(
         Column {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("FirstPick", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                Spacer(Modifier.width(6.dp))
+                Text(
+                    "v${AppVersion.value}",
+                    fontSize = 10.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                )
                 Spacer(Modifier.width(10.dp))
                 if (state.laneColors.isNotEmpty()) PipRow(state.laneColors)
                 state.synergyTier?.let {

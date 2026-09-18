@@ -98,7 +98,7 @@ jobs:
               exit 1
             fi
           else
-            version="1.0.0" # manual non-tag run: packaging test only
+            version="$(cat VERSION)" # manual non-tag run: packaging test only
           fi
           echo "version=$version" >> "$GITHUB_OUTPUT"
 

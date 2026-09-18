@@ -9,8 +9,17 @@ plugins {
 }
 
 group = "com.firstpick"
-version = "0.1.0"
-val firstPickPackageVersion = (project.findProperty("packageVersion") as String?) ?: "1.0.0"
+version = file("VERSION").readText().trim()
+val firstPickPackageVersion = (project.findProperty("packageVersion") as String?) ?: version.toString()
+
+require(Regex("(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)").matches(version.toString())) {
+    "VERSION must contain MAJOR.MINOR.PATCH."
+}
+require(firstPickPackageVersion == version.toString()) { "packageVersion must match VERSION." }
+
+tasks.named<ProcessResources>("processResources") {
+    from("VERSION") { rename { "app-version.txt" } }
+}
 
 kotlin {
     jvmToolchain(21)
