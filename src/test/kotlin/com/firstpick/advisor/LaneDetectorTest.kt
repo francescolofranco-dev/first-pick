@@ -161,6 +161,86 @@ class LaneDetectorTest {
     }
 
     @Test
+    fun screenshotPoolChoosesBlackRedDespiteGreenSignalsAndHybridIdentity() {
+        val pool = listOf(
+            card("Gollum the Abandoned", 0.55, "B"),
+            card("Ravening Warg", 0.55, "B"),
+            card("Dáin Ironfoot", 0.55, "R"),
+            card("Duskwatch Hunter", 0.55, "BG"),
+            card("Bolg of the North", 0.55, "BR"),
+        )
+        val hybridMeta: (String) -> CardMeta? = { name ->
+            if (name == "Duskwatch Hunter") CardMeta(
+                name, cmc = 3, isCreature = true, isLand = false,
+                hybridColorGroups = listOf(setOf('B', 'G')),
+                hybridPips = listOf(setOf('B', 'G')),
+            ) else null
+        }
+        for (useRecency in listOf(true, false)) {
+            val lane = LaneDetector.detect(
+                pool, metrics,
+                pairStrength = mapOf("BR" to 0.598, "WB" to 0.577, "BG" to 0.564),
+                signals = mapOf('G' to 20.0),
+                meta = hybridMeta,
+                useRecency = useRecency,
+            )
+
+            assertEquals("BR", lane.pair)
+            assertEquals("BR", lane.topPairs.first())
+            assertEquals(setOf('B', 'R'), lane.colors)
+            assertFalse('G' in lane.commitment)
+        }
+    }
+
+    @Test
+    fun fourPicksCanEstablishAPairWithTwoCardsSupportingEachColor() {
+        val pool = listOf(
+            card("black1", 0.55, "B"), card("red1", 0.55, "R"),
+            card("black2", 0.55, "B"), card("red2", 0.55, "R"),
+        )
+
+        assertEquals("BR", LaneDetector.detect(pool, metrics).pair)
+        assertFalse(LaneDetector.detect(pool.take(3), metrics).isEstablished)
+    }
+
+    @Test
+    fun hybridPlayabilityBreaksATieBetweenSupportedPairs() {
+        val pool = listOf("B", "R", "G").flatMap { color ->
+            List(2) { card("$color$it", 0.55, color) }
+        } + card("mixed", 0.55, "UBG")
+        val mixedMeta = CardMeta(
+            "mixed", cmc = 2, isCreature = true, isLand = false,
+            coloredPips = mapOf('B' to 1),
+            hybridColorGroups = listOf(setOf('U', 'G')),
+        )
+
+        val lane = LaneDetector.detect(
+            pool, metrics, meta = { if (it == "mixed") mixedMeta else null }, useRecency = false,
+        )
+
+        assertEquals("BG", lane.pair, "BG can cast {B}{U/G}; BR cannot")
+    }
+
+    @Test
+    fun pureHybridCardsCountForEveryPairThatCanCastThem() {
+        val pool = listOf("B", "R", "W").flatMap { color ->
+            List(2) { card("$color$it", 0.55, color) }
+        } + card("hybrid", 0.55, "BG")
+        val hybridMeta = CardMeta(
+            "hybrid", cmc = 3, isCreature = true, isLand = false,
+            hybridColorGroups = listOf(setOf('B', 'G')),
+        )
+
+        val lane = LaneDetector.detect(
+            pool, metrics, meta = { if (it == "hybrid") hybridMeta else null }, useRecency = false,
+        )
+
+        assertEquals(null, lane.pair, "BR and WB are equally supported")
+        assertEquals(setOf("BR", "WB"), lane.topPairs.take(2).toSet())
+        assertFalse('G' in lane.commitment)
+    }
+
+    @Test
     fun unorderedRecoveredPoolDoesNotTurnCardIdsIntoRecency() {
         val pool = List(4) { card("black$it", 0.55, "B") } +
             List(2) { card("green$it", 0.60, "G") }

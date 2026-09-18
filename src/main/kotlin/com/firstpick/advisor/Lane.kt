@@ -36,7 +36,8 @@ object LaneDetector {
         meta: (String) -> CardMeta? = { null },
         useRecency: Boolean = true,
     ): Lane {
-        val commitmentColors = pool.map { card -> commitmentColorsOf(card, meta(card.name)) }
+        val cardMetas = pool.map { meta(it.name) }
+        val commitmentColors = pool.mapIndexed { i, card -> commitmentColorsOf(card, cardMetas[i]) }
         val commitment = colorCommitment(pool, metrics, commitmentColors, useRecency)
         val colorCounts = colorCounts(commitmentColors)
 
@@ -47,7 +48,7 @@ object LaneDetector {
         val signalZ = zByColor(signals)
 
         val poolPairScores = COLOR_PAIRS.map { pair ->
-            pair to poolFit(pool, metrics, pair, commitmentColors, useRecency)
+            pair to poolFit(pool, metrics, pair, cardMetas, useRecency)
         }
             .sortedByDescending { it.second }
         val supportedPairScores = poolPairScores.filter { (pair, _) ->
@@ -137,15 +138,24 @@ object LaneDetector {
         pool: List<RankedCard>,
         metrics: SetMetrics,
         pair: String,
-        commitmentColors: List<Set<Char>>,
+        cardMetas: List<CardMeta?>,
         useRecency: Boolean,
     ): Double {
         val pairSet = pair.toSet()
         val n = pool.size
         var sum = 0.0
         pool.forEachIndexed { i, card ->
-            val colors = commitmentColors[i]
-            if (colors.isEmpty() || !pairSet.containsAll(colors)) return@forEachIndexed
+            val colors = colorsOf(card)
+            val cardMeta = cardMetas[i]
+            // Count hybrid cards in every pair that can cast them, without
+            // treating their alternative colors as mandatory commitments.
+            if (colors.isEmpty() || uncastableColors(
+                    colors,
+                    pairSet,
+                    cardMeta?.hybridColorGroups.orEmpty(),
+                    cardMeta?.coloredPips?.keys?.takeIf { it.isNotEmpty() },
+                ).isNotEmpty()
+            ) return@forEachIndexed
             sum += recency(i, n, useRecency) * power(card, metrics)
         }
         return sum
@@ -224,7 +234,7 @@ object LaneDetector {
     private const val QUALITY_WEIGHT = 0.35
     private const val MAX_QUALITY_Z = 2.0
 
-    private const val MIN_POOL_SIZE = 5
+    private const val MIN_POOL_SIZE = 4
     private const val MIN_COLOR_CARD_COUNT = 2
     private const val MIN_COLOR_COMMITMENT_SHARE = 0.10
     private const val MIN_PAIR_SCORE_MARGIN = 0.10
