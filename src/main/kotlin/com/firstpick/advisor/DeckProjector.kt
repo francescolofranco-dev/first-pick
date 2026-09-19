@@ -89,7 +89,8 @@ object DeckProjector {
         pairStrength: Map<String, Double> = emptyMap(),
         synergy: SynergyIndex? = null,
         mode: LimitedMode = LimitedMode.DRAFT,
-    ): DeckOption? = projectAll(pool, metrics, meta, archetypeRating, pairStrength, maxOptions = 1, synergy = synergy, mode = mode).firstOrNull()
+        basePair: String? = null,
+    ): DeckOption? = projectAll(pool, metrics, meta, archetypeRating, pairStrength, maxOptions = 1, synergy = synergy, mode = mode, basePair = basePair).firstOrNull()
 
     fun projectAll(
         pool: List<RankedCard>,
@@ -100,6 +101,7 @@ object DeckProjector {
         maxOptions: Int = 3,
         synergy: SynergyIndex? = null,
         mode: LimitedMode = LimitedMode.DRAFT,
+        basePair: String? = null,
     ): List<DeckOption> {
         val policy = LimitedDeckPolicies.forMode(mode)
 
@@ -109,7 +111,7 @@ object DeckProjector {
         // consume one of the finite nonbasic slots or be reported as fixing.
         val lands = known.filter { meta(it.name)?.isLand == true && !it.isBasicLand }
 
-        fun pass(minSpells: Int, lenient: Boolean = false, upgrade: Boolean = false) = COLOR_PAIRS.mapNotNull { pair ->
+        fun pass(minSpells: Int, lenient: Boolean = false, upgrade: Boolean = false) = COLOR_PAIRS.filter { basePair == null || it == basePair }.mapNotNull { pair ->
             buildForPair(pair, spells, lands, metrics, meta, archetypeRating, strengthFor(pair, pairStrength), minSpells, synergy, policy, lenient, upgrade)
         }
 
@@ -235,7 +237,8 @@ object DeckProjector {
         for (card in chosen) for (ch in castingColorsOf(card, meta(card.name))) if (ch in deckColors) pips.merge(ch, 1, Int::plus)
         val totalPips = pips.values.sum()
         val minBasePips = pairSet.minOf { pips[it] ?: 0 }
-        if (totalPips == 0) return null
+        // Even an incomplete projection needs repeated evidence for both base colors.
+        if (totalPips == 0 || minBasePips < 2) return null
         if (!lenient && (minBasePips < policy.minimumBaseColorPips || minBasePips.toDouble() / totalPips < policy.minimumBaseColorRatio)) return null
 
         val onColorLands = landsFor(splashColor)

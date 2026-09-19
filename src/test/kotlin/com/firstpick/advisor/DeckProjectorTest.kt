@@ -38,6 +38,24 @@ class DeckProjectorTest {
     }
 
     @Test
+    fun shortPoolsNeverInventAnAbsentBaseColor() {
+        val pool = listOf(
+            card(1, "Black1", 0.59, "B"), card(2, "Black2", 0.59, "B"),
+            card(3, "Red", 0.62, "R"), card(4, "Gold", 0.57, "BR"),
+        )
+        val options = DeckProjector.projectAll(pool, metrics, meta, maxOptions = 10,
+            pairStrength = mapOf("WR" to 0.70))
+        assertTrue(options.isNotEmpty())
+        assertTrue(options.all { it.basePair == "BR" && it.splash == null })
+    }
+
+    @Test
+    fun liveProjectionRespectsTheSelectedBasePair() {
+        val projection = DeckProjector.project(pool(), metrics, meta, basePair = "WR")
+        assertEquals("WR", projection?.basePair)
+    }
+
+    @Test
     fun projectIsNullOnAnEmptyPool() {
         assertNull(DeckProjector.project(emptyList(), metrics, meta))
     }

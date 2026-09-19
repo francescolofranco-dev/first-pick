@@ -77,9 +77,9 @@ class DeckBuilderTest {
     }
 
     @Test
-    fun alwaysOffersAtLeastTwoBuildsEvenFromALopsidedPool() {
+    fun monoColorPoolDoesNotInventASecondBaseColor() {
         val redOnly = (0 until 8).map { card(it, "R$it", 0.5, "R") }
-        assertEquals(2, DeckBuilder.build(redOnly, metrics, meta).size, "the user always gets at least two choices")
+        assertTrue(DeckBuilder.build(redOnly, metrics, meta).isEmpty(), "wait for a supported second base color")
     }
 
     @Test

@@ -241,6 +241,27 @@ class LaneDetectorTest {
     }
 
     @Test
+    fun lateWeakBlueCardsDoNotDisplaceTheBlackGreenPool() {
+        val pool = listOf(
+            card("Gollum", 0.585, "B"), card("Warg", 0.592, "B"),
+            card("Dain", 0.620, "R"), card("Hunter", 0.567, "BG"),
+            card("Bolg", 0.567, "BR"), card("Quarrel", 0.552, "G"),
+            card("Attercop", 0.542, "G"), card("Wargling", 0.525, "G"),
+            card("Galion", 0.516, "G"), card("Bear", 0.548, "G"),
+            card("Arrow", 0.493, ""), card("Gandalf", 0.504, "U"),
+            card("Spider1", 0.517, "U"), card("Spider2", 0.517, "U"),
+        )
+        val hybridMeta: (String) -> CardMeta? = { name ->
+            if (name == "Hunter") CardMeta(name, 3, true, false,
+                hybridColorGroups = listOf(setOf('B', 'G'))) else null
+        }
+        for (ordered in listOf(true, false)) {
+            val lane = LaneDetector.detect(pool, metrics, meta = hybridMeta, useRecency = ordered)
+            assertEquals(setOf('B', 'G'), lane.colors)
+        }
+    }
+
+    @Test
     fun unorderedRecoveredPoolDoesNotTurnCardIdsIntoRecency() {
         val pool = List(4) { card("black$it", 0.55, "B") } +
             List(2) { card("green$it", 0.60, "G") }

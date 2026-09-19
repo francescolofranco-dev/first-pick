@@ -276,7 +276,10 @@ class DraftViewModel(
 
 
         val liveProjection = if (loaded && lane.hasBaseColorEvidence) {
-            DeckProjector.project(pool, repo.setMetrics, meta, archetypeRating, pairStrength, synergy, constructionMode)
+            DeckProjector.project(
+                pool, repo.setMetrics, meta, archetypeRating, pairStrength, synergy, constructionMode,
+                basePair = lane.pair ?: com.firstpick.advisor.canonicalPair(lane.colors),
+            )
         } else {
             null
         }

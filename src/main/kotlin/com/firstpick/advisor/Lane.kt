@@ -210,7 +210,7 @@ object LaneDetector {
         else MIN_RECENCY + (MAX_RECENCY - MIN_RECENCY) * (index.toDouble() / (n - 1))
 
     private fun power(card: RankedCard, metrics: SetMetrics): Double {
-        val qualityZ = metrics.z(card.gihWr)?.takeIf { it.isFinite() }?.coerceIn(0.0, MAX_QUALITY_Z) ?: 0.0
+        val qualityZ = metrics.z(card.gihWr)?.takeIf { it.isFinite() }?.coerceIn(-1.0, MAX_QUALITY_Z) ?: 0.0
         return BASE_PICK_WEIGHT + QUALITY_WEIGHT * qualityZ
     }
 
@@ -228,7 +228,7 @@ object LaneDetector {
     }
 
     private const val MIN_RECENCY = 1.0
-    private const val MAX_RECENCY = 2.5
+    private const val MAX_RECENCY = 1.5
     private const val NEUTRAL_RECENCY = 1.0
     private const val BASE_PICK_WEIGHT = 1.0
     private const val QUALITY_WEIGHT = 0.35
