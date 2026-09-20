@@ -265,3 +265,12 @@ Brand assets live in `packaging/icon/` (SVG source + `AppIcon.iconset`) and `doc
 ## License
 
 [MIT](LICENSE) © 2026 Francesco Lo Franco
+
+### Starting another draft
+
+FirstPick clears the old pool and signals when Arena reports a new draft or course ID,
+including repeated runs of Pick Two Draft. If detection misses a transition, click
+**New draft** in the header before entering the draft in Arena. This clears the tracked
+pool, pack, and recommendations and follows only new log activity. If the new pack is
+already open, re-enter the draft in Arena to obtain a fresh snapshot. Cards from before
+the reset can only be recovered if Arena sends a full pool snapshot.

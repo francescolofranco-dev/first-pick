@@ -37,6 +37,72 @@ class DraftTrackerTest {
         return "[UnityCrossThreadLogger]==> BotDraftDraftPick {\"id\":\"test\",\"request\":\"$request\"}"
     }
 
+    private fun humanPack(id: String, pack: Int = 1, pick: Int = 1) =
+        """Draft.Notify {"draftId":"$id","SelfPack":$pack,"SelfPick":$pick,"PackCards":"10,20,30,40"}"""
+
+    private val pickTwo = """EventPlayerDraftMakePick {"request":"{\"GrpIds\":[10,20],\"Pack\":1,\"Pick\":1}"}"""
+
+    @Test
+    fun newHumanDraftIdClearsPoolAndSignalsEvenWhenFirstPackWasMissed() {
+        val tracker = DraftTracker()
+        tracker.onLine("""EventJoin {"request":"{\"EventName\":\"PickTwoDraft_HOB_20260811\"}"}""")
+        tracker.onLine(humanPack("first"))
+        tracker.onLine(pickTwo)
+        assertEquals(listOf(10, 20), tracker.state.value.pool)
+        tracker.onLine(humanPack("second", pick = 3))
+        assertTrue(tracker.state.value.pool.isEmpty())
+        assertEquals(setOf(1 to 3), tracker.state.value.seen.keys)
+        assertEquals("HOB", tracker.state.value.setCode)
+    }
+
+    @Test
+    fun repeatedHumanPackAndSameCoursePreservePicks() {
+        val tracker = DraftTracker()
+        val course = """{"CourseId":"first","InternalEventName":"PickTwoDraft_HOB_20260811","CurrentModule":"PlayerDraft","CardPool":[]}"""
+        tracker.onLine(course)
+        tracker.onLine(humanPack("first"))
+        tracker.onLine(pickTwo)
+        tracker.onLine(humanPack("first"))
+        tracker.onLine(course)
+        assertEquals(listOf(10, 20), tracker.state.value.pool)
+        tracker.onLine("""{"Course":${course.replace("first", "second")},"InventoryInfo":{}}""")
+        assertTrue(tracker.state.value.pool.isEmpty())
+        assertTrue(tracker.state.value.seen.isEmpty())
+    }
+
+    @Test
+    fun firstPackWithoutAnIdStartsAFreshRunOfTheSameEvent() {
+        val tracker = DraftTracker()
+        tracker.onLine("""Draft.Notify {"SelfPack":2,"SelfPick":3,"PackCards":"10,20"}""")
+        tracker.onLine("""PlayerDraftMakePick {"GrpIds":[10,20],"Pack":2,"Pick":3}""")
+        tracker.onLine("""Draft.Notify {"SelfPack":1,"SelfPick":1,"PackCards":"30,40"}""")
+        assertTrue(tracker.state.value.pool.isEmpty())
+        assertEquals(setOf(1 to 1), tracker.state.value.seen.keys)
+    }
+
+    @Test
+    fun sameQuickEventRestartsSignalHistoryAndPoolOrder() {
+        val tracker = DraftTracker()
+        tracker.onLine(snapshotLine(2, 5, listOf(50), listOf(1, 2, 3)))
+        tracker.onLine(snapshotLine(0, 0, listOf(80, 81), emptyList()))
+        assertTrue(tracker.state.value.pool.isEmpty())
+        assertTrue(tracker.state.value.poolOrderKnown)
+        assertEquals(setOf(1 to 1), tracker.state.value.seen.keys)
+    }
+
+    @Test
+    fun manualResetKeepsSetForAnonymousPacksButClearsDraftData() {
+        val tracker = DraftTracker()
+        tracker.onLine(snapshotLine(2, 5, listOf(50), listOf(1, 2, 3)))
+        tracker.reset(keepEventContext = true)
+        assertEquals(DraftPhase.IDLE, tracker.state.value.phase)
+        assertTrue(tracker.state.value.pool.isEmpty())
+        assertTrue(tracker.state.value.seen.isEmpty())
+        tracker.onLine(humanPack("new"))
+        assertEquals("SOS", tracker.state.value.setCode)
+        assertTrue(tracker.state.value.pool.isEmpty())
+    }
+
     @Test
     fun reconstructsQuickDraftFromSnapshots() {
         val tracker = DraftTracker()

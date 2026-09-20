@@ -24,7 +24,10 @@ class DraftTracker(
         lines.collect { onLine(it) }
     }
 
-    fun reset() {
-        _state.value = DraftState()
+    fun reset(keepEventContext: Boolean = false) {
+        _state.update {
+            if (keepEventContext) DraftState(format = it.format, setCode = it.setCode, eventName = it.eventName)
+            else DraftState()
+        }
     }
 }

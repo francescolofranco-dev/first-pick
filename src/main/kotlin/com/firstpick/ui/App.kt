@@ -69,6 +69,7 @@ fun App(
     onTogglePause: () -> Unit = {},
     onOpenGuideSource: (String) -> Unit = {},
     onRetryRatings: () -> Unit = {},
+    onNewDraft: () -> Unit = {},
 ) {
     var currentScreen by remember(state.phase) {
         mutableStateOf(if (state.phase == DraftPhase.COMPLETE) AppScreen.DECK_BUILDER else AppScreen.DRAFT_POOL)
@@ -89,6 +90,7 @@ fun App(
                         onStopSim,
                         onTogglePause,
                         onRetryRatings,
+                        onNewDraft,
                         compact,
                     )
 
@@ -210,6 +212,7 @@ private fun Header(
     onStopSim: () -> Unit,
     onTogglePause: () -> Unit,
     onRetryRatings: () -> Unit,
+    onNewDraft: () -> Unit,
     compact: Boolean,
 ) {
     val brand = @Composable {
@@ -270,6 +273,11 @@ private fun Header(
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.tertiary,
                     )
+                }
+            }
+            if (!state.simulating) {
+                OutlinedButton(onClick = onNewDraft, contentPadding = HeaderButtonPadding) {
+                    Text("New draft", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
             }
             FormatSelector(state.ratingsFormatChoice, state.format, onSelectFormat)

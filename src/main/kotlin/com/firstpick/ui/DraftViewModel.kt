@@ -124,6 +124,20 @@ class DraftViewModel(
         scope.launch { publish() }
     }
 
+    /** Discard buffered/history lines as well as the old draft before following new activity. */
+    fun newDraft() {
+        if (simulating) return
+        val previousWatcher = watcherJob
+        previousWatcher?.cancel()
+        watcherJob = scope.launch(Dispatchers.IO) {
+            previousWatcher?.join()
+            tracker.reset(keepEventContext = true)
+            currentError = null
+            publish()
+            tracker.consume(watcher.lines(fromStart = false))
+        }
+    }
+
     fun setFormatChoice(choice: String) {
         if (choice == formatChoice) return
         formatChoice = choice

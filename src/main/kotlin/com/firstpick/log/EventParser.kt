@@ -40,14 +40,14 @@ class EventParser(
         return null
     }
 
-    private val eventNamePattern = Regex("\"(?:Internal)?EventName\"\\s*:\\s*\"([^\"]+)\"")
-
     private fun parseEventJoined(line: String): DraftEvent.EventJoined? {
-        val match = eventNamePattern.find(line) ?: return null
-        val name = match.groupValues[1]
-        val format = DraftFormat.fromEventName(name)
-        if (format == DraftFormat.UNKNOWN) return null
-        return DraftEvent.EventJoined(name)
+        val outer = decodeObject(line) ?: return null
+        val obj = (outer["Course"] as? JsonObject) ?: outer.findString("request")?.let {
+            runCatching { json.parseToJsonElement(it) as? JsonObject }.getOrNull()
+        } ?: outer
+        val name = obj.findString("InternalEventName") ?: obj.findString("EventName") ?: return null
+        if (DraftFormat.fromEventName(name) == DraftFormat.UNKNOWN) return null
+        return DraftEvent.EventJoined(name, obj.findString("CourseId"))
     }
 
     private fun parseCourseSnapshot(line: String): DraftEvent.Snapshot? {
@@ -56,44 +56,32 @@ class EventParser(
         val slice = line.substring(start)
         val element = runCatching { json.parseToJsonElement(slice) }.getOrNull() ?: return null
 
-        val objects = mutableListOf<JsonObject>()
-        fun collectObjects(el: JsonElement) {
-            when (el) {
-                is JsonObject -> {
-                    objects.add(el)
-                    for (v in el.values) collectObjects(v)
-                }
-                is JsonArray -> {
-                    for (item in el) collectObjects(item)
-                }
-                else -> {}
-            }
-        }
-        collectObjects(element)
+        // Course inventories contain historical events, not an active draft selection.
+        val outer = element as? JsonObject ?: return null
+        if ("Courses" in outer) return null
+        val course = (outer["Course"] as? JsonObject) ?: outer
+        val eventName = course.findString("InternalEventName") ?: course.findString("EventName") ?: return null
+        val format = DraftFormat.fromEventName(eventName)
+        if (format == DraftFormat.UNKNOWN) return null
 
-        for (obj in objects) {
-            val eventName = obj.findString("InternalEventName") ?: obj.findString("EventName") ?: continue
-            val format = DraftFormat.fromEventName(eventName)
-            if (format == DraftFormat.UNKNOWN) continue
+        val module = course.findString("CurrentModule")
+        val cardPool = course.findStringList("CardPool")?.toInts() ?: emptyList()
 
-            val module = obj.findString("CurrentModule")
-            val cardPool = obj.findStringList("CardPool")?.toInts() ?: emptyList()
+        if (cardPool.isNotEmpty()) {
+            val isComplete = module.equals("DeckSelect", ignoreCase = true) ||
+                module.equals("Complete", ignoreCase = true) ||
+                module.equals("DeckBuilder", ignoreCase = true) ||
+                cardPool.size >= 40
 
-            if (cardPool.isNotEmpty()) {
-                val isComplete = module.equals("DeckSelect", ignoreCase = true) ||
-                    module.equals("Complete", ignoreCase = true) ||
-                    module.equals("DeckBuilder", ignoreCase = true) ||
-                    cardPool.size >= 40
-
-                return DraftEvent.Snapshot(
-                    eventName = eventName,
-                    pack = 3,
-                    pick = 15,
-                    packCards = emptyList(),
-                    pool = cardPool,
-                    complete = isComplete,
-                )
-            }
+            return DraftEvent.Snapshot(
+                eventName = eventName,
+                pack = 3,
+                pick = 15,
+                packCards = emptyList(),
+                pool = cardPool,
+                complete = isComplete,
+                courseId = course.findString("CourseId"),
+            )
         }
         return null
     }
@@ -176,7 +164,8 @@ class EventParser(
         val pack = obj.findInt("SelfPack") ?: obj.findInt("PackNumber")?.plus(1) ?: 1
         val pick = obj.findInt("SelfPick") ?: obj.findInt("PickNumber")?.plus(1) ?: 1
         val eventName = obj.findString("EventName") ?: obj.findString("InternalEventName") ?: ""
-        return DraftEvent.PackSeen(eventName, pack, pick, packCards.toInts())
+        return DraftEvent.PackSeen(eventName, pack, pick, packCards.toInts(),
+            obj.findString("draftId") ?: obj.findString("DraftId"))
     }
 
     private fun parsePremierPick(line: String): DraftEvent.PickMade? {
@@ -188,8 +177,8 @@ class EventParser(
             ?: payload.findInt("GrpId")?.let { listOf(it.toString()) }
             ?: return null
         return DraftEvent.PickMade(
-            pack = payload.findInt("PackNumber")?.plus(1) ?: 0,
-            pick = payload.findInt("PickNumber")?.plus(1) ?: 0,
+            pack = payload.findInt("Pack") ?: payload.findInt("PackNumber")?.plus(1) ?: 0,
+            pick = payload.findInt("Pick") ?: payload.findInt("PickNumber")?.plus(1) ?: 0,
             cardIds = ids.toInts(),
         )
     }

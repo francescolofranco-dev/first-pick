@@ -29,6 +29,30 @@ class EventParserTest {
     }
 
     @Test
+    fun readsSingleCourseResponsesWithoutTreatingInventoriesAsSelection() {
+        val course = """{"CourseId":"run-2","InternalEventName":"PickTwoDraft_HOB_20260811","CurrentModule":"DeckSelect","CardPool":[10,20]}"""
+        val snapshot = parser.parse("""{"Course":$course,"InventoryInfo":{}}""") as DraftEvent.Snapshot
+        assertEquals("run-2", snapshot.courseId)
+        assertEquals(listOf(10, 20), snapshot.pool)
+    }
+
+    @Test
+    fun ignoresHistoricalCourseInventories() {
+        assertNull(parser.parse("""{"Courses":[
+            {"InternalEventName":"PremierDraft_MKM_20240206","CurrentModule":"DeckSelect","CardPool":[1,2]},
+            {"InternalEventName":"PickTwoDraft_HOB_20260811","CurrentModule":"PlayerDraft","CardPool":[]}
+        ]}"""))
+    }
+
+    @Test
+    fun readsPickTwoRequestCoordinatesAndBothCards() {
+        val pick = parser.parse("""EventPlayerDraftMakePick {"request":"{\"GrpIds\":[10,20],\"Pack\":2,\"Pick\":7}"}""") as DraftEvent.PickMade
+        assertEquals(2, pick.pack)
+        assertEquals(7, pick.pick)
+        assertEquals(listOf(10, 20), pick.cardIds)
+    }
+
+    @Test
     fun parsesRealFirstSnapshotFixture() {
         val line = javaClass.getResourceAsStream("/quickdraft_first_snapshot.log")!!
             .bufferedReader().readText().trim()

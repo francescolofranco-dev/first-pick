@@ -108,6 +108,10 @@ fun main() {
                 onTogglePause = { viewModel.toggleSimulationPause() },
                 onOpenGuideSource = ::openGuideSource,
                 onRetryRatings = { viewModel.retryRatings() },
+                onNewDraft = {
+                    committedDeckKey = null
+                    viewModel.newDraft()
+                },
             )
         }
 

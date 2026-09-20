@@ -32,6 +32,7 @@ fun setCodeFromEventName(eventName: String): String? =
 sealed interface DraftEvent {
     data class EventJoined(
         val eventName: String,
+        val courseId: String? = null,
     ) : DraftEvent
 
     data class Snapshot(
@@ -41,6 +42,7 @@ sealed interface DraftEvent {
         val packCards: List<Int>,
         val pool: List<Int>,
         val complete: Boolean,
+        val courseId: String? = null,
     ) : DraftEvent
 
     data class PackSeen(
@@ -48,6 +50,7 @@ sealed interface DraftEvent {
         val pack: Int,
         val pick: Int,
         val packCards: List<Int>,
+        val draftId: String? = null,
     ) : DraftEvent
 
     data class PickMade(
@@ -64,6 +67,8 @@ data class DraftState(
     val format: DraftFormat = DraftFormat.UNKNOWN,
     val setCode: String? = null,
     val eventName: String? = null,
+    val courseId: String? = null,
+    val draftId: String? = null,
     val pack: Int = 0,
     val pick: Int = 0,
     val packCards: List<Int> = emptyList(),
@@ -74,18 +79,20 @@ data class DraftState(
 ) {
     fun reduce(event: DraftEvent): DraftState = when (event) {
         is DraftEvent.EventJoined -> {
-            val resettingForNewEvent = event.eventName.isNotEmpty() && eventName != null && eventName != event.eventName
+            val resettingForNewEvent = isNewEvent(event.eventName, event.courseId)
             val base = if (resettingForNewEvent) DraftState() else this
             base.copy(
                 format = DraftFormat.fromEventName(event.eventName),
                 setCode = setCodeFromEventName(event.eventName) ?: base.setCode,
                 eventName = event.eventName,
+                courseId = event.courseId ?: base.courseId,
             )
         }
 
         is DraftEvent.Snapshot -> {
-            val resettingForNewEvent = event.eventName.isNotEmpty() && eventName != null && eventName != event.eventName
-            val base = if (resettingForNewEvent) DraftState() else this
+            val resettingForNewEvent = isNewEvent(event.eventName, event.courseId)
+            val base = if (resettingForNewEvent) DraftState()
+                else if (!event.complete && startsAgain(event.pack, event.pick)) freshDraft() else this
             val reconciled = base.reconcilePool(event.pool)
             base.copy(
                 phase = if (event.complete) DraftPhase.COMPLETE else DraftPhase.DRAFTING,
@@ -94,6 +101,7 @@ data class DraftState(
                 eventName = if (event.eventName.isNotEmpty()) event.eventName else base.eventName,
                 pack = event.pack,
                 pick = event.pick,
+                courseId = event.courseId ?: base.courseId,
                 packCards = event.packCards,
                 pool = reconciled.cards,
                 poolOrderKnown = base.poolOrderKnown && reconciled.addedCardCount <= 1,
@@ -103,9 +111,12 @@ data class DraftState(
 
         is DraftEvent.PackSeen -> {
             val resettingForNewEvent = event.eventName.isNotEmpty() && eventName != null && eventName != event.eventName
-            val base = if (resettingForNewEvent) DraftState() else this
+            val base = if (resettingForNewEvent) DraftState()
+                else if ((event.draftId != null && draftId != null && event.draftId != draftId) ||
+                    ((event.draftId == null || draftId == null) && startsAgain(event.pack, event.pick))) freshDraft() else this
             base.copy(
                 phase = DraftPhase.DRAFTING,
+                draftId = event.draftId ?: base.draftId,
                 format = if (event.eventName.isNotEmpty()) DraftFormat.fromEventName(event.eventName) else base.format,
                 setCode = (if (event.eventName.isNotEmpty()) setCodeFromEventName(event.eventName) else null) ?: base.setCode,
                 eventName = if (event.eventName.isNotEmpty()) event.eventName else base.eventName,
@@ -136,6 +147,16 @@ data class DraftState(
             )
         }
     }
+
+    private fun isNewEvent(name: String, id: String?): Boolean =
+        (name.isNotEmpty() && eventName != null && eventName != name) ||
+            (id != null && courseId != null && courseId != id)
+
+    private fun startsAgain(nextPack: Int, nextPick: Int): Boolean =
+        nextPack == 1 && nextPick == 1 &&
+            (phase == DraftPhase.COMPLETE || pack > 1 || pick > 1)
+
+    private fun freshDraft() = DraftState(format = format, setCode = setCode, eventName = eventName)
 
     private fun recordSeen(pack: Int, pick: Int, cards: List<Int>): Map<Pair<Int, Int>, List<Int>> =
         if (cards.isEmpty()) seen else seen + (Pair(pack, pick) to cards)

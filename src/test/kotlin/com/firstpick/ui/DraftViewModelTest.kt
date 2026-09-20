@@ -33,6 +33,49 @@ import kotlin.test.assertTrue
 class DraftViewModelTest {
 
     @Test
+    fun newDraftClearsStateAndRestartsWatcherWithoutReplayingHistory() = runBlocking {
+        val starts = java.util.concurrent.CopyOnWriteArrayList<Boolean>()
+        val live = kotlinx.coroutines.channels.Channel<String>(kotlinx.coroutines.channels.Channel.UNLIMITED)
+        val watcher = object : LogWatcher(Path.of("/dev/null")) {
+            override fun lines(fromStart: Boolean): Flow<String> = kotlinx.coroutines.flow.flow {
+                starts.add(fromStart)
+                if (fromStart) {
+                    emit("""Draft.Notify {"SelfPack":2,"SelfPick":3,"PackCards":"10,20"}""")
+                    emit("""PlayerDraftMakePick {"GrpIds":[10],"Pack":2,"Pick":3}""")
+                }
+                for (line in live) emit(line)
+            }
+        }
+        val tracker = DraftTracker()
+        val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+        try {
+            val vm = DraftViewModel(scope, watcher = watcher, tracker = tracker)
+            vm.start()
+            withTimeout(5_000) {
+                while (tracker.state.value.pool.isEmpty()) kotlinx.coroutines.delay(10)
+            }
+            vm.newDraft()
+            withTimeout(5_000) {
+                while (starts.size < 2) kotlinx.coroutines.delay(10)
+            }
+            assertEquals(listOf(true, false), starts.toList())
+            assertEquals(com.firstpick.model.DraftPhase.IDLE, vm.ui.value.phase)
+            assertTrue(tracker.state.value.pool.isEmpty())
+            assertTrue(tracker.state.value.seen.isEmpty())
+            assertTrue(vm.ui.value.packCards.isEmpty())
+            live.send("""Draft.Notify {"SelfPack":1,"SelfPick":1,"PackCards":"30,40"}""")
+            withTimeout(5_000) {
+                while (tracker.state.value.packCards.isEmpty()) kotlinx.coroutines.delay(10)
+            }
+            assertEquals(listOf(30, 40), tracker.state.value.packCards)
+            assertTrue(tracker.state.value.pool.isEmpty())
+        } finally {
+            scope.cancel()
+            live.close()
+        }
+    }
+
+    @Test
     fun errorMessagesDifferentiateFailureReasons() {
         assertTrue(ratingsErrorMessage(FetchFailure.RATE_LIMITED, "SOS").contains("rate-limit", true))
         assertTrue(ratingsErrorMessage(FetchFailure.OFFLINE, "SOS").contains("reach", true))
