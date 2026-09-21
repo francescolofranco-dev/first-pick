@@ -199,6 +199,63 @@ class DeckGuidanceSessionTest {
         assertEquals(null, session.currentCount("Stock Up"))
     }
 
+    @Test
+    fun scrollingAcrossBriefUnreadableFramesCompletesDeckAndCountsCopiesNotPoolNames() {
+        val target = listOf(
+            DeckCardCount("Stock Up", 3), DeckCardCount("Long Lake Nuisance", 2),
+            DeckCardCount("Elvenking's Halls", 1), DeckCardCount("Island", 34, isBasicLand = true),
+        )
+        val session = DeckGuidanceSession(target, target + DeckCardCount("Unused Card", 2))
+        val image = pipImage(3)
+        val first = session.observe(image, screen(40, 3, poolVisible = false))
+        assertEquals(3, first.verifiedCards)
+        assertEquals(6, first.expectedCards)
+        session.unreadableFrame(100)
+        session.unreadableFrame(900)
+        assertEquals(3, session.currentCount("Stock Up"))
+        val bottom = screen(40, null, poolVisible = false).copy(deckRows = listOf(
+            VisibleDeckRowObservation(2, "Long Lake Nuisance", rowBounds, rowBounds, 0.95),
+            VisibleDeckRowObservation(1, "Elvenking's Halls", rowBounds, rowBounds, 0.95),
+            VisibleDeckRowObservation(34, "Island", rowBounds, rowBounds, 0.95),
+        ))
+        val complete = session.observe(image, bottom)
+        assertEquals(DeckGuidanceStatus.MATCHES, complete.status)
+        assertEquals(6, complete.verifiedCards)
+        assertEquals(6, complete.expectedCards)
+        assertEquals(0, session.currentCount("Unused Card"))
+    }
+
+    @Test
+    fun prolongedUnreadabilityAndChangedTotalRequireFreshEvidence() {
+        val session = DeckGuidanceSession(
+            listOf(DeckCardCount("Stock Up", 1)), listOf(DeckCardCount("Stock Up", 2)),
+        )
+        val image = pipImage(1)
+        session.observe(image, screen(40, 1, poolVisible = false))
+        session.unreadableFrame(100)
+        session.unreadableFrame(3_100)
+        assertEquals(null, session.currentCount("Stock Up"))
+        session.observe(image, screen(40, 1, poolVisible = false))
+        session.unreadableFrame(4_000)
+        session.observe(image, screen(39, null, poolVisible = false))
+        assertEquals(null, session.currentCount("Stock Up"))
+    }
+
+    @Test
+    fun verifiedTargetCopiesDoNotClaimWholeDeckMatchesBeforeLandsAreRead() {
+        val session = DeckGuidanceSession(
+            listOf(DeckCardCount("Stock Up", 2)),
+            listOf(DeckCardCount("Stock Up", 2), DeckCardCount("Unused Card", 1)),
+        )
+        val partial = session.observe(pipImage(2), screen(40, 2, poolVisible = false))
+        assertEquals(DeckGuidanceStatus.READING, partial.status)
+        assertEquals(2, partial.verifiedCards)
+        assertEquals(2, partial.expectedCards)
+        assertEquals("Suggested cards verified · Checking lands and remaining cards…", statusPillStyle(partial).label)
+        assertEquals("Checking deck · 1/2 suggested nonbasic copies verified",
+            statusPillStyle(partial.copy(verifiedCards = 1)).label)
+    }
+
     private fun screen(
         total: Int,
         rowCount: Int?,

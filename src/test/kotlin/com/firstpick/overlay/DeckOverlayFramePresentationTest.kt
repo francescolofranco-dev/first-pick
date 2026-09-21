@@ -61,7 +61,7 @@ class DeckOverlayFramePresentationTest {
         val partial = trusted.copy(status = DeckGuidanceStatus.READING, remainingAdds = 0, verifiedCards = 2, expectedCards = 10)
         val result = DeckOverlayPresentationReducer.reduce(acquired(), DeckOverlayFrameAttempt.Recognized(partial), 100)
         assertEquals(partial, result.state.model)
-        assertEquals("Checking deck · 2/10 cards verified", statusPillStyle(result.state.model).label)
+        assertEquals("Checking deck · 2/10 suggested nonbasic copies verified", statusPillStyle(result.state.model).label)
         assertEquals(partial.marks, result.state.model.renderableMarks())
     }
 

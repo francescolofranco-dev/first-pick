@@ -154,14 +154,15 @@ fun ArenaDeckBuilderOverlay(
                 presentation = DeckOverlayPresentationState.initial()
                 continue
             }
-            if (attempt !is DeckOverlayFrameAttempt.Recognized) session.invalidate()
             lastFrameAtMs = System.nanoTime() / 1_000_000L
+            if (attempt !is DeckOverlayFrameAttempt.Recognized) session.unreadableFrame(lastFrameAtMs)
             val update = DeckOverlayPresentationReducer.reduce(
                 state = presentation,
                 attempt = attempt,
                 nowMs = System.nanoTime() / 1_000_000L,
             )
             presentation = update.state
+            if (!presentation.contentVisible) session.invalidate()
             workHealth = deckOverlayWorkHealth(attempt, update.state)
             logDeckOverlayTransitions(update.transitions)
 

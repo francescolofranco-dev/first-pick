@@ -18,6 +18,7 @@ internal class DeckGuidanceSession(
     private val matcher = CanonicalCardNameMatcher(baselineCounts.keys)
     private val reducer = DeckObservationReducer(baseline)
     private var observationState = reducer.initialState()
+    private var unreadableSinceMs: Long? = null
     private var lastLoggedTotal: Int? = null
     private var lastLoggedStatus: DeckGuidanceStatus? = null
     private var lastLoggedFailure: DeckObservationFailureKind? = null
@@ -33,6 +34,7 @@ internal class DeckGuidanceSession(
         image: BufferedImage,
         screen: DeckBuilderScreenObservation,
     ): DeckGuidanceOverlayModel {
+        unreadableSinceMs = null
         val visibleRows = screen.deckRows.mapNotNull { row ->
             val basic = BASIC_LANDS.match(row.cardName) as? CanonicalCardNameMatch.Matched
             if (basic != null) VisibleExactCardCount(basic.name, row.count, isBasicLand = true)
@@ -67,7 +69,7 @@ internal class DeckGuidanceSession(
         }
 
         // Partial readings may mark verified visible cards, but never report exact totals.
-        val targets = target.filterNot { it.isBasicLand }.groupingBy { it.name }
+        val targets = target.filterNot { it.isBasicLand || isBasicLandName(it.name) }.groupingBy { it.name }
             .fold(0) { count, card -> count + card.count }
         val cards = observationState.knownCounts.mapValues { (name, count) ->
             CardGuidance(name, targets[name] ?: 0, count)
@@ -95,14 +97,24 @@ internal class DeckGuidanceSession(
             remainingAdds = guidance.remainingAdds,
             remainingRemovals = guidance.remainingRemovals,
             basicLandDelta = guidance.basicLandDelta,
-            verifiedCards = observationState.knownCounts.size,
-            expectedCards = observationState.expectedNames.size,
+            verifiedCards = targets.entries.sumOf { (name, count) ->
+                minOf(count, observationState.knownCounts[name] ?: 0)
+            },
+            expectedCards = targets.values.sum(),
         ).also { logTransition(screen, guidance, it) }
+    }
+
+    /** Preserve scroll progress across brief OCR gaps, independently of hiding stale marks. */
+    @Synchronized
+    fun unreadableFrame(nowMs: Long) {
+        val since = unreadableSinceMs ?: nowMs.also { unreadableSinceMs = it }
+        if (nowMs - since >= 3_000) observationState = reducer.initialState()
     }
 
     @Synchronized
     fun invalidate() {
         observationState = reducer.initialState()
+        unreadableSinceMs = null
     }
 
     @Synchronized

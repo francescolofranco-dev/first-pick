@@ -199,8 +199,13 @@ fun statusPillStyle(status: DeckGuidanceStatus): DeckGuidanceStatusPillStyle =
 
 fun statusPillStyle(model: DeckGuidanceOverlayModel): DeckGuidanceStatusPillStyle = when (model.status) {
     DeckGuidanceStatus.READING -> DeckGuidanceStatusPillStyle(
-        if (model.expectedCards > 0) "Checking deck · ${model.verifiedCards}/${model.expectedCards} cards verified"
-        else "Checking recent changes…", DeckGuidanceOverlayPalette.ReadingAccent)
+        when {
+            model.expectedCards > 0 && model.verifiedCards >= model.expectedCards ->
+                "Suggested cards verified · Checking lands and remaining cards…"
+            model.expectedCards > 0 ->
+                "Checking deck · ${model.verifiedCards}/${model.expectedCards} suggested nonbasic copies verified"
+            else -> "Checking recent changes…"
+        }, DeckGuidanceOverlayPalette.ReadingAccent)
     DeckGuidanceStatus.NEEDS_CHANGES -> DeckGuidanceStatusPillStyle(model.needsChangesLabel(), DeckGuidanceOverlayPalette.RemoveAccent)
     DeckGuidanceStatus.MATCHES -> DeckGuidanceStatusPillStyle("Deck matches build", DeckGuidanceOverlayPalette.AddAccent)
     DeckGuidanceStatus.UNABLE -> DeckGuidanceStatusPillStyle("Unable to read deck", DeckGuidanceOverlayPalette.UnableAccent)
