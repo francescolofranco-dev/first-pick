@@ -65,13 +65,8 @@ fun main() {
         var deckOverlayHealth by remember {
             mutableStateOf(OverlayHealth(OverlayHealthState.INACTIVE, "Deck guidance is not active."))
         }
-        var committedDeckKey by remember(state.phase == DraftPhase.COMPLETE) {
-            mutableStateOf<String?>(null)
-        }
-        val committedDeck: DeckOptionUi? = if (state.phase == DraftPhase.COMPLETE) {
-            state.deckOptions.firstOrNull { it.deckBuildKey == committedDeckKey }
-        } else {
-            null
+        var committedDeck by remember(state.sessionKey, state.phase == DraftPhase.COMPLETE) {
+            mutableStateOf<DeckOptionUi?>(null)
         }
         val activeOverlayHealth = when {
             state.phase == DraftPhase.COMPLETE && committedDeck != null -> deckOverlayHealth
@@ -99,9 +94,9 @@ fun main() {
                 onToggleOverlay = { isOverlayOpen = !isOverlayOpen },
                 committedDeck = committedDeck,
                 onUseDeck = {
-                    if (state.phase == DraftPhase.COMPLETE) committedDeckKey = it.deckBuildKey
+                    if (state.phase == DraftPhase.COMPLETE) committedDeck = it
                 },
-                onStopGuidance = { committedDeckKey = null },
+                onStopGuidance = { committedDeck = null },
                 onSelectFormat = { viewModel.setFormatChoice(it) },
                 onSimulate = { viewModel.startSimulation(it) },
                 onStopSim = { viewModel.stopSimulation() },
@@ -109,7 +104,7 @@ fun main() {
                 onOpenGuideSource = ::openGuideSource,
                 onRetryRatings = { viewModel.retryRatings() },
                 onNewDraft = {
-                    committedDeckKey = null
+                    committedDeck = null
                     viewModel.newDraft()
                 },
             )
@@ -121,11 +116,13 @@ fun main() {
 
         when {
             state.phase == DraftPhase.COMPLETE && committedDeck != null -> {
-                val target = remember(committedDeck) { deckGuidanceTarget(committedDeck) }
+                val selectedDeck = requireNotNull(committedDeck)
+                val target = remember(selectedDeck) { deckGuidanceTarget(selectedDeck) }
                 val draftPool = remember(state.draftPool) { deckGuidancePool(state.draftPool) }
                 ArenaDeckBuilderOverlay(
                     target = target,
                     draftPool = draftPool,
+                    sessionKey = state.sessionKey,
                     onHealthChanged = { deckOverlayHealth = it },
                 )
             }

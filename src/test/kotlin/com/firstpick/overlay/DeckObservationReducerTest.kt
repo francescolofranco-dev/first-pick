@@ -12,21 +12,12 @@ class DeckObservationReducerTest {
         VisibleExactCardCount(name, count, isBasicLand = basic)
 
     @Test
-    fun startsWithEveryDraftedNonbasicInTheDeckAndReadsUntilTheTotalArrives() {
+    fun startsUnknownEvenWhenADeckTotalIsVisible() {
         val reducer = DeckObservationReducer(baseline("Alpha" to 2, "Beta" to 1))
-        val initial = reducer.initialState()
-
-        assertEquals(DeckObservationStatus.READING, initial.status)
-        assertEquals(mapOf("Alpha" to 2, "Beta" to 1), initial.knownCounts)
-        assertIs<DeckReadState.Reading>(initial.asDeckReadState())
-
-        val observed = reducer.reduce(initial, DeckObservationFrame(totalCards = 42))
-
-        assertEquals(DeckObservationStatus.READY, observed.status)
-        assertEquals(2, observed.countFor("Alpha"))
-        assertEquals(1, observed.countFor("Beta"))
-        val ready = assertIs<DeckReadState.Ready>(observed.asDeckReadState())
-        assertEquals(42, ready.deck.totalCards)
+        val observed = reducer.reduce(reducer.initialState(), DeckObservationFrame(totalCards = 42))
+        assertEquals(DeckObservationStatus.READING, observed.status)
+        assertEquals(emptyMap(), observed.knownCounts)
+        assertIs<DeckReadState.Reading>(observed.asDeckReadState())
     }
 
     @Test
@@ -84,7 +75,7 @@ class DeckObservationReducerTest {
     }
 
     @Test
-    fun infersAVisibleOneCopyRowWasRemovedWhenTheDeckDropsByOne() {
+    fun disappearingRowIsUnknownWhenTheDeckDropsByOne() {
         val reducer = DeckObservationReducer(baseline("Cut Me" to 1, "Anchor" to 2))
         val before = reducer.reduce(
             reducer.initialState(),
@@ -95,13 +86,13 @@ class DeckObservationReducerTest {
             DeckObservationFrame(40, listOf(visible("Anchor", 2))),
         )
 
-        assertEquals(0, after.countFor("Cut Me"))
-        assertEquals(DeckObservationStatus.READY, after.status)
+        assertNull(after.countFor("Cut Me"))
+        assertEquals(DeckObservationStatus.READING, after.status)
         assertNull(after.failure)
     }
 
     @Test
-    fun infersAUniqueVanishedDuplicateRowAcrossSeveralClicks() {
+    fun disappearingDuplicateCannotBeInferredFromTotalAlone() {
         val reducer = DeckObservationReducer(baseline("Cut Me" to 4, "Anchor" to 2))
         val before = reducer.reduce(
             reducer.initialState(),
@@ -112,9 +103,9 @@ class DeckObservationReducerTest {
             DeckObservationFrame(42, listOf(visible("Anchor", 2))),
         )
 
-        assertEquals(2, after.countFor("Cut Me"))
+        assertNull(after.countFor("Cut Me"))
         assertEquals(42, after.totalCards)
-        assertEquals(DeckObservationStatus.READY, after.status)
+        assertEquals(DeckObservationStatus.READING, after.status)
         assertNull(after.failure)
     }
 
@@ -167,12 +158,12 @@ class DeckObservationReducerTest {
             DeckObservationFrame(40, listOf(visible("Anchor", 1))),
         )
 
-        assertEquals(DeckObservationStatus.READY, ambiguous.status)
+        assertEquals(DeckObservationStatus.READING, ambiguous.status)
         assertNull(ambiguous.failure)
-        assertEquals(1, ambiguous.countFor("Alpha"))
-        assertEquals(1, ambiguous.countFor("Beta"))
+        assertNull(ambiguous.countFor("Alpha"))
+        assertNull(ambiguous.countFor("Beta"))
         assertEquals(40, ambiguous.totalCards)
-        assertIs<DeckReadState.Ready>(ambiguous.asDeckReadState())
+        assertIs<DeckReadState.Reading>(ambiguous.asDeckReadState())
     }
 
     @Test
@@ -184,8 +175,8 @@ class DeckObservationReducerTest {
         )
         val ambiguous = reducer.reduce(before, DeckObservationFrame(40))
 
-        assertEquals(DeckObservationStatus.READY, ambiguous.status)
-        assertEquals(1, ambiguous.countFor("Only Row"))
+        assertEquals(DeckObservationStatus.READING, ambiguous.status)
+        assertNull(ambiguous.countFor("Only Row"))
         assertEquals(40, ambiguous.totalCards)
         assertNull(ambiguous.failure)
     }
@@ -264,7 +255,7 @@ class DeckObservationReducerTest {
     }
 
     @Test
-    fun initialObservationSetsUnseenDraftedCardsToZeroInDeck() {
+    fun initialObservationDoesNotInventZeroesForUnseenCards() {
         val reducer = DeckObservationReducer(baseline("Target Card" to 2, "Cut Card 1" to 1, "Cut Card 2" to 1))
         val initial = reducer.initialState()
 
@@ -274,8 +265,30 @@ class DeckObservationReducerTest {
         )
 
         assertEquals(2, observed.countFor("Target Card"))
-        assertEquals(0, observed.countFor("Cut Card 1"))
-        assertEquals(0, observed.countFor("Cut Card 2"))
-        assertEquals(DeckObservationStatus.READY, observed.status)
+        assertNull(observed.countFor("Cut Card 1"))
+        assertNull(observed.countFor("Cut Card 2"))
+        assertEquals(DeckObservationStatus.READING, observed.status)
     }
+    @Test
+    fun completeAccountingIncludingBasicsProvesAbsentCards() {
+        val reducer = DeckObservationReducer(baseline("Target" to 2, "Cut" to 1))
+        val state = reducer.reduce(reducer.initialState(), DeckObservationFrame(
+            40, listOf(visible("Target", 2), visible("Plains", 38, basic = true)),
+        ))
+        assertEquals(DeckObservationStatus.READY, state.status)
+        assertEquals(0, state.countFor("Cut"))
+    }
+
+    @Test
+    fun unexplainedChangeInvalidatesOffscreenCardsButRetainsCurrentEvidence() {
+        val reducer = DeckObservationReducer(baseline("Visible" to 2, "Offscreen" to 1))
+        val before = reducer.reduce(reducer.initialState(), DeckObservationFrame(
+            40, listOf(visible("Visible", 2), visible("Offscreen", 1)),
+        ))
+        val after = reducer.reduce(before, DeckObservationFrame(39, listOf(visible("Visible", 2))))
+        assertNull(after.countFor("Offscreen"))
+        assertEquals(2, after.countFor("Visible"))
+        assertEquals(DeckObservationStatus.READING, after.status)
+    }
+
 }

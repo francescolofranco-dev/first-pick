@@ -148,6 +148,8 @@ data class DraftUiState(
 
     /** Every card drafted, grouped by display name, for post-draft client guidance. */
     val draftPool: List<DeckSpellUi> = emptyList(),
+    val savedDeck: com.firstpick.overlay.DeckSnapshot? = null,
+    val sessionKey: String? = null,
 
     val deckSoFar: DeckOptionUi? = null,
 

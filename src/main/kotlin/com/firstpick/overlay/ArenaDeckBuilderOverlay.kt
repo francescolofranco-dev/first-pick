@@ -2,6 +2,7 @@ package com.firstpick.overlay
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
@@ -33,17 +34,21 @@ private const val CLICK_THROUGH_RETRY_MS = 150L
 fun ArenaDeckBuilderOverlay(
     target: List<DeckCardCount>,
     draftPool: List<DeckCardCount>,
+    sessionKey: String? = null,
     locator: WindowLocator = WindowLocator(),
-    capturer: WindowCapture = WindowCapture(),
-    ocr: VisionOcr = VisionOcr(),
     onHealthChanged: (OverlayHealth) -> Unit = {},
 ) {
     val loc = remember { locator }
-    val cap = remember { capturer }
-    val reader = remember { ocr }
+    val reader = remember { DeckFrameReader() }
+    DisposableEffect(reader) {
+        onDispose {
+            // The bounded reader may still be finishing a frame; never block Compose disposal.
+            Thread({ reader.close() }, "deck-reader-close").apply { isDaemon = true }.start()
+        }
+    }
     val poolKey = remember(draftPool) { draftPool.stableCountKey() }
     val targetKey = remember(target) { target.stableCountKey() }
-    val session = remember(poolKey) { DeckGuidanceSession(target, draftPool) }
+    val session = remember(sessionKey, poolKey) { DeckGuidanceSession(target, draftPool) }
     SideEffect { session.updateTarget(target) }
     var presentation by remember(poolKey) { mutableStateOf(DeckOverlayPresentationState.initial()) }
     var workHealth by remember(poolKey, targetKey) {
@@ -99,31 +104,42 @@ fun ArenaDeckBuilderOverlay(
     }
 
     val arenaFrontmost by rememberUpdatedState(arena.frontmost)
-    LaunchedEffect(poolKey, targetKey, arena.w, arena.h) {
+    var lastFrameAtMs by remember { mutableStateOf(0L) }
+    LaunchedEffect(session) {
+        while (true) {
+            delay(100)
+            if (System.nanoTime() / 1_000_000L - lastFrameAtMs > 900) {
+                presentation = presentation.copy(model = DeckGuidanceOverlayModel(DeckGuidanceStatus.READING))
+            }
+        }
+    }
+    LaunchedEffect(session, targetKey, arena.w, arena.h) {
         presentation = DeckOverlayPresentationState.initial()
         workHealth = OverlayHealth(
             OverlayHealthState.READING,
             "Reading Arena's Limited deck builder.",
         )
         while (true) {
-            // Focus changes only hide the Window; keep the trusted model so a
-            // transient locator sample does not force an OCR reacquisition.
+            // Reacquire deck evidence after focus changes; edits may happen while hidden.
             if (!arenaFrontmost) {
+                session.invalidate()
+                presentation = DeckOverlayPresentationState.initial()
                 delay(WINDOW_POLL_MS)
                 continue
             }
 
             val frameStartedNs = System.nanoTime()
             val attempt = withContext(Dispatchers.IO) {
-                val image = cap.capture() ?: return@withContext DeckOverlayFrameAttempt.ReaderFailure
-                val text = reader.recognize(image) ?: return@withContext DeckOverlayFrameAttempt.ReaderFailure
+                val frame = reader.read(draftPool.map { it.name }, arena.w, arena.h)
+                    ?: return@withContext DeckOverlayFrameAttempt.ReaderFailure
+                val image = frame.image
+                val text = frame.text
                 val screen = DeckBuilderScreenInterpreter.interpret(text)
                 val shell = DeckBuilderScreenInterpreter.detectShell(text)
                 when {
                     screen != null && isSupportedLimitedDeckBuilder(screen) ->
                         DeckOverlayFrameAttempt.Recognized(
                             model = session.observe(image, screen),
-                            layout = screen.overlayLayoutSnapshot(),
                         )
 
                     shell?.minimumDeckSize == DeckGuidance.LIMITED_DECK_SIZE ->
@@ -133,6 +149,13 @@ fun ArenaDeckBuilderOverlay(
                     else -> DeckOverlayFrameAttempt.OutsideBuilder
                 }
             }
+            if (!arenaFrontmost) {
+                session.invalidate()
+                presentation = DeckOverlayPresentationState.initial()
+                continue
+            }
+            if (attempt !is DeckOverlayFrameAttempt.Recognized) session.invalidate()
+            lastFrameAtMs = System.nanoTime() / 1_000_000L
             val update = DeckOverlayPresentationReducer.reduce(
                 state = presentation,
                 attempt = attempt,
@@ -213,7 +236,8 @@ internal fun deckOverlayWorkHealth(
         )
     }
 
-    is DeckOverlayFrameAttempt.Recognized -> if (presentation.unreadableReason == null) {
+    is DeckOverlayFrameAttempt.Recognized -> if (presentation.unreadableReason == null &&
+        presentation.model.status != DeckGuidanceStatus.READING) {
         OverlayHealth(
             OverlayHealthState.ACTIVE,
             "Deck guidance is synced to Arena.",
@@ -221,7 +245,7 @@ internal fun deckOverlayWorkHealth(
     } else {
         OverlayHealth(
             OverlayHealthState.READING,
-            "Refreshing Arena's deck rows while retaining trusted guidance.",
+            "Checking recent changes in Arena.",
         )
     }
 }
@@ -245,16 +269,12 @@ private fun logDeckOverlayTransitions(transitions: List<DeckOverlayPresentationT
                     DeckOverlayUnreadableReason.ROWS_OBSCURED -> "deck rows are obscured while the builder shell remains visible"
                     DeckOverlayUnreadableReason.GUIDANCE_UNAVAILABLE -> "visible deck counts are temporarily ambiguous"
                 }
-                val action = if (transition.retainingLastGood) {
-                    "retaining the last trusted guidance"
-                } else {
-                    "waiting for a trusted deck reading"
-                }
+                val action = "waiting for a fresh deck reading"
                 Log.warn(DECK_OVERLAY_TAG, "$reason; $action")
             }
 
             is DeckOverlayPresentationTransition.GraceExpired ->
-                Log.warn(DECK_OVERLAY_TAG, "deck reading remained unavailable beyond grace; clearing stale marks")
+                Log.warn(DECK_OVERLAY_TAG, "deck reading remained unavailable; waiting for a fresh frame")
 
             DeckOverlayPresentationTransition.Recovered ->
                 Log.info(DECK_OVERLAY_TAG, "deck reading recovered")

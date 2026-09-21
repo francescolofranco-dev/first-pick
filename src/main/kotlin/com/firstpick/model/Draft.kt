@@ -29,7 +29,12 @@ private val SET_CODE_RE = Regex("_([A-Za-z0-9]{2,5})_\\d{6,8}")
 fun setCodeFromEventName(eventName: String): String? =
     SET_CODE_RE.find(eventName)?.groupValues?.get(1)?.uppercase()
 
+/** Exact saved main deck; it is not a claim about unsaved builder edits. */
+data class SavedDeck(val mainDeck: Map<Int, Int>, val sideboard: Map<Int, Int>)
+
 sealed interface DraftEvent {
+    data class DeckSaved(val eventName: String, val deck: SavedDeck, val courseId: String? = null) : DraftEvent
+
     data class EventJoined(
         val eventName: String,
         val courseId: String? = null,
@@ -43,6 +48,7 @@ sealed interface DraftEvent {
         val pool: List<Int>,
         val complete: Boolean,
         val courseId: String? = null,
+        val savedDeck: SavedDeck? = null,
     ) : DraftEvent
 
     data class PackSeen(
@@ -69,6 +75,7 @@ data class DraftState(
     val eventName: String? = null,
     val courseId: String? = null,
     val draftId: String? = null,
+    val savedDeck: SavedDeck? = null,
     val pack: Int = 0,
     val pick: Int = 0,
     val packCards: List<Int> = emptyList(),
@@ -78,6 +85,11 @@ data class DraftState(
     val seen: Map<Pair<Int, Int>, List<Int>> = emptyMap(),
 ) {
     fun reduce(event: DraftEvent): DraftState = when (event) {
+        is DraftEvent.DeckSaved -> if (
+            phase == DraftPhase.COMPLETE && event.eventName == eventName &&
+            (event.courseId == null || event.courseId == courseId)
+        ) copy(savedDeck = event.deck) else this
+
         is DraftEvent.EventJoined -> {
             val resettingForNewEvent = isNewEvent(event.eventName, event.courseId)
             val base = if (resettingForNewEvent) DraftState() else this
@@ -106,6 +118,7 @@ data class DraftState(
                 pool = reconciled.cards,
                 poolOrderKnown = base.poolOrderKnown && reconciled.addedCardCount <= 1,
                 seen = base.recordSeen(event.pack, event.pick, event.packCards),
+                savedDeck = event.savedDeck ?: base.savedDeck,
             )
         }
 

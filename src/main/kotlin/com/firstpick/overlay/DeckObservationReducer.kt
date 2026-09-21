@@ -37,9 +37,8 @@ data class DeckObservationState internal constructor(
     val expectedNames: Set<String>,
     val knownCounts: Map<String, Int>,
     val totalCards: Int?,
+    internal val knownBasicCounts: Map<String, Int>,
     val failure: DeckObservationFailure?,
-    internal val lastVisibleRows: Map<String, Int>,
-    internal val lastVisibleCounts: Map<String, Int>,
 ) {
     val status: DeckObservationStatus
         get() = when {
@@ -73,14 +72,13 @@ class DeckObservationReducer(draftPoolBaseline: List<DeckCardCount>) {
         .toSortedMap(String.CASE_INSENSITIVE_ORDER)
     private val matcher = CanonicalCardNameMatcher(baselineCounts.keys)
 
-    /** Arena initially puts every drafted nonbasic into the main deck. */
+    /** Guidance can start after edits or a scroll; unseen cards have unknown counts. */
     fun initialState(): DeckObservationState = DeckObservationState(
         expectedNames = baselineCounts.keys,
-        knownCounts = baselineCounts,
+        knownCounts = emptyMap(),
         totalCards = null,
+        knownBasicCounts = emptyMap(),
         failure = null,
-        lastVisibleRows = emptyMap(),
-        lastVisibleCounts = emptyMap(),
     )
 
     fun reduce(
@@ -107,28 +105,34 @@ class DeckObservationReducer(draftPoolBaseline: List<DeckCardCount>) {
         val exact = merge(rows.counts, pool.counts)
         if (exact.failure != null) return state.failed(exact.failure)
 
-        val inferredCounts = inferUniqueVanishedRow(state, frame.totalCards, rows.counts, pool.counts, exact.counts)
-
-        val isFirstReadingWithRows = state.lastVisibleRows.isEmpty() && rows.counts.isNotEmpty()
-        val nextCounts = LinkedHashMap<String, Int>()
-        for (name in state.expectedNames) {
-            val exactCount = exact.counts[name]
-            val inferredCount = inferredCounts[name]
-            val count = when {
-                exactCount != null -> exactCount
-                inferredCount != null -> inferredCount
-                isFirstReadingWithRows -> 0
-                else -> state.knownCounts[name] ?: 0
-            }
-            nextCounts[name] = count
+        // A total change not explained by observed cards may be an off-screen edit.
+        // Never attribute it to a vanished row: scrolling and basic lands can do that too.
+        val basics = frame.visibleRows.filter { it.isBasicLand || isKnownBasicLandName(it.name) }
+            .associate { it.name to it.count }
+        if (basics.values.any { it <= 0 }) return state.failed(DeckObservationFailure(DeckObservationFailureKind.INVALID_COUNT))
+        val basicDelta = basics.entries.sumOf { (name, count) -> state.knownBasicCounts[name]?.let { count - it } ?: 0 }
+        val visibleDelta = basicDelta + exact.counts.entries.sumOf { (name, count) ->
+            state.knownCounts[name]?.let { count - it } ?: 0
+        }
+        val unexplainedChange = state.totalCards?.let { frame.totalCards - it != visibleDelta } ?: false
+        val nextCounts = if (unexplainedChange) linkedMapOf() else LinkedHashMap(state.knownCounts)
+        nextCounts.putAll(exact.counts)
+        val nextBasics = if (unexplainedChange) linkedMapOf() else LinkedHashMap(state.knownBasicCounts)
+        nextBasics.putAll(basics)
+        val accountedTotal = nextCounts.values.sum() + nextBasics.values.sum()
+        if (accountedTotal > frame.totalCards) {
+            return state.failed(DeckObservationFailure(DeckObservationFailureKind.INVALID_TOTAL))
+        }
+        // Only complete accounting proves unseen drafted cards are absent.
+        if (accountedTotal == frame.totalCards) {
+            state.expectedNames.forEach { nextCounts.putIfAbsent(it, 0) }
         }
         return DeckObservationState(
+            knownBasicCounts = nextBasics,
             expectedNames = state.expectedNames,
             knownCounts = nextCounts.toSortedMap(String.CASE_INSENSITIVE_ORDER),
             totalCards = frame.totalCards,
             failure = null,
-            lastVisibleRows = rows.counts,
-            lastVisibleCounts = exact.counts,
         )
     }
 
@@ -185,34 +189,6 @@ class DeckObservationReducer(draftPoolBaseline: List<DeckCardCount>) {
             merged.putIfAbsent(name, count)
         }
         return CountResolution(merged.toSortedMap(String.CASE_INSENSITIVE_ORDER))
-    }
-
-    private fun inferUniqueVanishedRow(
-        state: DeckObservationState,
-        totalCards: Int,
-        rows: Map<String, Int>,
-        pool: Map<String, Int>,
-        exact: Map<String, Int>,
-    ): Map<String, Int> {
-        val previousTotal = state.totalCards ?: return emptyMap()
-        val totalDelta = totalCards - previousTotal
-        if (totalDelta == 0) return emptyMap()
-
-        val missingRows = state.lastVisibleRows.keys - rows.keys - pool.keys
-        val vanished = missingRows.singleOrNull() ?: return emptyMap()
-        val consecutiveVisibleDelta = exact.entries.sumOf { (name, count) ->
-            state.lastVisibleCounts[name]?.let { count - it } ?: 0
-        }
-        val unexplainedDelta = totalDelta - consecutiveVisibleDelta
-        if (unexplainedDelta == 0) return emptyMap()
-
-        val retainedRowAnchors = state.lastVisibleRows.keys intersect rows.keys
-        if (retainedRowAnchors.isEmpty()) return emptyMap()
-        val previousCount = state.lastVisibleRows[vanished] ?: return emptyMap()
-        val inferredCount = previousCount + unexplainedDelta
-        val draftedCount = baselineCounts[vanished] ?: return emptyMap()
-        if (inferredCount !in 0..draftedCount) return emptyMap()
-        return mapOf(vanished to inferredCount)
     }
 
     private fun DeckObservationState.failed(failure: DeckObservationFailure): DeckObservationState =

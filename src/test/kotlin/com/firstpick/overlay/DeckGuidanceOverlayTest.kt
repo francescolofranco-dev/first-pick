@@ -11,7 +11,7 @@ class DeckGuidanceOverlayTest {
     @Test
     fun statusLabelsAndSemanticColorsStayExact() {
         assertEquals(
-            "Reading deck…" to DeckGuidanceOverlayPalette.ReadingAccent,
+            "Checking recent changes…" to DeckGuidanceOverlayPalette.ReadingAccent,
             statusPillStyle(DeckGuidanceStatus.READING).let { it.label to it.accent },
         )
         assertEquals(
@@ -100,7 +100,7 @@ class DeckGuidanceOverlayTest {
         val stale = listOf(DeckGuidanceVisualMark.AddCard(bounds))
 
         assertEquals(stale, DeckGuidanceOverlayModel(DeckGuidanceStatus.NEEDS_CHANGES, stale).renderableMarks())
-        assertEquals(emptyList(), DeckGuidanceOverlayModel(DeckGuidanceStatus.READING, stale).renderableMarks())
+        assertEquals(stale, DeckGuidanceOverlayModel(DeckGuidanceStatus.READING, stale).renderableMarks())
         assertEquals(emptyList(), DeckGuidanceOverlayModel(DeckGuidanceStatus.MATCHES, stale).renderableMarks())
         assertEquals(emptyList(), DeckGuidanceOverlayModel(DeckGuidanceStatus.UNABLE, stale).renderableMarks())
     }

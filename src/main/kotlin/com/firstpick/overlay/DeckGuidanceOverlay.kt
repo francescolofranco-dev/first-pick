@@ -42,10 +42,12 @@ data class DeckGuidanceOverlayModel(
     val remainingAdds: Int = 0,
     val remainingRemovals: Int = 0,
     val basicLandDelta: Int = 0,
+    val verifiedCards: Int = 0,
+    val expectedCards: Int = 0,
 ) {
-    /** Reading, success, and failure states never retain actionable marks. */
+    /** Partial readings only contain marks from the current verified visible cards. */
     fun renderableMarks(): List<DeckGuidanceVisualMark> =
-        if (status == DeckGuidanceStatus.NEEDS_CHANGES) marks.filter { mark ->
+        if (status == DeckGuidanceStatus.NEEDS_CHANGES || status == DeckGuidanceStatus.READING) marks.filter { mark ->
             mark.bounds.isValid() && (mark !is DeckGuidanceVisualMark.RemoveRow || mark.currentCount in 1..MAX_RENDERED_COUNT)
         } else {
             emptyList()
@@ -196,7 +198,9 @@ fun statusPillStyle(status: DeckGuidanceStatus): DeckGuidanceStatusPillStyle =
     statusPillStyle(DeckGuidanceOverlayModel(status))
 
 fun statusPillStyle(model: DeckGuidanceOverlayModel): DeckGuidanceStatusPillStyle = when (model.status) {
-    DeckGuidanceStatus.READING -> DeckGuidanceStatusPillStyle("Reading deck…", DeckGuidanceOverlayPalette.ReadingAccent)
+    DeckGuidanceStatus.READING -> DeckGuidanceStatusPillStyle(
+        if (model.expectedCards > 0) "Checking deck · ${model.verifiedCards}/${model.expectedCards} cards verified"
+        else "Checking recent changes…", DeckGuidanceOverlayPalette.ReadingAccent)
     DeckGuidanceStatus.NEEDS_CHANGES -> DeckGuidanceStatusPillStyle(model.needsChangesLabel(), DeckGuidanceOverlayPalette.RemoveAccent)
     DeckGuidanceStatus.MATCHES -> DeckGuidanceStatusPillStyle("Deck matches build", DeckGuidanceOverlayPalette.AddAccent)
     DeckGuidanceStatus.UNABLE -> DeckGuidanceStatusPillStyle("Unable to read deck", DeckGuidanceOverlayPalette.UnableAccent)

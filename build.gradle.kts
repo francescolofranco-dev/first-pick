@@ -106,6 +106,7 @@ val buildNativeHelpers = tasks.register<Exec>("buildNativeHelpers") {
         "src/main/resources/native/macos/window-locator",
         "src/main/resources/native/macos/window-capture",
         "src/main/resources/native/macos/vision-ocr",
+        "src/main/resources/native/macos/deck-reader",
     )
     workingDir(layout.projectDirectory)
     val nativeCommand = mutableListOf("bash", "native/macos/build.sh")

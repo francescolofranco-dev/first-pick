@@ -46,7 +46,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 internal val DeckOptionUi.deckBuildKey: String
-    get() = colors
+    get() = colors + "|" + (spells + lands).sortedBy { it.name }
+        .joinToString("|") { "${it.name}:${it.count}" }
 
 internal fun resolveDeckPreviewKey(
     optionKeys: List<String>,
@@ -60,6 +61,7 @@ internal fun resolveDeckPreviewKey(
 @Composable
 internal fun DeckBuilderPane(
     options: List<DeckOptionUi>,
+    savedDeck: com.firstpick.overlay.DeckSnapshot? = null,
     committedDeck: DeckOptionUi?,
     onUseDeck: (DeckOptionUi) -> Unit,
     onStopGuidance: () -> Unit,
@@ -78,7 +80,7 @@ internal fun DeckBuilderPane(
 
     val spellCount = sel.spells.sumOf { it.count }
     Column(Modifier.fillMaxSize()) {
-        Text("Draft complete — pick your build", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+        Text("Draft complete — choose your build", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(2.dp))
         Text(
             if (committedDeck == null) {
@@ -89,14 +91,27 @@ internal fun DeckBuilderPane(
             fontSize = 11.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+        savedDeck?.let { saved ->
+            val comparison = com.firstpick.overlay.DeckGuidance.evaluate(
+                com.firstpick.deckGuidanceTarget(committedDeck ?: sel),
+                com.firstpick.overlay.DeckReadState.Ready(saved),
+            )
+            Text(
+                savedDeckComparisonLabel(comparison),
+                fontSize = 11.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 6.dp),
+            )
+        }
         Spacer(Modifier.height(10.dp))
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            options.forEach { opt ->
+            options.forEachIndexed { index, opt ->
                 OptionCard(
                     opt = opt,
+                    recommended = index == 0,
                     previewed = opt.deckBuildKey == resolvedPreviewKey,
                     active = opt.deckBuildKey == committedKey,
                     onClick = { previewKey = opt.deckBuildKey },
@@ -285,7 +300,7 @@ private fun roleColor(role: String): Color = when (role) {
 }
 
 @Composable
-private fun OptionCard(opt: DeckOptionUi, previewed: Boolean, active: Boolean, onClick: () -> Unit) {
+private fun OptionCard(opt: DeckOptionUi, recommended: Boolean, previewed: Boolean, active: Boolean, onClick: () -> Unit) {
     Column(
         Modifier
             .width(160.dp)
@@ -308,9 +323,9 @@ private fun OptionCard(opt: DeckOptionUi, previewed: Boolean, active: Boolean, o
             .padding(12.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
-        if (active) {
+        if (active || recommended) {
             Text(
-                "GUIDANCE ACTIVE",
+                if (active) "GUIDANCE ACTIVE" else "RECOMMENDED",
                 fontSize = 9.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary,
@@ -357,4 +372,11 @@ private fun TierBadge(tier: String) {
     ) {
         Text(tier, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimary)
     }
+}
+
+internal fun savedDeckComparisonLabel(result: com.firstpick.overlay.DeckGuidanceResult): String {
+    val summary = if (result.status == com.firstpick.overlay.DeckGuidanceStatus.MATCHES) "matches this build"
+    else "${result.remainingRemovals} cuts · ${result.remainingAdds} adds" +
+        if (result.basicLandDelta != 0) " · adjust basic lands by ${result.basicLandDelta}" else ""
+    return "Last saved deck: $summary. Unsaved edits are checked in Arena."
 }

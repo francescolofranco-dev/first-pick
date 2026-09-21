@@ -23,6 +23,7 @@ local.properties
 /src/main/resources/native/macos/window-locator
 /src/main/resources/native/macos/window-capture
 /src/main/resources/native/macos/vision-ocr
+/src/main/resources/native/macos/deck-reader
 
 # Eclipse/stray compiled output
 /bin/

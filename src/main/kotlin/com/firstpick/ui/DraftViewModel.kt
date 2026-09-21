@@ -381,6 +381,16 @@ class DraftViewModel(
             setGuide = setGuide,
             guideLoading = state.setCode != null && setGuide == null,
             draftPool = pool.toDeckSpells(),
+            sessionKey = state.courseId ?: state.draftId ?: state.eventName,
+            savedDeck = if (loaded) state.savedDeck?.let { saved ->
+                val cards = saved.mainDeck.flatMap { (id, count) -> List(count) { repo.resolve(id) } }.toDeckSpells()
+                // Unresolved IDs must not be presented as an exact saved-deck comparison.
+                if (cards.any { it.name.startsWith("Unknown") || it.name.startsWith("Card #") }) null
+                else com.firstpick.overlay.DeckSnapshot(
+                    cards.map { com.firstpick.overlay.DeckCardCount(it.name, it.count, it.isBasicLand) },
+                    saved.mainDeck.values.sum(),
+                )
+            } else null,
             deckSoFar = liveProjection?.toUi(),
             deckSoFarCuts = cutsOf(pool, liveProjection),
             ratingsFormatChoice = formatChoice,

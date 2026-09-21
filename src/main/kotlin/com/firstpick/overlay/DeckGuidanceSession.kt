@@ -5,8 +5,7 @@ import java.awt.image.BufferedImage
 
 /**
  * Stateful bridge from one recognized Arena frame to the domain guidance and
- * its visible marks. It starts from Arena's post-draft invariant: every drafted
- * nonbasic card is initially in the main deck.
+ * its visible marks. Unobserved counts stay unknown until verified.
  */
 internal class DeckGuidanceSession(
     target: List<DeckCardCount>,
@@ -35,8 +34,9 @@ internal class DeckGuidanceSession(
         screen: DeckBuilderScreenObservation,
     ): DeckGuidanceOverlayModel {
         val visibleRows = screen.deckRows.mapNotNull { row ->
-            val name = canonicalName(row.cardName) ?: return@mapNotNull null
-            VisibleExactCardCount(name, row.count)
+            val basic = BASIC_LANDS.match(row.cardName) as? CanonicalCardNameMatch.Matched
+            if (basic != null) VisibleExactCardCount(basic.name, row.count, isBasicLand = true)
+            else canonicalName(row.cardName)?.let { VisibleExactCardCount(it, row.count) }
         }
         val visibleRowNames = visibleRows.mapTo(HashSet(), VisibleExactCardCount::name)
         val visiblePool = screen.poolCardTitles.mapNotNull { card ->
@@ -62,11 +62,16 @@ internal class DeckGuidanceSession(
             ),
         )
         val guidance = DeckGuidance.evaluate(target, observationState.asDeckReadState())
-        if (guidance.status == DeckGuidanceStatus.READING || guidance.status == DeckGuidanceStatus.UNABLE) {
+        if (guidance.status == DeckGuidanceStatus.UNABLE) {
             return DeckGuidanceOverlayModel(guidance.status).also { logTransition(screen, guidance, it) }
         }
 
-        val cards = guidance.cards.associateBy(CardGuidance::name)
+        // Partial readings may mark verified visible cards, but never report exact totals.
+        val targets = target.filterNot { it.isBasicLand }.groupingBy { it.name }
+            .fold(0) { count, card -> count + card.count }
+        val cards = observationState.knownCounts.mapValues { (name, count) ->
+            CardGuidance(name, targets[name] ?: 0, count)
+        }
         val marks = buildList {
             for (row in screen.deckRows) {
                 val name = canonicalName(row.cardName) ?: continue
@@ -90,7 +95,14 @@ internal class DeckGuidanceSession(
             remainingAdds = guidance.remainingAdds,
             remainingRemovals = guidance.remainingRemovals,
             basicLandDelta = guidance.basicLandDelta,
+            verifiedCards = observationState.knownCounts.size,
+            expectedCards = observationState.expectedNames.size,
         ).also { logTransition(screen, guidance, it) }
+    }
+
+    @Synchronized
+    fun invalidate() {
+        observationState = reducer.initialState()
     }
 
     @Synchronized

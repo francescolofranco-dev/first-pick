@@ -75,8 +75,9 @@ manabase with an exact basic-land split.
 
 **Build it in Arena.** Once a build is confirmed, FirstPick moves the guidance directly
 onto Arena's Limited deck builder. Excess visible deck rows get a strong red outline;
-visible pool cards that still need to be added get a green tint. The global status still
-reports that the deck needs changes when the remaining mismatch is off-screen. Basic-land
+visible pool cards that still need to be added get a green tint. Visible cards can be marked while the rest of the deck is still being checked. The
+status reports exact remaining changes only after the nonbasic counts are verified;
+unseen cards are never assumed absent. Unreadable or outdated frames clear instructions. Basic-land
 composition is left to Arena; exact drafted nonbasic counts and a 40-card total determine
 when the deck matches.
 
@@ -127,7 +128,13 @@ when the deck matches.
 
 Deck guidance currently supports Arena's vertical compact deck list with the sideboard
 collapsed. It marks only cards and rows visible on the current pool page or deck-list
-scroll position; the global status still includes tracked off-screen cards.
+scroll position. A persistent native worker reads the deck panel and pool title bands,
+reusing OCR for unchanged regions. Returning from another app or an unreadable builder
+requires fresh verification. Scroll through the deck or pool to expose unknown cards.
+
+The build page also compares your chosen build with Arena's **last saved deck**, using
+server-confirmed course data from the log. This comparison is explicitly separate from
+unsaved on-screen edits. The chosen build stays fixed until you choose another build.
 
 ## Download & install
 

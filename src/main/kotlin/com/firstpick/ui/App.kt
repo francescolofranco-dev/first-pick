@@ -148,6 +148,7 @@ fun App(
                                     AppScreen.DECK_BUILDER -> when {
                                         state.deckOptions.isNotEmpty() -> DeckBuilderPane(
                                             options = state.deckOptions,
+                                            savedDeck = state.savedDeck,
                                             committedDeck = committedDeck,
                                             onUseDeck = onUseDeck,
                                             onStopGuidance = onStopGuidance,

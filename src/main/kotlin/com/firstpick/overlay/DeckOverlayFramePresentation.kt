@@ -8,56 +8,8 @@ internal sealed interface DeckOverlayFrameAttempt {
     data object OutsideBuilder : DeckOverlayFrameAttempt
     data class Recognized(
         val model: DeckGuidanceOverlayModel,
-        val layout: DeckOverlayLayoutSnapshot? = null,
     ) : DeckOverlayFrameAttempt
 }
-
-internal data class DeckOverlayRowAnchor(
-    val cardName: String,
-    val centerY: Double,
-)
-
-/** Row identities and positions used only to reject degraded OCR frames. */
-internal data class DeckOverlayLayoutSnapshot(
-    val rows: List<DeckOverlayRowAnchor>,
-) {
-    fun isStableSubsetOf(previous: DeckOverlayLayoutSnapshot): Boolean {
-        if (rows.size >= previous.rows.size || rows.isEmpty()) return false
-
-        val previousByName = previous.rows.associateBy { it.cardName.stableRowKey() }
-        val matching = rows.mapNotNull { row ->
-            previousByName[row.cardName.stableRowKey()]?.let { old -> row to old }
-        }
-        val requiredMatches = maxOf(MIN_STABLE_ROWS, (rows.size * 3 + 4) / 5)
-        return matching.size >= requiredMatches &&
-            matching.all { (current, old) -> kotlin.math.abs(current.centerY - old.centerY) <= ROW_Y_TOLERANCE }
-    }
-
-    fun isSameLayoutAs(previous: DeckOverlayLayoutSnapshot): Boolean {
-        if (rows.isEmpty() || previous.rows.isEmpty()) return false
-        val previousByName = previous.rows.associateBy { it.cardName.stableRowKey() }
-        val matching = rows.mapNotNull { row ->
-            previousByName[row.cardName.stableRowKey()]?.let { old -> row to old }
-        }
-        val smallerLayoutSize = minOf(rows.size, previous.rows.size)
-        val requiredMatches = maxOf(MIN_STABLE_ROWS, (smallerLayoutSize * 3 + 4) / 5)
-        return matching.size >= requiredMatches &&
-            matching.all { (current, old) -> kotlin.math.abs(current.centerY - old.centerY) <= ROW_Y_TOLERANCE }
-    }
-
-    private companion object {
-        const val MIN_STABLE_ROWS = 2
-        const val ROW_Y_TOLERANCE = 0.008
-    }
-}
-
-internal fun DeckBuilderScreenObservation.overlayLayoutSnapshot(): DeckOverlayLayoutSnapshot =
-    DeckOverlayLayoutSnapshot(
-        deckRows.map { row -> DeckOverlayRowAnchor(row.cardName, row.bounds.centerY) },
-    )
-
-private fun String.stableRowKey(): String =
-    lowercase().filter(Char::isLetterOrDigit)
 
 internal enum class DeckOverlayUnreadableReason {
     CAPTURE_OR_OCR,
@@ -70,7 +22,6 @@ internal sealed interface DeckOverlayPresentationTransition {
     data object Acquired : DeckOverlayPresentationTransition
     data class Unreadable(
         val reason: DeckOverlayUnreadableReason,
-        val retainingLastGood: Boolean,
     ) : DeckOverlayPresentationTransition
 
     data class GraceExpired(val reason: DeckOverlayUnreadableReason) : DeckOverlayPresentationTransition
@@ -82,8 +33,6 @@ internal data class DeckOverlayPresentationState(
     val model: DeckGuidanceOverlayModel,
     val contentVisible: Boolean,
     val builderAcquired: Boolean,
-    val lastGoodModel: DeckGuidanceOverlayModel?,
-    val lastGoodLayout: DeckOverlayLayoutSnapshot?,
     val unreadableSinceMs: Long?,
     val unreadableReason: DeckOverlayUnreadableReason?,
     val unreadableAttempts: Int,
@@ -95,8 +44,6 @@ internal data class DeckOverlayPresentationState(
             model = DeckGuidanceOverlayModel(DeckGuidanceStatus.READING),
             contentVisible = true,
             builderAcquired = false,
-            lastGoodModel = null,
-            lastGoodLayout = null,
             unreadableSinceMs = null,
             unreadableReason = null,
             unreadableAttempts = 0,
@@ -111,19 +58,10 @@ internal data class DeckOverlayPresentationUpdate(
     val transitions: List<DeckOverlayPresentationTransition> = emptyList(),
 )
 
-/**
- * Pure presentation state for the polling loop.
- *
- * A positively identified builder shell is stronger evidence than missing rows:
- * hover previews and animations may obscure every row, so the last trusted marks
- * remain visible for as long as that shell is present. Capture/OCR and guidance
- * failures get a bounded stale-frame grace. Only repeated, successfully read
- * frames outside the builder can hide the overlay.
- */
+/** Instructions require current evidence. Grace keeps only the status pill visible. */
 internal object DeckOverlayPresentationReducer {
     const val UNREADABLE_GRACE_MS = 1_200L
     const val OUTSIDE_BUILDER_GRACE_MS = 900L
-    const val MIN_UNREADABLE_ATTEMPTS = 3
     const val MIN_OUTSIDE_BUILDER_ATTEMPTS = 3
 
     fun reduce(
@@ -138,7 +76,6 @@ internal object DeckOverlayPresentationReducer {
                 reason = DeckOverlayUnreadableReason.ROWS_OBSCURED,
                 nowMs = nowMs,
                 acquiresBuilder = true,
-                retainIndefinitely = true,
             )
 
             DeckOverlayFrameAttempt.UnsupportedLayout -> outsideBuilder(state, nowMs)
@@ -163,7 +100,6 @@ internal object DeckOverlayPresentationReducer {
             reason = DeckOverlayUnreadableReason.CAPTURE_OR_OCR,
             nowMs = nowMs,
             acquiresBuilder = false,
-            retainIndefinitely = false,
         )
     }
 
@@ -173,24 +109,8 @@ internal object DeckOverlayPresentationReducer {
         nowMs: Long,
     ): DeckOverlayPresentationUpdate {
         val model = attempt.model
-        if (model.status == DeckGuidanceStatus.READING || model.status == DeckGuidanceStatus.UNABLE) {
-            return unreadable(
-                state = state,
-                reason = DeckOverlayUnreadableReason.GUIDANCE_UNAVAILABLE,
-                nowMs = nowMs,
-                acquiresBuilder = true,
-                retainIndefinitely = false,
-            )
-        }
-
-        if (shouldRetainTrustedModel(state, attempt)) {
-            return unreadable(
-                state = state,
-                reason = DeckOverlayUnreadableReason.ROWS_OBSCURED,
-                nowMs = nowMs,
-                acquiresBuilder = true,
-                retainIndefinitely = true,
-            )
+        if (model.status == DeckGuidanceStatus.UNABLE) {
+            return unreadable(state, DeckOverlayUnreadableReason.GUIDANCE_UNAVAILABLE, nowMs, true)
         }
 
         val transitions = buildList {
@@ -202,8 +122,6 @@ internal object DeckOverlayPresentationReducer {
                 model = model,
                 contentVisible = true,
                 builderAcquired = true,
-                lastGoodModel = model,
-                lastGoodLayout = attempt.layout,
                 unreadableSinceMs = null,
                 unreadableReason = null,
                 unreadableAttempts = 0,
@@ -214,48 +132,23 @@ internal object DeckOverlayPresentationReducer {
         )
     }
 
-    private fun shouldRetainTrustedModel(
-        state: DeckOverlayPresentationState,
-        attempt: DeckOverlayFrameAttempt.Recognized,
-    ): Boolean {
-        val previousModel = state.lastGoodModel ?: return false
-        val previousLayout = state.lastGoodLayout ?: return false
-        val currentLayout = attempt.layout ?: return false
-        if (!previousModel.hasSameGuidanceSummary(attempt.model)) return false
-
-        val previousMarks = previousModel.renderableMarks()
-        val currentMarks = attempt.model.renderableMarks()
-        val marksAreStableSubset = currentMarks.size <= previousMarks.size &&
-            currentMarks.all { current -> previousMarks.any { old -> current.sameVisualMarkAs(old) } }
-        if (currentLayout.isStableSubsetOf(previousLayout) && marksAreStableSubset) return true
-
-        return previousMarks.isNotEmpty() && currentMarks.size < previousMarks.size &&
-            currentLayout.isSameLayoutAs(previousLayout) &&
-            marksAreStableSubset
-    }
-
     private fun unreadable(
         state: DeckOverlayPresentationState,
         reason: DeckOverlayUnreadableReason,
         nowMs: Long,
         acquiresBuilder: Boolean,
-        retainIndefinitely: Boolean,
     ): DeckOverlayPresentationUpdate {
-        val reasonChanged = state.unreadableReason != reason
-        val sinceMs = if (reasonChanged) nowMs else state.unreadableSinceMs ?: nowMs
-        val attempts = if (reasonChanged) 1 else state.unreadableAttempts + 1
-        val graceExpired = !retainIndefinitely &&
-            attempts >= MIN_UNREADABLE_ATTEMPTS &&
-            nowMs - sinceMs >= UNREADABLE_GRACE_MS
-        val nextModel = when {
-            retainIndefinitely -> state.lastGoodModel ?: DeckGuidanceOverlayModel(DeckGuidanceStatus.READING)
-            !graceExpired -> state.lastGoodModel ?: DeckGuidanceOverlayModel(DeckGuidanceStatus.READING)
-            else -> DeckGuidanceOverlayModel(DeckGuidanceStatus.UNABLE)
-        }
+        val sinceMs = state.unreadableSinceMs ?: nowMs
+        val attempts = state.unreadableAttempts + 1
+        val graceExpired = nowMs - sinceMs >= UNREADABLE_GRACE_MS
+        // Losing evidence immediately removes instructions; grace affects only the label.
+        val nextModel = DeckGuidanceOverlayModel(
+            if (graceExpired) DeckGuidanceStatus.UNABLE else DeckGuidanceStatus.READING,
+        )
         val transitions = buildList {
             if (acquiresBuilder && !state.builderAcquired) add(DeckOverlayPresentationTransition.Acquired)
             if (state.unreadableReason == null) {
-                add(DeckOverlayPresentationTransition.Unreadable(reason, state.lastGoodModel != null))
+                add(DeckOverlayPresentationTransition.Unreadable(reason))
             }
             if (graceExpired && state.model.status != DeckGuidanceStatus.UNABLE) {
                 add(DeckOverlayPresentationTransition.GraceExpired(reason))
@@ -290,6 +183,7 @@ internal object DeckOverlayPresentationReducer {
                     unreadableSinceMs = null,
                     unreadableReason = null,
                     unreadableAttempts = 0,
+                    model = DeckGuidanceOverlayModel(DeckGuidanceStatus.READING),
                     outsideBuilderSinceMs = sinceMs,
                     outsideBuilderAttempts = attempts,
                 ),
@@ -306,8 +200,6 @@ internal object DeckOverlayPresentationReducer {
                 model = DeckGuidanceOverlayModel(DeckGuidanceStatus.READING),
                 contentVisible = false,
                 builderAcquired = false,
-                lastGoodModel = null,
-                lastGoodLayout = null,
                 unreadableSinceMs = null,
                 unreadableReason = null,
                 unreadableAttempts = 0,
@@ -318,25 +210,6 @@ internal object DeckOverlayPresentationReducer {
         )
     }
 }
-
-private fun DeckGuidanceOverlayModel.hasSameGuidanceSummary(other: DeckGuidanceOverlayModel): Boolean =
-    status == other.status &&
-        remainingAdds == other.remainingAdds &&
-        remainingRemovals == other.remainingRemovals &&
-        basicLandDelta == other.basicLandDelta
-
-private fun DeckGuidanceVisualMark.sameVisualMarkAs(other: DeckGuidanceVisualMark): Boolean {
-    if (this::class != other::class) return false
-    if (this is DeckGuidanceVisualMark.RemoveRow && other is DeckGuidanceVisualMark.RemoveRow &&
-        currentCount != other.currentCount
-    ) {
-        return false
-    }
-    return kotlin.math.abs(bounds.centerX - other.bounds.centerX) <= MARK_POSITION_TOLERANCE &&
-        kotlin.math.abs(bounds.centerY - other.bounds.centerY) <= MARK_POSITION_TOLERANCE
-}
-
-private const val MARK_POSITION_TOLERANCE = 0.008
 
 internal const val DECK_OVERLAY_FRAME_START_TARGET_MS = 300L
 internal const val DECK_OVERLAY_MIN_REST_MS = 50L

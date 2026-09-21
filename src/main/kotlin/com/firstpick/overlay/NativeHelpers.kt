@@ -17,8 +17,15 @@ object NativeHelpers {
                 ?: return null
             val dir = AppPaths.appSupport.resolve("bin").toFile().apply { mkdirs() }
             val target = File(dir, name)
-            if (!target.exists() || target.length() != bytes.size.toLong()) {
-                target.writeBytes(bytes)
+            if (!target.exists() || !target.readBytes().contentEquals(bytes)) {
+                val replacement = File.createTempFile("$name-", ".tmp", dir)
+                try {
+                    replacement.writeBytes(bytes)
+                    replacement.setExecutable(true)
+                    java.nio.file.Files.move(replacement.toPath(), target.toPath(),
+                        java.nio.file.StandardCopyOption.ATOMIC_MOVE,
+                        java.nio.file.StandardCopyOption.REPLACE_EXISTING)
+                } finally { replacement.delete() }
             }
             target.setExecutable(true)
             target

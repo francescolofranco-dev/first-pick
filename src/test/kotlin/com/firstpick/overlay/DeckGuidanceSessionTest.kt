@@ -110,7 +110,7 @@ class DeckGuidanceSessionTest {
         )
 
         assertTrue(partial.status != DeckGuidanceStatus.UNABLE)
-        assertEquals(2, session.currentCount("Stock Up"))
+        assertEquals(null, session.currentCount("Stock Up"))
 
         val recovered = session.observe(pipImage(1, drafted = 2), screen(total = 40, rowCount = 1))
         assertEquals(DeckGuidanceStatus.MATCHES, recovered.status)
@@ -181,6 +181,22 @@ class DeckGuidanceSessionTest {
     fun onlyTheFortyCardLimitedBuilderIsEligibleForGuidance() {
         assertTrue(isSupportedLimitedDeckBuilder(screen(total = 40, rowCount = 1)))
         assertTrue(!isSupportedLimitedDeckBuilder(screen(total = 60, rowCount = 1).copy(minimumDeckSize = 60)))
+    }
+
+    @Test
+    fun scrolledInitialDeckMarksVisibleExcessWithoutInventingGlobalAdds() {
+        val session = DeckGuidanceSession(
+            target = listOf(DeckCardCount("Stock Up", 1), DeckCardCount("Offscreen Card", 1)),
+            draftPool = listOf(DeckCardCount("Stock Up", 2), DeckCardCount("Offscreen Card", 1)),
+        )
+        val partial = session.observe(pipImage(2, drafted = 2), screen(total = 40, rowCount = 2))
+        assertEquals(DeckGuidanceStatus.READING, partial.status)
+        assertEquals(0, partial.remainingAdds)
+        assertEquals(0, partial.remainingRemovals)
+        assertIs<DeckGuidanceVisualMark.RemoveRow>(partial.renderableMarks().single())
+        assertEquals(null, session.currentCount("Offscreen Card"))
+        session.invalidate()
+        assertEquals(null, session.currentCount("Stock Up"))
     }
 
     private fun screen(

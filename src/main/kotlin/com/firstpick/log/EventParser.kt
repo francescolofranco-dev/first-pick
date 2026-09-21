@@ -2,6 +2,8 @@ package com.firstpick.log
 
 import com.firstpick.model.DraftEvent
 import com.firstpick.model.DraftFormat
+import com.firstpick.model.SavedDeck
+import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -16,6 +18,8 @@ class EventParser(
 ) {
     fun parse(line: String): DraftEvent? {
         if ('{' !in line) return null
+        // A submission request may fail; only server course snapshots confirm a save.
+        if (LogMatch.contains(line, "EventSetDeck") && "==>" in line) return null
 
         if (LogMatch.contains(line, "DraftPack")) {
             parseBotDraftSnapshot(line)?.let { return it }
@@ -34,10 +38,42 @@ class EventParser(
             parseCourseSnapshot(line)?.let { return it }
         }
 
+        if (LogMatch.contains(line, "CourseDeck")) {
+            parseSavedDeckResponse(line)?.let { return it }
+        }
+
         if (LogMatch.contains(line, "EventName") || LogMatch.contains(line, "InternalEventName")) {
             parseEventJoined(line)?.let { return it }
         }
         return null
+    }
+
+    private fun parseSavedDeckResponse(line: String): DraftEvent.DeckSaved? {
+        val outer = decodeObject(line) ?: return null
+        if ("Courses" in outer) return null
+        val course = (outer["Course"] as? JsonObject) ?: outer
+        val eventName = course.findString("InternalEventName") ?: return null
+        if (DraftFormat.fromEventName(eventName) == DraftFormat.UNKNOWN) return null
+        val deck = parseSavedDeck(course["CourseDeck"]) ?: return null
+        return DraftEvent.DeckSaved(eventName, deck, course.findString("CourseId"))
+    }
+
+    private fun parseSavedDeck(element: JsonElement?): SavedDeck? {
+        val deck = element as? JsonObject ?: return null
+        fun counts(key: String): Map<Int, Int>? {
+            val entries = deck[key] as? JsonArray ?: return null
+            if (entries.size > 250) return null
+            val result = linkedMapOf<Int, Int>()
+            for (entry in entries) {
+                val card = entry as? JsonObject ?: return null
+                val id = (card["cardId"] as? JsonPrimitive)?.intOrNull ?: return null
+                val count = (card["quantity"] as? JsonPrimitive)?.intOrNull ?: return null
+                if (id <= 0 || count !in 1..250) return null
+                result[id] = (result[id] ?: 0) + count
+            }
+            return result.takeIf { it.values.sum() <= 250 }
+        }
+        return SavedDeck(counts("MainDeck") ?: return null, counts("Sideboard") ?: return null)
     }
 
     private fun parseEventJoined(line: String): DraftEvent.EventJoined? {
@@ -81,6 +117,7 @@ class EventParser(
                 pool = cardPool,
                 complete = isComplete,
                 courseId = course.findString("CourseId"),
+                savedDeck = parseSavedDeck(course["CourseDeck"]),
             )
         }
         return null

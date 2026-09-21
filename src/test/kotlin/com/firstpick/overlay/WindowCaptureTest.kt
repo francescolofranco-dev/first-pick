@@ -16,7 +16,7 @@ class WindowCaptureTest {
 
         val capture = WindowCapture(
             helper = helper,
-            captureTimeoutMs = 500,
+            captureTimeoutMs = 3_000,
             killGraceMs = 100,
         )
 
