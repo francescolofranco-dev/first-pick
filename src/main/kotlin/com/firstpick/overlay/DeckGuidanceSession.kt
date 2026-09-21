@@ -78,7 +78,7 @@ internal class DeckGuidanceSession(
             for (row in screen.deckRows) {
                 val name = canonicalName(row.cardName) ?: continue
                 val card = cards[name] ?: continue
-                card.action.toVisualMark(row.bounds, currentCount = row.count)?.let(::add)
+                card.action.toVisualMark(row.guidanceBounds, currentCount = row.count)?.let(::add)
             }
             for (poolCard in screen.poolCardTitles) {
                 val name = canonicalName(poolCard.cardName) ?: continue

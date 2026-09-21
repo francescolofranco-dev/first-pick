@@ -146,6 +146,8 @@ private fun RemoveRowMark(rect: GuidanceViewportRect) {
         Modifier
             .offset(rect.left.dp, rect.top.dp)
             .size(rect.width.dp, rect.height.dp)
+            .clip(ROW_SHAPE)
+            .background(DeckGuidanceOverlayPalette.RemoveTint)
             .border(ROW_OUTLINE_WIDTH, DeckGuidanceOverlayPalette.RemoveOutline, ROW_SHAPE),
     )
 }
@@ -234,10 +236,11 @@ private fun DeckGuidanceOverlayModel.needsChangesLabel(): String {
 object DeckGuidanceOverlayPalette {
     val RemoveAccent = Color(0xFFFF4D5E)
     val RemoveOutline = Color(0xFFFF4D5E)
+    val RemoveTint = Color(0x30FF4D5E)
 
     val AddAccent = Color(0xFF50D890)
     val AddOutline = Color(0xE650D890)
-    val AddTint = Color(0x2450D890)
+    val AddTint = Color(0x3050D890)
 
     val ReadingAccent = Color(0xFFFFC857)
     val UnableAccent = Color(0xFFA8AFB8)
