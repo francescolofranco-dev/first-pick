@@ -92,13 +92,6 @@ class DeckBuilderScreenInterpreterTest {
             result.deckRows.map { it.cardName },
         )
         assertEquals(listOf(4, 2, 3), result.deckRows.map { it.count })
-        val highlight = result.deckRows.first().guidanceBounds
-        assertTrue(highlight.x > 0.807, "Quantity badge must be outside the highlight")
-        assertTrue(highlight.x < 0.818, "Name text must be inside the highlight")
-        assertEquals(0.289, highlight.centerY, 0.000001)
-        assertTrue(highlight.isValid())
-        assertTrue(highlight.bottom < result.deckRows[1].guidanceBounds.y)
-
         assertEquals(listOf("Stock Up", "Stockman, Mad Fly-entist", "Baxter Stockman"), result.poolCardTitles.map { it.cardName })
     }
 

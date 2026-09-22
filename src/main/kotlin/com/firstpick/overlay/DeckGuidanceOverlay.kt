@@ -33,6 +33,7 @@ sealed interface DeckGuidanceVisualMark {
 
     data class AddCard(
         override val bounds: NormalizedRect,
+        val inDeckList: Boolean = false,
     ) : DeckGuidanceVisualMark
 }
 
@@ -108,8 +109,8 @@ fun DeckGuidanceOverlay(
         for (mark in model.renderableMarks()) {
             val rect = mark.bounds.inViewport(viewportWidth.value, viewportHeight.value) ?: continue
             when (mark) {
-                is DeckGuidanceVisualMark.RemoveRow -> RemoveRowMark(rect)
-                is DeckGuidanceVisualMark.AddCard -> AddCardMark(rect)
+                is DeckGuidanceVisualMark.RemoveRow -> ActionBadge(rect, adding = false, inDeckList = true)
+                is DeckGuidanceVisualMark.AddCard -> ActionBadge(rect, adding = true, inDeckList = mark.inDeckList)
             }
         }
         StatusPill(
@@ -140,28 +141,31 @@ fun DeckGuidanceOverlayPixels(
     }
 }
 
+/** Compact labels use a row's center or a pool card's top, never trace Arena's chrome. */
 @Composable
-private fun RemoveRowMark(rect: GuidanceViewportRect) {
+private fun ActionBadge(rect: GuidanceViewportRect, adding: Boolean, inDeckList: Boolean) {
+    val height = if (inDeckList) rect.height.coerceIn(14f, 22f) else 22f
+    val width = 54f
+    val left = if (inDeckList) rect.left - width - 6f else rect.left
+    val top = if (inDeckList) rect.top + (rect.height - height) / 2f else rect.top - height - 4f
+    val accent = if (adding) DeckGuidanceOverlayPalette.AddAccent else DeckGuidanceOverlayPalette.RemoveAccent
     Box(
         Modifier
-            .offset(rect.left.dp, rect.top.dp)
-            .size(rect.width.dp, rect.height.dp)
-            .clip(ROW_SHAPE)
-            .background(DeckGuidanceOverlayPalette.RemoveTint)
-            .border(ROW_OUTLINE_WIDTH, DeckGuidanceOverlayPalette.RemoveOutline, ROW_SHAPE),
-    )
-}
-
-@Composable
-private fun AddCardMark(rect: GuidanceViewportRect) {
-    Box(
-        Modifier
-            .offset(rect.left.dp, rect.top.dp)
-            .size(rect.width.dp, rect.height.dp)
-            .clip(CARD_SHAPE)
-            .background(DeckGuidanceOverlayPalette.AddTint)
-            .border(CARD_OUTLINE_WIDTH, DeckGuidanceOverlayPalette.AddOutline, CARD_SHAPE),
-    )
+            .offset(left.coerceAtLeast(0f).dp, top.coerceAtLeast(0f).dp)
+            .size(width.dp, height.dp)
+            .background(DeckGuidanceOverlayPalette.PillBackground, BADGE_SHAPE)
+            .border(1.dp, accent, BADGE_SHAPE),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = if (adding) "+ Add" else "− Cut",
+            color = accent,
+            fontSize = (height * 0.55f).sp,
+            lineHeight = (height * 0.65f).sp,
+            fontWeight = FontWeight.Bold,
+            maxLines = 1,
+        )
+    }
 }
 
 @Composable
@@ -235,12 +239,8 @@ private fun DeckGuidanceOverlayModel.needsChangesLabel(): String {
 
 object DeckGuidanceOverlayPalette {
     val RemoveAccent = Color(0xFFFF4D5E)
-    val RemoveOutline = Color(0xFFFF4D5E)
-    val RemoveTint = Color(0x30FF4D5E)
 
     val AddAccent = Color(0xFF50D890)
-    val AddOutline = Color(0xE650D890)
-    val AddTint = Color(0x3050D890)
 
     val ReadingAccent = Color(0xFFFFC857)
     val UnableAccent = Color(0xFFA8AFB8)
@@ -248,11 +248,8 @@ object DeckGuidanceOverlayPalette {
     val PillText = Color(0xFFF7F1E8)
 }
 
-private val ROW_SHAPE = RoundedCornerShape(7.dp)
-private val CARD_SHAPE = RoundedCornerShape(9.dp)
+private val BADGE_SHAPE = RoundedCornerShape(5.dp)
 private val PILL_SHAPE = RoundedCornerShape(999.dp)
 private const val STATUS_TOP_FRACTION = 0.115f
-private val ROW_OUTLINE_WIDTH = 2.dp
-private val CARD_OUTLINE_WIDTH = 2.dp
 private val PILL_OUTLINE_WIDTH = 1.dp
 private const val MAX_RENDERED_COUNT = 99

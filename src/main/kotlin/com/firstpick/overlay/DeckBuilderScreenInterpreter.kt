@@ -10,8 +10,6 @@ data class VisibleDeckRowObservation(
     val bounds: NormalizedRect,
     val textBounds: NormalizedRect,
     val confidence: Double,
-    /** Name-strip highlight, excluding the quantity badge. */
-    val guidanceBounds: NormalizedRect = bounds,
 )
 
 data class VisiblePoolCardTitleObservation(
@@ -121,17 +119,6 @@ object DeckBuilderScreenInterpreter {
                 bounds = NormalizedRect(panelLeft, top, panelRight - panelLeft, rowHeight),
                 textBounds = row.textBounds,
                 confidence = row.confidence,
-                guidanceBounds = run {
-                    // Prefer the name's OCR box: the quantity glyph can have a different baseline.
-                    // Combined OCR lines use the observed row pitch to exclude the quantity gutter.
-                    val pixelAspect = frame.pixelHeight.toDouble() / frame.pixelWidth
-                    val name = row.nameTextBounds
-                    val left = name?.let { it.x - pitch * pixelAspect * 0.18 }
-                        ?: (alignedX + pitch * pixelAspect * 0.85)
-                    val center = name?.centerY ?: row.textBounds.centerY
-                    val height = minOf(pitch * 0.84, maxOf(rowHeight, (name?.height ?: textHeight) * 1.35))
-                    NormalizedRect(left, center - height / 2, panelRight - left, height)
-                },
             )
         }
 
@@ -173,7 +160,6 @@ object DeckBuilderScreenInterpreter {
         val name: String,
         val prefix: ScreenTextObservation,
         val textBounds: NormalizedRect,
-        val nameTextBounds: NormalizedRect?,
         val confidence: Double,
     )
 
@@ -226,8 +212,7 @@ object DeckBuilderScreenInterpreter {
         val textBounds = used.fold(prefix.bounds) { bounds, observation -> bounds.union(observation.bounds) }
         val ocrConfidence = used.map(ScreenTextObservation::confidence).average()
         val countPenalty = if (countToken.all(Char::isDigit)) 1.0 else AMBIGUOUS_ONE_PENALTY
-        val nameTextBounds = if (initialName.isEmpty()) extra.firstOrNull()?.bounds else null
-        return ParsedPrefix(count, name, prefix, textBounds, nameTextBounds, ocrConfidence * countPenalty)
+        return ParsedPrefix(count, name, prefix, textBounds, ocrConfidence * countPenalty)
     }
 
     private fun findPoolTitles(
