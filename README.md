@@ -195,11 +195,13 @@ From your up-to-date repository checkout on macOS:
 
 ```bash
 ./gradlew buildProduction      # compile native helpers, run tests, and build FirstPick.app
-./gradlew runProduction        # do the same, then open the newly built app
+./gradlew runProduction        # do the same, then replace and open the installed app
 ```
 
-The app is written to `build/compose/binaries/main/app/FirstPick.app`. Open it from
-Finder, or copy it to Applications after quitting an older FirstPick instance.
+The app is written to `build/compose/binaries/main/app/FirstPick.app`.
+`runProduction` quits existing packaged FirstPick instances, installs the verified
+build at `~/Applications/FirstPick.app`, and opens that copy. Use this command for
+updates so every checkout launches the same installation.
 It bundles its own JVM and the optimized capture/OCR helpers for your Mac's
 architecture, and does not enable the development demo launcher. `runProduction`
 also disables the demo, overlay tracking, deck-preview, and smoke-test environment
@@ -209,6 +211,16 @@ helpers and tests are reused on later builds. Changes to the Swift toolchain,
 SDK, or native sources trigger a rebuild. To force all build steps to run again,
 add `--rerun-tasks`. `createDistributable` also includes these native-build and
 test checks; ordinary `run` and `test` do not require a native rebuild.
+Without `MACOS_SIGNING_IDENTITY`, `buildProduction` signs the app and its bundled
+helpers with a persistent local certificate. The keychain and its unlock file live
+in `~/Library/Application Support/FirstPick/signing` with private permissions;
+keep this directory across builds and checkouts. No system trust or screen-recording
+settings are changed. This is local signing, not Apple notarization. Switching from
+an older ad-hoc build may require one new Screen Recording grant and a full quit
+and reopen. Subsequent builds retain the same certificate-backed identity.
+`createDistributable` alone remains an unsigned packaging test when no Developer ID
+is configured; use `buildProduction` or `runProduction` for everyday local builds.
+
 Local builds target this Mac. For cross-architecture packaging, use a matching
 JDK and add `-PnativeArchitecture=universal`; the release workflow uses that
 option to bundle both native architectures (which requires an SDK supporting

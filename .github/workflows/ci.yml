@@ -31,6 +31,9 @@ jobs:
       - name: Test version guard
         run: python3 scripts/test-version-guard.py
 
+      - name: Test production launcher
+        run: python3 scripts/test-production-launch.py
+
       - name: Run tests
         run: ./gradlew test --stacktrace
 

@@ -30,6 +30,11 @@ build() {
     mv "$tmp/${native_archs[0]}" "$tmp/helper"
   fi
   chmod +x "$tmp/helper"
+  if [[ -n "${MACOS_SIGNING_IDENTITY:-}" ]]; then
+    codesign --force --sign "$MACOS_SIGNING_IDENTITY" --timestamp --options runtime \
+      --identifier "com.firstpick.app.$name" "$tmp/helper"
+    codesign --verify --strict "$tmp/helper"
+  fi
   mv "$tmp/helper" "$out/$name"
   rm -rf "$tmp"
   echo "built $out/$name ($(lipo -archs "$out/$name"))"

@@ -10,9 +10,21 @@ object NativeHelpers {
     private val isMac: Boolean
         get() = System.getProperty("os.name").orEmpty().contains("Mac", ignoreCase = true)
 
+    internal fun packagedHelper(appPath: String?, name: String): File? {
+        if (appPath.isNullOrBlank()) return null
+        val directory = File(appPath).parentFile?.parentFile?.resolve("Helpers") ?: return null
+        if (!directory.isDirectory) return null // Distribution/development resource fallback.
+        return directory.resolve(name).also {
+            check(it.isFile && it.canExecute()) { "Missing packaged helper: $name" }
+        }
+    }
+
     fun extract(resource: String, name: String): File? {
         if (!isMac) return null
         return runCatching {
+            // Local production builds carry signed helpers inside their own bundle.
+            // Avoid sharing mutable executables between installed app versions.
+            packagedHelper(System.getProperty("jpackage.app-path"), name)?.let { return it }
             val bytes = NativeHelpers::class.java.getResourceAsStream(resource)?.use { it.readBytes() }
                 ?: return null
             val dir = AppPaths.appSupport.resolve("bin").toFile().apply { mkdirs() }

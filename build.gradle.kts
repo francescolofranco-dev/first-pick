@@ -84,6 +84,7 @@ val buildNativeHelpers = tasks.register<Exec>("buildNativeHelpers") {
     val architectureMode = providers.gradleProperty("nativeArchitecture").orElse("host").get()
     inputs.files(fileTree("native/macos") { include("*.swift", "build.sh") })
     inputs.property("architectureMode", architectureMode)
+    inputs.property("signingIdentity", providers.environmentVariable("MACOS_SIGNING_IDENTITY").orElse(""))
     inputs.property("sdkRoot", providers.environmentVariable("SDKROOT").orElse(""))
     inputs.property("developerDir", providers.environmentVariable("DEVELOPER_DIR").orElse(""))
     if (System.getProperty("os.name").startsWith("Mac")) {
@@ -131,10 +132,19 @@ tasks.matching { it.name == "createDistributable" }.configureEach {
 
 val productionApp = layout.buildDirectory.dir("compose/binaries/main/app/FirstPick.app")
 
+val signLocalProduction = tasks.register<Exec>("signLocalProduction") {
+    dependsOn("createDistributable")
+    val useLocalSigning = providers.environmentVariable("MACOS_SIGNING_IDENTITY")
+        .map { it.isBlank() }.orElse(true)
+    onlyIf { useLocalSigning.get() }
+    commandLine("python3", "scripts/sign-local-app.py", productionApp.get().asFile.absolutePath,
+        layout.projectDirectory.dir("src/main/resources/native/macos").asFile.absolutePath)
+}
+
 val buildProduction = tasks.register("buildProduction") {
     group = "build"
     description = "Test and build the shipping-equivalent FirstPick.app with its bundled JVM and native helpers."
-    dependsOn(buildNativeHelpers, "test", "createDistributable")
+    dependsOn(buildNativeHelpers, "test", "createDistributable", signLocalProduction)
     val appPath = productionApp.get().asFile.absolutePath
     doLast {
         logger.lifecycle("Production app: $appPath")
@@ -146,17 +156,7 @@ tasks.register<Exec>("runProduction") {
     group = "application"
     description = "Build and open the production app, with development/preview flags disabled."
     dependsOn(buildProduction)
-    commandLine(
-        "open", "-n",
-        "--env", "FIRSTPICK_DEMO=0",
-        "--env", "FIRSTPICK_OVERLAY_TRACK=0",
-        "--env", "FIRSTPICK_FORCE_DECKS=0",
-        "--env", "FIRSTPICK_SMOKE=0",
-        "--env", "JAVA_TOOL_OPTIONS=",
-        "--env", "_JAVA_OPTIONS=",
-        "--env", "JDK_JAVA_OPTIONS=",
-        productionApp.get().asFile.absolutePath,
-    )
+    commandLine("python3", "scripts/run-production.py", productionApp.get().asFile.absolutePath)
 }
 
 tasks.register<JavaExec>("locateArena") {
