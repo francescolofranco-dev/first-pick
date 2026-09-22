@@ -54,6 +54,17 @@ class DeckNeedsTest {
     }
 
     @Test
+    fun earlyPicksDoNotDeclareDeckGaps() {
+        for (size in 0 until DeckNeeds.DISPLAY_MIN_POOL) {
+            val needs = PoolNeeds(0, 0, 0, 0, 0, 0, size)
+            assertTrue(needs.activeNeeds(45).isEmpty(), "Premature gaps at $size picks")
+        }
+        val firstCard = PoolNeeds.analyze(listOf(meta("first", creature = true, removal = true, finisher = true)), 1)
+        assertTrue(firstCard.activeNeeds(45).isEmpty())
+        assertTrue(firstCard.copy(poolSize = DeckNeeds.DISPLAY_MIN_POOL).activeNeeds(45).contains("2-drops"))
+    }
+
+    @Test
     fun activeNeedsLabelsReflectGaps() {
         val needs = PoolNeeds(creatures = 0, twoDrops = 0, removal = 0, fixing = 0, finishers = 0, topEnd = 0, poolSize = 16)
         val labels = needs.activeNeeds(45)

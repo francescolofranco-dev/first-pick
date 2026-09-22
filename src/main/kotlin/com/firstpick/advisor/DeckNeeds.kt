@@ -22,6 +22,7 @@ data class PoolNeeds(
     }
 
     fun activeNeeds(totalPicks: Int): List<String> = buildList {
+        if (poolSize < DeckNeeds.DISPLAY_MIN_POOL) return@buildList
         if (projected(removal, totalPicks, DeckNeeds.TARGET_REMOVAL) < DeckNeeds.TARGET_REMOVAL) add("Removal")
         if (projected(creatures, totalPicks, DeckNeeds.TARGET_CREATURES) < DeckNeeds.TARGET_CREATURES) add("Creatures")
         if (projected(twoDrops, totalPicks, DeckNeeds.TARGET_TWO_DROPS) < DeckNeeds.TARGET_TWO_DROPS) add("2-drops")
@@ -67,6 +68,8 @@ object DeckNeeds {
 
     const val TOP_HEAVY_THRESHOLD = LimitedPolicy.POOL_TOP_END_LIMIT
 
+    // Wait for a meaningful sample before presenting projections as pool gaps.
+    const val DISPLAY_MIN_POOL = 8
     const val PROJECTION_PRIOR = 8.0
 
     private const val PTS_NEEDS_REMOVAL = 9.0

@@ -377,6 +377,7 @@ class DraftViewModel(
             topPairs = lane.topPairs,
             archetypes = if (archetypesLoaded) archetypeRows(lane.pair) else emptyList(),
             deckNeeds = deckNeeds,
+            deckNeedsAvailable = loaded && poolMetas.size == state.pool.size,
             deckOptions = deckOptions,
             setGuide = setGuide,
             guideLoading = state.setCode != null && setGuide == null,

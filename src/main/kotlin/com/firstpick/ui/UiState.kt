@@ -142,6 +142,7 @@ data class DraftUiState(
     val topPairs: List<String> = emptyList(),
     val archetypes: List<ArchetypeRow> = emptyList(),
     val deckNeeds: List<String> = emptyList(),
+    val deckNeedsAvailable: Boolean = false,
     val deckOptions: List<DeckOptionUi> = emptyList(),
     val setGuide: SetDraftGuide? = null,
     val guideLoading: Boolean = false,

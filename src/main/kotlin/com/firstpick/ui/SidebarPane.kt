@@ -1,5 +1,6 @@
 package com.firstpick.ui
 
+import com.firstpick.advisor.DeckNeeds
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -107,7 +108,10 @@ internal fun Sidebar(state: DraftUiState, modifier: Modifier = Modifier.width(23
                 }
             }
         }
-        Panel("Deck needs") { NeedsContent(state.deckNeeds, state.poolSize) }
+        Panel(
+            title = "Deck needs",
+            tooltip = "After ${DeckNeeds.DISPLAY_MIN_POOL} picks, flags roles below their projected draft targets. Uses the whole pool, including off-color cards; this is not a check of your final deck.",
+        ) { NeedsContent(state.deckNeeds, state.poolSize, state.deckNeedsAvailable) }
         Panel(
             title = "Open colors",
             tooltip = "Which individual colors appear open, based on the quality of cards being passed to you. These are pivot signals, not your current deck.",
@@ -161,27 +165,44 @@ internal fun Sidebar(state: DraftUiState, modifier: Modifier = Modifier.width(23
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun NeedsContent(needs: List<String>, poolSize: Int) {
+private fun NeedsContent(needs: List<String>, poolSize: Int, available: Boolean) {
     when {
         poolSize == 0 -> Text(
             "Pick on raw value early.",
             fontSize = 12.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+        poolSize < DeckNeeds.DISPLAY_MIN_POOL -> Text(
+            "Too early to assess gaps · $poolSize/${DeckNeeds.DISPLAY_MIN_POOL} picks. Prioritize strong cards and stay open.",
+            fontSize = 12.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        !available -> Text(
+            "Waiting for card data to assess gaps…",
+            fontSize = 12.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
         needs.isEmpty() -> Text(
-            "Backbone looks solid ✓",
+            "No projected role gaps. Keep checking your colors and curve.",
             fontSize = 12.sp,
             color = MaterialTheme.colorScheme.primary,
         )
-        else -> FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            needs.forEach { need ->
-                Box(
-                    Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(MaterialTheme.colorScheme.tertiary.copy(alpha = 0.20f))
-                        .padding(horizontal = 8.dp, vertical = 4.dp),
-                ) {
-                    Text(need, fontSize = 11.sp, color = MaterialTheme.colorScheme.tertiary)
+        else -> Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(
+                "Projected gaps · $poolSize picks. Reassess as your colors settle.",
+                fontSize = 11.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                needs.forEach { need ->
+                    Box(
+                        Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(MaterialTheme.colorScheme.tertiary.copy(alpha = 0.20f))
+                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                    ) {
+                        Text(need, fontSize = 11.sp, color = MaterialTheme.colorScheme.tertiary)
+                    }
                 }
             }
         }
