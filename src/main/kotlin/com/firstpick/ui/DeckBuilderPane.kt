@@ -1,5 +1,7 @@
 package com.firstpick.ui
 
+import androidx.compose.foundation.LocalScrollbarStyle
+import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -11,13 +13,17 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Button
@@ -79,86 +85,88 @@ internal fun DeckBuilderPane(
     }
 
     val spellCount = sel.spells.sumOf { it.count }
-    Column(Modifier.fillMaxSize()) {
-        Text("Draft complete — choose your build", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-        Spacer(Modifier.height(2.dp))
-        Text(
-            if (committedDeck == null) {
-                "Preview a build, then confirm it to start Arena guidance."
-            } else {
-                "Guidance active for ${committedDeck.title}. Preview another build and confirm to change it."
-            },
-            fontSize = 11.sp,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        savedDeck?.let { saved ->
-            val comparison = com.firstpick.overlay.DeckGuidance.evaluate(
-                com.firstpick.deckGuidanceTarget(committedDeck ?: sel),
-                com.firstpick.overlay.DeckReadState.Ready(saved),
-            )
-            Text(
-                savedDeckComparisonLabel(comparison),
-                fontSize = 11.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(top = 6.dp),
-            )
-        }
-        Spacer(Modifier.height(10.dp))
-        FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            options.forEachIndexed { index, opt ->
-                OptionCard(
-                    opt = opt,
-                    recommended = index == 0,
-                    previewed = opt.deckBuildKey == resolvedPreviewKey,
-                    active = opt.deckBuildKey == committedKey,
-                    onClick = { previewKey = opt.deckBuildKey },
+    ScrollableDeckPane {
+        item {
+            Column(Modifier.fillMaxWidth()) {
+                Text("Draft complete — choose your build", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Spacer(Modifier.height(2.dp))
+                Text(
+                    if (committedDeck == null) {
+                        "Preview a build, then confirm it to start Arena guidance."
+                    } else {
+                        "Guidance active for ${committedDeck.title}. Preview another build and confirm to change it."
+                    },
+                    fontSize = 11.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-            }
-        }
-        Spacer(Modifier.height(10.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-            GuidanceAction(
-                label = when {
-                    committedKey == null -> "Use this build"
-                    committedKey == resolvedPreviewKey -> "Guidance active"
-                    else -> "Use this build"
-                },
-                enabled = committedKey != resolvedPreviewKey,
-                onClick = { onUseDeck(sel) },
-            )
-            if (committedDeck != null) {
-                GuidanceAction(
-                    label = "Stop guidance",
-                    emphasized = false,
-                    onClick = onStopGuidance,
+                savedDeck?.let { saved ->
+                    val comparison = com.firstpick.overlay.DeckGuidance.evaluate(
+                        com.firstpick.deckGuidanceTarget(committedDeck ?: sel),
+                        com.firstpick.overlay.DeckReadState.Ready(saved),
+                    )
+                    Text(
+                        savedDeckComparisonLabel(comparison),
+                        fontSize = 11.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 6.dp),
+                    )
+                }
+                Spacer(Modifier.height(10.dp))
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    options.forEachIndexed { index, opt ->
+                        OptionCard(
+                            opt = opt,
+                            recommended = index == 0,
+                            previewed = opt.deckBuildKey == resolvedPreviewKey,
+                            active = opt.deckBuildKey == committedKey,
+                            onClick = { previewKey = opt.deckBuildKey },
+                        )
+                    }
+                }
+                Spacer(Modifier.height(10.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                    GuidanceAction(
+                        label = when {
+                            committedKey == null -> "Use this build"
+                            committedKey == resolvedPreviewKey -> "Guidance active"
+                            else -> "Use this build"
+                        },
+                        enabled = committedKey != resolvedPreviewKey,
+                        onClick = { onUseDeck(sel) },
+                    )
+                    if (committedDeck != null) {
+                        GuidanceAction(
+                            label = "Stop guidance",
+                            emphasized = false,
+                            onClick = onStopGuidance,
+                        )
+                    }
+                }
+                Spacer(Modifier.height(10.dp))
+                Text(
+                    "${sel.title} (${sel.colors}) · $spellCount spells · ${sel.landLine}",
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+                Text(
+                    (listOf(sel.identityLine) + sel.identityReasons.take(2) + sel.powerReasons.take(2)).joinToString(" · "),
+                    fontSize = 10.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Spacer(Modifier.height(8.dp))
+                DeckListHeader()
+                Spacer(Modifier.height(4.dp))
             }
         }
-        Spacer(Modifier.height(10.dp))
-        Text(
-            "${sel.title} (${sel.colors}) · $spellCount spells · ${sel.landLine}",
-            fontSize = 12.sp,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Text(
-            (listOf(sel.identityLine) + sel.identityReasons.take(2) + sel.powerReasons.take(2)).joinToString(" · "),
-            fontSize = 10.sp,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
-        )
-        Spacer(Modifier.height(8.dp))
-        DeckListHeader()
-        Spacer(Modifier.height(4.dp))
-        LazyColumn(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(3.dp)) {
-            items(sel.spells) { DeckSpellRow(it) }
-            if (sel.lands.isNotEmpty()) {
-                item { SectionLabel("Lands") }
-                items(sel.lands) { DeckSpellRow(it) }
-            }
+        items(sel.spells) { DeckSpellRow(it) }
+        if (sel.lands.isNotEmpty()) {
+            item { SectionLabel("Lands") }
+            items(sel.lands) { DeckSpellRow(it) }
         }
     }
 }
@@ -167,52 +175,76 @@ internal fun DeckBuilderPane(
 @Composable
 internal fun DeckSoFarPane(deck: DeckOptionUi, cuts: List<DeckSpellUi>) {
     val spellCount = deck.spells.sumOf { it.count }
-    Column(Modifier.fillMaxSize()) {
-        Text("Deck so far", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-        Spacer(Modifier.height(2.dp))
-        Text(
-            "Projected from your picks — updates every pick, not a final build.",
-            fontSize = 11.sp,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Spacer(Modifier.height(10.dp))
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            PipRow(deck.colors.toList())
-            Spacer(Modifier.width(6.dp))
-            Text(deck.title, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-            Spacer(Modifier.width(10.dp))
-            TierBadge(deck.tier)
-            Spacer(Modifier.width(8.dp))
-            Text("Power ${deck.power}", fontSize = 12.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
-        }
-        Spacer(Modifier.height(6.dp))
-        Text(
-            "$spellCount/23 spells · ${deck.creatures} creatures · ${deck.removal} removal",
-            fontSize = 12.sp,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Text(
-            (listOf(deck.identityLine) + deck.powerReasons.take(2)).joinToString(" · "),
-            fontSize = 10.sp,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
-        )
-        Spacer(Modifier.height(10.dp))
-        DeckListHeader()
-        Spacer(Modifier.height(4.dp))
-        LazyColumn(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(3.dp)) {
-            item { SectionLabel("In the deck") }
-            items(deck.spells) { DeckSpellRow(it) }
-            if (deck.lands.isNotEmpty()) {
-                item { SectionLabel("Lands") }
-                items(deck.lands) { DeckSpellRow(it) }
-            }
-            if (cuts.isNotEmpty()) {
-                item { SectionLabel("Not making the cut yet") }
-                items(cuts) { DeckSpellRow(it, muted = true) }
+    ScrollableDeckPane {
+        item {
+            Column(Modifier.fillMaxWidth()) {
+                Text("Deck so far", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Spacer(Modifier.height(2.dp))
+                Text(
+                    "Projected from your picks — updates every pick, not a final build.",
+                    fontSize = 11.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(Modifier.height(10.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    PipRow(deck.colors.toList())
+                    Spacer(Modifier.width(6.dp))
+                    Text(deck.title, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                    Spacer(Modifier.width(10.dp))
+                    TierBadge(deck.tier)
+                    Spacer(Modifier.width(8.dp))
+                    Text("Power ${deck.power}", fontSize = 12.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
+                }
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    "$spellCount/23 spells · ${deck.creatures} creatures · ${deck.removal} removal",
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Text(
+                    (listOf(deck.identityLine) + deck.powerReasons.take(2)).joinToString(" · "),
+                    fontSize = 10.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Spacer(Modifier.height(10.dp))
+                DeckListHeader()
+                Spacer(Modifier.height(4.dp))
             }
         }
+        item { SectionLabel("In the deck") }
+        items(deck.spells) { DeckSpellRow(it) }
+        if (deck.lands.isNotEmpty()) {
+            item { SectionLabel("Lands") }
+            items(deck.lands) { DeckSpellRow(it) }
+        }
+        if (cuts.isNotEmpty()) {
+            item { SectionLabel("Not making the cut yet") }
+            items(cuts) { DeckSpellRow(it, muted = true) }
+        }
+    }
+}
+
+// Keep the controls and cards in one scroll area so a short window cannot squeeze the list out.
+@Composable
+private fun ScrollableDeckPane(content: LazyListScope.() -> Unit) {
+    val scrollState = rememberLazyListState()
+    Box(Modifier.fillMaxSize()) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize().padding(end = 12.dp),
+            state = scrollState,
+            verticalArrangement = Arrangement.spacedBy(3.dp),
+            content = content,
+        )
+        VerticalScrollbar(
+            adapter = rememberScrollbarAdapter(scrollState),
+            modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(),
+            style = LocalScrollbarStyle.current.copy(
+                unhoverColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                hoverColor = MaterialTheme.colorScheme.primary,
+            ),
+        )
     }
 }
 
