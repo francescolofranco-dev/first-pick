@@ -288,6 +288,7 @@ object DeckProjector {
             curve = curveOf(metas),
             manaSources = manaSources,
             constructionMode = policy.mode,
+            hasObservedPower = power.hasObservedPower,
         )
     }
 

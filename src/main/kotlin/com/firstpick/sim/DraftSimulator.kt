@@ -2,6 +2,8 @@ package com.firstpick.sim
 
 import com.firstpick.cards.CardRating
 import com.firstpick.cards.SeventeenLandsClient
+import com.firstpick.cards.CardRepository
+import com.firstpick.cards.StandardSets
 import com.firstpick.core.Log
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -17,16 +19,20 @@ class DraftSimulator(
     private val client: SeventeenLandsClient = SeventeenLandsClient(),
     private val pickInterval: Duration = 1900.milliseconds,
     private val random: Random = Random.Default,
+    private val repository: CardRepository = CardRepository(client),
 ) {
     fun simulate(
         set: String,
         format: String = "PremierDraft",
         paused: StateFlow<Boolean> = MutableStateFlow(false),
     ): Flow<String> = flow {
-        val cards = runCatching { client.fetch(set, format) }.getOrDefault(emptyList())
-            .filter { it.mtgaId != null && it.gihWr != null }
+        val cards = runCatching {
+            repository.load(set, format)
+            repository.cardRatings
+        }.getOrDefault(emptyList())
+            .filter { it.mtgaId != null && it.types.none { type -> type.contains("Basic Land", ignoreCase = true) } }
         if (cards.size < CARDS_PER_PACK) {
-            Log.warn(TAG, "not enough 17Lands data to simulate ${set.uppercase()} (${cards.size} cards)")
+            Log.warn(TAG, "not enough identified cards to simulate ${set.uppercase()} (${cards.size} cards)")
             return@flow
         }
         val byId = cards.associateBy { it.mtgaId!! }
@@ -118,6 +124,6 @@ class DraftSimulator(
         private const val ON_COLOR_BIAS = 3.0
         private const val OFF_COLOR_PENALTY = 0.2
 
-        val SETS = listOf("DSK", "BLB", "OTJ")
+        val SETS: List<String> get() = StandardSets.manifest.sets.map { it.code.uppercase() }
     }
 }

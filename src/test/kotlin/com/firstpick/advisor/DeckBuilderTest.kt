@@ -7,6 +7,7 @@ import com.firstpick.cards.RankedCard
 import com.firstpick.cards.SetMetrics
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class DeckBuilderTest {
@@ -44,9 +45,24 @@ class DeckBuilderTest {
         assertTrue(top.type in setOf("Aggro", "Tempo", "Midrange", "Control", "Ramp"))
         assertTrue(top.identityReasons.isNotEmpty())
         assertTrue(top.powerReasons.isNotEmpty())
+        assertTrue(top.hasObservedPower)
         assertTrue(top.identityConfidence in setOf("Low", "Medium", "High"))
         assertTrue(top.powerConfidence in setOf("Low", "Medium", "High"))
         assertTrue("wins" !in top.outlook.lowercase(), "outlook must not claim an uncalibrated event record")
+    }
+
+    @Test
+    fun catalogOnlyPoolStillBuildsCompleteDecksWithProvisionalPower() {
+        val catalog = pool().map { card ->
+            card.copy(rating = card.rating!!.copy(everDrawnWinRate = null, everDrawnGameCount = 0))
+        }
+        val top = DeckBuilder.build(catalog, metrics, meta).first()
+
+        assertFalse(top.hasObservedPower)
+        assertEquals("Unavailable", top.powerConfidence)
+        assertEquals("Provisional build · comparing deck structure", top.outlook)
+        assertEquals(23, top.spells.size)
+        assertEquals(17, top.landCount)
     }
 
     @Test

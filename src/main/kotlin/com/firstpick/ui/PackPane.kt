@@ -7,6 +7,7 @@ import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -45,7 +46,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.firstpick.advisor.Confidence
 import com.firstpick.advisor.ConfidenceLevel
 import com.firstpick.model.DraftPhase
 import com.firstpick.sim.DraftSimulator
@@ -98,7 +98,10 @@ internal fun PackPane(
                         letterSpacing = 0.7.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
-                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                    ) {
                         DraftSimulator.SETS.forEachIndexed { index, set ->
                             DemoSetButton(set, recommended = index == 0) { onSimulate(set) }
                         }
@@ -117,13 +120,23 @@ internal fun PackPane(
             SetGuideStarter(state, onOpenGuide)
             Spacer(Modifier.height(7.dp))
         }
+        if (hasUnratedCards(state.packCards)) {
+            Text(
+                "Card power is unavailable for unrated cards. Pool fit and synergy notes update as you draft.",
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp),
+            )
+        }
         ConfidenceBanner(state.packCards)
         LazyColumn(
             Modifier.fillMaxSize(),
             contentPadding = PaddingValues(vertical = 2.dp),
             verticalArrangement = Arrangement.spacedBy(5.dp),
         ) {
-            items(state.packCards, key = { "${it.grpId}#${it.rank}" }) { PackRow(it, state.packCards.size) }
+            items(state.packCards, key = { "${it.grpId}#${it.rank}" }) {
+                PackRow(it, state.packCards.size, showBestPick = !hasUnratedCards(state.packCards))
+            }
         }
     }
 }
@@ -272,7 +285,7 @@ private fun DemoSetButton(set: String, recommended: Boolean, onClick: () -> Unit
 
 @Composable
 private fun ConfidenceBanner(cards: List<PackCardUi>) {
-    val confidence = Confidence.of(cards.mapNotNull { it.value })
+    val confidence = packConfidence(cards) ?: return
     if (confidence.level == ConfidenceLevel.CLEAR) return
     val tossUp = confidence.level == ConfidenceLevel.TOSS_UP
     val accent = if (tossUp) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.secondary
@@ -294,8 +307,8 @@ private fun ConfidenceBanner(cards: List<PackCardUi>) {
 }
 
 @Composable
-private fun PackRow(card: PackCardUi, packSize: Int) {
-    val top = card.rank == 1
+private fun PackRow(card: PackCardUi, packSize: Int, showBestPick: Boolean) {
+    val top = showBestPick && card.rank == 1 && card.value != null
 
 
     val bombConsistent = card.isBomb && isBombTier(card.value)
@@ -316,7 +329,7 @@ private fun PackRow(card: PackCardUi, packSize: Int) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            "${card.rank}",
+            if (card.value == null) "—" else "${card.rank}",
             fontFamily = FontFamily.Monospace,
             fontSize = 12.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant,

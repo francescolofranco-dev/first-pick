@@ -33,9 +33,10 @@ data class DeckPowerAssessment(
     val qualityRate: Double,
     val confidence: Double,
     val reasons: List<String>,
+    val hasObservedPower: Boolean = true,
 ) {
     val confidenceLabel: String
-        get() = confidenceLabel(confidence)
+        get() = if (hasObservedPower) confidenceLabel(confidence) else "Unavailable"
 }
 
 object DeckAnalysis {
@@ -151,6 +152,12 @@ object DeckAnalysis {
         manaSources: ManaSourceReport? = null,
     ): DeckPowerAssessment {
         val f = features(spells, meta, landFixers)
+        val hasObservedPower = spells.any { card ->
+            val global = card.rating
+            val pairRating = archetypeRating(card.name, pair)
+            (global?.gihWr != null && global.everDrawnGameCount > 0) ||
+                (pairRating?.gihWr != null && pairRating.everDrawnGameCount > 0)
+        }
         val estimates = spells.map { cardQuality(it.rating, archetypeRating(it.name, pair), metrics) }
         val zs = estimates.map { metrics.z(it) ?: 0.0 }
         val meanZ = zs.ifEmpty { listOf(0.0) }.average()
@@ -270,6 +277,7 @@ object DeckAnalysis {
         val reasons = buildList {
             add(
                 when {
+                    !hasObservedPower -> "Card power unavailable; comparing deck structure"
                     qualityZ >= 0.65 -> "Card quality is well above the set average"
                     qualityZ >= 0.15 -> "Card quality is above the set average"
                     qualityZ <= -0.65 -> "Card quality is well below the set average"
@@ -284,10 +292,13 @@ object DeckAnalysis {
                 .forEach { add(if (it.points >= 0.0) it.positive else it.negative) }
         }.distinct().take(4)
 
-        return DeckPowerAssessment(score, estimates.ifEmpty { listOf(metrics.meanGihWr) }.average(), confidence, reasons)
+        return DeckPowerAssessment(
+            score, estimates.ifEmpty { listOf(metrics.meanGihWr) }.average(), confidence, reasons, hasObservedPower,
+        )
     }
 
     fun outlook(power: DeckPowerAssessment): String {
+        if (!power.hasObservedPower) return "Provisional build · comparing deck structure"
         val label = when {
             power.score >= 76 -> "Excellent build"
             power.score >= 66 -> "Strong build"

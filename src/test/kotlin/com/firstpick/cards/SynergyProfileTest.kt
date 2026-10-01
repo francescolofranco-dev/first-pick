@@ -163,6 +163,42 @@ class SynergyProfileTest {
     }
 
     @Test
+    fun officialLimitedGuideSupportsLaunchDayArchetypesBeforeObservedDataExists() {
+        val guide = source.copy(
+            id = "tst-limited-guide",
+            url = "https://magic.wizards.com/en/news/feature/test-set-prerelease-guide",
+            kind = SynergySourceKind.OFFICIAL_LIMITED_GUIDE,
+        )
+        val profile = validCitedProfile().let { profile ->
+            profile.copy(
+                sources = listOf(source, releaseSource, guide),
+                archetypes = profile.archetypes.map { it.copy(sourceIds = listOf(guide.id)) },
+            )
+        }
+        assertEquals(emptyList(), SynergyProfileValidator.errors(profile, "TST"))
+
+        val unsupported = profile.copy(
+            archetypes = profile.archetypes.map { it.copy(sourceIds = listOf(source.id, releaseSource.id)) },
+        )
+        assertTrue(SynergyProfileValidator.errors(unsupported).any {
+            "must cite an official Limited guide or Limited data" in it
+        }, "mechanic rules alone do not establish a Limited archetype")
+    }
+
+    @Test
+    fun eachMechanicNeedsAnOfficialRuleSourceThatActuallyCoversIt() {
+        val profile = validCitedProfile()
+        for (official in listOf(source, releaseSource)) {
+            assertTrue(SynergyProfileValidator.isValid(profile.copy(
+                mechanics = profile.mechanics.map { it.copy(sourceIds = listOf(official.id)) },
+            )))
+        }
+        assertTrue(SynergyProfileValidator.errors(profile.copy(
+            mechanics = profile.mechanics.map { it.copy(sourceIds = listOf(dataSource.id)) },
+        )).any { "must cite official mechanics or official release notes" in it })
+    }
+
+    @Test
     fun provenanceValidatorRejectsUnsafeDuplicateAndDanglingSourcesForEveryClaimType() {
         val invalid = validCitedProfile().copy(
             schemaVersion = 1,
@@ -242,7 +278,7 @@ class SynergyProfileTest {
         assertTrue(errors.any { "duplicate card names" in it })
         assertTrue(errors.any { "at least two distinct cards" in it })
         assertTrue(errors.any { "source kind OFFICIAL_RELEASE_NOTES" in it })
-        assertTrue(errors.any { "must cite Limited data" in it })
+        assertTrue(errors.any { "must cite an official Limited guide or Limited data" in it })
     }
 
     @Test

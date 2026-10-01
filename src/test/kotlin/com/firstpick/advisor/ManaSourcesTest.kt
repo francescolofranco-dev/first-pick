@@ -10,6 +10,24 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class ManaSourcesTest {
+    @Test
+    fun preparedHeartwoodSpellDoesNotCountAsImmediateSplashFixing() {
+        val crafter = card(106339, "Heartwood Crafter", "G")
+        val splash = card(2, "Red splash", "R")
+        val metas = mapOf(
+            "Heartwood Crafter" to CardMeta(
+                "Heartwood Crafter", 1, true, false,
+                isFixing = true, producedColors = setOf('R', 'G'), coloredPips = mapOf('G' to 1),
+                fixingRequiresAdditionalSpell = true,
+            ),
+            "Red splash" to CardMeta("Red splash", 4, true, false, coloredPips = mapOf('R' to 1)),
+        )
+        val report = ManaSources.estimate(
+            listOf(crafter, splash), "WG", 'R', emptyList(), metas::get, LimitedDeckPolicies.SEALED,
+        )
+        assertEquals(0, report.fixerSources.getValue('R'))
+    }
+
     private fun card(id: Int, name: String, color: String) = RankedCard(
         grpId = id,
         name = name,

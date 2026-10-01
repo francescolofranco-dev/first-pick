@@ -8,6 +8,19 @@ import kotlin.test.assertTrue
 
 class DraftTrackerTest {
 
+    @Test
+    fun undatedRealityFractureSealedCourseRestoresItsCompletePool() {
+        val tracker = DraftTracker()
+        tracker.onLine("""{"CourseId":"fra-sealed","InternalEventName":"Sealed_FRA","CurrentModule":"DeckSelect","CardPool":[106225,106227,106227]}""")
+
+        val state = tracker.state.value
+        assertEquals("FRA", state.setCode)
+        assertEquals(DraftFormat.SEALED, state.format)
+        assertEquals(DraftPhase.COMPLETE, state.phase)
+        assertEquals(listOf(106225, 106227, 106227), state.pool)
+        assertTrue(state.packCards.isEmpty())
+    }
+
     private fun snapshotLine(
         pack: Int,
         pick: Int,

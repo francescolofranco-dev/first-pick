@@ -80,6 +80,24 @@ class EventParserTest {
     }
 
     @Test
+    fun recognizesRealityFractureDraftAndUndatedSealedEvents() {
+        val formats = mapOf(
+            "PremierDraft_FRA_20260929" to DraftFormat.PREMIER,
+            "TraditionalDraft_FRA_20260929" to DraftFormat.TRADITIONAL,
+            "PickTwoDraft_FRA_20260929" to DraftFormat.PREMIER,
+            "ContenderDraft_FRA_20261013" to DraftFormat.PREMIER,
+            "QuickDraft_FRA_20261008" to DraftFormat.QUICK,
+            "Sealed_FRA" to DraftFormat.SEALED,
+            "TraditionalSealed_FRA" to DraftFormat.SEALED,
+        )
+        for ((event, format) in formats) {
+            assertEquals("FRA", setCodeFromEventName(event), event)
+            assertEquals(format, DraftFormat.fromEventName(event), event)
+        }
+        assertNull(setCodeFromEventName("SealedConquerorFRA"))
+    }
+
+    @Test
     fun convertsZeroIndexedPackPick() {
         val snap = parser.parse(snapshotLine(pack = 2, pick = 5, packCards = listOf(1, 2, 3), pickedCards = listOf(9)))
         assertNotNull(snap)

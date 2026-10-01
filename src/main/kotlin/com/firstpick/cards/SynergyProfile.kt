@@ -19,6 +19,7 @@ enum class SynergySourceKind {
     OFFICIAL_LIMITED_GUIDE,
     OFFICIAL_RELEASE_NOTES,
     LIMITED_DATA,
+    CARD_REFERENCE,
 }
 
 @Serializable
@@ -119,12 +120,10 @@ object SynergyProfileValidator {
             }
             if (mechanic.summary.isBlank()) add("$label.summary must not be blank")
             validateReferences(label, mechanic.sourceIds, sourceIds)
-            requireKinds(
-                label,
-                mechanic.sourceIds,
-                sourceKinds,
-                setOf(SynergySourceKind.OFFICIAL_MECHANICS, SynergySourceKind.OFFICIAL_RELEASE_NOTES),
-            )
+            val kinds = mechanic.sourceIds.mapNotNull(sourceKinds::get)
+            if (kinds.none { it == SynergySourceKind.OFFICIAL_MECHANICS || it == SynergySourceKind.OFFICIAL_RELEASE_NOTES }) {
+                add("$label must cite official mechanics or official release notes")
+            }
         }
         val archetypePairs = mutableSetOf<String>()
         profile.archetypes.forEachIndexed { index, archetype ->
@@ -144,7 +143,9 @@ object SynergyProfileValidator {
             if (roles.sumOf { it.second.size } < 4) add("$label must list at least four role cards")
             validateReferences(label, archetype.sourceIds, sourceIds)
             val kinds = archetype.sourceIds.mapNotNull(sourceKinds::get).toSet()
-            if (SynergySourceKind.LIMITED_DATA !in kinds) add("$label must cite Limited data")
+            if (SynergySourceKind.OFFICIAL_LIMITED_GUIDE !in kinds && SynergySourceKind.LIMITED_DATA !in kinds) {
+                add("$label must cite an official Limited guide or Limited data")
+            }
             if (kinds.none { it == SynergySourceKind.OFFICIAL_LIMITED_GUIDE || it == SynergySourceKind.OFFICIAL_MECHANICS }) {
                 add("$label must cite an official Limited guide or mechanics source")
             }

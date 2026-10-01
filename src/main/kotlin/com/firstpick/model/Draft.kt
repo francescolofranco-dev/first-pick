@@ -24,7 +24,7 @@ enum class DraftFormat {
     }
 }
 
-private val SET_CODE_RE = Regex("_([A-Za-z0-9]{2,5})_\\d{6,8}")
+private val SET_CODE_RE = Regex("_([A-Za-z0-9]{2,5})(?:_\\d{6,8}(?:_|$)|$)")
 
 fun setCodeFromEventName(eventName: String): String? =
     SET_CODE_RE.find(eventName)?.groupValues?.get(1)?.uppercase()

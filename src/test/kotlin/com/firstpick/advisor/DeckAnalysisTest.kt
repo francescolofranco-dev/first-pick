@@ -9,6 +9,7 @@ import com.firstpick.cards.SynergyArchetype
 import com.firstpick.cards.SynergyIndex
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class DeckAnalysisTest {
@@ -19,6 +20,39 @@ class DeckAnalysisTest {
         name = name,
         rating = CardRating(name = name, mtgaId = id, color = if (id % 2 == 0) "W" else "U", everDrawnWinRate = gih, everDrawnGameCount = games),
     )
+
+    @Test
+    fun absentWinRatesDoNotClaimAverageCardQualityEvenWithSampleCounts() {
+        val spells = (0 until 23).map {
+            val rated = card(it, "Card$it")
+            rated.copy(rating = rated.rating!!.copy(everDrawnWinRate = null))
+        }
+        val meta: (String) -> CardMeta? = { CardMeta(it, cmc = 3, isCreature = true, isLand = false) }
+        val identity = DeckAnalysis.identity(spells, "WU", meta, synergy = null)
+        val power = DeckAnalysis.power(spells, "WU", metrics, meta, { _, _ -> null }, null, identity, null, 0, 0)
+
+        assertFalse(power.hasObservedPower)
+        assertEquals("Unavailable", power.confidenceLabel)
+        assertEquals("Card power unavailable; comparing deck structure", power.reasons.first())
+        assertTrue(power.reasons.none { "set average" in it })
+        assertEquals("Provisional build · comparing deck structure", DeckAnalysis.outlook(power))
+        assertTrue(power.score.isFinite(), "structural scores still support candidate comparison")
+    }
+
+    @Test
+    fun observedArchetypeRatingsCanSupplyDeckPowerWithoutGlobalRatings() {
+        val spells = (0 until 23).map { card(it, "Card$it").copy(rating = null) }
+        val meta: (String) -> CardMeta? = { CardMeta(it, cmc = 3, isCreature = true, isLand = false) }
+        val identity = DeckAnalysis.identity(spells, "WU", meta, synergy = null)
+        val pairRating: (String, String) -> CardRating? = { name, _ ->
+            CardRating(name = name, everDrawnWinRate = 0.60, everDrawnGameCount = 2_000)
+        }
+        val power = DeckAnalysis.power(spells, "WU", metrics, meta, pairRating, null, identity, null, 0, 0)
+
+        assertTrue(power.hasObservedPower)
+        assertTrue(power.confidenceLabel in setOf("Low", "Medium", "High"))
+        assertFalse(DeckAnalysis.outlook(power).startsWith("Provisional"))
+    }
 
     @Test
     fun recognizesTempoFromEvasiveThreatsAndCheapInteraction() {

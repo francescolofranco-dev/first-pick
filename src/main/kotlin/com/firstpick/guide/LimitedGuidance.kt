@@ -434,5 +434,6 @@ object SetDraftGuideBuilder {
         SynergySourceKind.OFFICIAL_LIMITED_GUIDE -> "Official Limited guide"
         SynergySourceKind.OFFICIAL_RELEASE_NOTES -> "Official release notes"
         SynergySourceKind.LIMITED_DATA -> "Limited data"
+        SynergySourceKind.CARD_REFERENCE -> "Card reference"
     }
 }

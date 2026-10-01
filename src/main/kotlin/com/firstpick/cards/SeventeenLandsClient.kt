@@ -36,6 +36,8 @@ enum class RatingsDataSource {
     NETWORK,
     FRESH_CACHE,
     STALE_CACHE,
+    /** Verified card identities are available, but 17Lands observations are not. */
+    CARD_CATALOG,
 }
 
 data class RatingsFetchMetadata(

@@ -268,6 +268,22 @@ Brand assets live in `packaging/icon/` (SVG source + `AppIcon.iconset`) and `doc
 
 ## Data sources & attribution
 
+### Reality Fracture
+
+`FRA` has a researched guide covering all ten color pairs, card roles, twenty
+interactions, and the set's mechanics, including empower Jace, Heartwood, and
+prepare. The advisor and deck builder use the same profile as the guide.
+
+When 17Lands has no ratings for a format yet, FirstPick loads card details from
+Scryfall and resolves missing Arena IDs from the installed Arena database.
+The app labels this as card-catalog mode; observed win rates and trained card
+strength remain unavailable. Retry ratings to use 17Lands data once published.
+FRA joins the existing weekly model-training selection automatically; see the
+[model readiness report](docs/fra-model-validation.md) for the data checks and
+validation required before a model is bundled.
+
+### Attribution
+
 - Win-rate and archetype data from [17Lands](https://www.17lands.com/), licensed
   CC-BY-4.0. Fetched politely (cached, throttled, descriptive User-Agent).
 - Every bundled set-profile claim has a validated source ID. Mechanics and card

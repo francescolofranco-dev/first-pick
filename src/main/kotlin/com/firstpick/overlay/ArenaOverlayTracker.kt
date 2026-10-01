@@ -406,13 +406,16 @@ private fun geometryMarks(
     val rects = PackGeometry.rects(cal, winW, winH, cards.size)
 
     if (assignment == null) return rects.map { Mark(it.x, it.y, it.w, it.h, null, null, false) }
-    val bestCard = assignment.values.maxByOrNull { cards[it].value ?: Double.NEGATIVE_INFINITY }
+    val bestCard = bestRatedOverlayCard(cards, assignment.values)
     return rects.map { r ->
         val ci = assignment[r.index]
         if (ci == null) Mark(r.x, r.y, r.w, r.h, null, null, false)
         else Mark(r.x, r.y, r.w, r.h, cards[ci].value, null, ci == bestCard)
     }
 }
+
+internal fun bestRatedOverlayCard(cards: List<OverlayCard>, assigned: Collection<Int>): Int? =
+    assigned.filter { cards[it].value != null }.maxByOrNull { cards[it].value!! }
 
 
 private const val BADGE_SCALE = 0.52f

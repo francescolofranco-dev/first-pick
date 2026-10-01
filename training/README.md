@@ -31,6 +31,11 @@ selection path locally with:
 python3 ci_retrain.py select --sets "$SET"
 ```
 
+Reality Fracture's launch-time data check and first-model validation procedure
+are tracked in [FRA model readiness](../docs/fra-model-validation.md). Run the
+offline selection checks from the repository root with
+`python3 -m unittest discover -s training -p 'test_*.py'`.
+
 Outputs under `out/`:
 
 - **`<SET>_<FMT>.fpnet`** — weights for the Kotlin runtime

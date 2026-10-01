@@ -29,6 +29,7 @@ data class DeckOption(
     val curve: List<Pair<String, Int>>,
     val manaSources: ManaSourceReport? = null,
     val constructionMode: LimitedMode = LimitedMode.DRAFT,
+    val hasObservedPower: Boolean = true,
 )
 
 
