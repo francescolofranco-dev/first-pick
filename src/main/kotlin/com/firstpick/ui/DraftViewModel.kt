@@ -475,6 +475,7 @@ class DraftViewModel(
                 role = deckCardRole(m),
                 isLand = c.isBasicLand || m?.isLand == true,
                 isBasicLand = c.isBasicLand,
+                manaCost = m?.manaCost,
             )
         }.sortedWith(deckSpellOrder)
 

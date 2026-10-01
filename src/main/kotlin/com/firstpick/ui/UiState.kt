@@ -58,6 +58,7 @@ data class DeckSpellUi(
     val role: String? = null,
     val isLand: Boolean = false,
     val isBasicLand: Boolean = false,
+    val manaCost: String? = null,
 )
 
 fun deckColorRank(color: String): Int {

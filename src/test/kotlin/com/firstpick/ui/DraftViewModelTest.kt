@@ -3,6 +3,7 @@ package com.firstpick.ui
 import com.firstpick.cards.ArchetypeRepository
 import com.firstpick.cards.BasicLandIdentity
 import com.firstpick.cards.BasicLandResolver
+import com.firstpick.cards.CardMeta
 import com.firstpick.cards.CardMetaRepository
 import com.firstpick.cards.CardRepository
 import com.firstpick.cards.FetchFailure
@@ -31,6 +32,40 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class DraftViewModelTest {
+
+    @Test
+    fun draftedCardsCarryThePrintedCostIntoTheUi() = runBlocking {
+        val cache = createTempDirectory("fp-vm-mana")
+        for (format in listOf("PremierDraft", "QuickDraft", "TradDraft")) {
+            Files.writeString(cache.resolve("ratings3_DSK_$format.json"), """{"data":[
+                {"name":"Test Creature","mtga_id":92174,"color":"U","types":["Creature"],"ever_drawn_win_rate":0.58,"ever_drawn_game_count":1000}
+            ]}""")
+            Files.writeString(cache.resolve("colorratings_DSK_$format.json"), "[]")
+        }
+        val metaRepo = CardMetaRepository().apply {
+            index(listOf(CardMeta("Test Creature", cmc = 3, isCreature = true, isLand = false, manaCost = "{1}{U}{U}")), "DSK")
+        }
+        val line = """{"CurrentModule":"BotDraft","Payload":"{\"Result\":\"Success\",\"EventName\":\"QuickDraft_DSK_20260811\",\"DraftStatus\":\"PickNext\",\"PackNumber\":0,\"PickNumber\":3,\"NumCardsToPick\":1,\"DraftPack\":[\"92174\"],\"PackStyles\":[],\"PickedCards\":[\"92174\",\"92174\"],\"PickedStyles\":[]}"}"""
+        val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+        try {
+            val vm = DraftViewModel(
+                scope = scope,
+                watcher = FakeWatcher(line),
+                tracker = DraftTracker(),
+                repo = CardRepository(SeventeenLandsClient(cacheDir = cache)),
+                metaRepo = metaRepo,
+                archetypeRepo = ArchetypeRepository(SeventeenLandsClient(cacheDir = cache)),
+            )
+            vm.start()
+            val ui = withTimeout(10_000) { vm.ui.first { it.draftPool.isNotEmpty() } }
+            val card = ui.draftPool.single()
+            assertEquals("{1}{U}{U}", card.manaCost)
+            assertEquals(3, card.cmc, "Printed cost must not change sorting by mana value")
+            assertEquals(2, card.count)
+        } finally {
+            scope.cancel()
+        }
+    }
 
     @Test
     fun newDraftClearsStateAndRestartsWatcherWithoutReplayingHistory() = runBlocking {

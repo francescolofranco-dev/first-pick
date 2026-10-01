@@ -251,7 +251,7 @@ private fun ScrollableDeckPane(content: LazyListScope.() -> Unit) {
 @Composable
 private fun DeckListHeader() {
     Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-        Text("MV", fontSize = 10.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.width(28.dp))
+        Text("Cost", fontSize = 10.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.width(DeckManaCostWidth))
         Text("Card", fontSize = 10.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
         Text("Type / role", fontSize = 10.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.width(132.dp))
         Text("GIH%", fontSize = 10.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.End, modifier = Modifier.width(44.dp))
@@ -277,14 +277,7 @@ private fun DeckSpellRow(s: DeckSpellUi, muted: Boolean = false) {
             .padding(horizontal = 8.dp, vertical = 5.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(
-            if (s.isLand) "–" else "${s.cmc}",
-            fontFamily = FontFamily.Monospace,
-            fontSize = 12.sp,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.width(28.dp),
-        )
+        ManaCost(s.manaCost, isLand = s.isLand, modifier = Modifier.width(DeckManaCostWidth).padding(end = 6.dp))
         Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
             if (s.count > 1) {
                 Box(

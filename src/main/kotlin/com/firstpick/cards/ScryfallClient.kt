@@ -54,7 +54,11 @@ class ScryfallClient(
         @SerialName("power") val power: String? = null,
         @SerialName("produced_mana") val producedMana: List<String> = emptyList(),
         @SerialName("mana_cost") val manaCost: String = "",
+        @SerialName("card_faces") val faces: List<CardFace> = emptyList(),
     )
+
+    @Serializable
+    private data class CardFace(@SerialName("mana_cost") val manaCost: String = "")
 
     @Serializable
     private data class MetaDto(
@@ -72,22 +76,24 @@ class ScryfallClient(
         val heavyPips: String = "",
         val coloredPips: String = "",
         val hybridPips: List<String> = emptyList(),
+        val manaCost: String? = null,
     )
 
     suspend fun setMeta(set: String, names: Collection<String> = emptyList()): Map<String, CardMeta> = withContext(Dispatchers.IO) {
         Files.createDirectories(cacheDir)
         val cache = cacheDir.resolve("scryfall7_${set.uppercase()}.json")
-        val dtos: List<MetaDto> = if (isFresh(cache)) {
+        val cached = if (Files.exists(cache)) {
             runCatching { json.decodeFromString(LIST_SERIALIZER, Files.readString(cache)) }.getOrDefault(emptyList())
+        } else emptyList()
+        val dtos: List<MetaDto> = if (isFresh(cache) && cached.all { it.manaCost != null }) {
+            cached
         } else {
             val built = build(set, names)
             if (built != null) {
                 Files.writeString(cache, json.encodeToString(LIST_SERIALIZER, built))
                 built
-            } else if (Files.exists(cache)) {
-                runCatching { json.decodeFromString(LIST_SERIALIZER, Files.readString(cache)) }.getOrDefault(emptyList())
             } else {
-                emptyList()
+                cached
             }
         }
         dtos.associate { normalize(it.name) to it.toMeta() }
@@ -102,6 +108,7 @@ class ScryfallClient(
         heavyPipColors = heavyPips.toSet(),
         coloredPips = coloredPips.groupingBy { it }.eachCount(),
         hybridPips = hybridPips.map { it.toSet() },
+        manaCost = manaCost,
     )
 
     private fun build(set: String, names: Collection<String>): List<MetaDto>? {
@@ -163,6 +170,7 @@ class ScryfallClient(
         searchCards(query).orEmpty().mapTo(mutableSetOf()) { frontName(it.name) }
 
     private fun dtoOf(c: Card, removalNames: Set<String>, evasionNames: Set<String>, drawNames: Set<String>): MetaDto {
+        val manaCost = c.manaCost.ifEmpty { c.faces.firstOrNull()?.manaCost.orEmpty() }
         val cmc = c.cmc.roundToInt()
         val power = c.power?.substringBefore("+")?.toIntOrNull() ?: 0
         val name = frontName(c.name)
@@ -175,8 +183,8 @@ class ScryfallClient(
         val produced = "WUBRG".filter { ch -> c.producedMana.any { it.length == 1 && it[0] == ch } }
         return MetaDto(
             name, cmc, r.creature, r.land, r.removal, r.fixing, r.finisher, r.evasion, r.draw,
-            hybridGroupsOf(c.manaCost), produced, heavyPipsOf(c.manaCost),
-            coloredPipsOf(c.manaCost), hybridPipsOf(c.manaCost),
+            hybridGroupsOf(manaCost), produced, heavyPipsOf(manaCost),
+            coloredPipsOf(manaCost), hybridPipsOf(manaCost), manaCost,
         )
     }
 

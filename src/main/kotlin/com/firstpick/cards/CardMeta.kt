@@ -17,4 +17,6 @@ data class CardMeta(
     val coloredPips: Map<Char, Int> = emptyMap(),
     /** One entry per hybrid symbol; duplicates preserve pip intensity. */
     val hybridPips: List<Set<Char>> = emptyList(),
+    /** Printed cost in Scryfall's symbol notation; null means metadata is unavailable. */
+    val manaCost: String? = null,
 )
