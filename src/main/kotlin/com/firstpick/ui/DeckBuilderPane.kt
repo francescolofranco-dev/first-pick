@@ -191,9 +191,7 @@ internal fun DeckSoFarPane(deck: DeckOptionUi, cuts: List<DeckSpellUi>) {
                     Spacer(Modifier.width(6.dp))
                     Text(deck.title, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                     Spacer(Modifier.width(10.dp))
-                    TierBadge(deck.tier)
-                    Spacer(Modifier.width(8.dp))
-                    Text("Power ${deck.power}", fontSize = 12.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
+                    DeckPowerSummary(deck)
                 }
                 Spacer(Modifier.height(6.dp))
                 Text(
@@ -361,14 +359,21 @@ private fun OptionCard(opt: DeckOptionUi, recommended: Boolean, previewed: Boole
             Spacer(Modifier.width(6.dp))
             Text(opt.title, fontWeight = FontWeight.Bold, fontSize = 13.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
         }
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            TierBadge(opt.tier)
-            Spacer(Modifier.width(8.dp))
-            Text("Power ${opt.power}", fontSize = 12.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
-        }
+        DeckPowerSummary(opt)
         Text(opt.identityLine, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurface)
         Text(opt.outlook, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Text("${opt.creatures} creatures · ${opt.removal} removal", fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
+@Composable
+private fun DeckPowerSummary(deck: DeckOptionUi) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        deck.displayTier?.let {
+            TierBadge(it)
+            Spacer(Modifier.width(8.dp))
+        }
+        Text(deck.powerLabel, fontSize = 12.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
     }
 }
 

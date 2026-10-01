@@ -1,0 +1,229 @@
+{
+  "data": [
+    {
+      "name": "Blossom-Blessed Angel // Seed Suture",
+      "layout": "prepare",
+      "image_uris": {
+        "small": "https://cards.scryfall.io/small/front/5/e/5e77fbf0-9d1f-4e7d-a02e-43065d11b0d9.jpg?1789692643",
+        "normal": "https://cards.scryfall.io/normal/front/5/e/5e77fbf0-9d1f-4e7d-a02e-43065d11b0d9.jpg?1789692643",
+        "large": "https://cards.scryfall.io/large/front/5/e/5e77fbf0-9d1f-4e7d-a02e-43065d11b0d9.jpg?1789692643",
+        "png": "https://cards.scryfall.io/png/front/5/e/5e77fbf0-9d1f-4e7d-a02e-43065d11b0d9.png?1789692643",
+        "art_crop": "https://cards.scryfall.io/art_crop/front/5/e/5e77fbf0-9d1f-4e7d-a02e-43065d11b0d9.jpg?1789692643",
+        "border_crop": "https://cards.scryfall.io/border_crop/front/5/e/5e77fbf0-9d1f-4e7d-a02e-43065d11b0d9.jpg?1789692643",
+        "thumb": "https://cards.scryfall.io/thumb/front/5/e/5e77fbf0-9d1f-4e7d-a02e-43065d11b0d9.webp?1789692643",
+        "grid": "https://cards.scryfall.io/grid/front/5/e/5e77fbf0-9d1f-4e7d-a02e-43065d11b0d9.webp?1789692643",
+        "display": "https://cards.scryfall.io/display/front/5/e/5e77fbf0-9d1f-4e7d-a02e-43065d11b0d9.webp?1789692643",
+        "art": "https://cards.scryfall.io/art/front/5/e/5e77fbf0-9d1f-4e7d-a02e-43065d11b0d9.webp?1789692643",
+        "crop": "https://cards.scryfall.io/crop/front/5/e/5e77fbf0-9d1f-4e7d-a02e-43065d11b0d9.webp?1789692643"
+      },
+      "mana_cost": "{3}{W} // {G/W}",
+      "cmc": 4.0,
+      "type_line": "Creature \u2014 Angel Cleric // Sorcery",
+      "power": "2",
+      "colors": [
+        "W"
+      ],
+      "card_faces": [
+        {
+          "object": "card_face",
+          "name": "Blossom-Blessed Angel",
+          "mana_cost": "{3}{W}",
+          "type_line": "Creature \u2014 Angel Cleric",
+          "oracle_text": "Flying, vigilance\nThis creature enters prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
+          "power": "2",
+          "toughness": "4",
+          "artist": "Joshua Raphael",
+          "artist_id": "553b2a73-780f-414b-b2d7-3b7888821082",
+          "illustration_id": "7def6ab0-1e87-4bd2-b33e-aefe4d3d8615"
+        },
+        {
+          "object": "card_face",
+          "name": "Seed Suture",
+          "mana_cost": "{G/W}",
+          "type_line": "Sorcery",
+          "oracle_text": "Put a +1/+1 counter on target creature. You gain 1 life.",
+          "artist": "Joshua Raphael",
+          "artist_id": "553b2a73-780f-414b-b2d7-3b7888821082"
+        }
+      ],
+      "rarity": "common"
+    },
+    {
+      "name": "Variable Chaser // Arc of Fortune",
+      "layout": "prepare",
+      "image_uris": {
+        "small": "https://cards.scryfall.io/small/front/e/3/e3afedb1-bf9d-4e31-9700-433514cc29b1.jpg?1789470807",
+        "normal": "https://cards.scryfall.io/normal/front/e/3/e3afedb1-bf9d-4e31-9700-433514cc29b1.jpg?1789470807",
+        "large": "https://cards.scryfall.io/large/front/e/3/e3afedb1-bf9d-4e31-9700-433514cc29b1.jpg?1789470807",
+        "png": "https://cards.scryfall.io/png/front/e/3/e3afedb1-bf9d-4e31-9700-433514cc29b1.png?1789470807",
+        "art_crop": "https://cards.scryfall.io/art_crop/front/e/3/e3afedb1-bf9d-4e31-9700-433514cc29b1.jpg?1789470807",
+        "border_crop": "https://cards.scryfall.io/border_crop/front/e/3/e3afedb1-bf9d-4e31-9700-433514cc29b1.jpg?1789470807",
+        "thumb": "https://cards.scryfall.io/thumb/front/e/3/e3afedb1-bf9d-4e31-9700-433514cc29b1.webp?1789470807",
+        "grid": "https://cards.scryfall.io/grid/front/e/3/e3afedb1-bf9d-4e31-9700-433514cc29b1.webp?1789470807",
+        "display": "https://cards.scryfall.io/display/front/e/3/e3afedb1-bf9d-4e31-9700-433514cc29b1.webp?1789470807",
+        "art": "https://cards.scryfall.io/art/front/e/3/e3afedb1-bf9d-4e31-9700-433514cc29b1.webp?1789470807",
+        "crop": "https://cards.scryfall.io/crop/front/e/3/e3afedb1-bf9d-4e31-9700-433514cc29b1.webp?1789470807"
+      },
+      "mana_cost": "{2}{U} // {2}{U}",
+      "cmc": 3.0,
+      "type_line": "Creature \u2014 Human Wizard // Sorcery",
+      "power": "2",
+      "colors": [
+        "U"
+      ],
+      "card_faces": [
+        {
+          "object": "card_face",
+          "name": "Variable Chaser",
+          "mana_cost": "{2}{U}",
+          "type_line": "Creature \u2014 Human Wizard",
+          "oracle_text": "Flying, prowess\nThis creature enters prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
+          "power": "2",
+          "toughness": "3",
+          "artist": "Kai Carpenter",
+          "artist_id": "dcd3cf0d-67b7-4b73-8e62-1d318bf6209c",
+          "illustration_id": "17c469cd-e0d9-4c49-898a-29a8eb5db4e7"
+        },
+        {
+          "object": "card_face",
+          "name": "Arc of Fortune",
+          "mana_cost": "{2}{U}",
+          "type_line": "Sorcery",
+          "oracle_text": "Each player may discard their hand and draw seven cards.",
+          "artist": "Kai Carpenter",
+          "artist_id": "dcd3cf0d-67b7-4b73-8e62-1d318bf6209c"
+        }
+      ],
+      "rarity": "rare"
+    },
+    {
+      "name": "Pompous Battlemage // Improvised Act",
+      "layout": "prepare",
+      "image_uris": {
+        "small": "https://cards.scryfall.io/small/front/a/a/aa0f77ac-741a-444a-8bf0-a42c644726bf.jpg?1788878186",
+        "normal": "https://cards.scryfall.io/normal/front/a/a/aa0f77ac-741a-444a-8bf0-a42c644726bf.jpg?1788878186",
+        "large": "https://cards.scryfall.io/large/front/a/a/aa0f77ac-741a-444a-8bf0-a42c644726bf.jpg?1788878186",
+        "png": "https://cards.scryfall.io/png/front/a/a/aa0f77ac-741a-444a-8bf0-a42c644726bf.png?1788878186",
+        "art_crop": "https://cards.scryfall.io/art_crop/front/a/a/aa0f77ac-741a-444a-8bf0-a42c644726bf.jpg?1788878186",
+        "border_crop": "https://cards.scryfall.io/border_crop/front/a/a/aa0f77ac-741a-444a-8bf0-a42c644726bf.jpg?1788878186",
+        "thumb": "https://cards.scryfall.io/thumb/front/a/a/aa0f77ac-741a-444a-8bf0-a42c644726bf.webp?1788878186",
+        "grid": "https://cards.scryfall.io/grid/front/a/a/aa0f77ac-741a-444a-8bf0-a42c644726bf.webp?1788878186",
+        "display": "https://cards.scryfall.io/display/front/a/a/aa0f77ac-741a-444a-8bf0-a42c644726bf.webp?1788878186",
+        "art": "https://cards.scryfall.io/art/front/a/a/aa0f77ac-741a-444a-8bf0-a42c644726bf.webp?1788878186",
+        "crop": "https://cards.scryfall.io/crop/front/a/a/aa0f77ac-741a-444a-8bf0-a42c644726bf.webp?1788878186"
+      },
+      "mana_cost": "{R} // {R}",
+      "cmc": 1.0,
+      "type_line": "Creature \u2014 Goblin Sorcerer // Sorcery",
+      "power": "1",
+      "colors": [
+        "R"
+      ],
+      "card_faces": [
+        {
+          "object": "card_face",
+          "name": "Pompous Battlemage",
+          "mana_cost": "{R}",
+          "type_line": "Creature \u2014 Goblin Sorcerer",
+          "oracle_text": "Prowess\nThis creature enters prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
+          "power": "1",
+          "toughness": "1",
+          "artist": "Justin Gerard",
+          "artist_id": "7548479e-1d37-42e1-ade0-9d88748f2f47",
+          "illustration_id": "75797d9d-2143-4ded-acee-a954479b432d"
+        },
+        {
+          "object": "card_face",
+          "name": "Improvised Act",
+          "mana_cost": "{R}",
+          "type_line": "Sorcery",
+          "oracle_text": "You may discard a card. If you do, draw a card.",
+          "artist": "Justin Gerard",
+          "artist_id": "7548479e-1d37-42e1-ade0-9d88748f2f47"
+        }
+      ],
+      "rarity": "rare"
+    },
+    {
+      "name": "Heartwood Crafter // Soul Tether",
+      "layout": "prepare",
+      "image_uris": {
+        "small": "https://cards.scryfall.io/small/front/9/1/910a1f41-17fd-4ab0-9597-7151e79dc760.jpg?1789127630",
+        "normal": "https://cards.scryfall.io/normal/front/9/1/910a1f41-17fd-4ab0-9597-7151e79dc760.jpg?1789127630",
+        "large": "https://cards.scryfall.io/large/front/9/1/910a1f41-17fd-4ab0-9597-7151e79dc760.jpg?1789127630",
+        "png": "https://cards.scryfall.io/png/front/9/1/910a1f41-17fd-4ab0-9597-7151e79dc760.png?1789127630",
+        "art_crop": "https://cards.scryfall.io/art_crop/front/9/1/910a1f41-17fd-4ab0-9597-7151e79dc760.jpg?1789127630",
+        "border_crop": "https://cards.scryfall.io/border_crop/front/9/1/910a1f41-17fd-4ab0-9597-7151e79dc760.jpg?1789127630",
+        "thumb": "https://cards.scryfall.io/thumb/front/9/1/910a1f41-17fd-4ab0-9597-7151e79dc760.webp?1789127630",
+        "grid": "https://cards.scryfall.io/grid/front/9/1/910a1f41-17fd-4ab0-9597-7151e79dc760.webp?1789127630",
+        "display": "https://cards.scryfall.io/display/front/9/1/910a1f41-17fd-4ab0-9597-7151e79dc760.webp?1789127630",
+        "art": "https://cards.scryfall.io/art/front/9/1/910a1f41-17fd-4ab0-9597-7151e79dc760.webp?1789127630",
+        "crop": "https://cards.scryfall.io/crop/front/9/1/910a1f41-17fd-4ab0-9597-7151e79dc760.webp?1789127630"
+      },
+      "mana_cost": "{G} // {2}{R/G}",
+      "cmc": 1.0,
+      "type_line": "Creature \u2014 Elf Artificer // Sorcery",
+      "power": "1",
+      "colors": [
+        "G"
+      ],
+      "produced_mana": [
+        "C"
+      ],
+      "card_faces": [
+        {
+          "object": "card_face",
+          "name": "Heartwood Crafter",
+          "mana_cost": "{G}",
+          "type_line": "Creature \u2014 Elf Artificer",
+          "oracle_text": "This creature enters prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)\n{T}: Add {C}. This mana can't be spent to cast spells from your hand.",
+          "power": "1",
+          "toughness": "1",
+          "artist": "Anastasia Ovchinnikova",
+          "artist_id": "3605d81f-5c97-4958-9dcc-d44a85e10305",
+          "illustration_id": "953004a9-7fe4-4f2b-8e9e-1092926b458f"
+        },
+        {
+          "object": "card_face",
+          "name": "Soul Tether",
+          "mana_cost": "{2}{R/G}",
+          "type_line": "Sorcery",
+          "oracle_text": "Create a Heartwood token. (It's a red and green artifact with \"{T}: Add {R} or {G}.\")",
+          "artist": "Anastasia Ovchinnikova",
+          "artist_id": "3605d81f-5c97-4958-9dcc-d44a85e10305"
+        }
+      ],
+      "rarity": "uncommon"
+    },
+    {
+      "name": "Hungering Puppetbeast",
+      "layout": "normal",
+      "image_uris": {
+        "small": "https://cards.scryfall.io/small/front/3/d/3db2da7a-8088-4117-916b-f9c905d1b45b.jpg?1789127646",
+        "normal": "https://cards.scryfall.io/normal/front/3/d/3db2da7a-8088-4117-916b-f9c905d1b45b.jpg?1789127646",
+        "large": "https://cards.scryfall.io/large/front/3/d/3db2da7a-8088-4117-916b-f9c905d1b45b.jpg?1789127646",
+        "png": "https://cards.scryfall.io/png/front/3/d/3db2da7a-8088-4117-916b-f9c905d1b45b.png?1789127646",
+        "art_crop": "https://cards.scryfall.io/art_crop/front/3/d/3db2da7a-8088-4117-916b-f9c905d1b45b.jpg?1789127646",
+        "border_crop": "https://cards.scryfall.io/border_crop/front/3/d/3db2da7a-8088-4117-916b-f9c905d1b45b.jpg?1789127646",
+        "thumb": "https://cards.scryfall.io/thumb/front/3/d/3db2da7a-8088-4117-916b-f9c905d1b45b.webp?1789127646",
+        "grid": "https://cards.scryfall.io/grid/front/3/d/3db2da7a-8088-4117-916b-f9c905d1b45b.webp?1789127646",
+        "display": "https://cards.scryfall.io/display/front/3/d/3db2da7a-8088-4117-916b-f9c905d1b45b.webp?1789127646",
+        "art": "https://cards.scryfall.io/art/front/3/d/3db2da7a-8088-4117-916b-f9c905d1b45b.webp?1789127646",
+        "crop": "https://cards.scryfall.io/crop/front/3/d/3db2da7a-8088-4117-916b-f9c905d1b45b.webp?1789127646"
+      },
+      "mana_cost": "{3}{G}{G}",
+      "cmc": 5.0,
+      "type_line": "Artifact Creature \u2014 Beast Construct",
+      "oracle_text": "When this creature enters, create a Heartwood token. (It's a red and green artifact with \"{T}: Add {R} or {G}.\")\n{1}, Sacrifice another artifact: Put a +1/+1 counter on this creature. It gains your choice of trample, hexproof, or haste until end of turn.",
+      "power": "5",
+      "colors": [
+        "G"
+      ],
+      "produced_mana": [
+        "G",
+        "R"
+      ],
+      "rarity": "rare"
+    }
+  ]
+}

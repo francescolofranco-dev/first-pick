@@ -54,11 +54,54 @@ class ScryfallClient(
         @SerialName("power") val power: String? = null,
         @SerialName("produced_mana") val producedMana: List<String> = emptyList(),
         @SerialName("mana_cost") val manaCost: String = "",
+        @SerialName("arena_id") val arenaId: Int? = null,
+        @SerialName("colors") val colors: List<String> = emptyList(),
+        @SerialName("rarity") val rarity: String = "",
+        @SerialName("image_uris") val imageUris: Map<String, String> = emptyMap(),
+        @SerialName("layout") val layout: String = "normal",
         @SerialName("card_faces") val faces: List<CardFace> = emptyList(),
     )
 
     @Serializable
-    private data class CardFace(@SerialName("mana_cost") val manaCost: String = "")
+    private data class CardFace(
+        @SerialName("mana_cost") val manaCost: String = "",
+        @SerialName("type_line") val typeLine: String = "",
+        @SerialName("oracle_text") val oracleText: String = "",
+        @SerialName("power") val power: String? = null,
+        @SerialName("colors") val colors: List<String> = emptyList(),
+        @SerialName("image_uris") val imageUris: Map<String, String> = emptyMap(),
+    )
+
+    /** Card identities only: no win rates, pick rates, or invented Arena IDs. */
+    suspend fun cardCatalog(set: String, forceRefresh: Boolean = false): CardCatalog = withContext(Dispatchers.IO) {
+        Files.createDirectories(cacheDir)
+        val cache = cacheDir.resolve("scryfall_catalog1_${set.uppercase()}.json")
+        val cached = if (Files.exists(cache)) {
+            runCatching { json.decodeFromString(ListSerializer(Card.serializer()), Files.readString(cache)) }
+                .getOrDefault(emptyList())
+        } else emptyList()
+        val cards = if (!forceRefresh && cached.isNotEmpty() && isFresh(cache)) cached else {
+            val fetched = searchCards("${limitedSetQuery(set)} unique:cards")
+            if (!fetched.isNullOrEmpty()) {
+                Files.writeString(cache, json.encodeToString(ListSerializer(Card.serializer()), fetched))
+                fetched
+            } else cached
+        }
+        CardCatalog(
+            cards = cards.map { card ->
+                val face = card.faces.firstOrNull()
+                CardRating(
+                    name = card.name,
+                    mtgaId = card.arenaId,
+                    color = "WUBRG".filter { it.toString() in card.colors.ifEmpty { face?.colors.orEmpty() } },
+                    rarity = card.rarity,
+                    types = listOf(card.typeLine.ifBlank { face?.typeLine.orEmpty() }),
+                    imageUrl = card.imageUris["normal"] ?: face?.imageUris?.get("normal").orEmpty(),
+                )
+            },
+            lastUpdated = if (Files.exists(cache)) Files.getLastModifiedTime(cache).toInstant() else Instant.now(),
+        )
+    }
 
     @Serializable
     private data class MetaDto(
@@ -76,12 +119,13 @@ class ScryfallClient(
         val heavyPips: String = "",
         val coloredPips: String = "",
         val hybridPips: List<String> = emptyList(),
+        val fixingRequiresAdditionalSpell: Boolean = false,
         val manaCost: String? = null,
     )
 
     suspend fun setMeta(set: String, names: Collection<String> = emptyList()): Map<String, CardMeta> = withContext(Dispatchers.IO) {
         Files.createDirectories(cacheDir)
-        val cache = cacheDir.resolve("scryfall7_${set.uppercase()}.json")
+        val cache = cacheDir.resolve("scryfall8_${set.uppercase()}.json")
         val cached = if (Files.exists(cache)) {
             runCatching { json.decodeFromString(LIST_SERIALIZER, Files.readString(cache)) }.getOrDefault(emptyList())
         } else emptyList()
@@ -108,14 +152,15 @@ class ScryfallClient(
         heavyPipColors = heavyPips.toSet(),
         coloredPips = coloredPips.groupingBy { it }.eachCount(),
         hybridPips = hybridPips.map { it.toSet() },
+        fixingRequiresAdditionalSpell = fixingRequiresAdditionalSpell,
         manaCost = manaCost,
     )
 
     private fun build(set: String, names: Collection<String>): List<MetaDto>? {
         val cards = (if (names.isNotEmpty()) fetchByNames(names) else null)
-            ?: searchCards("set:${set.lowercase()} game:arena unique:cards")
+            ?: searchCards("${limitedSetQuery(set)} unique:cards")
             ?: return null
-        val q = "set:${set.lowercase()}"
+        val q = limitedSetQuery(set)
         val removalNames = taggedNames("$q otag:removal")
         val evasionNames = taggedNames("$q otag:evasion")
         val drawNames = taggedNames("$q otag:draw")
@@ -170,21 +215,31 @@ class ScryfallClient(
         searchCards(query).orEmpty().mapTo(mutableSetOf()) { frontName(it.name) }
 
     private fun dtoOf(c: Card, removalNames: Set<String>, evasionNames: Set<String>, drawNames: Set<String>): MetaDto {
-        val manaCost = c.manaCost.ifEmpty { c.faces.firstOrNull()?.manaCost.orEmpty() }
         val cmc = c.cmc.roundToInt()
-        val power = c.power?.substringBefore("+")?.toIntOrNull() ?: 0
+        val face = c.faces.firstOrNull()
+        val power = (c.power ?: face?.power)?.substringBefore("+")?.toIntOrNull() ?: 0
         val name = frontName(c.name)
+        val oracleText = c.oracleText.ifBlank { c.faces.joinToString("\n") { it.oracleText } }
+        val producedMana = if (createsHeartwood(oracleText)) c.producedMana + listOf("R", "G") else c.producedMana
+        // Prepare and Adventure spells are optional: their pips are not a cost to cast the creature.
+        val manaCost = if (c.layout in setOf("prepare", "adventure")) face?.manaCost ?: c.manaCost
+            else c.manaCost.ifBlank { face?.manaCost.orEmpty() }
         val r = classifyRoles(
-            c.typeLine, c.oracleText, cmc, power, c.producedMana,
+            c.typeLine.ifBlank { face?.typeLine.orEmpty() }, oracleText, cmc, power, producedMana,
             removalTagged = name in removalNames,
             evasionTagged = name in evasionNames,
             drawTagged = name in drawNames,
         )
-        val produced = "WUBRG".filter { ch -> c.producedMana.any { it.length == 1 && it[0] == ch } }
+        val produced = "WUBRG".filter { ch -> producedMana.any { it.length == 1 && it[0] == ch } }
+        val extraSpellFixing = c.layout in setOf("prepare", "adventure") && c.faces.drop(1).any {
+            classifyRoles(it.typeLine, it.oracleText, 0, 0, emptyList()).fixing
+        }
         return MetaDto(
             name, cmc, r.creature, r.land, r.removal, r.fixing, r.finisher, r.evasion, r.draw,
             hybridGroupsOf(manaCost), produced, heavyPipsOf(manaCost),
-            coloredPipsOf(manaCost), hybridPipsOf(manaCost), manaCost,
+            coloredPipsOf(manaCost), hybridPipsOf(manaCost),
+            fixingRequiresAdditionalSpell = extraSpellFixing,
+            manaCost = manaCost,
         )
     }
 
@@ -194,13 +249,15 @@ class ScryfallClient(
         val out = mutableListOf<Card>()
         var pages = 0
         while (url != null && pages < MAX_PAGES) {
-            val page = getPage(url) ?: return out.ifEmpty { null }
+            val page = getPage(url) ?: return null
+            if (pages > 0 && page.data.isEmpty()) return null
+            if (page.hasMore && page.nextPage == null) return null
             out += page.data
             url = page.nextPage?.takeIf { page.hasMore }
             pages++
             if (url != null) runCatching { Thread.sleep(PAGE_DELAY_MS) }
         }
-        return out
+        return out.takeIf { url == null }
     }
 
     private fun getPage(url: String): SearchPage? {
@@ -249,6 +306,15 @@ class ScryfallClient(
         private const val COLLECTION_BATCH = 75
         private val LIST_SERIALIZER = ListSerializer(MetaDto.serializer())
         private val EVASION_RE = Regex("flying|menace|can't be blocked|skulk|shadow|intimidate|horsemanship")
+        private val DRAW_RE = Regex("draws? (?:a|one|two|three|four|five|six|seven|eight|nine|ten|x|\\d+) cards?")
+        private val HEARTWOOD_CREATE_RE = Regex("\\bcreate (?:a|one|two|three|four|five|x|\\d+) (?:tapped )?heartwood tokens?\\b", RegexOption.IGNORE_CASE)
+        private fun createsHeartwood(text: String): Boolean = HEARTWOOD_CREATE_RE.containsMatchIn(text)
+
+        internal fun limitedSetQuery(set: String): String = when (set.uppercase()) {
+            // Wizards' Collecting Reality Fracture: ten Special Guests, collector numbers 159–168.
+            "FRA" -> "(set:fra or (set:spg cn>=159 cn<=168))"
+            else -> "set:${set.lowercase()} game:arena"
+        }
 
         private val HYBRID_RE = Regex("\\{([WUBRG])/([WUBRG])\\}")
         private val PURE_PIP_RE = Regex("\\{([WUBRG])\\}")
@@ -305,16 +371,17 @@ class ScryfallClient(
             val producedColors = producedMana.filter { it.length == 1 && it[0] in "WUBRG" }.toSet()
             val evasion = evasionTagged || (isCreature && EVASION_RE.containsMatchIn(text))
             val removal = removalTagged || REMOVAL_RE.containsMatchIn(text)
-            val draw = drawTagged ||
-                ("draw a card" in text || "draw two cards" in text || "draws a card" in text)
+            val draw = drawTagged || DRAW_RE.containsMatchIn(text)
             val fixing = (producedColors.size >= 2) ||
                 ("any color" in text) ||
-                ("treasure" in text && "create" in text)
+                ("treasure" in text && "create" in text) || createsHeartwood(text)
             val finisher = isCreature && (power >= 5 || (power >= 4 && (cmc >= 5 || evasion)))
             return CardRoleFlags(isCreature, isLand, removal, fixing, finisher, evasion, draw)
         }
     }
 }
+
+data class CardCatalog(val cards: List<CardRating>, val lastUpdated: Instant)
 
 internal data class CardRoleFlags(
     val creature: Boolean,

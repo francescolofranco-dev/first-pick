@@ -1,0 +1,291 @@
+{
+  "set": "FRA",
+  "setName": "Reality Fracture",
+  "generated": "2026-09-30",
+  "schemaVersion": 2,
+  "updatedAt": "2026-10-01",
+  "sources": [
+    {
+      "id": "fra-mechanics",
+      "title": "Reality Fracture Mechanics",
+      "publisher": "Wizards of the Coast",
+      "author": "Matt Tabak",
+      "date": "2026-09-08",
+      "url": "https://magic.wizards.com/en/news/feature/reality-fracture-mechanics",
+      "kind": "OFFICIAL_MECHANICS"
+    },
+    {
+      "id": "fra-limited-guide",
+      "title": "Reality Fracture Prerelease Guide",
+      "publisher": "Wizards of the Coast",
+      "author": "Jubilee Finnegan",
+      "date": "2026-09-18",
+      "url": "https://magic.wizards.com/en/news/feature/reality-fracture-prerelease-guide",
+      "kind": "OFFICIAL_LIMITED_GUIDE"
+    },
+    {
+      "id": "fra-release-notes",
+      "title": "Reality Fracture Release Notes",
+      "publisher": "Wizards of the Coast",
+      "author": "Jess Dunks and Eric Levine",
+      "date": "2026-09-18",
+      "url": "https://magic.wizards.com/en/news/feature/reality-fracture-release-notes",
+      "kind": "OFFICIAL_RELEASE_NOTES"
+    },
+    {
+      "id": "fra-card-reference",
+      "title": "Reality Fracture card reference",
+      "publisher": "Scryfall",
+      "author": "Scryfall",
+      "date": "2026-09-30",
+      "url": "https://api.scryfall.com/cards/search?q=set%3Afra&order=set&unique=cards",
+      "kind": "CARD_REFERENCE"
+    }
+  ],
+  "mechanics": [
+    {
+      "name": "Empower Jace",
+      "summary": "Add the stated loyalty to a Jace planeswalker token, creating one first if needed. Its abilities spend one loyalty to surveil or three to draw; nontoken Jaces cannot receive empower counters.",
+      "sourceIds": ["fra-mechanics", "fra-release-notes"]
+    },
+    {
+      "name": "Heartwood tokens",
+      "summary": "Heartwood is a red and green artifact token that taps for red or green mana without being sacrificed. These reusable mana sources also support artifact payoffs.",
+      "sourceIds": ["fra-mechanics", "fra-release-notes"]
+    },
+    {
+      "name": "Prepare",
+      "summary": "A prepared permanent lets you cast its associated spell copy from exile and pay its cost, then becomes unprepared. Losing the permanent loses that copy. The underlying card remains a creature card in every zone.",
+      "sourceIds": ["fra-mechanics", "fra-release-notes"]
+    },
+    {
+      "name": "Flashback",
+      "summary": "Pay a spell's flashback cost to cast it from the graveyard, following normal timing. It is exiled afterward, even if countered; budget for any additional discard cost.",
+      "sourceIds": ["fra-release-notes", "fra-card-reference"]
+    },
+    {
+      "name": "Threshold and graveyard resources",
+      "summary": "Threshold needs seven cards in your graveyard. Surveil and self-mill build that count; flashback and graveyard exile abilities reduce it. Jace tokens and prepared spell copies cannot supply lasting cards there.",
+      "sourceIds": ["fra-release-notes", "fra-limited-guide", "fra-card-reference"]
+    },
+    {
+      "name": "Loyalty abilities and Ways",
+      "summary": "Ways give planeswalkers new abilities or reward their activations. Each planeswalker normally activates just one loyalty ability on your turn at sorcery speed, regardless of how many abilities it has gained.",
+      "sourceIds": ["fra-release-notes", "fra-card-reference"]
+    }
+  ],
+  "archetypes": [
+    {
+      "pair": "WU",
+      "name": "Fatehold surveil aggro",
+      "playstyle": "Develop evasive threats, then scry or surveil before combat to enable attacks and team pumps. Preserve a Jace token for repeatable selection; prepared Peer Review spells add both a Cadet and another surveil trigger.",
+      "speed": "aggro",
+      "sourceIds": ["fra-limited-guide", "fra-release-notes", "fra-card-reference"],
+      "signposts": ["Fatehold Chronologist", "Prudent Fateseer"],
+      "payoffs": ["Desperate Futurescribe", "Surveillance Phantasm", "Proft, Consulting Detective", "Saheeli, Consul of Oversight", "Denzilore Fatehold"],
+      "enablers": ["Semester Foreseer", "Mindseeker Oculus", "Eye of Jace", "Academic Ascent", "Way of the Healer", "Yuriko, Hope from the Shadows"],
+      "keyCards": ["Fatehold Charm", "Your Fate Ends Here", "Memory Trap", "Infinite Coursework", "Unsummon", "Fatehold Annex"]
+    },
+    {
+      "pair": "WB",
+      "name": "Liliana's attrition",
+      "playstyle": "Trade expendable creatures, then reuse their entry and death effects. Sacrifice outlets convert small bodies into removal or larger threats; recursion keeps the engine supplied while death triggers build life and loyalty.",
+      "speed": "midrange",
+      "sourceIds": ["fra-limited-guide", "fra-release-notes", "fra-card-reference"],
+      "signposts": ["Edgar, Ancient Bloodlord", "Twisted Fates"],
+      "payoffs": ["Massacre Girl, Most Wanted", "Way of the Necromancer", "Way of the Deathbringer", "Bloodline Recollector", "Darklight Phoenix"],
+      "enablers": ["Rank Rat", "Campus Crier", "Blessed Ghoul", "Hexhaven Battalion", "Graft Surgeon", "Way of the Healer"],
+      "keyCards": ["Generous Revival", "Rewrite Regrets", "Silence the Echo", "Winter, Tormented Loner", "Teyo, Lightshield Expert", "Meticulous Commons"]
+    },
+    {
+      "pair": "WR",
+      "name": "Ajani's Army counters",
+      "playstyle": "Build a broad board with Cadet makers and distribute counters onto attackers. Counters enable haste, flying and cheaper equipment moves; team pumps turn multiple bodies into a finishing attack.",
+      "speed": "aggro",
+      "sourceIds": ["fra-limited-guide", "fra-release-notes", "fra-card-reference"],
+      "signposts": ["Mabel, Valley Hero", "Warrior's Blades"],
+      "payoffs": ["Gallia, the Merrymaker", "Danitha, Sword of Hope", "Tomik, Orzhov Lawmage", "Shatterwing Pegasus", "Yoshimaru, Beloved Companion"],
+      "enablers": ["Heartstring Puller", "Hexhaven Battalion", "Predictive Preparations", "Graft Surgeon", "Academic Ascent", "Charge the Sanctum"],
+      "keyCards": ["No Admittance", "Wrath of the Bloodmane", "Way of the Healer", "Teyo, Lightshield Expert", "Dedicated Commons"]
+    },
+    {
+      "pair": "WG",
+      "name": "Vigorbloom life gain and counters",
+      "playstyle": "Combine frequent life gain with creatures that grow or draw from it. Prepared Seed Suture spells supply both life and counters; vigilance lets the enlarged board attack while protecting Jace.",
+      "speed": "midrange",
+      "sourceIds": ["fra-limited-guide", "fra-release-notes", "fra-card-reference"],
+      "signposts": ["Emergency Phytomedic", "Vigorbloom Vanguard"],
+      "payoffs": ["Bloombrute", "Unflinching Hortimancer", "Titanbones, Towering Heart", "Lyra, Archangel of Dawn", "Way of the Mentor"],
+      "enablers": ["Greenhouse Propagator", "Graft Surgeon", "Blossom-Blessed Angel", "Koth of the Homestead", "Medic's Kitesail", "Surgical Precision"],
+      "keyCards": ["Vigorbloom Charm", "Restore with Empathy", "Compel Brutality", "Something Worth Saving", "Teyo, Lightshield Expert", "Vigorbloom Annex"]
+    },
+    {
+      "pair": "UB",
+      "name": "Theorix graveyard math",
+      "playstyle": "Use self-mill, surveil and cheap interaction to reach seven graveyard cards. Threshold improves your threats, while flashback and reanimation convert the stocked graveyard into resources. Recount before spending graveyard cards.",
+      "speed": "control",
+      "sourceIds": ["fra-limited-guide", "fra-release-notes", "fra-card-reference"],
+      "signposts": ["Paradox Shaper", "Theorix Metamage"],
+      "payoffs": ["Void Extrapolator", "Proft, Sinister Mastermind", "Winter, Tormented Loner", "Null Summoner", "Recursive Recruitment", "Uldaros Theorix"],
+      "enablers": ["Yuriko, Hope from the Shadows", "Eye of Jace", "Solve for Disappointment", "Divining Duelist", "Dark Matter Manipulator", "Mindseeker Oculus"],
+      "keyCards": ["Theorix Charm", "Last Gasp", "Rewrite Regrets", "Infinite Coursework", "Unsummon", "Theorix Annex"]
+    },
+    {
+      "pair": "UR",
+      "name": "Chandra's prowess",
+      "playstyle": "Deploy spell payoffs before chaining cheap noncreature spells. Prepare and flashback provide additional casts for prowess and Thopters; bounce and burn clear attacks while spell discounts help maintain momentum.",
+      "speed": "tempo",
+      "sourceIds": ["fra-limited-guide", "fra-release-notes", "fra-card-reference"],
+      "signposts": ["Saheeli, Jewel of Avishkar", "Clash of Elements"],
+      "payoffs": ["Chandra's Emberling", "Cryotheory Adept", "Traxos, Academy Guardian", "Tetsuko Umezawa, Pursuer", "Tomik, Izzet Sparkmage", "Ruric Thar, Biomagus"],
+      "enablers": ["Artifist Acumen", "Twinned Vision", "Pompous Battlemage", "Variable Chaser", "No Admittance"],
+      "keyCards": ["Unsummon", "Plan for All Outcomes", "Way of the Cryomancer", "Geist of Saint Thalia", "Wrath of the Bloodmane"]
+    },
+    {
+      "pair": "UG",
+      "name": "Jace's mastery",
+      "playstyle": "Protect Jace while repeated empower effects grow creatures and fund loyalty abilities. Activate before combat for Kiora's evasion; choose between immediate cards and saving loyalty for larger creature tokens.",
+      "speed": "midrange",
+      "sourceIds": ["fra-limited-guide", "fra-release-notes", "fra-card-reference"],
+      "signposts": ["Kiora of Salt and Sand", "Mind Meanderer"],
+      "payoffs": ["Inspired Tethermage", "Way of the Mind Sculptor", "Way of the Wildspeaker", "Avatar of Burgeoning Echoes"],
+      "enablers": ["Arcane Amphisbaena", "Mindseeker Oculus", "Tam's Resistance", "Protege's Awakening", "Way of the Paradox", "Keeper of the Quiet Hour"],
+      "keyCards": ["Compel Brutality", "Countersculpt", "Something Worth Saving", "Tethermage's Advantage", "Infinite Coursework", "Transformative Commons"]
+    },
+    {
+      "pair": "BR",
+      "name": "Stingerquill face burn",
+      "playstyle": "Deal noncombat damage to the opponent to unlock recursion, flying and haste. Prepared Vicious Verse spells make repeatable enablers; retain enough removal to keep attacking while damage triggers accumulate.",
+      "speed": "aggro",
+      "sourceIds": ["fra-limited-guide", "fra-release-notes", "fra-card-reference"],
+      "signposts": ["Stingerquill Voxmancer", "Whiplash Wordsmith"],
+      "payoffs": ["Grim Repriser", "Master of Barbs", "Command the Stage", "Massacre Girl, Most Wanted", "Tomik, Izzet Sparkmage"],
+      "enablers": ["Hallway Heckler", "Screeching Soulbreaker", "Cast Away Doubt", "No Admittance", "Stingerquill Charm", "Koth, the Geomancer"],
+      "keyCards": ["Last Gasp", "Fulminous Forte", "Extended Absence", "Tinybones, Pocket Nuisance", "Wrath of the Bloodmane", "Stingerquill Annex"]
+    },
+    {
+      "pair": "BG",
+      "name": "Garruk's bestiary",
+      "playstyle": "Build around creatures with useful entry effects, then recur them after trades. Mill and basic landcycling supply graveyard targets and support Hapatra; large bodies let green's damage spells answer threats.",
+      "speed": "midrange",
+      "sourceIds": ["fra-limited-guide", "fra-release-notes", "fra-card-reference"],
+      "signposts": ["Hapatra, the Desert Fang", "Primal Witchstalker"],
+      "payoffs": ["Winter, Tormented Loner", "Tarmogoyf", "Traxos, Scourge Eternal", "Ghalta the Unstoppable", "Garruk, Curse Breaker"],
+      "enablers": ["Arcane Amphisbaena", "Theoretical Necromancer", "Rank Rat", "Something Worth Saving", "Apex Witchstalker", "Vinelasher Adept"],
+      "keyCards": ["Rewrite Regrets", "Ferocity of the Hunt", "Teyo, Diamondblade Mage", "Compel Brutality", "Last Gasp", "Restore with Empathy"]
+    },
+    {
+      "pair": "RG",
+      "name": "Konstrari Heartwood ramp",
+      "playstyle": "Invest early in Heartwood and other mana sources, then cast large creatures or spend mana on repeatable abilities. Artifact payoffs reward the same tokens that accelerate your curve; keep enough early blockers.",
+      "speed": "ramp",
+      "sourceIds": ["fra-limited-guide", "fra-release-notes", "fra-card-reference"],
+      "signposts": ["Konstrari Improviser", "Woodwork Prodigy"],
+      "payoffs": ["Craftwork Crusher", "Archive Arbiter", "Wrecking Gecko", "Vinelasher Adept", "Hungering Puppetbeast", "Draconic Visitor"],
+      "enablers": ["Heartwood Crafter", "Greenhouse Propagator", "Way of the Pyromancer", "Aerid Konstrari", "Tenured Tethermage"],
+      "keyCards": ["Konstrari Charm", "Compel Brutality", "Tether Technician", "Awaken the Inferno", "Kiora of Fire and Ashes", "Konstrari Annex"]
+    }
+  ],
+  "combos": [
+    {
+      "cards": ["Prudent Fateseer", "Semester Foreseer"],
+      "note": "If Fateseer hasn't triggered this turn, Peer Review's surveil pumps its newly created Cadet too. Cast it before combat.",
+      "sourceIds": ["fra-release-notes", "fra-card-reference"]
+    },
+    {
+      "cards": ["Proft, Consulting Detective", "Mindseeker Oculus"],
+      "note": "Oculus supplies Jace loyalty for surveil activations. Leave two mana to turn each Proft trigger into a counter and a card.",
+      "sourceIds": ["fra-release-notes", "fra-card-reference"]
+    },
+    {
+      "cards": ["Edgar, Ancient Bloodlord", "Blessed Ghoul"],
+      "note": "Sacrifice Ghoul to grow Edgar and gain life, then pay to return and recast Ghoul for another exchange.",
+      "sourceIds": ["fra-release-notes", "fra-card-reference"]
+    },
+    {
+      "cards": ["Winter, Tormented Loner", "Rank Rat"],
+      "note": "After Rat takes a card from the opponent's hand, sacrifice it to Winter to make that opponent sacrifice a creature too.",
+      "sourceIds": ["fra-release-notes", "fra-card-reference"]
+    },
+    {
+      "cards": ["Mabel, Valley Hero", "Heartstring Puller"],
+      "note": "Heartstring and its Cadet each trigger Mabel, giving two counters across creatures that entered this turn.",
+      "sourceIds": ["fra-release-notes", "fra-card-reference"]
+    },
+    {
+      "cards": ["Warrior's Blades", "Predictive Preparations"],
+      "note": "Put counters on the intended carrier before equipping; each counter removes one generic mana from Blades' equip cost.",
+      "sourceIds": ["fra-release-notes", "fra-card-reference"]
+    },
+    {
+      "cards": ["Bloombrute", "Greenhouse Propagator"],
+      "note": "Creature entries gain life and enable one Bloombrute draw per turn. Flash creatures can repeat this on the opponent's turn.",
+      "sourceIds": ["fra-release-notes", "fra-card-reference"]
+    },
+    {
+      "cards": ["Titanbones, Towering Heart", "Restore with Empathy"],
+      "note": "Restore recovers a permanent and gains life, adding two counters to Titanbones. One life-gain event triggers it once, regardless of amount.",
+      "sourceIds": ["fra-release-notes", "fra-card-reference"]
+    },
+    {
+      "cards": ["Void Extrapolator", "Paradox Shaper"],
+      "note": "Their prepared Omit Variables spells mill six cards toward threshold. The spell copies themselves do not remain in the graveyard.",
+      "sourceIds": ["fra-release-notes", "fra-card-reference"]
+    },
+    {
+      "cards": ["Proft, Sinister Mastermind", "Rewrite Regrets"],
+      "note": "Discard Proft to shrink a creature, then reanimate its 5/5 menace body. Its threshold casting restriction does not prevent reanimation.",
+      "sourceIds": ["fra-release-notes", "fra-card-reference"]
+    },
+    {
+      "cards": ["Saheeli, Jewel of Avishkar", "Twinned Vision"],
+      "note": "Casting Twinned Vision and later its flashback creates two separate hasty Thopters. Budget for flashback's additional discard cost.",
+      "sourceIds": ["fra-release-notes", "fra-card-reference"]
+    },
+    {
+      "cards": ["Saheeli, Jewel of Avishkar", "Pompous Battlemage"],
+      "note": "Casting prepared Improvised Act creates a Thopter and triggers prowess. A prepare copy is cast; a spell copied directly on the stack is not.",
+      "sourceIds": ["fra-release-notes", "fra-card-reference"]
+    },
+    {
+      "cards": ["Inspired Tethermage", "Tam's Resistance"],
+      "note": "Target Tethermage to add two counters in total: one from Resistance and one from its trigger for the batch of loyalty counters.",
+      "sourceIds": ["fra-release-notes", "fra-card-reference"]
+    },
+    {
+      "cards": ["Avatar of Burgeoning Echoes", "Way of the Paradox"],
+      "note": "A loyalty activation grants another land play, which can trigger Avatar to empower Jace. Adding loyalty does not permit a second activation.",
+      "sourceIds": ["fra-release-notes", "fra-card-reference"]
+    },
+    {
+      "cards": ["Grim Repriser", "Stingerquill Voxmancer"],
+      "note": "Vicious Verse's opponent damage unlocks Repriser's recursion. The returned creature has a finality counter and is exiled if it later dies.",
+      "sourceIds": ["fra-release-notes", "fra-card-reference"]
+    },
+    {
+      "cards": ["Whiplash Wordsmith", "Hallway Heckler"],
+      "note": "Cast Heckler's prepared Vicious Verse before combat to give Wordsmith flying and haste for that turn.",
+      "sourceIds": ["fra-release-notes", "fra-card-reference"]
+    },
+    {
+      "cards": ["Hapatra, the Desert Fang", "Apex Witchstalker"],
+      "note": "Basic landcycling puts Apex's mana value six in your graveyard, letting Hapatra apply at least six -1/-1 counters when it enters.",
+      "sourceIds": ["fra-release-notes", "fra-card-reference"]
+    },
+    {
+      "cards": ["Primal Witchstalker", "Rewrite Regrets"],
+      "note": "Witchstalker mills reanimation targets while recovering a land. Rewrite can return Witchstalker to repeat that entry effect and also empower Jace.",
+      "sourceIds": ["fra-release-notes", "fra-card-reference"]
+    },
+    {
+      "cards": ["Woodwork Prodigy", "Draconic Visitor"],
+      "note": "While Visitor is out, Soul Tether produces a 5/5 flying Dragon instead of Heartwood. That token no longer supplies mana.",
+      "sourceIds": ["fra-release-notes", "fra-card-reference"]
+    },
+    {
+      "cards": ["Heartwood Crafter", "Konstrari Improviser"],
+      "note": "Crafter's restricted mana can pay for Soul Tether cast from exile, accelerating a reusable Heartwood mana source.",
+      "sourceIds": ["fra-release-notes", "fra-card-reference"]
+    }
+  ]
+}

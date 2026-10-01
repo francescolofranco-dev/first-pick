@@ -1,15 +1,93 @@
 package com.firstpick.cards
 
-import kotlinx.coroutines.runBlocking
-import java.nio.file.Files
-import kotlin.io.path.createTempDirectory
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
-import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlin.test.assertNull
+import kotlinx.coroutines.runBlocking
+import java.nio.file.Files
+import kotlin.io.path.createTempDirectory
 
 class ScryfallClientTest {
+
+    private fun fraCards() = javaClass.getResourceAsStream("/cards/fra-scryfall.json")!!
+        .bufferedReader().use { it.readText() }
+
+    @Test
+    fun preparationUsesCreatureCurveAndPipsButRetainsTheSpellsRoles() = runBlocking {
+        val cache = createTempDirectory("fp-fra-meta")
+        // Version 7 treated the combined creature/spell cost as the casting requirement.
+        Files.writeString(cache.resolve("scryfall7_FRA.json"), "[]")
+        val http = ScriptedHttpClient(
+            StubHttpAction.Response(200, fraCards()),
+            StubHttpAction.Response(404, ""),
+        )
+        val meta = ScryfallClient(cacheDir = cache, http = http).setMeta("FRA")
+        val angel = meta.getValue("blossom-blessed angel")
+        assertEquals(4, angel.cmc)
+        assertTrue(angel.isCreature)
+        assertTrue(angel.isEvasion)
+        assertEquals(mapOf('W' to 1), angel.coloredPips)
+        assertTrue(angel.hybridPips.isEmpty(), "the optional G/W prepare cost cannot require a green source")
+        assertTrue(meta.getValue("pompous battlemage").isCardDraw)
+        assertTrue(meta.getValue("variable chaser").isCardDraw)
+        assertEquals(mapOf('R' to 1), meta.getValue("pompous battlemage").coloredPips)
+        assertTrue(meta.getValue("pompous battlemage").heavyPipColors.isEmpty())
+        val crafter = meta.getValue("heartwood crafter")
+        assertTrue(crafter.isFixing)
+        assertEquals(setOf('R', 'G'), crafter.producedColors)
+        assertEquals(1, crafter.cmc)
+        assertTrue(crafter.fixingRequiresAdditionalSpell)
+        assertFalse(meta.getValue("hungering puppetbeast").fixingRequiresAdditionalSpell)
+        assertTrue(Files.exists(cache.resolve("scryfall8_FRA.json")))
+    }
+
+    @Test
+    fun catalogPreservesMissingArenaIdsAndNeverInventsStatistics() = runBlocking {
+        val cache = createTempDirectory("fp-fra-catalog")
+        val http = ScriptedHttpClient(StubHttpAction.Response(200, fraCards()))
+        val client = ScryfallClient(cacheDir = cache, http = http)
+        val catalog = client.cardCatalog("fra")
+        assertEquals(5, catalog.cards.size)
+        catalog.cards.forEach {
+            assertNull(it.mtgaId)
+            assertNull(it.gihWr)
+            assertNull(it.alsa)
+            assertEquals(0, it.everDrawnGameCount)
+        }
+        val cached = client.cardCatalog("FRA")
+        assertEquals(catalog, cached)
+        assertEquals(1, http.requestCount)
+        assertEquals("(set:fra or (set:spg cn>=159 cn<=168))", ScryfallClient.limitedSetQuery("fra"))
+    }
+
+    @Test
+    fun failedSecondPageKeepsThePreviousCompleteCatalog() = runBlocking {
+        val cache = createTempDirectory("fp-fra-catalog-pages")
+        val http = ScriptedHttpClient(
+            StubHttpAction.Response(200, fraCards()),
+            StubHttpAction.Response(200, """{"has_more":true,"next_page":"https://api.scryfall.com/cards/search?page=2","data":[{"name":"Incomplete first page"}]}"""),
+            StubHttpAction.Response(404, ""),
+        )
+        val client = ScryfallClient(cacheDir = cache, http = http)
+        val complete = client.cardCatalog("FRA")
+        val path = cache.resolve("scryfall_catalog1_FRA.json")
+        val saved = Files.readString(path)
+        val refreshed = client.cardCatalog("FRA", forceRefresh = true)
+        assertEquals(complete, refreshed)
+        assertEquals(saved, Files.readString(path))
+        assertEquals(3, http.requestCount)
+    }
+
+    @Test
+    fun heartwoodFixingRequiresCreatingTokens() {
+        assertTrue(roles("Creature", "Create a Heartwood token.").fixing)
+        assertTrue(roles("Creature", "Create two tapped Heartwood tokens.").fixing)
+        assertFalse(roles("Creature", "Sacrifice a Heartwood token: Draw a card.").fixing)
+        assertFalse(roles("Instant", "Destroy target Heartwood token.").fixing)
+    }
+
 
     @Test
     fun printedCostsAndFrontFaceCostsSurviveTheCache() = runBlocking {
@@ -40,7 +118,7 @@ class ScryfallClientTest {
     @Test
     fun legacyFreshCacheIsRefreshedToIncludeThePrintedCost() = runBlocking {
         val cache = createTempDirectory("fp-mana-upgrade")
-        Files.writeString(cache.resolve("scryfall7_TEST.json"), legacyMetadata)
+        Files.writeString(cache.resolve("scryfall8_TEST.json"), legacyMetadata)
         val http = ScriptedHttpClient(
             StubHttpAction.Response(200, """{"data":[{"name":"Test Creature","cmc":3,"type_line":"Creature","mana_cost":"{1}{U}{U}"}]}"""),
             StubHttpAction.Response(404, "{}"),
@@ -53,13 +131,13 @@ class ScryfallClientTest {
     @Test
     fun legacyMetadataRemainsAvailableWhenCostRefreshFails() = runBlocking {
         val cache = createTempDirectory("fp-mana-fallback")
-        Files.writeString(cache.resolve("scryfall7_TEST.json"), legacyMetadata)
+        Files.writeString(cache.resolve("scryfall8_TEST.json"), legacyMetadata)
         val http = ScriptedHttpClient(StubHttpAction.Response(400, "{}"))
         val result = ScryfallClient(cacheDir = cache, http = http).setMeta("TEST")
         assertTrue(result.getValue("test creature").isCreature)
         assertEquals(3, result.getValue("test creature").cmc)
         assertNull(result.getValue("test creature").manaCost)
-        assertEquals(legacyMetadata, Files.readString(cache.resolve("scryfall7_TEST.json")))
+        assertEquals(legacyMetadata, Files.readString(cache.resolve("scryfall8_TEST.json")))
     }
 
     private val legacyMetadata = """[{"name":"Test Creature","cmc":3,"creature":true,"land":false,"removal":false,"fixing":false,"finisher":false,"evasion":false,"draw":false}]"""

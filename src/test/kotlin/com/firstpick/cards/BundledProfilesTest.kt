@@ -1,6 +1,9 @@
 package com.firstpick.cards
 
+import com.firstpick.guide.SetDraftGuideBuilder
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
+import kotlin.io.path.createTempDirectory
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -38,17 +41,19 @@ class BundledProfilesTest {
             val sourceKinds = profile.sources.associate { it.id to it.kind }
             assertTrue(
                 profile.mechanics.all { mechanic ->
-                    mechanic.sourceIds.mapNotNull(sourceKinds::get).containsAll(
-                        setOf(SynergySourceKind.OFFICIAL_MECHANICS, SynergySourceKind.OFFICIAL_RELEASE_NOTES),
-                    )
+                    mechanic.sourceIds.mapNotNull(sourceKinds::get).any {
+                        it == SynergySourceKind.OFFICIAL_MECHANICS || it == SynergySourceKind.OFFICIAL_RELEASE_NOTES
+                    }
                 },
-                "${entry.code}: every mechanic must cite official mechanics and release notes",
+                "${entry.code}: every mechanic must cite official rules",
             )
             assertTrue(
                 profile.archetypes.all { archetype ->
-                    SynergySourceKind.LIMITED_DATA in archetype.sourceIds.mapNotNull(sourceKinds::get)
+                    archetype.sourceIds.mapNotNull(sourceKinds::get).any {
+                        it == SynergySourceKind.LIMITED_DATA || it == SynergySourceKind.OFFICIAL_LIMITED_GUIDE
+                    }
                 },
-                "${entry.code}: every archetype must cite Limited data",
+                "${entry.code}: every archetype must cite an official Limited guide or Limited data",
             )
             assertTrue(
                 profile.combos.all { combo ->
@@ -122,5 +127,70 @@ class BundledProfilesTest {
         val declared = manifest.sets.mapTo(mutableSetOf()) { it.code.uppercase() }
         assertTrue("MSH" in declared, "MSH must be a declared supported set")
         assertEquals(declared, StandardSets.codes)
+    }
+
+    @Test
+    fun fraProfileCoversEveryOfficialLaneWithActionableCardRolesAndInteractions() {
+        val profile = json.decodeFromString<SetSynergyProfile>(resource("/synergy/FRA.json")!!)
+        assertTrue(StandardSets.isSupported("fra"))
+        assertEquals(SynergyTierLevel.RESEARCHED, StandardSets.tier("FRA"))
+        assertEquals("Reality Fracture", profile.setName)
+        assertEquals(pairs, profile.archetypes.mapTo(mutableSetOf()) { it.pair })
+
+        val mechanics = profile.mechanics.map { it.name.lowercase() }
+        for (required in listOf("empower jace", "heartwood", "prepare")) {
+            assertTrue(mechanics.any { required in it }, "FRA must explain $required")
+        }
+        val highlightedCards = mapOf(
+            "WU" to setOf("Fatehold Chronologist", "Prudent Fateseer"),
+            "UB" to setOf("Paradox Shaper", "Theorix Metamage"),
+            "BR" to setOf("Stingerquill Voxmancer", "Whiplash Wordsmith"),
+            "RG" to setOf("Konstrari Improviser", "Woodwork Prodigy"),
+            "WG" to setOf("Emergency Phytomedic", "Vigorbloom Vanguard"),
+            "WB" to setOf("Edgar, Ancient Bloodlord", "Twisted Fates"),
+            "UR" to setOf("Clash of Elements", "Saheeli, Jewel of Avishkar"),
+            "BG" to setOf("Hapatra, the Desert Fang", "Primal Witchstalker"),
+            "WR" to setOf("Mabel, Valley Hero", "Warrior's Blades"),
+            "UG" to setOf("Kiora of Salt and Sand", "Mind Meanderer"),
+        )
+        val sourceKinds = profile.sources.associate { it.id to it.kind }
+        val index = SynergyIndex(profile)
+        for (archetype in profile.archetypes) {
+            val cards = archetype.signposts + archetype.payoffs + archetype.enablers + archetype.keyCards
+            assertTrue(cards.containsAll(highlightedCards.getValue(archetype.pair)))
+            assertTrue(cards.distinct().size >= 12, "FRA ${archetype.pair}: needs researched role depth")
+            assertTrue(archetype.enablers.isNotEmpty() && archetype.payoffs.isNotEmpty())
+            assertTrue(SynergySourceKind.OFFICIAL_LIMITED_GUIDE in archetype.sourceIds.mapNotNull(sourceKinds::get))
+            assertTrue(profile.combos.any { combo -> combo.cards.all(cards::contains) },
+                "FRA ${archetype.pair}: needs a supported interaction")
+            for (card in cards) {
+                assertTrue(index.tags(card).any { it.pair == archetype.pair },
+                    "FRA $card must reach the advisor's shared synergy index")
+            }
+        }
+        assertTrue(profile.combos.size >= 10)
+        assertEquals(index.tags("Stingerquill Voxmancer"),
+            index.tags("Stingerquill Voxmancer // Vicious Verse"))
+    }
+
+    @Test
+    fun fraGuideLoadsOfflineForDraftAndSealedWithoutInventingRatings() = runBlocking {
+        val cache = createTempDirectory("fra-guide")
+        try {
+            val repository = SynergyRepository(cache)
+            repository.load("fra")
+            assertEquals("FRA", repository.loadedSet)
+            for (format in listOf("PremierDraft", "QuickDraft", "TradDraft", "Sealed")) {
+                val guide = SetDraftGuideBuilder.build("FRA", format, emptyList(), repository.index)
+                assertEquals("Reality Fracture", guide.setName)
+                assertEquals(10, guide.archetypes.size)
+                assertTrue(guide.mechanics.isNotEmpty() && guide.combos.isNotEmpty())
+                assertTrue(guide.archetypes.all { it.winRate == null })
+                assertTrue(guide.topCards.all { it.commons.isEmpty() && it.nonCommons.isEmpty() })
+                assertTrue(guide.sources.any { it.kind == "Card reference" })
+            }
+        } finally {
+            cache.toFile().deleteRecursively()
+        }
     }
 }

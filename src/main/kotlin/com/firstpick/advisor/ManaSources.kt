@@ -47,7 +47,9 @@ object ManaSources {
         val fixers = deckColors.associateWith { color ->
             spells.count { card ->
                 val m = meta(card.name) ?: return@count false
-                if (!m.isFixing || m.isLand) return@count false
+                // The creature's mana value does not include its prepared/Adventure spell cost.
+                // Keep these roles for deck guidance, but do not promise a splash source from them.
+                if (!m.isFixing || m.isLand || m.fixingRequiresAdditionalSpell) return@count false
                 val produced = m.producedColors
                 val canProduce = color in produced || (produced.isEmpty() && color == splashColor)
                 val needsCreditedColorToCast = (coloredPips(card, m, baseColors, splashColor)[color] ?: 0) > 0

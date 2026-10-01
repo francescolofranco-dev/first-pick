@@ -8,8 +8,53 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
+import kotlin.test.assertFalse
+import kotlin.test.assertFailsWith
 
 class CardRepositoryTest {
+
+    @Test
+    fun emptyLaunchRatingsUseCatalogAndRealArenaIdsUntilRefreshSucceeds() = runBlocking {
+        val cache = createTempDirectory("fp-fra-repo")
+        val ratingsHttp = ScriptedHttpClient(
+            StubHttpAction.Response(200, """{"data":[]}"""),
+            StubHttpAction.Response(200, """{"data":[{"name":"Heartwood Crafter // Soul Tether","mtga_id":106339,"color":"G","ever_drawn_win_rate":0.57,"ever_drawn_game_count":350}]}"""),
+        )
+        val catalog = """{"data":[{"name":"Heartwood Crafter // Soul Tether","colors":["G"],"rarity":"common","type_line":"Creature — Human Druid"}]}"""
+        val repo = CardRepository(
+            client = SeventeenLandsClient(cacheDir = cache, http = ratingsHttp),
+            catalogClient = ScryfallClient(cacheDir = cache, http = ScriptedHttpClient(StubHttpAction.Response(200, catalog))),
+            arenaCatalogIds = { mapOf("heartwood crafter" to 106339) },
+            nameResolver = { if (it == 999) "Heartwood Crafter" else null },
+            basicLandResolver = BasicLandResolver { null },
+        )
+        val launch = repo.load("FRA", "PremierDraft")
+        assertEquals(RatingsDataSource.CARD_CATALOG, launch.source)
+        assertEquals(0, launch.reliableCardCount)
+        assertEquals(0, launch.medianGamesPerCard)
+        assertEquals("Heartwood Crafter // Soul Tether", repo.resolve(106339).displayName)
+        assertEquals("Heartwood Crafter // Soul Tether", repo.resolve(999).displayName)
+        assertNull(repo.resolve(106339).gihWr)
+        assertFalse(repo.resolve(106339).rating!!.hasReliableWinRate)
+
+        val observed = repo.load("FRA", "PremierDraft", forceRefresh = true)
+        assertEquals(RatingsDataSource.NETWORK, observed.source)
+        assertEquals(1, observed.reliableCardCount)
+        assertEquals(350, observed.medianGamesPerCard)
+        assertEquals(0.57, repo.resolve(106339).gihWr)
+        assertEquals(2, ratingsHttp.requestCount)
+    }
+
+    @Test
+    fun unavailableRatingsAndCatalogRemainAnActionableError() = runBlocking {
+        val cache = createTempDirectory("fp-no-catalog")
+        val repo = CardRepository(
+            client = SeventeenLandsClient(cacheDir = cache, http = ScriptedHttpClient(StubHttpAction.Response(404, ""))),
+            catalogClient = ScryfallClient(cacheDir = cache, http = ScriptedHttpClient(StubHttpAction.Response(404, ""))),
+        )
+        assertEquals(FetchFailure.NOT_FOUND, assertFailsWith<DataUnavailableException> { repo.load("FRA", "Sealed") }.reason)
+        assertFalse(repo.isLoaded)
+    }
 
     private fun rating(id: Int, name: String, gih: Double?, games: Int = 1000) =
         CardRating(name = name, mtgaId = id, everDrawnWinRate = gih, everDrawnGameCount = games)

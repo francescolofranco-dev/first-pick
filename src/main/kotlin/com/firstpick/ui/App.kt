@@ -327,6 +327,7 @@ private fun RatingsHealthStatus(state: DraftUiState, onRetry: () -> Unit) {
         RatingsDataStatus.CACHED -> MaterialTheme.colorScheme.secondary
         RatingsDataStatus.LOADING -> MaterialTheme.colorScheme.secondary
         RatingsDataStatus.STALE_CACHE -> MaterialTheme.colorScheme.tertiary
+        RatingsDataStatus.CARD_CATALOG -> MaterialTheme.colorScheme.tertiary
         RatingsDataStatus.ERROR -> MaterialTheme.colorScheme.error
         RatingsDataStatus.IDLE -> MaterialTheme.colorScheme.onSurfaceVariant
     }
@@ -365,12 +366,16 @@ private fun RatingsHealthStatus(state: DraftUiState, onRetry: () -> Unit) {
 }
 
 internal fun ratingsDataDescription(state: DraftUiState): String {
+    if (state.ratingsDataStatus == RatingsDataStatus.CARD_CATALOG) {
+        return "Scryfall · ${state.ratingsCardCount} cards · awaiting 17Lands ratings"
+    }
     val status = when (state.ratingsDataStatus) {
         RatingsDataStatus.IDLE -> "Idle"
         RatingsDataStatus.LOADING -> "Loading"
         RatingsDataStatus.FRESH -> "Fresh"
         RatingsDataStatus.CACHED -> "Cached"
         RatingsDataStatus.STALE_CACHE -> "Stale cache"
+        RatingsDataStatus.CARD_CATALOG -> "Card catalog"
         RatingsDataStatus.ERROR -> "Unavailable"
     }
     val evidence = if (state.ratingsCardCount > 0) {

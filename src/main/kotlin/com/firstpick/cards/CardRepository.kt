@@ -28,8 +28,10 @@ data class RatingsDatasetInfo(
 
 class CardRepository(
     private val client: SeventeenLandsClient = SeventeenLandsClient(),
-    private val nameResolver: (Int) -> String? = { null },
+    private val nameResolver: (Int) -> String? = ArenaCardNameResolver()::resolve,
     private val basicLandResolver: BasicLandResolver = ArenaBasicLandResolver(),
+    private val catalogClient: ScryfallClient = ScryfallClient(),
+    private val arenaCatalogIds: (String) -> Map<String, Int> = ArenaCardNameResolver()::idsForSet,
 ) {
     private var byMtgaId: Map<Int, CardRating> = emptyMap()
     private var byName: Map<String, CardRating> = emptyMap()
@@ -56,11 +58,21 @@ class CardRepository(
         val key = "${setCode.uppercase()}_$format"
         if (!forceRefresh && key == loadedKey) ratingsInfo?.let { return it }
 
-        val result = client.fetchWithMetadata(
-            set = setCode,
-            format = format,
-            forceRefresh = forceRefresh,
-        )
+        val result = try {
+            client.fetchWithMetadata(set = setCode, format = format, forceRefresh = forceRefresh)
+                .takeIf { it.ratings.isNotEmpty() }
+                ?: throw DataUnavailableException(FetchFailure.NOT_FOUND)
+        } catch (failure: DataUnavailableException) {
+            val catalog = catalogClient.cardCatalog(setCode, forceRefresh = forceRefresh)
+            if (catalog.cards.isEmpty()) throw failure
+            val arenaIds = arenaCatalogIds(setCode)
+            RatingsFetchResult(
+                ratings = catalog.cards.map { card ->
+                    if (card.mtgaId != null) card else card.copy(mtgaId = arenaIds[normalize(card.name)])
+                },
+                metadata = RatingsFetchMetadata(RatingsDataSource.CARD_CATALOG, catalog.lastUpdated, failure.reason),
+            )
+        }
         index(result.ratings, key)
         return RatingsDatasetInfo(
             key = key,
@@ -95,7 +107,7 @@ class CardRepository(
         if (basic != null) return RankedCard(grpId, basic.name, null, basic)
         val name = nameResolver(grpId)
         val byNm = name?.let { byName[normalize(it)] }
-        return RankedCard(grpId, name ?: byNm?.name ?: "", byNm)
+        return RankedCard(grpId, byNm?.name ?: name.orEmpty(), byNm)
     }
 
     fun resolveName(name: String): RankedCard {

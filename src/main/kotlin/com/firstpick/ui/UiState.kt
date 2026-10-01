@@ -14,6 +14,8 @@ enum class RatingsDataStatus {
     CACHED,
     /** A refresh failed, so an expired cache is keeping recommendations available. */
     STALE_CACHE,
+    /** Scryfall identities and researched guidance, without observed ratings. */
+    CARD_CATALOG,
     ERROR,
 }
 
@@ -91,7 +93,14 @@ data class DeckOptionUi(
     val landLine: String,
     val spells: List<DeckSpellUi>,
     val lands: List<DeckSpellUi> = emptyList(),
+    val hasObservedPower: Boolean = true,
 ) {
+    val powerLabel: String
+        get() = if (hasObservedPower) "Power $power" else "Power unavailable"
+
+    val displayTier: String?
+        get() = tier.takeIf { hasObservedPower }
+
     val title: String
         get() {
             val base = guildName(basePair).ifBlank { basePair } + (splash?.let { " · splash $it" } ?: "")

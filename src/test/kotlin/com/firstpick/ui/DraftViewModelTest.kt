@@ -161,7 +161,7 @@ class DraftViewModelTest {
             Files.writeString(cache.resolve("ratings3_SOS_$f.json"), ratings)
             Files.writeString(cache.resolve("colorratings_SOS_$f.json"), "[]")
         }
-        Files.writeString(cache.resolve("scryfall7_SOS.json"), "[]")
+        Files.writeString(cache.resolve("scryfall8_SOS.json"), "[]")
 
         val repo = CardRepository(SeventeenLandsClient(cacheDir = cache))
         val metaRepo = CardMetaRepository(ScryfallClient(cacheDir = cache))
@@ -215,7 +215,7 @@ class DraftViewModelTest {
         for (format in listOf("PremierDraft", "QuickDraft", "TradDraft")) {
             Files.writeString(cache.resolve("colorratings_SOS_$format.json"), "[]")
         }
-        Files.writeString(cache.resolve("scryfall5_SOS.json"), "[]")
+        Files.writeString(cache.resolve("scryfall8_SOS.json"), "[]")
         val line = javaClass.getResourceAsStream("/quickdraft_first_snapshot.log")!!
             .bufferedReader().readText().trim()
         val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
@@ -224,7 +224,10 @@ class DraftViewModelTest {
                 scope = scope,
                 watcher = FakeWatcher(line),
                 tracker = DraftTracker(),
-                repo = CardRepository(SeventeenLandsClient(cacheDir = cache, http = http)),
+                repo = CardRepository(
+                    SeventeenLandsClient(cacheDir = cache, http = http),
+                    catalogClient = ScryfallClient(cacheDir = cache, http = ScriptedHttpClient(StubHttpAction.Response(404, ""))),
+                ),
                 metaRepo = CardMetaRepository(ScryfallClient(cacheDir = cache)),
                 archetypeRepo = ArchetypeRepository(SeventeenLandsClient(cacheDir = cache)),
             )
@@ -263,7 +266,7 @@ class DraftViewModelTest {
             Files.writeString(cache.resolve("ratings3_DSK_$format.json"), ratings)
             Files.writeString(cache.resolve("colorratings_DSK_$format.json"), "[]")
         }
-        Files.writeString(cache.resolve("scryfall7_DSK.json"), "[]")
+        Files.writeString(cache.resolve("scryfall8_DSK.json"), "[]")
 
         val islandImage = "https://api.scryfall.com/cards/arena/92374?format=image&version=normal"
         val repo = CardRepository(

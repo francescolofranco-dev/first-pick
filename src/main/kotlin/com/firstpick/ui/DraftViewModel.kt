@@ -8,7 +8,6 @@ import com.firstpick.advisor.Lane
 import com.firstpick.advisor.LaneDetector
 import com.firstpick.advisor.PickNetRanker
 import com.firstpick.advisor.PoolNeeds
-import com.firstpick.advisor.ScoredCard
 import com.firstpick.advisor.WUBRG
 import com.firstpick.model.DraftPhase
 import com.firstpick.cards.ArchetypeRepository
@@ -99,7 +98,7 @@ class DraftViewModel(
         simJob = scope.launch(Dispatchers.IO) {
             tracker.consume(simulator.simulate(set, paused = simPaused))
             if (tracker.state.value.setCode == null) {
-                currentError = "No 17Lands data to simulate ${set.uppercase()}"
+                currentError = "Not enough identified Arena cards to simulate ${set.uppercase()}"
                 simulating = false
                 publish()
             }
@@ -243,6 +242,7 @@ class DraftViewModel(
             ratingsInfo?.source == RatingsDataSource.NETWORK -> RatingsDataStatus.FRESH
             ratingsInfo?.source == RatingsDataSource.FRESH_CACHE -> RatingsDataStatus.CACHED
             ratingsInfo?.source == RatingsDataSource.STALE_CACHE -> RatingsDataStatus.STALE_CACHE
+            ratingsInfo?.source == RatingsDataSource.CARD_CATALOG -> RatingsDataStatus.CARD_CATALOG
             currentError != null -> RatingsDataStatus.ERROR
             else -> RatingsDataStatus.IDLE
         }
@@ -358,14 +358,17 @@ class DraftViewModel(
             loadingRatings = ratingsLoading,
             dataError = null,
             ratingsDataStatus = ratingsStatus,
-            ratingsDataWarning = ratingsInfo?.takeIf { it.source == RatingsDataSource.STALE_CACHE }
-                ?.let { staleRatingsMessage(it.fallbackReason) },
+            ratingsDataWarning = when (ratingsInfo?.source) {
+                RatingsDataSource.STALE_CACHE -> staleRatingsMessage(ratingsInfo.fallbackReason)
+                RatingsDataSource.CARD_CATALOG -> "17Lands ratings are unavailable. Suggestions use card roles and researched synergies; retry as results become available."
+                else -> null
+            },
             ratingsLastUpdated = ratingsInfo?.lastUpdated,
             ratingsCardCount = ratingsInfo?.cardCount ?: 0,
             ratingsReliableCardCount = ratingsInfo?.reliableCardCount ?: 0,
             ratingsMedianGamesPerCard = ratingsInfo?.medianGamesPerCard ?: 0,
             canRetryRatings = ratingsStatus == RatingsDataStatus.ERROR ||
-                ratingsStatus == RatingsDataStatus.STALE_CACHE,
+                ratingsStatus == RatingsDataStatus.STALE_CACHE || ratingsStatus == RatingsDataStatus.CARD_CATALOG,
             packCards = rows,
             laneColors = WUBRG_ORDER.filter { it in lane.colors },
             openLanes = openLanes,
@@ -457,6 +460,7 @@ class DraftViewModel(
             landLine = landLine,
             spells = spells.toDeckSpells(),
             lands = nonbasicLands.toDeckSpells(),
+            hasObservedPower = hasObservedPower,
         )
     }
 
@@ -528,44 +532,6 @@ class DraftViewModel(
             buckets[key] = (buckets[key] ?: 0) + 1
         }
         return buckets.map { CurveBar(it.key, it.value) }
-    }
-
-    private fun packRows(
-        scored: List<ScoredCard>,
-        basicLands: List<com.firstpick.cards.RankedCard>,
-        originalPackIds: List<Int>,
-    ): List<PackCardUi> {
-        val ordered = scored.map { it.card to it } +
-            basicLands.sortedBy { originalPackIds.indexOf(it.grpId) }.map { it to null }
-        val usedIndices = mutableSetOf<Int>()
-        return ordered.mapIndexed { i, (card, score) ->
-            val origIdx = originalPackIds.withIndex()
-                .firstOrNull { (idx, id) -> id == card.grpId && idx !in usedIndices }
-                ?.index ?: 0
-            usedIndices.add(origIdx)
-            PackCardUi(
-                grpId = card.grpId,
-                originalIndex = origIdx,
-                rank = i + 1,
-                name = card.displayName,
-                color = card.rating?.color.orEmpty(),
-                rarity = card.rating?.rarity.orEmpty(),
-                gihWr = card.gihWr,
-                alsa = card.rating?.alsa,
-                ata = card.rating?.ata,
-                value = score?.value,
-                isBomb = score?.isBomb == true,
-                isRoom = card.rating?.types.orEmpty().any { type ->
-                    type.contains("Room", ignoreCase = true)
-                },
-                isBasicLand = card.isBasicLand,
-                reasons = score?.reasons ?: listOf("Basic land", "Not rated"),
-                imageUrl = card.imageUrl,
-                z = score?.z ?: 0.0,
-                breakdown = score?.breakdown,
-                modelRank = score?.modelRank,
-            )
-        }
     }
 
     private fun dataErrorMessage(t: Throwable?, set: String): String =
