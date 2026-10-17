@@ -4,11 +4,77 @@ import kotlinx.coroutines.runBlocking
 import kotlin.io.path.createTempDirectory
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class PickNetRepositoryTest {
+
+    @Test
+    fun `bundled FRA model loads and scores real draft cards throughout a draft`() = runBlocking {
+        val repo = PickNetRepository(cacheDir = createTempDirectory("picknet-test"))
+        assertEquals(listOf("FRA"), repo.bundledSets(listOf("fra", "ZZZ"), "PremierDraft"))
+        repo.load("fra", "PremierDraft")
+        val net = assertNotNull(repo.netFor("FRA", "PremierDraft"))
+        assertEquals("FRA", net.set)
+        assertEquals("PremierDraft", net.format)
+        assertEquals(295, net.cards.size)
+        val draftCards = listOf(
+            "Forest", "Unsummon", "Last Gasp", "Saheeli, Jewel of Avishkar",
+            "Konstrari Improviser", "Hungering Puppetbeast",
+        )
+        for (card in draftCards) assertTrue(net.knows(card), "FRA model must cover $card")
+
+        val pools = listOf(
+            emptyList(),
+            listOf("Pompous Battlemage", "Pompous Battlemage", "Variable Chaser", "Unsummon"),
+            listOf("Heartwood Crafter", "Heartwood Crafter", "Konstrari Improviser", "Hungering Puppetbeast"),
+        )
+        for (pool in pools) {
+            val ranked = net.score(pool, net.cards)
+            assertEquals(net.cards.toSet(), ranked.map { it.first }.toSet())
+            assertTrue(ranked.isNotEmpty())
+            assertTrue(ranked.all { it.second.isFinite() }, "FRA scores must be finite for pool $pool")
+        }
+    }
+
+    @Test
+    fun `bundled FRA model recognizes preparation creature names`() = runBlocking {
+        val repo = PickNetRepository(cacheDir = createTempDirectory("picknet-test"))
+        repo.load("FRA", "PremierDraft")
+        val net = assertNotNull(repo.netFor("FRA", "PremierDraft"))
+        val preparationCards = listOf(
+            "Blossom-Blessed Angel" to "Seed Suture",
+            "Variable Chaser" to "Arc of Fortune",
+            "Pompous Battlemage" to "Improvised Act",
+            "Heartwood Crafter" to "Soul Tether",
+        )
+        for ((creature, spell) in preparationCards) {
+            assertTrue(net.knows(creature), "FRA model must recognize the Arena name $creature")
+            assertFalse(net.knows(spell), "Prepared spell $spell is not a separate draft card")
+        }
+        val ranked = net.score(emptyList(), preparationCards.map { it.first })
+        assertEquals(preparationCards.size, ranked.size)
+        assertTrue(ranked.all { it.second.isFinite() })
+    }
+
+    @Test
+    fun `bundled FRA model is restricted to premier draft`(): Unit = runBlocking {
+        val repo = PickNetRepository(cacheDir = createTempDirectory("picknet-test"))
+        repo.load("FRA", "PremierDraft")
+        assertNotNull(repo.netFor("FRA", "PremierDraft"))
+        assertNull(repo.netFor("HOB", "PremierDraft"))
+        for (format in listOf("TradDraft", "QuickDraft", "Sealed")) {
+            assertTrue(repo.bundledSets(listOf("FRA"), format).isEmpty())
+            assertNull(repo.netFor("FRA", format))
+            repo.load("FRA", format)
+            assertNull(repo.netFor("FRA", format))
+            assertNull(repo.netFor("FRA", "PremierDraft"))
+        }
+        repo.load("FRA", "PremierDraft")
+        assertNotNull(repo.netFor("FRA", "PremierDraft"))
+    }
 
     @Test
     fun `bundled HOB model loads and scores real draft cards`() = runBlocking {

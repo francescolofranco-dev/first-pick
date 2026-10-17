@@ -274,13 +274,17 @@ Brand assets live in `packaging/icon/` (SVG source + `AppIcon.iconset`) and `doc
 interactions, and the set's mechanics, including empower Jace, Heartwood, and
 prepare. The advisor and deck builder use the same profile as the guide.
 
+FRA includes a dedicated Premier Draft PickNet model trained on public 17Lands
+FRA picks. It refines suggestions within the existing guide and mana guardrails;
+other formats continue to use their own live ratings and contextual advisor.
+See the [model validation report](docs/fra-model-validation.md) for provenance,
+card coverage, and the independent held-out comparison.
+
 When 17Lands has no ratings for a format yet, FirstPick loads card details from
 Scryfall and resolves missing Arena IDs from the installed Arena database.
-The app labels this as card-catalog mode; observed win rates and trained card
-strength remain unavailable. Retry ratings to use 17Lands data once published.
-FRA joins the existing weekly model-training selection automatically; see the
-[model readiness report](docs/fra-model-validation.md) for the data checks and
-validation required before a model is bundled.
+The app labels this as card-catalog mode and leaves unobserved card power unrated.
+Retry ratings to use 17Lands data once published. FRA remains eligible for the
+existing weekly model-training selection as its public draft data grows.
 
 ### Attribution
 
