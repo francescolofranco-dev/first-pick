@@ -85,6 +85,13 @@ class AdvisorEngine(
         val needs = PoolNeeds.analyze(poolMetas, pool.size)
         val picksTaken = (packNumber - 1) * config.picksPerPack + (pickNumber - 1)
         val progress = (picksTaken.toDouble() / config.totalPicks).coerceIn(0.0, 1.0)
+        // A tentative pool identity is useful to display before it is strong
+        // enough to rule out taking a better card in another color.
+        val scoringLane = if (progress < config.penaltyRampStart) {
+            lane.copy(colors = emptySet(), pair = null)
+        } else {
+            lane
+        }
         val theme = synergy?.let {
             ThemeSynergy(it, pool) { card ->
                 if (!lane.hasBaseColorEvidence && isBomb(card, metrics)) {
@@ -97,22 +104,48 @@ class AdvisorEngine(
         val poolCounts = pool.groupingBy { it.name }.eachCount()
         val splashColors = activeManaSources
             ?.takeIf {
-                lane.hasBaseColorEvidence &&
-                    it.baseColors.containsAll(lane.colors) &&
+                scoringLane.hasBaseColorEvidence &&
+                    it.baseColors.containsAll(scoringLane.colors) &&
                     it.allRequirementsMet
             }
             ?.splashColor
             ?.let(::setOf)
             .orEmpty()
-        val fitW = fitWeight(progress, lane)
+        val fitW = fitWeight(progress, scoringLane)
 
         val heuristicOrder = pack.map { card ->
             val fit = if (fitW > 0.0) deckFit?.invoke(card) else null
-            evaluate(card, lane, metrics, archetypeRating, meta, progress, needs, theme, poolCounts[card.name] ?: 0, splashColors, fit, fitW)
+            evaluate(card, scoringLane, metrics, archetypeRating, meta, progress, needs, theme, poolCounts[card.name] ?: 0, splashColors, fit, fitW)
         }.sortedWith(compareByDescending<ScoredCard> { it.rawValue }.thenBy { it.card.displayName })
         // Hard guide feasibility applies even when PickNet is unavailable or
         // lacks enough pack coverage to run.
-        return PickNetRanker.applyGuideOrder(heuristicOrder, heuristicOrder)
+        return applyGuideScores(heuristicOrder)
+    }
+
+    private fun applyGuideScores(heuristicOrder: List<ScoredCard>): List<ScoredCard> {
+        val weakestViable = heuristicOrder.filter { it.guardrail.modelPromotable }.minOfOrNull { it.value }
+            ?: return heuristicOrder
+        val ceiling = (weakestViable - GUIDE_SCORE_GAP).coerceAtLeast(0.0)
+        val adjusted = heuristicOrder.map { score ->
+            if (score.guardrail.modelPromotable || score.value <= ceiling) {
+                score
+            } else {
+                // This is a pick-feasibility adjustment, not a change in the
+                // card's observed power or an adjustment by the learned model.
+                score.copy(
+                    value = ceiling,
+                    rawValue = ceiling,
+                    breakdown = score.breakdown?.let {
+                        it.copy(
+                            finalScore = ceiling,
+                            guideAdjustment = it.guideAdjustment + ceiling - score.rawValue,
+                            scoreCap = 0.0,
+                        )
+                    },
+                )
+            }
+        }
+        return PickNetRanker.applyGuideOrder(adjusted, adjusted)
     }
 
     private fun evaluate(
@@ -488,6 +521,7 @@ class AdvisorEngine(
     }
 
     companion object {
+        private const val GUIDE_SCORE_GAP = 1.0
         private const val PENALTY_REASON_THRESHOLD = 0.1
         private const val DUP_REASON_THRESHOLD = 1.0
         private const val FIT_REASON_THRESHOLD = 1.0

@@ -4,6 +4,9 @@ import com.firstpick.cards.CardMeta
 import com.firstpick.cards.CardRating
 import com.firstpick.cards.RankedCard
 import com.firstpick.cards.SetMetrics
+import com.firstpick.cards.SetSynergyProfile
+import com.firstpick.cards.SynergyArchetype
+import com.firstpick.cards.SynergyIndex
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -615,6 +618,102 @@ class AdvisorEngineTest {
     }
 
     @Test
+    fun openingFRAChoicesStayFlexibleDespiteATentativeBlackGreenPair() {
+        val pool = listOf(
+            card(100, "Hapatra, the Desert Fang", 0.60, "BG"),
+            card(101, "Hapatra, the Desert Fang", 0.60, "BG"),
+            card(102, "No Admittance", 0.52, "R"),
+            card(103, "Fulminous Forte", 0.52, "R"),
+        )
+        val pack = listOf(
+            card(1, "Variable Chaser", 0.60, "U"),
+            card(2, "Primal Witchstalker", 0.55, "BG"),
+            card(3, "Last Gasp", 0.54, "B"),
+            RankedCard(grpId = 4, name = "Unresolved option", rating = null),
+        )
+        val meta: (String) -> CardMeta? = { name ->
+            val pips = when (name) {
+                "Hapatra, the Desert Fang", "Primal Witchstalker" -> mapOf('B' to 1, 'G' to 1)
+                "Variable Chaser" -> mapOf('U' to 1)
+                "Last Gasp" -> mapOf('B' to 1)
+                "No Admittance", "Fulminous Forte" -> mapOf('R' to 1)
+                else -> null
+            }
+            pips?.let { CardMeta(name, 3, true, false, coloredPips = it) }
+        }
+        val lane = LaneDetector.detect(pool, metrics, meta = meta)
+        assertEquals("BG", lane.pair, "the pool can suggest BG without committing the next pick")
+        val theme = SynergyIndex(SetSynergyProfile(
+            set = "FRA",
+            archetypes = listOf(SynergyArchetype(
+                pair = "UR", name = "Prowess", payoffs = listOf("Variable Chaser"),
+                enablers = listOf("No Admittance", "Fulminous Forte"),
+            )),
+        ))
+        var archetypeQueries = 0
+        val result = engine.score(
+            pack, pool, packNumber = 1, pickNumber = 5, metrics = metrics, lane = lane,
+            archetypeRating = { name, _ ->
+                archetypeQueries++
+                CardRating(name = name, everDrawnWinRate = 0.70, everDrawnGameCount = 2000)
+            },
+            meta = meta,
+            synergy = theme,
+        )
+
+        assertEquals("Variable Chaser", result.first().card.name)
+        assertEquals("BG", lane.pair, "scoring must preserve the tentative lane used by the UI")
+        assertEquals(0, archetypeQueries, "an opening pick must not use tentative pair statistics")
+        assertTrue(scoreOf(result, "Variable Chaser").breakdown!!.themeBonus > 0.0,
+            "the tentative BG pair must not suppress useful UR theme evidence")
+        assertTrue(result.zipWithNext().all { (a, b) -> a.value >= b.value })
+        for (score in result) {
+            assertEquals(PickGuardrail.OPEN, score.guardrail)
+            assertEquals(0.0, score.breakdown!!.penalty, 1e-9)
+            assertEquals(0.0, score.breakdown!!.archetypeShift)
+            assertEquals(0.0, score.breakdown!!.synergyBonus)
+            assertEquals(0.0, score.breakdown!!.guideAdjustment)
+            assertTrue(score.reasons.none {
+                it == "On-color" || it.startsWith("Off-color") || it.startsWith("Unsupported") ||
+                    it.startsWith("Heavy") || it == "Mana requirements unavailable"
+            }, "opening option ${score.card.name} must remain flexible: ${score.reasons}")
+        }
+    }
+
+    @Test
+    fun colorConstraintsStartAtTheConfiguredCommitmentBoundary() {
+        val config = AdvisorEngine.Config(totalPicks = 40, penaltyRampStart = 0.15)
+        val advisor = AdvisorEngine(config)
+        val pool = List(6) { card(100 + it, "Base$it", 0.58, if (it % 2 == 0) "W" else "U") }
+        val lane = LaneDetector.detect(pool, metrics)
+        val pack = listOf(card(1, "BlackOption", 0.60, "B"), card(2, "WhiteOption", 0.54, "W"))
+        val meta: (String) -> CardMeta? = { name ->
+            CardMeta(name, 3, true, false, coloredPips = mapOf((if (name == "BlackOption") 'B' else 'W') to 1))
+        }
+        fun score(pick: Int) = advisor.score(pack, pool, 1, pick, metrics, lane, meta = meta)
+
+        val before = score(6) // Five picks taken: progress 0.125.
+        assertEquals("BlackOption", before.first().card.name)
+        assertTrue(before.all { it.guardrail == PickGuardrail.OPEN })
+        assertEquals(0.0, scoreOf(before, "BlackOption").breakdown!!.penalty, 1e-9)
+        assertEquals(0.0, scoreOf(before, "BlackOption").breakdown!!.guideAdjustment)
+
+        val boundary = score(7) // Six picks taken: progress exactly 0.15.
+        val constrained = scoreOf(boundary, "BlackOption")
+        assertEquals("WhiteOption", boundary.first().card.name)
+        assertEquals(ModelPromotionStatus.CONSTRAINED, constrained.guardrail.status)
+        assertEquals(0.0, constrained.breakdown!!.penalty, 1e-9)
+        assertTrue(constrained.breakdown!!.guideAdjustment < 0.0,
+            "hard feasibility starts at commitment even before the gradual color penalty grows")
+        assertEquals(ModelPromotionStatus.ON_PLAN, boundary.first().guardrail.status)
+
+        val after = score(8)
+        assertEquals("WhiteOption", after.first().card.name)
+        assertEquals(ModelPromotionStatus.CONSTRAINED, scoreOf(after, "BlackOption").guardrail.status)
+        assertTrue(scoreOf(after, "BlackOption").breakdown!!.penalty < 0.0)
+    }
+
+    @Test
     fun modelGuardrailConstrainsUnsupportedOffColorCardInEstablishedLane() {
         val result = run(
             pack = listOf(card(1, "BlackFiller", 0.57, "B")),
@@ -804,6 +903,7 @@ class AdvisorEngineTest {
             pack = listOf(
                 card(1, "UnsupportedBlackBomb", 0.75, "B", iwd = 0.08),
                 card(2, "CastableWhiteCard", 0.54, "W"),
+                card(3, "CastableBlueCard", 0.53, "U"),
             ),
             pool = pool,
             packNumber = 3,
@@ -817,7 +917,50 @@ class AdvisorEngineTest {
         )
 
         assertEquals("CastableWhiteCard", result.first().card.name)
-        assertEquals(ModelPromotionStatus.CONSTRAINED, scoreOf(result, "UnsupportedBlackBomb").guardrail.status)
+        val constrained = scoreOf(result, "UnsupportedBlackBomb")
+        assertEquals(ModelPromotionStatus.CONSTRAINED, constrained.guardrail.status)
+        assertTrue(result.zipWithNext().all { (a, b) -> a.value >= b.value },
+            "hard guide order must agree with displayed scores")
+        val weakestViable = result.filter { it.guardrail.modelPromotable }.minOf { it.value }
+        assertEquals((weakestViable - 1.0).coerceAtLeast(0.0), constrained.value, 1e-9)
+        assertTrue(constrained.breakdown!!.guideAdjustment < 0.0)
+        for (score in result) {
+            val b = score.breakdown!!
+            val sum = b.baseScore + b.archetypeShift + b.synergyBonus + b.themeBonus + b.penalty +
+                b.needsPoints + b.duplicatePenalty + b.deckFitPoints + b.wheelPenalty + b.scoreCap +
+                b.guideAdjustment + b.modelShift
+            assertEquals(sum, b.finalScore, 1e-9, "guide adjustment must remain visible in the score breakdown")
+            assertEquals(b.finalScore, score.value, 1e-9)
+            assertEquals(score.value - b.scoreCap, score.rawValue, 1e-9)
+            assertEquals(null, score.modelRank)
+            assertEquals(0.0, b.modelShift)
+            assertFalse("Model pick" in score.reasons)
+        }
+    }
+
+    @Test
+    fun hardGuideOrderPreservesScoresWhenEveryCardIsConstrained() {
+        val pool = committedPool()
+        val pack = listOf(card(1, "BlackOption", 0.58, "B"), card(2, "RedOption", 0.56, "R"))
+        fun score(cards: List<RankedCard>) = engine.score(
+            pack = cards,
+            pool = pool,
+            packNumber = 2,
+            pickNumber = 5,
+            metrics = metrics,
+            lane = LaneDetector.detect(pool, metrics),
+            meta = creatureMeta,
+        )
+        val individually = pack.associate { it.name to score(listOf(it)).single() }
+        val result = score(pack)
+
+        assertEquals(listOf("BlackOption", "RedOption"), result.map { it.card.name })
+        for (candidate in result) {
+            assertEquals(ModelPromotionStatus.CONSTRAINED, candidate.guardrail.status)
+            assertEquals(0.0, candidate.breakdown!!.guideAdjustment)
+            assertEquals(individually.getValue(candidate.card.name).value, candidate.value, 1e-9)
+            assertEquals(individually.getValue(candidate.card.name).rawValue, candidate.rawValue, 1e-9)
+        }
     }
 
     @Test

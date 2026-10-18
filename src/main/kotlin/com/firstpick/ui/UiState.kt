@@ -39,6 +39,7 @@ data class PackCardUi(
     val breakdown: com.firstpick.advisor.ValueBreakdown? = null,
 
     val modelRank: Int? = null,
+    val guideConstrained: Boolean = false,
 )
 
 data class ColorScore(val color: Char, val score: Double)

@@ -76,4 +76,6 @@ data class ValueBreakdown(
     val scoreCap: Double = 0.0,
 
     val modelShift: Double = 0.0,
+
+    val guideAdjustment: Double = 0.0,
 )

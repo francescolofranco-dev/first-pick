@@ -48,6 +48,7 @@ internal fun packRows(
             z = score?.z?.takeIf { hasPowerEvidence } ?: 0.0,
             breakdown = score?.breakdown?.takeIf { hasPowerEvidence },
             modelRank = score?.modelRank?.takeIf { hasPowerEvidence },
+            guideConstrained = score?.guardrail?.modelPromotable == false,
         )
     }
 }
@@ -57,6 +58,7 @@ internal fun hasUnratedCards(cards: List<PackCardUi>): Boolean =
 
 internal fun packConfidence(cards: List<PackCardUi>): PickConfidence? {
     if (hasUnratedCards(cards)) return null
-    val values = cards.mapNotNull { it.value }
+    val viable = cards.filterNot { it.isBasicLand || it.guideConstrained }
+    val values = viable.ifEmpty { cards }.mapNotNull { it.value }
     return if (values.size >= 2) Confidence.of(values) else null
 }

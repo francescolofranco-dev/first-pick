@@ -390,6 +390,7 @@ fun BreakdownTooltip(b: ValueBreakdown, model: ModelExplain? = null) {
             if (b.penalty != 0.0) BreakdownRow("Color penalty", String.format("%+.1f", b.penalty))
             if (b.wheelPenalty != 0.0) BreakdownRow("Likely to wheel", String.format("%+.1f", b.wheelPenalty))
             if (b.duplicatePenalty != 0.0) BreakdownRow("Extra copy", String.format("%+.1f", b.duplicatePenalty))
+            if (b.guideAdjustment != 0.0) BreakdownRow("Guide constraint", String.format("%+.1f", b.guideAdjustment))
             if (b.scoreCap != 0.0) BreakdownRow(if (b.scoreCap < 0.0) "Capped at 100" else "Floored at 0", String.format("%+.1f", b.scoreCap))
             if (b.modelShift != 0.0) {
                 BreakdownRow("Model adjustment", String.format("%+.1f", b.modelShift))
