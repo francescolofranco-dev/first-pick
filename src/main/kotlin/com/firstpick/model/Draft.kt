@@ -26,8 +26,14 @@ enum class DraftFormat {
 
 private val SET_CODE_RE = Regex("_([A-Za-z0-9]{2,5})(?:_\\d{6,8}(?:_|$)|$)")
 
+private val PREFIXED_DRAFT_SET_RE = Regex(
+    "^Y\\d{2}_([A-Za-z0-9]{2,5})_(?:Bot|Premier|Traditional|Quick)_Draft(?:_|$)",
+    RegexOption.IGNORE_CASE,
+)
+
 fun setCodeFromEventName(eventName: String): String? =
-    SET_CODE_RE.find(eventName)?.groupValues?.get(1)?.uppercase()
+    (PREFIXED_DRAFT_SET_RE.find(eventName) ?: SET_CODE_RE.find(eventName))
+        ?.groupValues?.get(1)?.uppercase()
 
 /** Exact saved main deck; it is not a claim about unsaved builder edits. */
 data class SavedDeck(val mainDeck: Map<Int, Int>, val sideboard: Map<Int, Int>)

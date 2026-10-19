@@ -98,6 +98,20 @@ class EventParserTest {
     }
 
     @Test
+    fun recognizesYearPrefixedDraftEvents() {
+        for ((kind, format) in mapOf(
+            "Bot" to DraftFormat.QUICK,
+            "Quick" to DraftFormat.QUICK,
+            "Premier" to DraftFormat.PREMIER,
+            "Traditional" to DraftFormat.TRADITIONAL,
+        )) {
+            val event = "Y26_FRA_${kind}_Draft_20261017"
+            assertEquals("FRA", setCodeFromEventName(event), event)
+            assertEquals(format, DraftFormat.fromEventName(event), event)
+        }
+    }
+
+    @Test
     fun convertsZeroIndexedPackPick() {
         val snap = parser.parse(snapshotLine(pack = 2, pick = 5, packCards = listOf(1, 2, 3), pickedCards = listOf(9)))
         assertNotNull(snap)
