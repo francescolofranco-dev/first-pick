@@ -122,6 +122,7 @@ internal fun DeckBuilderPane(
                             recommended = index == 0,
                             previewed = opt.deckBuildKey == resolvedPreviewKey,
                             active = opt.deckBuildKey == committedKey,
+                            modifier = Modifier.fillMaxRowHeight(),
                             onClick = { previewKey = opt.deckBuildKey },
                         )
                     }
@@ -323,9 +324,9 @@ private fun roleColor(role: String): Color = when (role) {
 }
 
 @Composable
-private fun OptionCard(opt: DeckOptionUi, recommended: Boolean, previewed: Boolean, active: Boolean, onClick: () -> Unit) {
+private fun OptionCard(opt: DeckOptionUi, recommended: Boolean, previewed: Boolean, active: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
     Column(
-        Modifier
+        modifier
             .width(160.dp)
             .clip(RoundedCornerShape(12.dp))
             .background(if (previewed) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface)
