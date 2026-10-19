@@ -248,3 +248,16 @@ tasks.register("printEvalClasspath") {
     val cp = sourceSets["main"].runtimeClasspath
     doLast { out.get().asFile.writeText(cp.asPath) }
 }
+
+
+// Larger deterministic runs are separate from the fast default regression sample.
+tasks.register<Test>("deckAudit") {
+    group = "verification"
+    description = "Audit complete seeded demo drafts and random pools across frozen multi-set data."
+    testClassesDirs = sourceSets["test"].output.classesDirs
+    classpath = sourceSets["test"].runtimeClasspath
+    filter { includeTestsMatching("com.firstpick.sim.DeckBuildAuditTest") }
+    systemProperty("firstpick.audit.seeds", providers.gradleProperty("auditSeeds").orElse("100").get())
+    systemProperty("firstpick.audit.seedStart", providers.gradleProperty("auditSeedStart").orElse("0").get())
+    outputs.upToDateWhen { false }
+}

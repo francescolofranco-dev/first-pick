@@ -260,7 +260,24 @@ class DeckBuilderTest {
     }
 
     @Test
-    fun capsCopiesOfMediocreCards() {
+    fun partialHeavyPipMetadataDoesNotHideOtherRequiredColors() {
+        val pool = buildList {
+            repeat(13) { add(card(it, "B$it", 0.56, "B")) }
+            repeat(13) { add(card(100 + it, "R$it", 0.56, "R")) }
+            add(card(300, "WhiteBlackSpell", 0.70, "WB"))
+        }
+        val metadata: (String) -> CardMeta? = { name ->
+            if (name == "WhiteBlackSpell") CardMeta(name, 4, false, false, heavyPipColors = setOf('B'))
+            else CardMeta(name, 3, true, false)
+        }
+        val options = DeckProjector.projectAll(pool, metrics, metadata, basePair = "BR")
+        assertTrue(options.isNotEmpty())
+        assertTrue(options.all { option -> option.spells.none { it.name == "WhiteBlackSpell" } },
+            "knowing BB does not erase the required W; this spell cannot enter an unsplashed BR deck")
+    }
+
+    @Test
+    fun keepsBetterDuplicatesInsteadOfWeakerFiller() {
         val pool = buildList {
             repeat(4) { add(card(it, "Dup", 0.56, "W")) }
             repeat(11) { add(card(100 + it, "W$it", 0.50, "W")) }
@@ -269,7 +286,7 @@ class DeckBuilderTest {
         val meta: (String) -> CardMeta? = { CardMeta(it, cmc = 3, isCreature = true, isLand = false) }
 
         val top = DeckBuilder.build(pool, metrics, meta).first()
-        assertEquals(2, top.spells.count { it.name == "Dup" }, "should cap mediocre dupes at 2")
+        assertEquals(4, top.spells.count { it.name == "Dup" }, "Limited permits all four copies when they beat the available filler")
     }
 
     @Test

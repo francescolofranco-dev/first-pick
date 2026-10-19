@@ -445,7 +445,10 @@ object DeckProjector {
             meta?.hybridColorGroups.orEmpty().forEach(::addAll)
             addAll(meta?.heavyPipColors.orEmpty())
         }
-        return metadataColors.ifEmpty { LaneDetector.colorsOf(card) }
+        // Legacy metadata may know only the double-pip color. That is not a
+        // complete casting identity: preserve the other printed colors.
+        val exactPips = meta != null && (meta.coloredPips.isNotEmpty() || meta.hybridPips.isNotEmpty())
+        return if (exactPips) metadataColors else metadataColors + LaneDetector.colorsOf(card)
     }
 
     private fun singleColorSplashOptions(card: RankedCard, baseColors: Set<Char>, meta: CardMeta): Set<Char> =
@@ -457,7 +460,7 @@ object DeckProjector {
         ).mapNotNull { it.singleOrNull() }.toSet()
 
     private fun CardMeta.exactPureColorsOrNull(): Set<Char>? =
-        coloredPips.keys.takeIf { coloredPips.isNotEmpty() || hybridPips.isNotEmpty() || hybridColorGroups.isNotEmpty() }
+        coloredPips.keys.takeIf { coloredPips.isNotEmpty() || hybridPips.isNotEmpty() }
 
     private fun selectSpells(
         eligible: List<RankedCard>,
@@ -467,14 +470,9 @@ object DeckProjector {
         capScore: (RankedCard) -> Double = cardScore,
         policy: DeckConstructionPolicy,
     ): List<RankedCard> {
+        // Limited allows repeated copies. Compare each copy on quality and role;
+        // a name-based cap can discard better cards and leave a complete pool short.
         val candidates = eligible
-            .groupBy { it.name }
-            .flatMap { (_, copies) ->
-
-
-                val cap = copyCap(metrics.z(capScore(copies.first())) ?: 0.0)
-                copies.sortedByDescending { it.gihWr ?: 0.0 }.take(cap)
-            }
             .map { card ->
                 val m = meta(card.name)
                 Candidate(card, cardScore(card), m?.cmc ?: 3, m?.isCreature == true, m?.isRemoval == true)
@@ -517,12 +515,6 @@ object DeckProjector {
             if (chosen.add(pick) && pick.isCreature) creatureCount++
         }
         return chosen.map { it.card }
-    }
-
-    private fun copyCap(z: Double): Int = when {
-        z >= 1.0 -> 3
-        z >= 0.0 -> 2
-        else -> 1
     }
 
     private fun curveBucket(cmc: Int): Int = cmc.coerceIn(1, 6)

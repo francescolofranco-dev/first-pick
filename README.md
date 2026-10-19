@@ -346,3 +346,11 @@ Every completed splash still needs the pip-, timing-, and fixing-aware mana
 checks without starving its base colors. The explanation names the qualifying
 card, describes its general impact, and shows available versus required splash
 sources. These rules also apply when filling short pools.
+
+### Randomized deck-building audit
+
+`./gradlew deckAudit` validates complete seeded demo drafts and random pools
+against frozen data from three sets. It checks card conservation, color and
+splash legality, completeness, and conservative quality substitutions.
+Use `-PauditSeedStart=100 -PauditSeeds=100` to check another 600 pools.
+See [the audit report and reproduction instructions](docs/deck-building-audit.md).
