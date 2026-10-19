@@ -313,3 +313,25 @@ including repeated runs of Pick Two Draft. If detection misses a transition, cli
 pool, pack, and recommendations and follows only new log activity. If the new pack is
 already open, re-enter the draft in Arena to obtain a fresh snapshot. Cards from before
 the reset can only be recovered if Arena sends a full pool snapshot.
+
+
+### Deck construction and splashes
+
+Draft creature-curve targets combine the set profile's archetype speeds with the
+selected color pair's plan. Missing speed guidance uses the existing balanced
+curve; Sealed retains its own construction policy.
+
+The builder compares clean two-color builds and each possible single-color
+splash, aiming for three credible options. It does not pad the third slot with
+incomplete builds or a build more than 12 power-score points behind the leader.
+
+A splash package must contain a statistically exceptional card with at least
+200 observed games: at least 1.5 set standard deviations above the mean and
+4.5 percentage points of improvement when drawn, or at least 2 standard
+deviations when improvement data is unavailable. These are conservative
+heuristics, not a prediction that drawing a card guarantees a win. Removal,
+finisher tags, and high mana value alone do not qualify. This requirement also
+applies when filling a short pool. Each completed splash must satisfy the
+existing pip-, timing-, and fixing-aware mana checks without starving its base
+colors. The deck explanation names the qualifying card and shows available
+versus required splash sources.

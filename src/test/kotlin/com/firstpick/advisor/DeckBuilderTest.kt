@@ -141,7 +141,7 @@ class DeckBuilderTest {
         val pool = buildList {
             repeat(9) { add(card(it, "W$it", 0.56, "W")) }
             repeat(9) { add(card(100 + it, "U$it", 0.56, "U")) }
-            repeat(4) { add(card(200 + it, "B$it", 0.60, "B")) }
+            repeat(4) { add(card(200 + it, "B$it", 0.63, "B")) }
         }
         val metaFix: (String) -> CardMeta? = { name ->
             CardMeta(name, cmc = 3, isCreature = true, isLand = false)
@@ -222,7 +222,7 @@ class DeckBuilderTest {
             repeat(9) { add(card(it, "U$it", 0.56, "U")) }
             repeat(9) { add(card(100 + it, "G$it", 0.56, "G")) }
             add(card(200, "DoubleWhite", 0.70, "W"))
-            add(card(201, "SingleWhite", 0.60, "W"))
+            add(card(201, "SingleWhite", 0.63, "W"))
         }
         val top = DeckBuilder.build(pool, metrics, metaFix).first()
         val names = top.spells.map { it.name }
@@ -231,7 +231,7 @@ class DeckBuilderTest {
     }
 
     @Test
-    fun offersASplashVariantWhenPremiumRemovalBeatsWeakFiller() {
+    fun ordinaryPremiumRemovalDoesNotJustifyASplash() {
         val metaFix: (String) -> CardMeta? = { name ->
             if (name == "BlackRemoval") CardMeta(name, cmc = 3, isCreature = false, isLand = false, isRemoval = true)
             else CardMeta(name, cmc = 3, isCreature = true, isLand = false)
@@ -245,9 +245,7 @@ class DeckBuilderTest {
         val plain = options.firstOrNull { it.colors == "WU" }
         val splash = options.firstOrNull { it.colors == "WUB" }
         assertTrue(plain != null, "the two-color build stays on the slate")
-        assertTrue(splash != null, "a premium off-color card should produce a splash variant: ${options.map { it.colors }}")
-        assertTrue(splash.spells.any { it.name == "BlackRemoval" })
-        assertEquals('B', splash.splash)
+        assertEquals(null, splash, "ordinary removal must not open a third color")
     }
 
     @Test

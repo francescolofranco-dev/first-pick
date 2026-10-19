@@ -20,6 +20,64 @@ class DeckProjectorTest {
         rating = CardRating(name = name, mtgaId = id, color = color, everDrawnWinRate = gih, everDrawnGameCount = 2000),
     )
 
+    @Test
+    fun splashEvidenceRequiresExceptionalReliablePerformance() {
+        val ordinary = card(900, "Removal", 0.59, "B")
+        assertTrue(!DeckProjector.isSplashHaymaker(ordinary, metrics))
+        val bomb = card(901, "Bomb", 0.63, "B")
+        assertTrue(DeckProjector.isSplashHaymaker(bomb, metrics))
+        assertTrue(!DeckProjector.isSplashHaymaker(
+            bomb.copy(rating = bomb.rating!!.copy(everDrawnGameCount = 50)), metrics,
+        ))
+        assertTrue(!DeckProjector.isSplashHaymaker(
+            bomb.copy(rating = bomb.rating!!.copy(drawnImprovementWinRate = 0.01)), metrics,
+        ))
+    }
+
+    @Test
+    fun setSpeedAndPairPlanAdjustConstructionTargets() {
+        fun index(speed: String) = com.firstpick.cards.SynergyIndex(
+            com.firstpick.cards.SetSynergyProfile(set = "TEST", archetypes = listOf(
+                com.firstpick.cards.SynergyArchetype(pair = "WU", name = "Plan", speed = speed),
+            )),
+        )
+        val draft = com.firstpick.guide.LimitedDeckPolicies.DRAFT
+        val fast = DeckProjector.adaptiveCurvePolicy(draft, "WU", index("aggro"))
+        val slow = DeckProjector.adaptiveCurvePolicy(draft, "WU", index("control"))
+        assertTrue(fast.creatureCurve.getValue(2) > slow.creatureCurve.getValue(2))
+        assertTrue(fast.creatureCurve.getValue(6) < slow.creatureCurve.getValue(6))
+        assertEquals(draft, DeckProjector.adaptiveCurvePolicy(draft, "WU", null))
+        // Missing pair guidance still benefits from the set-wide prior.
+        assertEquals(fast, DeckProjector.adaptiveCurvePolicy(draft, "BR", index("aggro")))
+    }
+
+    @Test
+    fun evaluatesEachSplashColorAndKeepsTheCleanBuild() {
+        val pool = buildList {
+            repeat(13) { add(card(it, "W$it", 0.56, "W")) }
+            repeat(13) { add(card(100 + it, "U$it", 0.56, "U")) }
+            add(card(300, "BlackBomb", 0.64, "B"))
+            add(card(301, "RedBomb", 0.64, "R"))
+        }
+        val options = DeckProjector.projectAll(pool, metrics, meta, basePair = "WU")
+        assertEquals(setOf(null, 'B', 'R'), options.map { it.splash }.toSet())
+        for (option in options.filter { it.splash != null }) {
+            assertTrue(option.manaSources!!.splashFeasible)
+            assertTrue(option.powerReasons.first().startsWith("Splash justified by"))
+        }
+    }
+
+    @Test
+    fun shortPoolsCannotUseOrdinaryCardsToBypassTheHaymakerRequirement() {
+        val pool = buildList {
+            repeat(10) { add(card(it, "W$it", 0.56, "W")) }
+            repeat(10) { add(card(100 + it, "U$it", 0.56, "U")) }
+            repeat(3) { add(card(200 + it, "B$it", 0.59, "B")) }
+        }
+        val options = DeckProjector.projectAll(pool, metrics, meta, basePair = "WU")
+        assertTrue(options.all { it.splash == null })
+    }
+
     private fun pool(): List<RankedCard> = buildList {
         repeat(12) { add(card(it, "W$it", 0.58, "W")) }
         repeat(12) { add(card(100 + it, "U$it", 0.58, "U")) }

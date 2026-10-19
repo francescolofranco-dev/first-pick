@@ -111,13 +111,29 @@ object DeckProjector {
         // consume one of the finite nonbasic slots or be reported as fixing.
         val lands = known.filter { meta(it.name)?.isLand == true && !it.isBasicLand }
 
-        fun pass(minSpells: Int, lenient: Boolean = false, upgrade: Boolean = false) = COLOR_PAIRS.filter { basePair == null || it == basePair }.mapNotNull { pair ->
-            buildForPair(pair, spells, lands, metrics, meta, archetypeRating, strengthFor(pair, pairStrength), minSpells, synergy, policy, lenient, upgrade)
-        }
+        fun pass(minSpells: Int, lenient: Boolean = false): List<DeckOption> =
+            COLOR_PAIRS.filter { basePair == null || it == basePair }.flatMap { pair ->
+                val clean = buildForPair(pair, spells, lands, metrics, meta, archetypeRating,
+                    strengthFor(pair, pairStrength), minSpells, synergy, policy, lenient, allowSplash = false)
+                val splashes = "WUBRG".filterNot { it in pair }.flatMap { color ->
+                    listOfNotNull(
+                        buildForPair(pair, spells, lands, metrics, meta, archetypeRating,
+                            strengthFor(pair, pairStrength), minSpells, synergy, policy, lenient,
+                            requiredSplash = color),
+                        buildForPair(pair, spells, lands, metrics, meta, archetypeRating,
+                            strengthFor(pair, pairStrength), minSpells, synergy, policy, lenient,
+                            upgrade = true, requiredSplash = color),
+                    ).filter { it.splash == color }
+                }
+                listOfNotNull(clean) + splashes
+            }
 
-        val main = (pass(policy.minimumBuildableSpells) + pass(policy.minimumBuildableSpells, upgrade = true))
-            .sortedByDescending { it.powerScore }
-            .distinctBy { it.colors }
+        val ranked = pass(policy.minimumBuildableSpells).sortedByDescending { it.powerScore }
+            .distinctBy { it.basePair to it.splash }
+        // A complete but substantially weaker build should not occupy the third slot.
+        val main = ranked.filterIndexed { index, option ->
+            index < 2 || option.powerScore >= ranked.first().powerScore - 12.0
+        }
         // Lenient builds may fill the slate to two choices, but must never pad it to three.
         val optionCount = minOf(maxOptions, maxOf(MIN_DECK_OPTIONS, main.size))
         if (main.size >= optionCount) return main.take(optionCount)
@@ -129,7 +145,7 @@ object DeckProjector {
             compareByDescending<DeckOption> { it.spells.size >= nearBuildable }.thenByDescending { it.powerScore },
         )
         return (main + fill)
-            .distinctBy { it.colors }
+            .distinctBy { it.basePair to it.splash }
             .take(optionCount)
     }
 
@@ -148,6 +164,8 @@ object DeckProjector {
         policy: DeckConstructionPolicy,
         lenient: Boolean = false,
         upgrade: Boolean = false,
+        allowSplash: Boolean = true,
+        requiredSplash: Char? = null,
     ): DeckOption? {
         val pairSet = pair.toSet()
         fun onColor(card: RankedCard): Boolean {
@@ -202,7 +220,8 @@ object DeckProjector {
         }
 
         val eligible = spells.filter(::onColor)
-        val base = selectSpells(eligible, metrics, meta, ::cardScore, ::rawScore, policy).toMutableList()
+        val curvePolicy = adaptiveCurvePolicy(policy, pair, synergy)
+        val base = selectSpells(eligible, metrics, meta, ::cardScore, ::rawScore, curvePolicy).toMutableList()
 
         var splashedSpells = emptyList<RankedCard>()
         var selectedSplashColor: Char? = null
@@ -211,6 +230,7 @@ object DeckProjector {
             // handled by the normal top-up pass below.
             if (base.size < policy.spellSlots) return null
             val swap = upgradeSplashCandidates(base, spells, pairSet, metrics, ::onColor, ::cardScore, meta, policy)
+                .filter { requiredSplash == null || it.color == requiredSplash }
                 .firstOrNull { candidate ->
                     val chosen = base.toMutableList().apply { candidate.removed.forEach(::remove) } + candidate.added
                     manaFor(chosen, candidate.color).splashFeasible
@@ -218,10 +238,10 @@ object DeckProjector {
             swap.removed.forEach(base::remove)
             splashedSpells = swap.added
             selectedSplashColor = swap.color
-        } else {
+        } else if (allowSplash) {
             val splash = splashCandidates(
-                spells, pairSet, policy.spellSlots - base.size, ::onColor, ::cardScore, meta, policy,
-            ).firstOrNull { candidate ->
+                spells, pairSet, policy.spellSlots - base.size, ::onColor, ::cardScore, meta, policy, metrics,
+            ).filter { requiredSplash == null || it.color == requiredSplash }.firstOrNull { candidate ->
                 manaFor(base + candidate.cards, candidate.color).splashFeasible
             }
             splashedSpells = splash?.cards.orEmpty()
@@ -279,7 +299,10 @@ object DeckProjector {
             identityConfidence = identity.confidenceLabel,
             identityReasons = identity.reasons,
             powerConfidence = power.confidenceLabel,
-            powerReasons = power.reasons,
+            powerReasons = (if (splashColor != null) listOf(
+                "Splash justified by " + splashedSpells.filter { isSplashHaymaker(it, metrics) }.joinToString { it.name },
+                "$splashColor sources: ${manaSources.totalSources[splashColor] ?: 0}/${manaSources.requiredSources[splashColor] ?: 0} required; base colors supported",
+            ) else emptyList()) + power.reasons,
             spells = chosen.sortedWith(compareBy({ meta(it.name)?.cmc ?: 9 }, { -(it.gihWr ?: 0.0) })),
             nonbasicLands = onColorLands,
             landCount = landCount,
@@ -316,9 +339,8 @@ object DeckProjector {
             val m = meta(card.name) ?: continue
             val splashColors = singleColorSplashOptions(card, pairSet, m)
             if (splashColors.isEmpty()) continue
-            val impactful = m.isRemoval || m.isFinisher ||
-                (card.gihWr ?: 0.0) >= metrics.meanGihWr + metrics.stdDevGihWr
-            if (impactful) splashColors.forEach { color ->
+            val impactful = isSplashHaymaker(card, metrics)
+            if (impactful || isStrongSplashCompanion(card, metrics)) splashColors.forEach { color ->
                 if (color !in m.heavyPipColors) byColor.getOrPut(color) { mutableListOf() }.add(card)
             }
         }
@@ -333,7 +355,9 @@ object DeckProjector {
                 if (cardScore(cand) < cardScore(weakestFirst[i]) + policy.splashUpgradeMargin) break
                 removed += weakestFirst[i]
                 added += cand
-                prefixes += SplashUpgrade(color, removed.toList(), added.toList())
+                if (added.any { isSplashHaymaker(it, metrics) }) {
+                    prefixes += SplashUpgrade(color, removed.toList(), added.toList())
+                }
             }
             prefixes
         }
@@ -348,11 +372,13 @@ object DeckProjector {
         cardScore: (RankedCard) -> Double,
         meta: (String) -> CardMeta?,
         policy: DeckConstructionPolicy,
+        metrics: SetMetrics,
     ): List<SplashChoice> {
         if (deficit <= 0) return emptyList()
         val byColor = LinkedHashMap<Char, MutableList<RankedCard>>()
         for (card in spells.filterNot(onColor)) {
             val m = meta(card.name) ?: continue
+            if (!isSplashHaymaker(card, metrics) && !isStrongSplashCompanion(card, metrics)) continue
             singleColorSplashOptions(card, pairSet, m).forEach { color ->
                 if (color !in m.heavyPipColors) byColor.getOrPut(color) { mutableListOf() }.add(card)
             }
@@ -365,8 +391,45 @@ object DeckProjector {
                     .drop(1)
                     .map { SplashChoice(color, it) }
             }
-            .filter { it.cards.isNotEmpty() }
+            .filter { choice -> choice.cards.any { isSplashHaymaker(it, metrics) } }
             .sortedByDescending { choice -> choice.cards.sumOf(cardScore) }
+    }
+
+    private fun isStrongSplashCompanion(card: RankedCard, metrics: SetMetrics): Boolean =
+        card.rating?.hasReliableWinRate == true && (metrics.z(card.gihWr) ?: 0.0) >= 1.0
+
+    /** Conservative statistical evidence; role tags alone never open a third color. */
+    internal fun isSplashHaymaker(card: RankedCard, metrics: SetMetrics): Boolean {
+        val rating = card.rating ?: return false
+        if (!rating.hasReliableWinRate) return false
+        val z = metrics.z(rating.gihWr) ?: return false
+        return if (rating.iwd != null) z >= 1.5 && rating.iwd!! >= 0.045 else z >= 2.0
+    }
+
+    /** Set-wide archetype speeds supply a prior; the specific pair supplies the stronger signal. */
+    internal fun adaptiveCurvePolicy(
+        policy: DeckConstructionPolicy,
+        pair: String,
+        synergy: SynergyIndex?,
+    ): DeckConstructionPolicy {
+        if (policy.mode != LimitedMode.DRAFT || synergy == null) return policy
+        fun speed(value: String): Double? = when (value.lowercase()) {
+            "aggro" -> -1.0
+            "tempo" -> -0.5
+            "midrange" -> 0.0
+            "control", "ramp" -> 1.0
+            else -> null
+        }
+        val setSpeed = synergy.profile.archetypes.mapNotNull { speed(it.speed) }
+            .takeIf { it.isNotEmpty() }?.average() ?: 0.0
+        val pairSpeed = speed(synergy.archetype(pair)?.speed.orEmpty()) ?: setSpeed
+        val pace = pairSpeed * 0.7 + setSpeed * 0.3
+        val curve = when {
+            pace <= -0.3 -> linkedMapOf(2 to 6, 1 to 2, 3 to 4, 4 to 2, 5 to 1, 6 to 0)
+            pace >= 0.3 -> linkedMapOf(2 to 4, 3 to 3, 4 to 3, 5 to 3, 6 to 2, 1 to 0)
+            else -> policy.creatureCurve
+        }
+        return policy.copy(creatureCurve = curve)
     }
 
     private class Candidate(
