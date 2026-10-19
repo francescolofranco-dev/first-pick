@@ -255,9 +255,9 @@ class SealedDeckPolicyTest {
             metas["UnsupportedBomb"] = CardMeta(
                 "UnsupportedBomb", 6, true, false, isFinisher = true, coloredPips = mapOf('B' to 1),
             )
-            add(card(301, "SupportedRemoval", 0.68, "R"))
-            metas["SupportedRemoval"] = CardMeta(
-                "SupportedRemoval", 6, false, false, isRemoval = true, coloredPips = mapOf('R' to 1),
+            add(card(301, "SupportedBomb", 0.68, "R"))
+            metas["SupportedBomb"] = CardMeta(
+                "SupportedBomb", 6, true, false, isFinisher = true, coloredPips = mapOf('R' to 1),
             )
             repeat(2) { i ->
                 val name = "JeskaiLand$i"
@@ -269,7 +269,7 @@ class SealedDeckPolicyTest {
         val options = DeckBuilder.build(pool, metrics, metas::get, mode = LimitedMode.SEALED)
         val splash = options.firstOrNull { it.basePair == "WU" && it.splash == 'R' }
         assertTrue(splash != null, "source-aware search should continue past the unsupported black bomb: ${options.map { it.colors }}")
-        assertTrue(splash.spells.any { it.name == "SupportedRemoval" })
+        assertTrue(splash.spells.any { it.name == "SupportedBomb" })
         assertTrue(splash.spells.none { it.name == "UnsupportedBomb" })
         assertTrue(splash.nonbasicLands.size <= LimitedDeckPolicies.SEALED.landSlots)
         assertEquals(splash.nonbasicLands.size, splash.manaSources!!.nonbasicSources.values.maxOrNull())

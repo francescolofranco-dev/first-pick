@@ -23,14 +23,14 @@ class DeckProjectorTest {
     @Test
     fun splashEvidenceRequiresExceptionalReliablePerformance() {
         val ordinary = card(900, "Removal", 0.59, "B")
-        assertTrue(!DeckProjector.isSplashHaymaker(ordinary, metrics))
+        assertTrue(!DeckProjector.isSplashHaymaker(ordinary, metrics, meta(ordinary.name)))
         val bomb = card(901, "Bomb", 0.63, "B")
-        assertTrue(DeckProjector.isSplashHaymaker(bomb, metrics))
+        assertTrue(DeckProjector.isSplashHaymaker(bomb, metrics, meta(bomb.name)))
         assertTrue(!DeckProjector.isSplashHaymaker(
-            bomb.copy(rating = bomb.rating!!.copy(everDrawnGameCount = 50)), metrics,
+            bomb.copy(rating = bomb.rating!!.copy(everDrawnGameCount = 50)), metrics, meta(bomb.name),
         ))
         assertTrue(!DeckProjector.isSplashHaymaker(
-            bomb.copy(rating = bomb.rating!!.copy(drawnImprovementWinRate = 0.01)), metrics,
+            bomb.copy(rating = bomb.rating!!.copy(drawnImprovementWinRate = 0.01)), metrics, meta(bomb.name),
         ))
     }
 
@@ -85,7 +85,7 @@ class DeckProjectorTest {
     }
 
     private val meta: (String) -> CardMeta? = { name ->
-        CardMeta(name, cmc = 3, isCreature = true, isLand = false)
+        CardMeta(name, cmc = if ("Bomb" in name) 5 else 3, isCreature = true, isLand = false, isFinisher = "Bomb" in name)
     }
 
     @Test

@@ -144,7 +144,7 @@ class DeckBuilderTest {
             repeat(4) { add(card(200 + it, "B$it", 0.63, "B")) }
         }
         val metaFix: (String) -> CardMeta? = { name ->
-            CardMeta(name, cmc = 3, isCreature = true, isLand = false)
+            CardMeta(name, cmc = if (name.startsWith("B")) 5 else 3, isCreature = true, isLand = false, isFinisher = name.startsWith("B"))
         }
         val top = DeckBuilder.build(pool, metrics, metaFix).first()
         assertEquals("WU", top.basePair)
@@ -216,7 +216,7 @@ class DeckBuilderTest {
     fun neverSplashesACardWithDoublePipsOfTheSplashColor() {
         val metaFix: (String) -> CardMeta? = { name ->
             if (name == "DoubleWhite") CardMeta(name, cmc = 5, isCreature = true, isLand = false, heavyPipColors = setOf('W'))
-            else CardMeta(name, cmc = 3, isCreature = true, isLand = false)
+            else CardMeta(name, cmc = if (name == "SingleWhite") 5 else 3, isCreature = true, isLand = false, isFinisher = name == "SingleWhite")
         }
         val pool = buildList {
             repeat(9) { add(card(it, "U$it", 0.56, "U")) }

@@ -287,5 +287,53 @@
       "note": "Crafter's restricted mana can pay for Soul Tether cast from exile, accelerating a reusable Heartwood mana source.",
       "sourceIds": ["fra-release-notes", "fra-card-reference"]
     }
+  ],
+  "haymakers": [
+    {
+      "name": "Uldaros Theorix",
+      "impact": "THREAT",
+      "reason": "A 5/5 flyer plus up to six mana of graveyard spell copies creates an immediate board and card advantage swing.",
+      "sourceIds": [
+        "fra-release-notes"
+      ]
+    },
+    {
+      "name": "Ajani Unrelenting",
+      "impact": "ENGINE",
+      "reason": "Each loyalty activation creates a creature; the damage sweep preserves your tokens and can reverse the board.",
+      "sourceIds": [
+        "fra-release-notes"
+      ]
+    },
+    {
+      "name": "The Theorist, Jace Beleren",
+      "impact": "ENGINE",
+      "reason": "Extra cards each opposing draw step, blockers, and bounce let this planeswalker take over a long game.",
+      "sourceIds": [
+        "fra-release-notes"
+      ]
+    },
+    {
+      "name": "Draconic Visitor",
+      "impact": "THREAT",
+      "reason": "Artifact token makers become 5/5 flying Dragon makers; requires reliable token production.",
+      "requiresSetup": true,
+      "supportCards": [
+        "Aerid Konstrari"
+      ],
+      "minimumSupport": 2,
+      "sourceIds": [
+        "fra-release-notes"
+      ]
+    },
+    {
+      "name": "Kindred Judgment",
+      "impact": "SWEEPER",
+      "reason": "Can preserve your chosen creature type while clearing the rest; requires a favorable creature-type distribution.",
+      "requiresSetup": true,
+      "sourceIds": [
+        "fra-card-reference"
+      ]
+    }
   ]
 }

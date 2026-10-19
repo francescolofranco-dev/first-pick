@@ -853,6 +853,10 @@ class AdvisorEngineTest {
         val pool = List(9) { card(100 + it, "WhiteBase$it", 0.57, "W") } +
             List(9) { card(200 + it, "BlueBase$it", 0.57, "U") }
         val candidate = card(1, "LateBlackBomb", 0.66, "B", iwd = 0.07)
+        val impactMeta: (String) -> CardMeta? = { name ->
+            if (name == candidate.name) CardMeta(name, 6, true, false, isFinisher = true)
+            else creatureMeta(name)
+        }
         val lane = LaneDetector.detect(pool, metrics)
 
         val result = engine.score(
@@ -862,8 +866,8 @@ class AdvisorEngineTest {
             pickNumber = 8,
             metrics = metrics,
             lane = lane,
-            meta = creatureMeta,
-            deckFit = { DeckProjector.fit(pool, it, metrics, creatureMeta) },
+            meta = impactMeta,
+            deckFit = { DeckProjector.fit(pool, it, metrics, impactMeta) },
         ).single()
 
         assertEquals(ModelPromotionStatus.SUPPORTED_SPLASH, result.guardrail.status)

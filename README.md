@@ -325,13 +325,25 @@ The builder compares clean two-color builds and each possible single-color
 splash, aiming for three credible options. It does not pad the third slot with
 incomplete builds or a build more than 12 power-score points behind the leader.
 
-A splash package must contain a statistically exceptional card with at least
-200 observed games: at least 1.5 set standard deviations above the mean and
-4.5 percentage points of improvement when drawn, or at least 2 standard
-deviations when improvement data is unavailable. These are conservative
-heuristics, not a prediction that drawing a card guarantees a win. Removal,
-finisher tags, and high mana value alone do not qualify. This requirement also
-applies when filling a short pool. Each completed splash must satisfy the
-existing pip-, timing-, and fixing-aware mana checks without starving its base
-colors. The deck explanation names the qualifying card and shows available
-versus required splash sources.
+A splash package needs a haymaker assessment separate from mana feasibility.
+Set profiles can include sourced, human-reviewed threats, advantage engines, and
+sweepers, with a written reason and optional named support-card requirements.
+FRA starts with five reviewed examples. Uldaros Theorix, Ajani Unrelenting, and
+The Theorist, Jace Beleren have independent impact reviews. Draconic Visitor
+currently requires two Aerid Konstrari copies in the selected deck (a conservative
+initial support list). Kindred Judgment is recorded as conditional and cannot
+automatically open a splash until creature-type support can be verified.
+
+Unreviewed cards need mana value four or greater, a finishing or card-draw role,
+and exceptional reliable performance: at least 200 games, 1.5 set standard
+deviations above the mean and 4.5 percentage points of improvement when drawn,
+or 2 standard deviations when improvement data is unavailable. This remains a
+conservative fallback heuristic. Cheap cards require an explicit impact review.
+Reviewed cards can qualify without ratings; reliable results below those
+thresholds veto them. High mana value, ordinary removal, or the planeswalker
+card type alone never qualifies a card.
+
+Every completed splash still needs the pip-, timing-, and fixing-aware mana
+checks without starving its base colors. The explanation names the qualifying
+card, describes its impact, and shows available versus required splash sources.
+These rules also apply when filling short pools.
