@@ -11,15 +11,13 @@ import kotlin.test.assertTrue
 
 class ManaSourcesTest {
     @Test
-    fun draftAndSealedHaveTheSameBaseColorSourceRequirements() {
+    fun draftUsesFullBaseColorSourceRequirements() {
         val spells = listOf(card(1, "White", "W"), card(2, "Blue", "U"))
         val metas = mapOf(
             "White" to CardMeta("White", 2, true, false, coloredPips = mapOf('W' to 1)),
             "Blue" to CardMeta("Blue", 3, true, false, coloredPips = mapOf('U' to 1)),
         )
         val draft = ManaSources.estimate(spells, "WU", null, emptyList(), metas::get, LimitedDeckPolicies.DRAFT)
-        val sealed = ManaSources.estimate(spells, "WU", null, emptyList(), metas::get, LimitedDeckPolicies.SEALED)
-        assertEquals(sealed.requiredSources, draft.requiredSources)
         assertEquals(9, draft.requiredSources.getValue('W'))
     }
 
@@ -33,7 +31,7 @@ class ManaSourcesTest {
                 "Blue" to CardMeta("Blue", 3, true, false, coloredPips = mapOf('U' to 1)),
                 "Bomb" to CardMeta("Bomb", 6, true, false, coloredPips = mapOf('B' to 1)),
             )
-            return ManaSources.estimate(spells, "WU", 'B', emptyList(), metas::get, LimitedDeckPolicies.SEALED, landSlots)
+            return ManaSources.estimate(spells, "WU", 'B', emptyList(), metas::get, LimitedDeckPolicies.DRAFT, landSlots)
         }
         val cheap = report("{2}")
         assertEquals(1, cheap.landcyclingSources.getValue('B'))
@@ -59,7 +57,7 @@ class ManaSourcesTest {
                 lands.forEachIndexed { index, card -> put(card.name, CardMeta(card.name, 0, false, true,
                     producedColors = if (index < sourceCount) setOf('W', 'U', 'B') else setOf('W', 'U'))) }
             }
-            return ManaSources.estimate(spells, "WU", 'B', lands, metas::get, LimitedDeckPolicies.SEALED)
+            return ManaSources.estimate(spells, "WU", 'B', lands, metas::get, LimitedDeckPolicies.DRAFT)
         }
         assertEquals(0.5, report(1).selectionCredit.getValue('B'))
         assertFalse(report(1).splashFeasible, "half a source does not close a full source shortfall")
@@ -70,7 +68,7 @@ class ManaSourcesTest {
         assertEquals(1.0, report(8).selectionCredit.getValue('B'), "credit is capped")
         assertFalse(report(8, sourceCount = 0).splashFeasible, "drawing does not create colored mana")
         assertEquals(0.0, report(2, drawColor = "B").selectionCredit.getValue('B'), "no circular splash-colored draw")
-        assertEquals(0.0, report(2, drawCmc = 8).selectionCredit.getValue('B'), "no credit after casting window")
+        assertEquals(0.0, report(2, drawCmc = 9).selectionCredit.getValue('B'), "no credit after casting window")
         assertEquals(0, supported.baseShortfall)
     }
 
@@ -87,7 +85,7 @@ class ManaSourcesTest {
             "Red splash" to CardMeta("Red splash", 4, true, false, coloredPips = mapOf('R' to 1)),
         )
         val report = ManaSources.estimate(
-            listOf(crafter, splash), "WG", 'R', emptyList(), metas::get, LimitedDeckPolicies.SEALED,
+            listOf(crafter, splash), "WG", 'R', emptyList(), metas::get, LimitedDeckPolicies.DRAFT,
         )
         assertEquals(0, report.fixerSources.getValue('R'))
     }
@@ -109,11 +107,11 @@ class ManaSourcesTest {
                 splashColor = 'B',
                 nonbasicLands = emptyList(),
                 meta = metas::get,
-                policy = LimitedDeckPolicies.SEALED,
+                policy = LimitedDeckPolicies.DRAFT,
             ).requiredSources.getValue('B')
         }
 
-        assertEquals(7, requirement(cmc = 2))
+        assertEquals(6, requirement(cmc = 2))
         assertEquals(4, requirement(cmc = 6))
     }
 
@@ -126,10 +124,10 @@ class ManaSourcesTest {
             "Late" to CardMeta("Late", 6, true, false, coloredPips = mapOf('B' to 1)),
         )
         val report = ManaSources.estimate(
-            listOf(late, early), "WU", 'B', emptyList(), metas::get, LimitedDeckPolicies.SEALED,
+            listOf(late, early), "WU", 'B', emptyList(), metas::get, LimitedDeckPolicies.DRAFT,
         )
 
-        assertEquals(7, report.requiredSources.getValue('B'))
+        assertEquals(6, report.requiredSources.getValue('B'))
     }
 
     @Test
@@ -142,12 +140,12 @@ class ManaSourcesTest {
                 "Fixer" to CardMeta("Fixer", fixerCmc, false, false, isFixing = true, producedColors = setOf('B'), fixingIsConditional = conditional),
             )
             return ManaSources.estimate(
-                listOf(splash, fixer), "WU", 'B', emptyList(), metas::get, LimitedDeckPolicies.SEALED,
+                listOf(splash, fixer), "WU", 'B', emptyList(), metas::get, LimitedDeckPolicies.DRAFT,
             )
         }
 
         assertEquals(1, report(fixerCmc = 2).fixerSources.getValue('B'))
-        assertEquals(0, report(fixerCmc = 4).fixerSources.getValue('B'))
+        assertEquals(0, report(fixerCmc = 5).fixerSources.getValue('B'))
         assertEquals(0, report(fixerCmc = 2, conditional = true).fixerSources.getValue('B'))
     }
 
@@ -172,11 +170,11 @@ class ManaSourcesTest {
         }
 
         val report = ManaSources.estimate(
-            listOf(white, blue, splash, circularFixer), "WU", 'R', lands, metas::get, LimitedDeckPolicies.SEALED,
+            listOf(white, blue, splash, circularFixer), "WU", 'R', lands, metas::get, LimitedDeckPolicies.DRAFT,
         )
 
         assertEquals(0, report.fixerSources.getValue('R'))
-        assertEquals(3, report.splashShortfall)
+        assertEquals(2, report.splashShortfall)
         assertFalse(report.splashFeasible)
     }
 
@@ -191,7 +189,7 @@ class ManaSourcesTest {
             "Dual" to CardMeta("Dual", 0, false, true, isFixing = true, producedColors = setOf('W', 'U')),
         )
         val report = ManaSources.estimate(
-            listOf(white, blue), "WU", null, listOf(dual), metas::get, LimitedDeckPolicies.SEALED,
+            listOf(white, blue), "WU", null, listOf(dual), metas::get, LimitedDeckPolicies.DRAFT,
         )
 
         assertEquals(16, report.basicSources.values.sum())
@@ -211,7 +209,7 @@ class ManaSourcesTest {
             "Splash" to CardMeta("Splash", 6, true, false, coloredPips = mapOf('B' to 1)),
         )
         val report = ManaSources.estimate(
-            listOf(white, blue, splash), "WU", 'B', emptyList(), metas::get, LimitedDeckPolicies.SEALED,
+            listOf(white, blue, splash), "WU", 'B', emptyList(), metas::get, LimitedDeckPolicies.DRAFT,
         )
 
         assertEquals(0, report.baseShortfall)
@@ -238,10 +236,10 @@ class ManaSourcesTest {
             ),
         )
         val mixedReport = ManaSources.estimate(
-            listOf(mixed), "WU", null, emptyList(), metas::get, LimitedDeckPolicies.SEALED,
+            listOf(mixed), "WU", null, emptyList(), metas::get, LimitedDeckPolicies.DRAFT,
         )
         val repeatedReport = ManaSources.estimate(
-            listOf(repeated), "WU", null, emptyList(), metas::get, LimitedDeckPolicies.SEALED,
+            listOf(repeated), "WU", null, emptyList(), metas::get, LimitedDeckPolicies.DRAFT,
         )
 
         assertEquals(9, mixedReport.requiredSources.getValue('W'))
@@ -261,10 +259,10 @@ class ManaSourcesTest {
             ),
         )
         val report = ManaSources.estimate(
-            listOf(hybrid), "WU", 'B', emptyList(), meta::get, LimitedDeckPolicies.SEALED,
+            listOf(hybrid), "WU", 'B', emptyList(), meta::get, LimitedDeckPolicies.DRAFT,
         )
 
-        assertEquals(7, report.requiredSources.getValue('B'))
+        assertEquals(6, report.requiredSources.getValue('B'))
     }
 
     @Test
@@ -283,7 +281,7 @@ class ManaSourcesTest {
         }
 
         val report = ManaSources.estimate(
-            listOf(white, blue, splash), "WU", 'B', lands, metas::get, LimitedDeckPolicies.SEALED,
+            listOf(white, blue, splash), "WU", 'B', lands, metas::get, LimitedDeckPolicies.DRAFT,
         )
 
         assertTrue(report.splashSupported, "four lands meet the late single-pip splash target")

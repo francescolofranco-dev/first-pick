@@ -9,16 +9,20 @@ import kotlin.test.assertTrue
 class DraftTrackerTest {
 
     @Test
-    fun undatedRealityFractureSealedCourseRestoresItsCompletePool() {
+    fun sealedCoursesCannotStartOrReplaceADraft() {
         val tracker = DraftTracker()
-        tracker.onLine("""{"CourseId":"fra-sealed","InternalEventName":"Sealed_FRA","CurrentModule":"DeckSelect","CardPool":[106225,106227,106227]}""")
-
-        val state = tracker.state.value
-        assertEquals("FRA", state.setCode)
-        assertEquals(DraftFormat.SEALED, state.format)
-        assertEquals(DraftPhase.COMPLETE, state.phase)
-        assertEquals(listOf(106225, 106227, 106227), state.pool)
-        assertTrue(state.packCards.isEmpty())
+        val initial = tracker.state.value
+        val sealed = """{"CourseId":"unsupported","InternalEventName":"Sealed_FRA","CurrentModule":"DeckSelect","CardPool":[106225,106227,106227]}"""
+        assertEquals(false, tracker.onLine(sealed))
+        assertEquals(initial, tracker.state.value)
+        tracker.onLine(snapshotLine(0, 0, listOf(1, 2, 3), emptyList()))
+        val drafting = tracker.state.value
+        assertEquals(DraftPhase.DRAFTING, drafting.phase)
+        assertEquals(false, tracker.onLine(sealed))
+        assertEquals(drafting, tracker.state.value)
+        assertEquals(false, tracker.onLine(snapshotLine(0, 0, emptyList(), listOf(1, 2),
+            status = "Complete", eventName = "Sealed_FRA")))
+        assertEquals(drafting, tracker.state.value)
     }
 
     private fun snapshotLine(

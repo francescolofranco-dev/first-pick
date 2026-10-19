@@ -8,11 +8,31 @@ import java.time.Instant
 import kotlin.io.path.createTempDirectory
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class SeventeenLandsClientTest {
+
+    @Test
+    fun unsupportedSealedDataIsRejectedBeforeCacheOrNetworkAccess() = runBlocking {
+        val cache = createTempDirectory("fp-draft-only")
+        Files.writeString(cache.resolve("ratings3_FRA_Sealed.json"), """{"data":[]}""")
+        val http = ScriptedHttpClient()
+        val catalogHttp = ScriptedHttpClient()
+        val client = SeventeenLandsClient(cacheDir = cache, http = http)
+        for (format in listOf("Sealed", "TraditionalSealed")) {
+            assertFailsWith<IllegalArgumentException> { client.fetchWithMetadata("FRA", format) }
+            assertFailsWith<IllegalArgumentException> { client.colorRatings("FRA", format) }
+        }
+        val repo = CardRepository(client, catalogClient = ScryfallClient(cacheDir = cache, http = catalogHttp))
+        assertFailsWith<IllegalArgumentException> { repo.load("FRA", "Sealed") }
+        assertFalse(repo.isLoaded)
+        assertEquals(0, http.requestCount)
+        assertEquals(0, catalogHttp.requestCount)
+        assertEquals(setOf("PremierDraft", "QuickDraft", "TradDraft"), DraftRatingsFormats.supported)
+    }
 
     @Test
     fun ratingsUrlHitsTheLiveCardDataApi() {

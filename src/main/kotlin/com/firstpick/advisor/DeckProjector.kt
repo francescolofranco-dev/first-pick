@@ -8,7 +8,6 @@ import com.firstpick.cards.SynergyIndex
 import com.firstpick.cards.SynergyRole
 import com.firstpick.guide.DeckConstructionPolicy
 import com.firstpick.guide.LimitedDeckPolicies
-import com.firstpick.guide.LimitedMode
 
 
 object DeckProjector {
@@ -73,10 +72,9 @@ object DeckProjector {
         pairStrength: Map<String, Double> = emptyMap(),
         synergy: SynergyIndex? = null,
         before: DeckOption? = null,
-        mode: LimitedMode = LimitedMode.DRAFT,
     ): Fit {
-        val b = before ?: project(pool, metrics, meta, archetypeRating, pairStrength, synergy, mode)
-        val a = project(pool + candidate, metrics, meta, archetypeRating, pairStrength, synergy, mode)
+        val b = before ?: project(pool, metrics, meta, archetypeRating, pairStrength, synergy)
+        val a = project(pool + candidate, metrics, meta, archetypeRating, pairStrength, synergy)
         return fit(b, a, candidate)
     }
 
@@ -88,9 +86,8 @@ object DeckProjector {
         archetypeRating: (String, String) -> CardRating? = { _, _ -> null },
         pairStrength: Map<String, Double> = emptyMap(),
         synergy: SynergyIndex? = null,
-        mode: LimitedMode = LimitedMode.DRAFT,
         basePair: String? = null,
-    ): DeckOption? = projectAll(pool, metrics, meta, archetypeRating, pairStrength, maxOptions = 1, synergy = synergy, mode = mode, basePair = basePair).firstOrNull()
+    ): DeckOption? = projectAll(pool, metrics, meta, archetypeRating, pairStrength, maxOptions = 1, synergy = synergy, basePair = basePair).firstOrNull()
 
     fun projectAll(
         pool: List<RankedCard>,
@@ -100,10 +97,9 @@ object DeckProjector {
         pairStrength: Map<String, Double> = emptyMap(),
         maxOptions: Int = 3,
         synergy: SynergyIndex? = null,
-        mode: LimitedMode = LimitedMode.DRAFT,
         basePair: String? = null,
     ): List<DeckOption> {
-        val policy = LimitedDeckPolicies.forMode(mode)
+        val policy = LimitedDeckPolicies.DRAFT
 
         val known = pool.filter { it.rating != null || meta(it.name) != null }
         val spells = known.filter { meta(it.name)?.isLand != true && !it.isBasicLand }
@@ -189,13 +185,7 @@ object DeckProjector {
             if (card.rating == null && pairRating == null) return metrics.meanGihWr - 0.02
             return DeckAnalysis.cardQuality(card.rating, pairRating, metrics)
         }
-        fun cardScore(card: RankedCard): Double {
-            val m = meta(card.name)
-            val sealedRoles = (if (m?.isRemoval == true) policy.removalSelectionBonus else 0.0) +
-                (if (m?.isFinisher == true) policy.finisherSelectionBonus else 0.0) +
-                (if (m?.isEvasion == true || m?.isCardDraw == true) policy.stallBreakerSelectionBonus else 0.0)
-            return rawScore(card) + themeNudge(card) + sealedRoles
-        }
+        fun cardScore(card: RankedCard): Double = rawScore(card) + themeNudge(card)
 
         fun landsFor(splashColor: Char?): List<RankedCard> {
             val deckColors = pairSet + setOfNotNull(splashColor)
@@ -313,7 +303,6 @@ object DeckProjector {
             removal = removal,
             curve = curveOf(metas),
             manaSources = manaSources,
-            constructionMode = policy.mode,
             hasObservedPower = power.hasObservedPower,
         )
     }
@@ -413,7 +402,7 @@ object DeckProjector {
         pair: String,
         synergy: SynergyIndex?,
     ): DeckConstructionPolicy {
-        if (policy.mode != LimitedMode.DRAFT || synergy == null) return policy
+        if (synergy == null) return policy
         fun speed(value: String): Double? = when (value.lowercase()) {
             "aggro" -> -1.0
             "tempo" -> -0.5

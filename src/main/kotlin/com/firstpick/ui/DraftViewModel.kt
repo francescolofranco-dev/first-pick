@@ -30,7 +30,6 @@ import com.firstpick.model.PickNetRepository
 import com.firstpick.signals.SignalsEngine
 import com.firstpick.sim.DraftSimulator
 import com.firstpick.guide.LimitedPolicy
-import com.firstpick.guide.LimitedMode
 import com.firstpick.guide.SetDraftGuideBuilder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -232,7 +231,6 @@ class DraftViewModel(
 
     private fun buildUi(state: DraftState): DraftUiState {
         val format = RatingsFormat.resolve(formatChoice, state.format)
-        val constructionMode = LimitedMode.fromFormat(state.format)
         val dataKey = state.setCode?.let { "${it.uppercase()}_$format" }
         val loaded = state.setCode?.let { repo.isLoadedFor(it, format) } == true
         val ratingsInfo = repo.ratingsInfo?.takeIf { loaded }
@@ -291,7 +289,7 @@ class DraftViewModel(
 
         val liveProjection = if (loaded && lane.hasBaseColorEvidence) {
             DeckProjector.project(
-                pool, repo.setMetrics, meta, archetypeRating, pairStrength, synergy, constructionMode,
+                pool, repo.setMetrics, meta, archetypeRating, pairStrength, synergy,
                 basePair = lane.pair ?: com.firstpick.advisor.canonicalPair(lane.colors),
             )
         } else {
@@ -315,7 +313,7 @@ class DraftViewModel(
                 archetypeRating = archetypeRating,
                 meta = meta,
                 synergy = synergy,
-                deckFit = deckFitProbe(pool, liveProjection, pairStrength, synergy, meta, archetypeRating, constructionMode),
+                deckFit = deckFitProbe(pool, liveProjection, pairStrength, synergy, meta, archetypeRating),
                 activeManaSources = activeManaSources,
             )
             val ranked = net?.let { PickNetRanker.rerank(it, scored, pool.map { c -> c.name }) } ?: scored
@@ -341,7 +339,6 @@ class DraftViewModel(
                     archetypeRating = archetypeRating,
                     pairStrength = pairStrength,
                     synergy = synergy,
-                    mode = constructionMode,
                 ).map { it.toUi() }
             }.getOrElse { Log.warn(TAG, "deck build failed: $it"); emptyList() }
         } else {
@@ -422,11 +419,10 @@ class DraftViewModel(
         synergy: com.firstpick.cards.SynergyIndex?,
         meta: (String) -> CardMeta?,
         archetypeRating: (String, String) -> com.firstpick.cards.CardRating?,
-        mode: LimitedMode,
     ): ((com.firstpick.cards.RankedCard) -> DeckProjector.Fit?)? {
         if (before == null) return null
         return { card ->
-            DeckProjector.fit(pool, card, repo.setMetrics, meta, archetypeRating, pairStrength, synergy, before, mode)
+            DeckProjector.fit(pool, card, repo.setMetrics, meta, archetypeRating, pairStrength, synergy, before)
         }
     }
 

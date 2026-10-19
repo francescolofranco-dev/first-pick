@@ -71,8 +71,8 @@ and complicated fixing effects still require broader validation.
 
 ## Mana-access validation in v1.8.0
 
-Draft now uses the same full base-color source targets and source-shortfall
-penalties as Sealed. The old two-source Draft relaxation is removed.
+Draft now uses full base-color source targets and source-shortfall penalties.
+The old two-source Draft relaxation is removed.
 The seed 0–99 audit was rerun under those requirements: 600 pools, 1,315 builds,
 31 splash builds, and zero audit findings. Seeds 100–199 added 1,324 builds
 from another 600 pools, including 25 splash builds, with zero findings. The

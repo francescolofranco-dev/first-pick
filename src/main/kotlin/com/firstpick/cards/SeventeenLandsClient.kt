@@ -52,6 +52,13 @@ data class RatingsFetchResult(
     val metadata: RatingsFetchMetadata,
 )
 
+object DraftRatingsFormats {
+    val supported: Set<String> = setOf("PremierDraft", "QuickDraft", "TradDraft")
+    fun requireSupported(format: String) {
+        require(format in supported) { "Unsupported ratings format: $format. Only Draft formats are supported." }
+    }
+}
+
 class SeventeenLandsClient(
     private val cacheDir: Path = AppPaths.cacheDir,
     private val staleness: Duration = Duration.ofHours(12),
@@ -71,6 +78,7 @@ class SeventeenLandsClient(
         forceRefresh: Boolean = false,
     ): RatingsFetchResult =
         withContext(Dispatchers.IO) {
+            DraftRatingsFormats.requireSupported(format)
             val suffix = colors?.let { "_$it" }.orEmpty()
             val cached = cachedBody(
                 cacheName = "ratings3_${set.uppercase()}_${format}$suffix.json",
@@ -94,6 +102,7 @@ class SeventeenLandsClient(
 
     suspend fun colorRatings(set: String, format: String): List<ColorRatingRow> =
         withContext(Dispatchers.IO) {
+            DraftRatingsFormats.requireSupported(format)
             val body = runCatching {
                 cachedBody("colorratings_${set.uppercase()}_${format}.json") { colorRatingsUrl(set, format) }.body
             }.getOrElse {

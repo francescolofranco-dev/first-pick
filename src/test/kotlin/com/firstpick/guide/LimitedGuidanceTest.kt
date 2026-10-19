@@ -60,12 +60,12 @@ class LimitedGuidanceTest {
 
     @Test
     fun principlesHaveUniqueIdsAndSourcesUseHttps() {
-        val principles = LimitedGuidance.draftPrinciples + LimitedGuidance.sealedPrinciples
+        val principles = LimitedGuidance.draftPrinciples
         val ids = principles.map { it.id }
         assertTrue(ids.none(String::isBlank), "principle ids must not be blank")
-        assertEquals(ids.size, ids.toSet().size, "principle ids must be unique across both guides")
+        assertEquals(ids.size, ids.toSet().size, "principle ids must be unique within the draft guide")
 
-        val sources = LimitedGuidance.draftSources + LimitedGuidance.sealedSources
+        val sources = LimitedGuidance.draftSources
         assertTrue(sources.isNotEmpty())
         for (source in sources) {
             val uri = URI(source.url)
@@ -82,7 +82,6 @@ class LimitedGuidanceTest {
             }
         }
         assertClaimSources(LimitedGuidance.draftPrinciples, LimitedGuidance.draftSources)
-        assertClaimSources(LimitedGuidance.sealedPrinciples, LimitedGuidance.sealedSources)
     }
 
     @Test

@@ -156,7 +156,7 @@ private fun SetGuideStarter(state: DraftUiState, onOpenGuide: () -> Unit) {
         guide != null && guide.mechanics.isNotEmpty() -> guide.mechanics.take(3).joinToString(" · ") { it.name }
         guide != null -> "Color pairs, themes, and the set's best cards"
         state.guideLoading -> "Preparing themes, color pairs, and top cards…"
-        else -> "Draft and sealed fundamentals"
+        else -> "Draft fundamentals"
     }
     Row(
         Modifier

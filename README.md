@@ -8,6 +8,8 @@
   A native macOS draft assistant for <b>Magic: The Gathering Arena</b>, built with Kotlin + Compose Multiplatform.
 </p>
 
+FirstPick supports Draft events only.
+
 During a draft, FirstPick watches Arena's log, and for each pack it ranks the
 cards by how good a **pick** they are — driven by [17Lands](https://www.17lands.com/)
 win-rate data and adjusted for the deck you're actually building: your colors,
@@ -17,9 +19,8 @@ ends, it proposes 2–3 finished decks with a power estimate.
 Every draft also has an always-available set guide: mechanics, color-pair plans,
 combos, and the strongest commons and non-commons in each color. Every curated
 claim links to its supporting sources, and live rankings link to their exact data
-query. A separate Sealed guide turns proven Limited fundamentals into a practical
-deck-building checklist. The same cited archetype profiles and typed construction
-policies are used by the advisor itself.
+query. The same cited archetype profiles and Draft construction rules are used
+by the advisor itself.
 
 > Unofficial fan project. Not affiliated with or endorsed by Wizards of the Coast.
 
@@ -49,12 +50,12 @@ open colors, your mana curve, and your pool — all updating as you pick.
   <img src="docs/screenshots/data-source.png" width="260" alt="17Lands data source selector" />
 </picture>
 
-**Draft and Sealed guides.** Open the Guide tab at any time for the current set's
+**Draft guides.** Open the Guide tab at any time for the current set's
 mechanics, color-pair themes, signposts, enablers, payoffs, and per-color top commons
 and non-commons. The card lists use the selected 17Lands format; the strategy text is
 bundled for reliable offline access, and mechanics, archetypes, combos, and general
 principles each link directly to the supporting expert, official, or observed-data
-source. The Sealed page remains available even before a draft starts.
+source.
 
 **Post-draft deck builder.** When the final pick is confirmed, get 2–3 buildable decks
 ranked by power, each with a letter tier, deck type, archetype, confidence, and an
@@ -104,9 +105,6 @@ when the deck matches.
 - **Exact colored-source planning** — pure and hybrid mana pips, casting timing,
   drafted dual lands, the available land slots, and timely nonland fixing determine
   whether a splash is actually castable. Unsupported splashes are rejected.
-- **Distinct Sealed construction** — Sealed uses its own 17Lands population and typed
-  policy, with more weight on reliable mana, removal, bombs, finishers, and ways to
-  break board stalls—not Draft lane or pick-progress assumptions.
 - **At-a-glance dashboard** — your likely base colors, ranked archetypes, open-color signals,
   mana curve, pool, and current deck needs.
 - **On-card overlay** — a transparent, click-through layer pinned to the Arena
@@ -319,7 +317,7 @@ the reset can only be recovered if Arena sends a full pool snapshot.
 
 Draft creature-curve targets combine the set profile's archetype speeds with the
 selected color pair's plan. Missing speed guidance uses the existing balanced
-curve; Sealed retains its own construction policy.
+curve.
 
 The builder compares clean two-color builds and each possible single-color
 splash, aiming for three credible options. It does not pad the third slot with
@@ -358,8 +356,7 @@ See [the audit report and reproduction instructions](docs/deck-building-audit.md
 
 ### Mana access and fixing
 
-Draft and Sealed use the same full base-color source targets: neither gets a
-two-source discount. Basic and typed landcycling use their printed activation
+Draft uses full base-color source targets without a two-source discount. Basic and typed landcycling use their printed activation
 cost and require an allocated basic of a matching type. Unknown costs, late
 activation, and activation requiring the missing splash color receive no
 credit. The cycling credit is capped by matching basic targets; it is not also

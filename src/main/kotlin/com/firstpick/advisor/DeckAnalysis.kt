@@ -8,7 +8,6 @@ import com.firstpick.cards.SynergyIndex
 import com.firstpick.cards.SynergyRole
 import com.firstpick.guide.DeckConstructionPolicy
 import com.firstpick.guide.LimitedDeckPolicies
-import com.firstpick.guide.LimitedMode
 import kotlin.math.abs
 
 enum class DeckPace(val label: String) {
@@ -229,22 +228,6 @@ object DeckAnalysis {
             if (unsupported > 0) adjustments += Adjustment(-unsupported * 4.0, "Supported splash", "$unsupported splash cards lack fixing")
             val excess = (f.fixers - splashCount).coerceAtLeast(0)
             if (excess > 0) adjustments += Adjustment(excess.coerceAtMost(3).toDouble(), "Splash has reliable fixing")
-        }
-
-        if (policy.mode == LimitedMode.SEALED) {
-            val removalPoints = ((f.removal - policy.removalTarget) * 0.8).coerceIn(-4.0, 2.4)
-            if (removalPoints != 0.0) {
-                adjustments += Adjustment(removalPoints, "Deep removal suite", "Sealed removal is thin")
-            }
-            val finisherPoints = ((f.finishers - policy.finisherTarget) * 0.8).coerceIn(-1.6, 2.4)
-            if (finisherPoints != 0.0) {
-                adjustments += Adjustment(finisherPoints, "Bombs and finishers close games", "Few finishers for stalled boards")
-            }
-            val stallBreakers = f.evasion + f.draw + f.finishers
-            val stallPoints = ((stallBreakers - policy.stallBreakerTarget) * 0.45).coerceIn(-1.8, 2.7)
-            if (stallPoints != 0.0) {
-                adjustments += Adjustment(stallPoints, "Multiple ways to break board stalls", "Few ways to break a board stall")
-            }
         }
 
         synergy?.let { index ->

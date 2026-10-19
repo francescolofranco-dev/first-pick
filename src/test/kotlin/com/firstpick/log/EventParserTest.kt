@@ -80,15 +80,23 @@ class EventParserTest {
     }
 
     @Test
-    fun recognizesRealityFractureDraftAndUndatedSealedEvents() {
+    fun sealedEventsCannotBeRecognizedAsDrafts() {
+        for (name in listOf("Sealed_FRA", "TraditionalSealed_FRA", "SealedDraft_FRA")) {
+            assertEquals(DraftFormat.UNKNOWN, DraftFormat.fromEventName(name))
+            assertNull(setCodeFromEventName(name))
+            assertNull(parser.parse("""{"InternalEventName":"$name","CurrentModule":"DeckSelect","CardPool":[1,2,3]}"""))
+            assertNull(parser.parse("""{"EventName":"$name","CourseId":"unsupported"}"""))
+        }
+    }
+
+    @Test
+    fun recognizesRealityFractureDraftEvents() {
         val formats = mapOf(
             "PremierDraft_FRA_20260929" to DraftFormat.PREMIER,
             "TraditionalDraft_FRA_20260929" to DraftFormat.TRADITIONAL,
             "PickTwoDraft_FRA_20260929" to DraftFormat.PREMIER,
             "ContenderDraft_FRA_20261013" to DraftFormat.PREMIER,
             "QuickDraft_FRA_20261008" to DraftFormat.QUICK,
-            "Sealed_FRA" to DraftFormat.SEALED,
-            "TraditionalSealed_FRA" to DraftFormat.SEALED,
         )
         for ((event, format) in formats) {
             assertEquals("FRA", setCodeFromEventName(event), event)

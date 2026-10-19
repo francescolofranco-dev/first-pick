@@ -5,14 +5,12 @@ import com.firstpick.cards.CardRating
 import com.firstpick.cards.RankedCard
 import com.firstpick.cards.SetMetrics
 import com.firstpick.guide.LimitedDeckPolicies
-import com.firstpick.guide.LimitedMode
-import com.firstpick.model.DraftFormat
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class SealedDeckPolicyTest {
+class DraftConstructionTest {
     private val metrics = SetMetrics(meanGihWr = 0.55, stdDevGihWr = 0.03)
 
     private fun card(id: Int, name: String, wr: Double, color: String) = RankedCard(
@@ -21,7 +19,7 @@ class SealedDeckPolicyTest {
         rating = CardRating(name = name, mtgaId = id, color = color, everDrawnWinRate = wr, everDrawnGameCount = 8_000),
     )
 
-    private fun sealedPool(withFixing: Boolean): Pair<List<RankedCard>, Map<String, CardMeta>> {
+    private fun constructionPool(withFixing: Boolean): Pair<List<RankedCard>, Map<String, CardMeta>> {
         val metas = mutableMapOf<String, CardMeta>()
         val pool = buildList {
             repeat(13) { i ->
@@ -48,26 +46,10 @@ class SealedDeckPolicyTest {
     }
 
     @Test
-    fun sealedHasItsOwnConstructionThresholds() {
-        val draft = LimitedDeckPolicies.DRAFT
-        val sealed = LimitedDeckPolicies.SEALED
+    fun reliableTwoColorDraftBuildBeatsUnsupportedBombSplash() {
+        val (pool, metas) = constructionPool(withFixing = false)
+        val options = DeckBuilder.build(pool, metrics, metas::get)
 
-        assertEquals(LimitedMode.SEALED, LimitedMode.fromFormat(DraftFormat.SEALED))
-        assertEquals(LimitedMode.DRAFT, LimitedMode.fromFormat(DraftFormat.PREMIER))
-        assertTrue(sealed.removalTarget > draft.removalTarget)
-        assertTrue(sealed.maximumSplashCards < draft.maximumSplashCards)
-        assertEquals(sealed.minimumBaseSources, draft.minimumBaseSources)
-        assertEquals(0, draft.baseSourceRelaxation)
-        assertEquals(sealed.baseSourceRelaxation, draft.baseSourceRelaxation)
-        assertTrue(sealed.topQualityWeight > draft.topQualityWeight)
-    }
-
-    @Test
-    fun reliableTwoColorSealedBuildBeatsUnsupportedBombSplash() {
-        val (pool, metas) = sealedPool(withFixing = false)
-        val options = DeckBuilder.build(pool, metrics, metas::get, mode = LimitedMode.SEALED)
-
-        assertEquals(LimitedMode.SEALED, options.first().constructionMode)
         assertEquals("WU", options.first().basePair)
         assertEquals(null, options.first().splash)
         assertTrue(options.first().manaSources?.allRequirementsMet == true)
@@ -75,9 +57,9 @@ class SealedDeckPolicyTest {
     }
 
     @Test
-    fun fixedSinglePipBombSplashRemainsAViableSealedBuild() {
-        val (pool, metas) = sealedPool(withFixing = true)
-        val options = DeckBuilder.build(pool, metrics, metas::get, mode = LimitedMode.SEALED)
+    fun fixedSinglePipBombSplashRemainsAViableDraftBuild() {
+        val (pool, metas) = constructionPool(withFixing = true)
+        val options = DeckBuilder.build(pool, metrics, metas::get)
         val splash = options.firstOrNull { it.basePair == "WU" && it.splash == 'B' }
 
         assertTrue(splash != null, "credible fixing should preserve the splash option: ${options.map { it.colors }}")
@@ -103,7 +85,7 @@ class SealedDeckPolicyTest {
             add(card(300, "UnknownCostBomb", 0.80, "B"))
         }
 
-        val options = DeckBuilder.build(pool, metrics, metas::get, mode = LimitedMode.SEALED)
+        val options = DeckBuilder.build(pool, metrics, metas::get)
 
         assertFalse(options.any { it.splash == 'B' })
         assertTrue(
@@ -136,7 +118,7 @@ class SealedDeckPolicyTest {
             )
         }
 
-        val options = DeckBuilder.build(pool, metrics, metas::get, mode = LimitedMode.SEALED)
+        val options = DeckBuilder.build(pool, metrics, metas::get)
         val wuOptions = options.filter { it.basePair == "WU" }
 
         assertTrue(wuOptions.none { it.splash == 'R' }, "{B}{B/R} cannot be cast by adding only red")
@@ -172,7 +154,7 @@ class SealedDeckPolicyTest {
             }
         }
 
-        val options = DeckBuilder.build(pool, metrics, metas::get, mode = LimitedMode.SEALED)
+        val options = DeckBuilder.build(pool, metrics, metas::get)
         val splash = options.firstOrNull { it.basePair == "WU" && it.splash == 'B' }
 
         assertTrue(splash != null, "{B/R} should be castable through the supported black half")
@@ -207,7 +189,7 @@ class SealedDeckPolicyTest {
             }
         }
 
-        val options = DeckBuilder.build(pool, metrics, metas::get, mode = LimitedMode.SEALED)
+        val options = DeckBuilder.build(pool, metrics, metas::get)
 
         assertFalse(options.any { it.basePair == "WU" && it.splash == 'B' })
     }
@@ -232,7 +214,7 @@ class SealedDeckPolicyTest {
             )
         }
 
-        val options = DeckBuilder.build(pool, metrics, metas::get, mode = LimitedMode.SEALED)
+        val options = DeckBuilder.build(pool, metrics, metas::get)
         val wu = options.firstOrNull { it.basePair == "WU" }
         assertTrue(wu != null, "the 21-card two-color base must survive an unsupported top-up")
         assertEquals(null, wu.splash)
@@ -268,12 +250,12 @@ class SealedDeckPolicyTest {
             }
         }
 
-        val options = DeckBuilder.build(pool, metrics, metas::get, mode = LimitedMode.SEALED)
+        val options = DeckBuilder.build(pool, metrics, metas::get)
         val splash = options.firstOrNull { it.basePair == "WU" && it.splash == 'R' }
         assertTrue(splash != null, "source-aware search should continue past the unsupported black bomb: ${options.map { it.colors }}")
         assertTrue(splash.spells.any { it.name == "SupportedBomb" })
         assertTrue(splash.spells.none { it.name == "UnsupportedBomb" })
-        assertTrue(splash.nonbasicLands.size <= LimitedDeckPolicies.SEALED.landSlots)
+        assertTrue(splash.nonbasicLands.size <= LimitedDeckPolicies.DRAFT.landSlots)
         assertEquals(splash.nonbasicLands.size, splash.manaSources!!.nonbasicSources.values.maxOrNull())
     }
 
@@ -306,7 +288,7 @@ class SealedDeckPolicyTest {
             }
         }
 
-        val options = DeckBuilder.build(pool, metrics, metas::get, mode = LimitedMode.SEALED)
+        val options = DeckBuilder.build(pool, metrics, metas::get)
         val splash = options.firstOrNull { it.basePair == "WU" && it.splash == 'B' }
         assertTrue(splash != null, "the supported one-card prefix should remain viable")
         assertTrue(splash.spells.any { it.name == "LateBomb" })
@@ -314,47 +296,4 @@ class SealedDeckPolicyTest {
         assertEquals(4, splash.manaSources!!.requiredSources.getValue('B'))
     }
 
-    @Test
-    fun sealedSeatsItsHigherRemovalTarget() {
-        val metas = mutableMapOf<String, CardMeta>()
-        fun addMeta(card: RankedCard, creature: Boolean, removal: Boolean = false): RankedCard {
-            metas[card.name] = CardMeta(
-                card.name, 3, creature, false, isRemoval = removal,
-                coloredPips = card.rating!!.color.associate { it to 1 },
-            )
-            return card
-        }
-        val pool = buildList {
-            repeat(16) { i -> add(addMeta(card(i, "Creature$i", 0.56, if (i % 2 == 0) "W" else "U"), true)) }
-            repeat(8) { i -> add(addMeta(card(100 + i, "Fluff$i", 0.60, if (i % 2 == 0) "W" else "U"), false)) }
-            repeat(5) { i -> add(addMeta(card(200 + i, "Removal$i", 0.55, if (i % 2 == 0) "W" else "U"), false, true)) }
-        }
-
-        val draft = DeckBuilder.build(pool, metrics, metas::get, maxOptions = 1, mode = LimitedMode.DRAFT).first()
-        val sealed = DeckBuilder.build(pool, metrics, metas::get, maxOptions = 1, mode = LimitedMode.SEALED).first()
-        assertEquals(4, draft.removal)
-        assertEquals(5, sealed.removal)
-    }
-
-    @Test
-    fun sealedKeepsABombStallBreakerOverPlainFiller() {
-        val metas = mutableMapOf<String, CardMeta>()
-        val pool = buildList {
-            repeat(24) { i ->
-                val color = if (i % 2 == 0) "W" else "U"
-                val name = "Filler$i"
-                add(card(i, name, 0.57, color))
-                metas[name] = CardMeta(name, 3, true, false, coloredPips = mapOf(color.single() to 1))
-            }
-            add(card(100, "Closer", 0.565, "U"))
-            metas["Closer"] = CardMeta(
-                "Closer", 3, true, false, isFinisher = true, isEvasion = true, coloredPips = mapOf('U' to 1),
-            )
-        }
-
-        val draft = DeckBuilder.build(pool, metrics, metas::get, maxOptions = 1, mode = LimitedMode.DRAFT).first()
-        val sealed = DeckBuilder.build(pool, metrics, metas::get, maxOptions = 1, mode = LimitedMode.SEALED).first()
-        assertTrue(draft.spells.none { it.name == "Closer" }, "Draft keeps the higher-rated generic card")
-        assertTrue(sealed.spells.any { it.name == "Closer" }, "Sealed values the finisher/evasion role in stalled games")
-    }
 }

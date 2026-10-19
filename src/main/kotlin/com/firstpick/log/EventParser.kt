@@ -16,7 +16,18 @@ import kotlinx.serialization.json.contentOrNull
 class EventParser(
     private val json: Json = Json { ignoreUnknownKeys = true; isLenient = true },
 ) {
-    fun parse(line: String): DraftEvent? {
+    fun parse(line: String): DraftEvent? = parseDraftEvent(line)?.takeUnless { event ->
+        val name = when (event) {
+            is DraftEvent.Snapshot -> event.eventName
+            is DraftEvent.PackSeen -> event.eventName
+            is DraftEvent.EventJoined -> event.eventName
+            is DraftEvent.DeckSaved -> event.eventName
+            is DraftEvent.PickMade -> ""
+        }
+        name.isNotBlank() && DraftFormat.fromEventName(name) == DraftFormat.UNKNOWN
+    }
+
+    private fun parseDraftEvent(line: String): DraftEvent? {
         if ('{' !in line) return null
         // A submission request may fail; only server course snapshots confirm a save.
         if (LogMatch.contains(line, "EventSetDeck") && "==>" in line) return null

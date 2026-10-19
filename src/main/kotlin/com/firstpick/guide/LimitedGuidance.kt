@@ -112,13 +112,9 @@ object LimitedGuidance {
     private const val LIMITED_THEMES = "limited-themes"
     private const val DRAFT_HARD_WAY = "draft-hard-way"
     private const val METRICS = "17lands-metrics"
-    private const val SEALED_FORMAT = "sealed-format"
-    private const val SEALED_DUKE = "sealed-duke"
-    private const val SEALED_INTRO = "sealed-introduction"
     private const val MANA_BASICS = "mana-basics"
     private const val MANA_SOURCES = "mana-sources"
     private const val MAKING_A_SPLASH = "making-a-splash"
-    private const val LIMITED_SIDEBOARDING = "limited-sideboarding"
     internal const val metricsSourceId = METRICS
 
     val draftPrinciples: List<GuidePrinciple> = listOf(
@@ -156,51 +152,6 @@ object LimitedGuidance {
             summary = "Default to a castable two-color core. Splash only impactful, light-pip cards when the power gain justifies the fixing and tempo cost.",
             appliedByFirstPick = "The model cannot promote unsupported off-lane cards once a deck is projectable; completed splashes must meet pip- and timing-aware colored-source targets.",
             sourceIds = listOf(MANA_BASICS, MANA_SOURCES, MAKING_A_SPLASH),
-        ),
-    )
-
-    val sealedPrinciples: List<GuidePrinciple> = listOf(
-        GuidePrinciple(
-            id = "sealed-compare-builds",
-            title = "Compare several color cores",
-            summary = "Sort by color, then compare depth, creature curve, interaction, and mana before letting one bomb decide the build.",
-            appliedByFirstPick = "The Sealed policy evaluates every supported color core and gives additional weight to reliable mana, answers, finishers, and stall-breakers.",
-            sourceIds = listOf(SEALED_DUKE, SEALED_INTRO),
-        ),
-        GuidePrinciple(
-            id = "sealed-forty",
-            title = "Start at ${LimitedPolicy.DECK_SIZE} cards",
-            summary = "Use ${LimitedPolicy.LAND_SLOTS} lands and ${LimitedPolicy.SPELL_SLOTS} spells as the baseline. Extra cards reduce how often you draw your best ones.",
-            appliedByFirstPick = "Projected decks target exactly ${LimitedPolicy.DECK_SIZE} cards and never pad missing spell slots with imaginary cards.",
-            sourceIds = listOf(SEALED_FORMAT, SEALED_DUKE),
-        ),
-        GuidePrinciple(
-            id = "sealed-board",
-            title = "Build for the board and the curve",
-            summary = "Play enough creatures and early interaction to avoid falling behind, then add evasion, card advantage, and finishers to break stalls.",
-            appliedByFirstPick = "The distinct Sealed policy scores creature density, early plays, removal, draw, evasion, finishers, and ways to break stalled boards.",
-            sourceIds = listOf(SEALED_DUKE),
-        ),
-        GuidePrinciple(
-            id = "sealed-mana",
-            title = "Two colors first; splash carefully",
-            summary = "Prefer a reliable two-color base. Splash a small number of powerful single-pip cards only with credible sources or fixing.",
-            appliedByFirstPick = "The builder allocates actual land slots, counts overlapping nonbasic sources and timely fixing, and rejects a splash with any colored-source shortfall.",
-            sourceIds = listOf(SEALED_DUKE, MANA_BASICS, MANA_SOURCES, MAKING_A_SPLASH),
-        ),
-        GuidePrinciple(
-            id = "sealed-answers",
-            title = "Prioritize bombs, answers, and stall-breakers",
-            summary = "After mana and curve are sound, maximize premium threats, broad removal, evasion, card advantage, and useful mana sinks.",
-            appliedByFirstPick = "Sample-aware card quality is combined with structural bonuses and penalties rather than used as a pick order alone.",
-            sourceIds = listOf(SEALED_DUKE),
-        ),
-        GuidePrinciple(
-            id = "sealed-sideboard",
-            title = "Use the whole pool as a sideboard",
-            summary = "Revisit the pool between games for narrow answers, faster defense, a stronger long game, or even an alternate color build.",
-            appliedByFirstPick = "Alternative builds remain visible so close color cores can be compared instead of discarded.",
-            sourceIds = listOf(SEALED_FORMAT, LIMITED_SIDEBOARDING),
         ),
     )
 
@@ -284,46 +235,7 @@ object LimitedGuidance {
         ),
     )
 
-    val sealedSources: List<GuideSource> = listOf(
-        GuideSource(
-            "Sealed Deck format",
-            "Wizards of the Coast",
-            "https://magic.wizards.com/en/formats/sealed-deck",
-            kind = "Format reference",
-            id = SEALED_FORMAT,
-            author = "Wizards of the Coast",
-        ),
-        GuideSource(
-            "Sealed Deck",
-            "Wizards of the Coast",
-            "https://magic.wizards.com/en/news/feature/sealed-deck-2014-09-15",
-            kind = "Official strategy",
-            id = SEALED_DUKE,
-            author = "Reid Duke",
-            date = "2014-09-15",
-        ),
-        GuideSource(
-            "An Introduction to Sealed Deck",
-            "Wizards of the Coast",
-            "https://magic.wizards.com/en/news/making-magic/introduction-sealed-deck-2012-10-29",
-            kind = "Official strategy",
-            id = SEALED_INTRO,
-            author = "Nate Price",
-            date = "2012-10-29",
-        ),
-        basicsOfManaSource,
-        manaSourcesSource,
-        makingASplashSource,
-        GuideSource(
-            "Sideboarding in Limited",
-            "Wizards of the Coast",
-            "https://magic.wizards.com/en/news/feature/sideboarding-limited-2015-01-12",
-            kind = "Official strategy",
-            id = LIMITED_SIDEBOARDING,
-            author = "Reid Duke",
-            date = "2015-01-13",
-        ),
-    )
+
 }
 
 object SetDraftGuideBuilder {

@@ -55,6 +55,7 @@ class CardRepository(
         format: String,
         forceRefresh: Boolean = false,
     ): RatingsDatasetInfo {
+        DraftRatingsFormats.requireSupported(format)
         val key = "${setCode.uppercase()}_$format"
         if (!forceRefresh && key == loadedKey) ratingsInfo?.let { return it }
 

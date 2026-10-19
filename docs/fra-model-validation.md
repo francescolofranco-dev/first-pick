@@ -116,7 +116,7 @@ which contains no outcome-training drafts.
 
 The existing repository discovers the bundled model automatically for FRA
 Premier Draft. Guide and mana guardrails still constrain model promotions.
-Traditional Draft, Quick Draft, and Sealed keep their existing format-specific
+Traditional Draft and Quick Draft keep their existing format-specific
 ratings and heuristic behavior; no FRA model is claimed for those formats.
 FRA remains eligible for the weekly public-data retraining selection.
 

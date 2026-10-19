@@ -49,65 +49,13 @@ import com.firstpick.guide.GuidePrinciple
 import com.firstpick.guide.GuideSource
 import com.firstpick.guide.LimitedGuidance
 import com.firstpick.guide.SetDraftGuide
-import com.firstpick.model.DraftFormat
-
-private enum class GuidePage { SET_DRAFT, SEALED }
 
 @Composable
 internal fun GuidePane(
     state: DraftUiState,
     onOpenGuideSource: (String) -> Unit = {},
 ) {
-    var page by remember(state.setCode, state.format) {
-        mutableStateOf(
-            if (state.setCode == null || state.format == DraftFormat.SEALED) GuidePage.SEALED
-            else GuidePage.SET_DRAFT,
-        )
-    }
-
-    Column(Modifier.fillMaxSize()) {
-        Row(
-            Modifier.align(Alignment.CenterHorizontally)
-                .clip(RoundedCornerShape(8.dp))
-                .background(MaterialTheme.colorScheme.surfaceVariant)
-                .padding(3.dp),
-            horizontalArrangement = Arrangement.spacedBy(3.dp),
-        ) {
-            GuidePageButton(
-                label = state.setCode?.let { "$it set guide" } ?: "Set guide",
-                selected = page == GuidePage.SET_DRAFT,
-            ) { page = GuidePage.SET_DRAFT }
-            GuidePageButton("Sealed deck building", page == GuidePage.SEALED) { page = GuidePage.SEALED }
-        }
-        Spacer(Modifier.height(9.dp))
-
-        when (page) {
-            GuidePage.SET_DRAFT -> SetGuideContent(state, onOpenGuideSource)
-            GuidePage.SEALED -> SealedGuideContent(onOpenGuideSource)
-        }
-    }
-}
-
-@Composable
-private fun GuidePageButton(label: String, selected: Boolean, onClick: () -> Unit) {
-    Box(
-        Modifier
-            .clip(RoundedCornerShape(6.dp))
-            .background(if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.18f) else Color.Transparent)
-            .semantics {
-                role = Role.Tab
-                this.selected = selected
-            }
-            .clickable(onClick = onClick)
-            .padding(horizontal = 14.dp, vertical = 6.dp),
-    ) {
-        Text(
-            label,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Bold,
-            color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-    }
+    SetGuideContent(state, onOpenGuideSource)
 }
 
 @Composable
@@ -121,7 +69,7 @@ private fun SetGuideContent(state: DraftUiState, onOpenSource: (String) -> Unit)
         guide == null && state.guideLoading -> GuideLoadingState(state.setCode)
         guide == null -> GuideEmptyState(
             title = "No guide for ${state.setCode}",
-            body = "Set-specific notes are unavailable, but the sealed deck-building guide is always available.",
+            body = "Set-specific draft notes are unavailable for this set.",
         )
         else -> SetGuideReady(guide, onOpenSource)
     }
@@ -263,42 +211,6 @@ private fun SetGuideReady(guide: SetDraftGuide, onOpenSource: (String) -> Unit) 
             item { GuideSectionLabel("Sources", "Open the original articles, data references, and shows") }
             items(guide.sources, key = { it.id.ifBlank { it.url } }) { source -> GuideSourceRow(source, onOpenSource) }
         }
-    }
-}
-
-@Composable
-private fun SealedGuideContent(onOpenSource: (String) -> Unit) {
-    LazyColumn(
-        Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(bottom = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        item {
-            Panel("Sealed deck construction") {
-                Text(
-                    "Compare complete color builds, then choose the one with the best balance of power, curve, interaction, and reliable mana.",
-                    fontSize = 13.sp,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-                Spacer(Modifier.height(7.dp))
-                Text(
-                    "Start with 40 cards · 17 lands · 23 spells",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary,
-                )
-            }
-        }
-        item { GuideSectionLabel("Build checklist", "Work through these in order, then compare alternatives") }
-        items(LimitedGuidance.sealedPrinciples, key = { it.id }) { principle ->
-            GuidePrincipleCard(
-                principle,
-                guideSourcesFor(principle.sourceIds, LimitedGuidance.sealedSources),
-                onOpenSource,
-            )
-        }
-        item { GuideSectionLabel("Sources", "Authoritative Limited guidance behind this checklist") }
-        items(LimitedGuidance.sealedSources, key = { it.id.ifBlank { it.url } }) { source -> GuideSourceRow(source, onOpenSource) }
     }
 }
 

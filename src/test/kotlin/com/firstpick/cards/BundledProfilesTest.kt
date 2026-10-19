@@ -174,13 +174,13 @@ class BundledProfilesTest {
     }
 
     @Test
-    fun fraGuideLoadsOfflineForDraftAndSealedWithoutInventingRatings() = runBlocking {
+    fun fraGuideLoadsOfflineForDraftWithoutInventingRatings() = runBlocking {
         val cache = createTempDirectory("fra-guide")
         try {
             val repository = SynergyRepository(cache)
             repository.load("fra")
             assertEquals("FRA", repository.loadedSet)
-            for (format in listOf("PremierDraft", "QuickDraft", "TradDraft", "Sealed")) {
+            for (format in listOf("PremierDraft", "QuickDraft", "TradDraft")) {
                 val guide = SetDraftGuideBuilder.build("FRA", format, emptyList(), repository.index)
                 assertEquals("Reality Fracture", guide.setName)
                 assertEquals(10, guide.archetypes.size)

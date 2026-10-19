@@ -44,7 +44,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.firstpick.core.AppVersion
-import com.firstpick.model.DraftFormat
 import com.firstpick.model.DraftPhase
 import com.firstpick.overlay.OverlayHealth
 import com.firstpick.overlay.OverlayHealthState
@@ -281,7 +280,7 @@ private fun Header(
                     Text("New draft", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
             }
-            FormatSelector(state.ratingsFormatChoice, state.format, onSelectFormat)
+            FormatSelector(state.ratingsFormatChoice, onSelectFormat)
             if (state.phase != DraftPhase.COMPLETE) {
                 FilledTonalButton(
                     onClick = onToggleOverlay,
@@ -421,28 +420,24 @@ private fun OverlayHealthStatus(health: OverlayHealth) {
 }
 
 @Composable
-private fun FormatSelector(current: String, detected: DraftFormat, onSelect: (String) -> Unit) {
+private fun FormatSelector(current: String, onSelect: (String) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
-    val lockedToEvent = detected == DraftFormat.SEALED
     Box {
         OutlinedButton(
             onClick = { expanded = true },
-            enabled = !lockedToEvent,
             contentPadding = HeaderButtonPadding,
             modifier = Modifier.semantics { stateDescription = RatingsFormat.label(current) },
         ) {
             Text(
-                text = "Data: ${RatingsFormat.displayLabel(current, detected)}",
+                text = "Data: ${RatingsFormat.label(current)}",
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface,
             )
-            if (!lockedToEvent) {
-                Spacer(Modifier.width(4.dp))
-                Text("▾", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
+            Spacer(Modifier.width(4.dp))
+            Text("▾", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
-        DropdownMenu(expanded = expanded && !lockedToEvent, onDismissRequest = { expanded = false }) {
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             RatingsFormat.choices.forEach { choice ->
                 DropdownMenuItem(
                     text = { Text(RatingsFormat.label(choice), fontSize = 12.sp) },

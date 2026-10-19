@@ -5,7 +5,6 @@ import com.firstpick.cards.CardRating
 import com.firstpick.cards.RankedCard
 import com.firstpick.cards.SetMetrics
 import com.firstpick.cards.SynergyIndex
-import com.firstpick.guide.LimitedMode
 
 data class DeckOption(
     val colors: String,
@@ -28,7 +27,6 @@ data class DeckOption(
     val removal: Int,
     val curve: List<Pair<String, Int>>,
     val manaSources: ManaSourceReport? = null,
-    val constructionMode: LimitedMode = LimitedMode.DRAFT,
     val hasObservedPower: Boolean = true,
 )
 
@@ -42,6 +40,5 @@ object DeckBuilder {
         pairStrength: Map<String, Double> = emptyMap(),
         maxOptions: Int = 3,
         synergy: SynergyIndex? = null,
-        mode: LimitedMode = LimitedMode.DRAFT,
-    ): List<DeckOption> = DeckProjector.projectAll(pool, metrics, meta, archetypeRating, pairStrength, maxOptions, synergy, mode)
+    ): List<DeckOption> = DeckProjector.projectAll(pool, metrics, meta, archetypeRating, pairStrength, maxOptions, synergy)
 }

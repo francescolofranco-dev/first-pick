@@ -4,7 +4,6 @@ enum class DraftFormat {
     PREMIER,
     TRADITIONAL,
     QUICK,
-    SEALED,
     CUBE,
     UNKNOWN;
 
@@ -12,11 +11,11 @@ enum class DraftFormat {
         fun fromEventName(eventName: String): DraftFormat {
             val n = eventName.lowercase().replace("_", "")
             return when {
+                "sealed" in n -> UNKNOWN
                 "traddraft" in n || "traditionaldraft" in n -> TRADITIONAL
                 "premierdraft" in n || "premiumdraft" in n -> PREMIER
                 "quickdraft" in n || "botdraft" in n -> QUICK
                 "cube" in n -> CUBE
-                "sealed" in n -> SEALED
                 "draft" in n -> PREMIER
                 else -> UNKNOWN
             }
@@ -32,7 +31,7 @@ private val PREFIXED_DRAFT_SET_RE = Regex(
 )
 
 fun setCodeFromEventName(eventName: String): String? =
-    (PREFIXED_DRAFT_SET_RE.find(eventName) ?: SET_CODE_RE.find(eventName))
+    if (DraftFormat.fromEventName(eventName) == DraftFormat.UNKNOWN) null else (PREFIXED_DRAFT_SET_RE.find(eventName) ?: SET_CODE_RE.find(eventName))
         ?.groupValues?.get(1)?.uppercase()
 
 /** Exact saved main deck; it is not a claim about unsaved builder edits. */

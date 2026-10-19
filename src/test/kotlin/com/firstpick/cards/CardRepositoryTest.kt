@@ -52,7 +52,7 @@ class CardRepositoryTest {
             client = SeventeenLandsClient(cacheDir = cache, http = ScriptedHttpClient(StubHttpAction.Response(404, ""))),
             catalogClient = ScryfallClient(cacheDir = cache, http = ScriptedHttpClient(StubHttpAction.Response(404, ""))),
         )
-        assertEquals(FetchFailure.NOT_FOUND, assertFailsWith<DataUnavailableException> { repo.load("FRA", "Sealed") }.reason)
+        assertEquals(FetchFailure.NOT_FOUND, assertFailsWith<DataUnavailableException> { repo.load("FRA", "PremierDraft") }.reason)
         assertFalse(repo.isLoaded)
     }
 

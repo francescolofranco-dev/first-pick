@@ -188,7 +188,6 @@ val DraftFormat.label: String
         DraftFormat.PREMIER -> "Premier Draft"
         DraftFormat.TRADITIONAL -> "Traditional Draft"
         DraftFormat.QUICK -> "Quick Draft"
-        DraftFormat.SEALED -> "Sealed"
         DraftFormat.CUBE -> "Cube Draft"
         DraftFormat.UNKNOWN -> "Draft"
     }
@@ -209,13 +208,7 @@ object RatingsFormat {
         else -> "Premier (default)"
     }
 
-    fun displayLabel(choice: String, detected: DraftFormat): String =
-        if (detected == DraftFormat.SEALED) "Sealed · match event" else label(choice)
-
     fun resolve(choice: String, detected: DraftFormat): String {
-        // Sealed is a distinct 17Lands population. Never silently evaluate a
-        // Sealed pool with Draft ratings, even when an old override persisted.
-        if (detected == DraftFormat.SEALED) return "Sealed"
         return when (choice) {
             QUICK -> "QuickDraft"
             TRAD -> "TradDraft"
