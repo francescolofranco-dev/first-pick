@@ -37,6 +37,10 @@ class DeckBuildAuditTest {
         manaCost = meta["manaCost"]?.jsonPrimitive?.contentOrNull,
         isPlaneswalker = meta.flag("planeswalker"), isMassRemoval = meta.flag("massRemoval"),
         isRepeatableAdvantage = meta.flag("repeatableAdvantage"),
+        landcyclingColors = meta.string("landcyclingColors").toSet(),
+        landcyclingCost = meta["landcyclingCost"]?.jsonPrimitive?.contentOrNull,
+        selectionCardsSeen = meta["selectionCardsSeen"]?.jsonPrimitive?.intOrNull ?: 0,
+        fixingIsConditional = meta.flag("fixingConditional"),
     )
 
     @Test

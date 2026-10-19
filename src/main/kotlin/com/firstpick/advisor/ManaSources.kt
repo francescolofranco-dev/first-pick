@@ -1,8 +1,10 @@
 package com.firstpick.advisor
 
+import com.firstpick.cards.ManaAccess
 import com.firstpick.cards.CardMeta
 import com.firstpick.cards.RankedCard
 import com.firstpick.guide.DeckConstructionPolicy
+import kotlin.math.ceil
 
 data class ManaSourceReport(
     val requiredSources: Map<Char, Int>,
@@ -13,7 +15,12 @@ data class ManaSourceReport(
     val shortfalls: Map<Char, Int>,
     val baseColors: Set<Char>,
     val splashColor: Char?,
+    val selectionCredit: Map<Char, Double> = emptyMap(),
+    val landcyclingSources: Map<Char, Int> = emptyMap(),
 ) {
+    val effectiveSources: Map<Char, Double> get() = totalSources.mapValues { (color, count) ->
+        count + (selectionCredit[color] ?: 0.0)
+    }
     val baseShortfall: Int get() = baseColors.sumOf { shortfalls[it] ?: 0 }
     val splashShortfall: Int get() = splashColor?.let { shortfalls[it] ?: 0 } ?: 0
     val splashSupported: Boolean get() = splashColor == null || splashShortfall == 0
@@ -49,18 +56,40 @@ object ManaSources {
                 val m = meta(card.name) ?: return@count false
                 // The creature's mana value does not include its prepared/Adventure spell cost.
                 // Keep these roles for deck guidance, but do not promise a splash source from them.
-                if (!m.isFixing || m.isLand || m.fixingRequiresAdditionalSpell) return@count false
+                if (!m.isFixing || m.isLand || m.fixingRequiresAdditionalSpell || m.fixingIsConditional || m.landcyclingCost != null) return@count false
                 val produced = m.producedColors
                 val canProduce = color in produced || (produced.isEmpty() && color == splashColor)
                 val needsCreditedColorToCast = (coloredPips(card, m, baseColors, splashColor)[color] ?: 0) > 0
                 canProduce && !needsCreditedColorToCast && m.cmc < (needs.castingTurn[color] ?: Int.MAX_VALUE)
             }
         }
+        val cyclingCandidates = deckColors.associateWith { color ->
+            (spells + nonbasicLands).count { card ->
+                val m = meta(card.name) ?: return@count false
+                val cost = m.landcyclingCost ?: return@count false
+                color in m.landcyclingColors && ManaAccess.payable(cost, baseColors) &&
+                    (ManaAccess.costValue(cost) ?: Int.MAX_VALUE) < (needs.castingTurn[color] ?: 0)
+            }
+        }
+        val selection = if (splashColor == null) emptyMap() else {
+            val credit = spells.sumOf { card ->
+                val m = meta(card.name) ?: return@sumOf 0.0
+                val dependsOnSplash = (coloredPips(card, m, baseColors, splashColor)[splashColor] ?: 0) > 0
+                if (m.isLand || m.isFixing || m.landcyclingCost != null || dependsOnSplash ||
+                    m.cmc >= (needs.castingTurn[splashColor] ?: 0)) 0.0
+                else m.selectionCardsSeen.coerceIn(0, 4) * 0.25
+            }.coerceAtMost(1.0)
+            mapOf(splashColor to credit)
+        }
         val basics = deckColors.associateWith { 0 }.toMutableMap()
         var basicsLeft = (landSlots - nonbasicLands.size).coerceAtLeast(0)
 
+        // A search is not a source of a color unless an allocated basic can be found.
+        fun cyclingSources(color: Char): Int = minOf(cyclingCandidates[color] ?: 0, basics[color] ?: 0)
         fun sources(color: Char): Int =
-            (basics[color] ?: 0) + (nonbasic[color] ?: 0) + (fixers[color] ?: 0)
+            (basics[color] ?: 0) + (nonbasic[color] ?: 0) + (fixers[color] ?: 0) + cyclingSources(color)
+        fun splashMet(color: Char): Boolean = sources(color) >= policy.minimumSplashSources &&
+            sources(color) + (selection[color] ?: 0.0) >= (requirements[color] ?: 0)
 
         // A splash is never funded by making a base color unreliable. Meet both
         // base targets first, balancing the two colors as basics are assigned.
@@ -76,7 +105,7 @@ object ManaSources {
         }
 
         if (splashColor != null) {
-            while (basicsLeft > 0 && sources(splashColor) < (requirements[splashColor] ?: 0)) {
+            while (basicsLeft > 0 && !splashMet(splashColor)) {
                 basics[splashColor] = (basics[splashColor] ?: 0) + 1
                 basicsLeft--
             }
@@ -95,17 +124,21 @@ object ManaSources {
 
         val totals = deckColors.associateWith(::sources)
         val shortfalls = deckColors.associateWith { color ->
-            ((requirements[color] ?: 0) - (totals[color] ?: 0)).coerceAtLeast(0)
+            val effective = (totals[color] ?: 0) + (selection[color] ?: 0.0)
+            val missing = ceil((requirements[color] ?: 0) - effective).toInt().coerceAtLeast(0)
+            if (color == splashColor) maxOf(missing, policy.minimumSplashSources - (totals[color] ?: 0)) else missing
         }
         return ManaSourceReport(
             requiredSources = requirements,
             basicSources = basics,
             nonbasicSources = nonbasic,
-            fixerSources = fixers,
+            fixerSources = deckColors.associateWith { (fixers[it] ?: 0) + cyclingSources(it) },
             totalSources = totals,
             shortfalls = shortfalls,
             baseColors = baseColors,
             splashColor = splashColor,
+            selectionCredit = selection,
+            landcyclingSources = deckColors.associateWith(::cyclingSources),
         )
     }
 

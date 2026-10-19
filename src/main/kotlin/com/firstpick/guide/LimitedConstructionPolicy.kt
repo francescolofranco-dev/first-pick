@@ -67,10 +67,8 @@ object LimitedDeckPolicies {
         removalMinimumZ = -0.75,
         minimumBaseColorPips = 4,
         minimumBaseColorRatio = 0.20,
-        minimumBaseSources = 6,
-        // Draft projections tolerate a modest source risk so existing pick-time
-        // behavior remains flexible. Sealed below requires full source targets.
-        baseSourceRelaxation = 2,
+        minimumBaseSources = 8,
+        baseSourceRelaxation = 0,
         maximumSplashCards = 4,
         minimumSplashSources = 3,
         splashCastingDelay = 3,
@@ -81,8 +79,8 @@ object LimitedDeckPolicies {
         meanQualityWeight = 0.72,
         topQualityWeight = 0.18,
         floorQualityWeight = 0.10,
-        manaShortfallPenalty = 0.0,
-        reliableManaBonus = 0.0,
+        manaShortfallPenalty = 3.0,
+        reliableManaBonus = 2.0,
         finisherTarget = 2,
         stallBreakerTarget = 3,
     )

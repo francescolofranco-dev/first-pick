@@ -58,13 +58,48 @@ class DeckProjectorTest {
             repeat(13) { add(card(100 + it, "U$it", 0.56, "U")) }
             add(card(300, "BlackBomb", 0.64, "B"))
             add(card(301, "RedBomb", 0.64, "R"))
+            repeat(3) { add(card(400 + it, "Dual$it", 0.55, "")) }
         }
-        val options = DeckProjector.projectAll(pool, metrics, meta, basePair = "WU")
+        val supportedMeta: (String) -> CardMeta? = { name ->
+            if (name.startsWith("Dual")) CardMeta(name, 0, false, true, isFixing = true, producedColors = setOf('W', 'U'))
+            else meta(name)
+        }
+        val options = DeckProjector.projectAll(pool, metrics, supportedMeta, basePair = "WU")
         assertEquals(setOf(null, 'B', 'R'), options.map { it.splash }.toSet())
         for (option in options.filter { it.splash != null }) {
             assertTrue(option.manaSources!!.splashFeasible)
             assertTrue(option.powerReasons.first().startsWith("Splash justified by"))
         }
+    }
+
+    @Test
+    fun cardSelectionCanSupportASplashWithoutWeakeningTheBaseMana() {
+        fun build(withSelection: Boolean): List<DeckOption> {
+            val pool = buildList {
+                repeat(13) { add(card(it, "W$it", 0.56, "W")) }
+                repeat(13) { add(card(100 + it, "U$it", 0.56, "U")) }
+                add(card(300, "BlackBomb", 0.68, "B"))
+                repeat(2) { add(card(400 + it, "Tri$it", 0.55, "")) }
+                if (withSelection) repeat(2) { add(card(500 + it, "Draw$it", 0.60, "U")) }
+            }
+            val metadata: (String) -> CardMeta? = { name ->
+                when {
+                    name.startsWith("Tri") -> CardMeta(name, 0, false, true, isFixing = true, producedColors = setOf('W', 'U', 'B'))
+                    name.startsWith("Draw") -> CardMeta(name, 3, false, false, isCardDraw = true,
+                        coloredPips = mapOf('U' to 1), selectionCardsSeen = 2)
+                    name == "BlackBomb" -> CardMeta(name, 6, true, false, isFinisher = true, coloredPips = mapOf('B' to 1))
+                    else -> CardMeta(name, 2, true, false, coloredPips = mapOf(name.first() to 1))
+                }
+            }
+            return DeckProjector.projectAll(pool, metrics, metadata, basePair = "WU")
+        }
+        assertTrue(build(false).none { it.splash == 'B' })
+        val supported = build(true).first { it.splash == 'B' }
+        val mana = supported.manaSources!!
+        assertEquals(0, mana.baseShortfall)
+        assertEquals(3, mana.totalSources.getValue('B'))
+        assertEquals(1.0, mana.selectionCredit.getValue('B'))
+        assertTrue(supported.powerReasons.any { "selection credit" in it })
     }
 
     @Test

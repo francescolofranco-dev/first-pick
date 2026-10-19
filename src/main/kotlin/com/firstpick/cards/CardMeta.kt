@@ -24,4 +24,9 @@ data class CardMeta(
     val isPlaneswalker: Boolean = false,
     val isMassRemoval: Boolean = false,
     val isRepeatableAdvantage: Boolean = false,
+    val landcyclingColors: Set<Char> = emptySet(),
+    val landcyclingCost: String? = null,
+    /** Extra cards seen from an unconditional front-face resolution (draw, loot, scry, surveil). */
+    val selectionCardsSeen: Int = 0,
+    val fixingIsConditional: Boolean = false,
 )

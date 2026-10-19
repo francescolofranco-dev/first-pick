@@ -94,10 +94,10 @@ class ScryfallClientTest {
         val cache = createTempDirectory("fp-mana-costs")
         val http = ScriptedHttpClient(
             StubHttpAction.Response(200, """{"data":[
-                {"name":"Hybrid Creature","cmc":3,"type_line":"Creature","mana_cost":"{1}{W/U}{W/U}"},
+                {"name":"Hybrid Creature","cmc":3,"type_line":"Creature","mana_cost":"{1}{W/U}{W/U}","oracle_text":"Basic landcycling {2}"},
                 {"name":"Front // Back","cmc":2,"type_line":"Creature","card_faces":[{"mana_cost":"{1}{G}"},{"mana_cost":""}]},
                 {"name":"Left // Right","cmc":5,"type_line":"Instant","mana_cost":"{1}{U} // {2}{B}"},
-                {"name":"Free Artifact","cmc":0,"type_line":"Artifact","mana_cost":"{0}"},
+                {"name":"Free Artifact","cmc":0,"type_line":"Artifact","mana_cost":"{0}","oracle_text":"Draw two cards, then discard a card."},
                 {"name":"Island","type_line":"Basic Land — Island","mana_cost":""}
             ]}"""),
             StubHttpAction.Response(404, "{}"),
@@ -108,6 +108,10 @@ class ScryfallClientTest {
         assertEquals("{1}{G}", fetched.getValue("front").manaCost)
         assertEquals("{1}{U} // {2}{B}", fetched.getValue("left").manaCost)
         assertEquals("{0}", fetched.getValue("free artifact").manaCost)
+        assertEquals("{2}", fetched.getValue("hybrid creature").landcyclingCost)
+        assertEquals("WUBRG".toSet(), fetched.getValue("hybrid creature").landcyclingColors)
+        assertTrue(fetched.getValue("hybrid creature").isFixing)
+        assertEquals(2, fetched.getValue("free artifact").selectionCardsSeen)
         assertEquals("", fetched.getValue("island").manaCost)
         assertEquals(4, http.requestCount)
 

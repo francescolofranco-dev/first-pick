@@ -354,3 +354,29 @@ against frozen data from three sets. It checks card conservation, color and
 splash legality, completeness, and conservative quality substitutions.
 Use `-PauditSeedStart=100 -PauditSeeds=100` to check another 600 pools.
 See [the audit report and reproduction instructions](docs/deck-building-audit.md).
+
+
+### Mana access and fixing
+
+Draft and Sealed use the same full base-color source targets: neither gets a
+two-source discount. Basic and typed landcycling use their printed activation
+cost and require an allocated basic of a matching type. Unknown costs, late
+activation, and activation requiring the missing splash color receive no
+credit. The cycling credit is capped by matching basic targets; it is not also
+counted as a normal fixing spell.
+
+Timely base-colored draw, draw/discard, scry, and surveil effects receive 0.25
+source-equivalent credit per extra card seen, capped at one for the deck.
+This is a bounded heuristic, not a calibrated draw-probability calculation.
+Credit applies to splash access only; it cannot lower the base-color targets
+or replace the minimum three source accesses to the splash color. Splash-colored
+or late draw cannot justify its own mana. Known conditional fixing (such as
+Treasure on death) is not promised as an unconditional source.
+
+Ordinary eligible fixing spells still count as one source. Tapped-land tempo,
+full one-use/repeatable mana simulation, and complex conditional effects remain
+approximations. Metadata refreshes once to recognize the new effects, retaining
+older metadata if offline. The splash explanation shows landcycling and partial
+selection credit separately.
+
+Landcycling rules follow the [official mechanics explanation](https://magic.wizards.com/en/news/feature/final-fantasy-mechanics).

@@ -125,6 +125,11 @@ class ScryfallClient(
         val massRemoval: Boolean = false,
         val repeatableAdvantage: Boolean = false,
         val impactKnown: Boolean = false,
+        val landcyclingColors: String = "",
+        val landcyclingCost: String? = null,
+        val selectionCardsSeen: Int = 0,
+        val manaAccessKnown: Boolean = false,
+        val fixingConditional: Boolean = false,
     )
 
     suspend fun setMeta(set: String, names: Collection<String> = emptyList()): Map<String, CardMeta> = withContext(Dispatchers.IO) {
@@ -133,7 +138,7 @@ class ScryfallClient(
         val cached = if (Files.exists(cache)) {
             runCatching { json.decodeFromString(LIST_SERIALIZER, Files.readString(cache)) }.getOrDefault(emptyList())
         } else emptyList()
-        val dtos: List<MetaDto> = if (isFresh(cache) && cached.all { it.manaCost != null && it.impactKnown }) {
+        val dtos: List<MetaDto> = if (isFresh(cache) && cached.all { it.manaCost != null && it.impactKnown && it.manaAccessKnown }) {
             cached
         } else {
             val built = build(set, names)
@@ -161,6 +166,10 @@ class ScryfallClient(
         isPlaneswalker = planeswalker,
         isMassRemoval = massRemoval,
         isRepeatableAdvantage = repeatableAdvantage,
+        landcyclingColors = landcyclingColors.toSet(),
+        landcyclingCost = landcyclingCost,
+        selectionCardsSeen = selectionCardsSeen,
+        fixingIsConditional = fixingConditional,
     )
 
     private fun build(set: String, names: Collection<String>): List<MetaDto>? {
@@ -241,6 +250,8 @@ class ScryfallClient(
         val extraSpellFixing = c.layout in setOf("prepare", "adventure") && c.faces.drop(1).any {
             classifyRoles(it.typeLine, it.oracleText, 0, 0, emptyList()).fixing
         }
+        val frontText = if (c.layout in setOf("prepare", "adventure")) face?.oracleText.orEmpty() else oracleText
+        val landcycling = ManaAccess.landcycling(frontText)
         return MetaDto(
             name, cmc, r.creature, r.land, r.removal, r.fixing, r.finisher, r.evasion, r.draw,
             hybridGroupsOf(manaCost), produced, heavyPipsOf(manaCost),
@@ -251,6 +262,11 @@ class ScryfallClient(
             massRemoval = isMassRemoval(oracleText),
             repeatableAdvantage = isRepeatableAdvantage(oracleText),
             impactKnown = true,
+            landcyclingColors = landcycling?.colors?.joinToString("").orEmpty(),
+            landcyclingCost = landcycling?.cost,
+            selectionCardsSeen = ManaAccess.cardsSeen(frontText),
+            manaAccessKnown = true,
+            fixingConditional = ManaAccess.conditionalFixing(frontText),
         )
     }
 
@@ -399,7 +415,7 @@ class ScryfallClient(
             val draw = drawTagged || DRAW_RE.containsMatchIn(text)
             val fixing = (producedColors.size >= 2) ||
                 ("any color" in text) ||
-                ("treasure" in text && "create" in text) || createsHeartwood(text)
+                ("treasure" in text && "create" in text) || createsHeartwood(text) || ManaAccess.landcycling(oracleText) != null
             val finisher = isCreature && (power >= 5 || (power >= 4 && (cmc >= 5 || evasion)))
             return CardRoleFlags(isCreature, isLand, removal, fixing, finisher, evasion, draw)
         }

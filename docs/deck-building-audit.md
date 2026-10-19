@@ -50,7 +50,7 @@ BLB seed 7 produced a 22-spell UB build from 24 base-color cards. The builder
 also left stronger copies out while seating weaker cards. Copies now compete
 individually through the existing quality, curve, and role selection.
 
-After those changes, seeds 0–99 produced 1,319 suggested builds from 600 pools,
+For v1.7.3, after those changes, seeds 0–99 produced 1,319 suggested builds from 600 pools,
 with zero findings under the audit checks. A separate validation range, seeds
 100–199, produced another 1,319 builds from 600 pools, again with zero findings.
 Across both ranges: 1,200 pools, 2,638 builds, and 152 splash builds checked.
@@ -67,3 +67,21 @@ Frozen observations cover FRA, BLB, and DSK. Older metadata intentionally
 exercises fallback behavior; see the fixture README for provenance and
 coverage. Synergy strength, conditional card interactions, land-count choices,
 and complicated fixing effects still require broader validation.
+
+
+## Mana-access validation in v1.8.0
+
+Draft now uses the same full base-color source targets and source-shortfall
+penalties as Sealed. The old two-source Draft relaxation is removed.
+The seed 0–99 audit was rerun under those requirements: 600 pools, 1,315 builds,
+31 splash builds, and zero audit findings. Seeds 100–199 added 1,324 builds
+from another 600 pools, including 25 splash builds, with zero findings. The
+frozen inputs predate the new
+mana-access fields; targeted tests additionally exercise landcycling, partial
+selection credit, timing, missing basic targets, and circular dependencies.
+
+A separate deck-builder regression starts with a bomb splash that lacks one
+source. Two timely base-colored draw/filter spells close that gap through
+partial selection credit while both early base-color requirements stay met.
+Removing those spells rejects the splash. This tests the completed build, not
+only the source-report helper.

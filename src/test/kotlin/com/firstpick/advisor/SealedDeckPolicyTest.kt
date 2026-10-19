@@ -56,7 +56,9 @@ class SealedDeckPolicyTest {
         assertEquals(LimitedMode.DRAFT, LimitedMode.fromFormat(DraftFormat.PREMIER))
         assertTrue(sealed.removalTarget > draft.removalTarget)
         assertTrue(sealed.maximumSplashCards < draft.maximumSplashCards)
-        assertTrue(sealed.minimumBaseSources > draft.minimumBaseSources)
+        assertEquals(sealed.minimumBaseSources, draft.minimumBaseSources)
+        assertEquals(0, draft.baseSourceRelaxation)
+        assertEquals(sealed.baseSourceRelaxation, draft.baseSourceRelaxation)
         assertTrue(sealed.topQualityWeight > draft.topQualityWeight)
     }
 

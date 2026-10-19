@@ -202,7 +202,7 @@ object DeckProjector {
             return lands.asSequence()
                 .filter { card ->
                     val produced = meta(card.name)?.producedColors.orEmpty()
-                    val identity = produced.ifEmpty { castingColorsOf(card, meta(card.name)) }
+                    val identity = produced.ifEmpty { meta(card.name)?.landcyclingColors.orEmpty().ifEmpty { castingColorsOf(card, meta(card.name)) } }
                     identity.isNotEmpty() && (deckColors.containsAll(identity) || identity.containsAll(deckColors))
                 }
                 .sortedByDescending { card ->
@@ -301,7 +301,10 @@ object DeckProjector {
             powerConfidence = power.confidenceLabel,
             powerReasons = (if (splashColor != null) listOf(
                 "Splash justified by " + splashedSpells.mapNotNull { card -> HaymakerAssessment.reason(card, metrics, meta(card.name))?.let { "${card.name}: $it" } }.joinToString(),
-                "$splashColor sources: ${manaSources.totalSources[splashColor] ?: 0}/${manaSources.requiredSources[splashColor] ?: 0} required; base colors supported",
+                "$splashColor sources: ${manaSources.totalSources[splashColor] ?: 0}" +
+                    (manaSources.landcyclingSources[splashColor]?.takeIf { it > 0 }?.let { " ($it landcycling)" } ?: "") +
+                    (manaSources.selectionCredit[splashColor]?.takeIf { it > 0.0 }?.let { " + %.2f selection credit".format(java.util.Locale.ROOT, it) } ?: "") +
+                    "/${manaSources.requiredSources[splashColor] ?: 0} required; base colors supported",
             ) else emptyList()) + power.reasons,
             spells = chosen.sortedWith(compareBy({ meta(it.name)?.cmc ?: 9 }, { -(it.gihWr ?: 0.0) })),
             nonbasicLands = onColorLands,

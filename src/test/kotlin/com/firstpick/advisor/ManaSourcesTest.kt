@@ -11,6 +11,70 @@ import kotlin.test.assertTrue
 
 class ManaSourcesTest {
     @Test
+    fun draftAndSealedHaveTheSameBaseColorSourceRequirements() {
+        val spells = listOf(card(1, "White", "W"), card(2, "Blue", "U"))
+        val metas = mapOf(
+            "White" to CardMeta("White", 2, true, false, coloredPips = mapOf('W' to 1)),
+            "Blue" to CardMeta("Blue", 3, true, false, coloredPips = mapOf('U' to 1)),
+        )
+        val draft = ManaSources.estimate(spells, "WU", null, emptyList(), metas::get, LimitedDeckPolicies.DRAFT)
+        val sealed = ManaSources.estimate(spells, "WU", null, emptyList(), metas::get, LimitedDeckPolicies.SEALED)
+        assertEquals(sealed.requiredSources, draft.requiredSources)
+        assertEquals(9, draft.requiredSources.getValue('W'))
+    }
+
+    @Test
+    fun landcyclingUsesActivationCostAndAllocatedBasicTargets() {
+        fun report(cost: String, colors: Set<Char> = "WUBRG".toSet(), landSlots: Int = 17): ManaSourceReport {
+            val spells = listOf(card(1, "White", "W"), card(2, "Blue", "U"), card(3, "Bomb", "B"))
+            val metas = mapOf(
+                "White" to CardMeta("White", 9, true, false, isFixing = true,
+                    coloredPips = mapOf('W' to 1), landcyclingCost = cost, landcyclingColors = colors),
+                "Blue" to CardMeta("Blue", 3, true, false, coloredPips = mapOf('U' to 1)),
+                "Bomb" to CardMeta("Bomb", 6, true, false, coloredPips = mapOf('B' to 1)),
+            )
+            return ManaSources.estimate(spells, "WU", 'B', emptyList(), metas::get, LimitedDeckPolicies.SEALED, landSlots)
+        }
+        val cheap = report("{2}")
+        assertEquals(1, cheap.landcyclingSources.getValue('B'))
+        assertTrue(cheap.splashFeasible, "the nine-mana body can landcycle on turn two")
+        assertEquals(0, report("{B}").landcyclingSources.getValue('B'), "cannot require the splash to find it")
+        assertEquals(0, report("{9}").landcyclingSources.getValue('B'), "too late")
+        assertEquals(0, report("{2}", setOf('U')).landcyclingSources.getValue('B'), "islandcycling cannot find black")
+        assertEquals(0, report("{2}", landSlots = 2).landcyclingSources.getValue('B'), "no allocated Swamp to search")
+    }
+
+    @Test
+    fun drawAndLootGiveBoundedFractionalCreditWithoutReplacingSources() {
+        fun report(draws: Int, drawCmc: Int = 2, drawColor: String = "U", sourceCount: Int = 3): ManaSourceReport {
+            val drawCards = List(draws) { card(10 + it, "Draw$it", drawColor) }
+            val spells = listOf(card(1, "White", "W"), card(2, "Blue", "U"), card(3, "Bomb", "B")) + drawCards
+            val lands = List(17) { card(100 + it, "Land$it", "") }
+            val metas = buildMap {
+                put("White", CardMeta("White", 3, true, false, coloredPips = mapOf('W' to 1)))
+                put("Blue", CardMeta("Blue", 3, true, false, coloredPips = mapOf('U' to 1)))
+                put("Bomb", CardMeta("Bomb", 6, true, false, coloredPips = mapOf('B' to 1)))
+                drawCards.forEach { put(it.name, CardMeta(it.name, drawCmc, false, false,
+                    coloredPips = mapOf(drawColor.single() to 1), selectionCardsSeen = 2)) }
+                lands.forEachIndexed { index, card -> put(card.name, CardMeta(card.name, 0, false, true,
+                    producedColors = if (index < sourceCount) setOf('W', 'U', 'B') else setOf('W', 'U'))) }
+            }
+            return ManaSources.estimate(spells, "WU", 'B', lands, metas::get, LimitedDeckPolicies.SEALED)
+        }
+        assertEquals(0.5, report(1).selectionCredit.getValue('B'))
+        assertFalse(report(1).splashFeasible, "half a source does not close a full source shortfall")
+        val supported = report(2)
+        assertEquals(3, supported.totalSources.getValue('B'))
+        assertEquals(4.0, supported.effectiveSources.getValue('B'))
+        assertTrue(supported.splashFeasible)
+        assertEquals(1.0, report(8).selectionCredit.getValue('B'), "credit is capped")
+        assertFalse(report(8, sourceCount = 0).splashFeasible, "drawing does not create colored mana")
+        assertEquals(0.0, report(2, drawColor = "B").selectionCredit.getValue('B'), "no circular splash-colored draw")
+        assertEquals(0.0, report(2, drawCmc = 8).selectionCredit.getValue('B'), "no credit after casting window")
+        assertEquals(0, supported.baseShortfall)
+    }
+
+    @Test
     fun preparedHeartwoodSpellDoesNotCountAsImmediateSplashFixing() {
         val crafter = card(106339, "Heartwood Crafter", "G")
         val splash = card(2, "Red splash", "R")
@@ -70,12 +134,12 @@ class ManaSourcesTest {
 
     @Test
     fun aFixerCountsOnlyWhenItProducesTheColorBeforeTheSplashTurn() {
-        fun report(fixerCmc: Int): ManaSourceReport {
+        fun report(fixerCmc: Int, conditional: Boolean = false): ManaSourceReport {
             val splash = card(1, "Early", "B")
             val fixer = card(2, "Fixer", "")
             val metas = mapOf(
                 "Early" to CardMeta("Early", 2, false, false, coloredPips = mapOf('B' to 1)),
-                "Fixer" to CardMeta("Fixer", fixerCmc, false, false, isFixing = true, producedColors = setOf('B')),
+                "Fixer" to CardMeta("Fixer", fixerCmc, false, false, isFixing = true, producedColors = setOf('B'), fixingIsConditional = conditional),
             )
             return ManaSources.estimate(
                 listOf(splash, fixer), "WU", 'B', emptyList(), metas::get, LimitedDeckPolicies.SEALED,
@@ -84,6 +148,7 @@ class ManaSourcesTest {
 
         assertEquals(1, report(fixerCmc = 2).fixerSources.getValue('B'))
         assertEquals(0, report(fixerCmc = 4).fixerSources.getValue('B'))
+        assertEquals(0, report(fixerCmc = 2, conditional = true).fixerSources.getValue('B'))
     }
 
     @Test
