@@ -21,4 +21,7 @@ data class CardMeta(
     val fixingRequiresAdditionalSpell: Boolean = false,
     /** Printed cost in Scryfall's symbol notation; null means metadata is unavailable. */
     val manaCost: String? = null,
+    val isPlaneswalker: Boolean = false,
+    val isMassRemoval: Boolean = false,
+    val isRepeatableAdvantage: Boolean = false,
 )

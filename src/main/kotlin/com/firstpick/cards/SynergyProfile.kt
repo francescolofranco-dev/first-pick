@@ -61,22 +61,6 @@ data class SynergyCombo(
     val sourceIds: List<String> = emptyList(),
 )
 
-/** Human-reviewed impact, independent of observed win rate and mana feasibility. */
-@Serializable
-enum class HaymakerImpact { THREAT, ENGINE, SWEEPER }
-
-@Serializable
-data class HaymakerReview(
-    val name: String,
-    val impact: HaymakerImpact,
-    val reason: String,
-    val sourceIds: List<String> = emptyList(),
-    /** Conditional effects require explicit support; unknown setup cannot open a splash. */
-    val requiresSetup: Boolean = false,
-    val supportCards: List<String> = emptyList(),
-    val minimumSupport: Int = 0,
-)
-
 @Serializable
 data class SetSynergyProfile(
     val schemaVersion: Int = 0,
@@ -88,7 +72,6 @@ data class SetSynergyProfile(
     val mechanics: List<SynergyMechanic> = emptyList(),
     val archetypes: List<SynergyArchetype> = emptyList(),
     val combos: List<SynergyCombo> = emptyList(),
-    val haymakers: List<HaymakerReview> = emptyList(),
 )
 
 /** Strict validation boundary for downloaded profile overrides and bundled profiles. */
@@ -166,19 +149,6 @@ object SynergyProfileValidator {
             if (kinds.none { it == SynergySourceKind.OFFICIAL_LIMITED_GUIDE || it == SynergySourceKind.OFFICIAL_MECHANICS }) {
                 add("$label must cite an official Limited guide or mechanics source")
             }
-        }
-        val reviewedNames = mutableSetOf<String>()
-        profile.haymakers.forEachIndexed { index, review ->
-            val label = "haymakers[$index]"
-            if (review.name.isBlank()) add("$label.name must not be blank")
-            if (!reviewedNames.add(SynergyIndex.normalize(review.name))) add("$label duplicates a reviewed card")
-            if (review.reason.isBlank()) add("$label.reason must not be blank")
-            if (review.minimumSupport < 0) add("$label.minimumSupport must be nonnegative")
-            if (review.minimumSupport > 0 && (!review.requiresSetup || review.supportCards.isEmpty())) {
-                add("$label support requirements need setup and support cards")
-            }
-            validateCardNames("$label.supportCards", review.supportCards)
-            validateReferences(label, review.sourceIds, sourceIds)
         }
         profile.combos.forEachIndexed { index, combo ->
             val label = "combos[$index]"

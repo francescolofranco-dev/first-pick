@@ -121,6 +121,10 @@ class ScryfallClient(
         val hybridPips: List<String> = emptyList(),
         val fixingRequiresAdditionalSpell: Boolean = false,
         val manaCost: String? = null,
+        val planeswalker: Boolean = false,
+        val massRemoval: Boolean = false,
+        val repeatableAdvantage: Boolean = false,
+        val impactKnown: Boolean = false,
     )
 
     suspend fun setMeta(set: String, names: Collection<String> = emptyList()): Map<String, CardMeta> = withContext(Dispatchers.IO) {
@@ -129,7 +133,7 @@ class ScryfallClient(
         val cached = if (Files.exists(cache)) {
             runCatching { json.decodeFromString(LIST_SERIALIZER, Files.readString(cache)) }.getOrDefault(emptyList())
         } else emptyList()
-        val dtos: List<MetaDto> = if (isFresh(cache) && cached.all { it.manaCost != null }) {
+        val dtos: List<MetaDto> = if (isFresh(cache) && cached.all { it.manaCost != null && it.impactKnown }) {
             cached
         } else {
             val built = build(set, names)
@@ -154,6 +158,9 @@ class ScryfallClient(
         hybridPips = hybridPips.map { it.toSet() },
         fixingRequiresAdditionalSpell = fixingRequiresAdditionalSpell,
         manaCost = manaCost,
+        isPlaneswalker = planeswalker,
+        isMassRemoval = massRemoval,
+        isRepeatableAdvantage = repeatableAdvantage,
     )
 
     private fun build(set: String, names: Collection<String>): List<MetaDto>? {
@@ -240,6 +247,10 @@ class ScryfallClient(
             coloredPipsOf(manaCost), hybridPipsOf(manaCost),
             fixingRequiresAdditionalSpell = extraSpellFixing,
             manaCost = manaCost,
+            planeswalker = "planeswalker" in c.typeLine.ifBlank { face?.typeLine.orEmpty() }.lowercase(),
+            massRemoval = isMassRemoval(oracleText),
+            repeatableAdvantage = isRepeatableAdvantage(oracleText),
+            impactKnown = true,
         )
     }
 
@@ -353,6 +364,20 @@ class ScryfallClient(
                 "|gets -\\d" +
                 "|each (opponent|player) sacrifices",
         )
+
+        /** Only broad, unconditional creature wipes; tribal/target-dependent effects need more context. */
+        internal fun isMassRemoval(oracleText: String): Boolean {
+            val text = oracleText.lowercase()
+            if ("choose a creature type" in text || "if " in text || "unless " in text) return false
+            return Regex("(destroy|exile) all creatures(?:[.;\n]|$)").containsMatchIn(text) ||
+                Regex("deals ([4-9]|[1-9][0-9]+) damage to each creature(?:[.;\n]|$)").containsMatchIn(text)
+        }
+
+        internal fun isRepeatableAdvantage(oracleText: String): Boolean =
+            oracleText.lowercase().lines().any { line ->
+                (line.startsWith("whenever ") || line.startsWith("at the beginning of ")) &&
+                    Regex("draw (a|two|three|[0-9]+) cards?").containsMatchIn(line)
+            }
 
         internal fun classifyRoles(
             typeLine: String,

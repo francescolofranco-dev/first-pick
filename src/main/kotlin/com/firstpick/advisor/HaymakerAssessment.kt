@@ -3,43 +3,31 @@ package com.firstpick.advisor
 import com.firstpick.cards.CardMeta
 import com.firstpick.cards.RankedCard
 import com.firstpick.cards.SetMetrics
-import com.firstpick.cards.SynergyIndex
 
-/** Impact review, statistical confidence, and castability are separate decisions. */
+/** The same effect and performance rules apply to every set; mana is checked separately. */
 internal object HaymakerAssessment {
-    fun reason(
-        card: RankedCard,
-        metrics: SetMetrics,
-        meta: CardMeta?,
-        synergy: SynergyIndex?,
-        deck: List<RankedCard>,
-    ): String? {
-        val review = synergy?.profile?.haymakers?.firstOrNull {
-            SynergyIndex.normalize(it.name) == SynergyIndex.normalize(card.name)
-        }
-        if (review != null) {
-            if (review.requiresSetup) {
-                if (review.minimumSupport == 0) return null // Setup is not mechanically verifiable yet.
-                val support = review.supportCards.map(SynergyIndex::normalize).toSet()
-                val count = deck.count { it.grpId != card.grpId && SynergyIndex.normalize(it.name) in support }
-                if (count < review.minimumSupport) return null
-            }
-            // A reviewed effect remains usable in catalog mode, but reliable poor results veto it.
-            if (card.rating?.hasReliableWinRate == true && !exceptional(card, metrics)) return null
-            return review.reason
-        }
-        // Cheap statistical standouts need an explicit late-game impact review.
-        if (meta == null || meta.cmc <= 3 || !exceptional(card, metrics)) return null
-        // Single-target removal or an expensive body alone is not evidence of takeover potential.
-        if (!meta.isFinisher && !meta.isCardDraw) return null
-        return "Exceptional performance with late-game finishing or card-advantage potential"
-    }
-
-    private fun exceptional(card: RankedCard, metrics: SetMetrics): Boolean {
-        val rating = card.rating ?: return false
-        if (!rating.hasReliableWinRate) return false
-        val z = metrics.z(rating.gihWr) ?: return false
+    fun reason(card: RankedCard, metrics: SetMetrics, meta: CardMeta?): String? {
+        if (meta == null || meta.isLand) return null
+        val rating = card.rating ?: return null
+        if (!rating.hasReliableWinRate) return null
+        val z = metrics.z(rating.gihWr) ?: return null
         val improvement = rating.iwd
-        return if (improvement != null) z >= 1.5 && improvement >= 0.045 else z >= 2.0
+        val exceptional = if (improvement != null) z >= 1.5 && improvement >= 0.045 else z >= 2.0
+        if (!exceptional) return null
+
+        // A cheap card needs unusually strong evidence and a repeatable advantage engine.
+        if (meta.cmc <= 3 && (
+                z < 2.5 || improvement == null || improvement < 0.06 ||
+                    !(meta.isRepeatableAdvantage || (meta.isPlaneswalker && meta.isCardDraw))
+                )) return null
+        return when {
+            meta.isMassRemoval -> "Exceptional performance with broad board-clearing impact"
+            meta.isPlaneswalker && (meta.isRemoval || meta.isCardDraw) ->
+                "Exceptional performance with repeatable planeswalker interaction or card advantage"
+            meta.isRepeatableAdvantage -> "Exceptional performance with repeatable card advantage"
+            meta.isFinisher -> "Exceptional performance with late-game finishing potential"
+            meta.isCardDraw -> "Exceptional performance with card-advantage potential"
+            else -> null
+        }
     }
 }

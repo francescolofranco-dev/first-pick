@@ -229,7 +229,7 @@ object DeckProjector {
             // Upgrade variants only exist for a complete base; short bases are
             // handled by the normal top-up pass below.
             if (base.size < policy.spellSlots) return null
-            val swap = upgradeSplashCandidates(base, spells, pairSet, metrics, ::onColor, ::cardScore, meta, policy, synergy)
+            val swap = upgradeSplashCandidates(base, spells, pairSet, metrics, ::onColor, ::cardScore, meta, policy)
                 .filter { requiredSplash == null || it.color == requiredSplash }
                 .firstOrNull { candidate ->
                     val chosen = base.toMutableList().apply { candidate.removed.forEach(::remove) } + candidate.added
@@ -240,7 +240,7 @@ object DeckProjector {
             selectedSplashColor = swap.color
         } else if (allowSplash) {
             val splash = splashCandidates(
-                spells, pairSet, policy.spellSlots - base.size, ::onColor, ::cardScore, meta, policy, metrics, synergy, base,
+                spells, pairSet, policy.spellSlots - base.size, ::onColor, ::cardScore, meta, policy, metrics,
             ).filter { requiredSplash == null || it.color == requiredSplash }.firstOrNull { candidate ->
                 manaFor(base + candidate.cards, candidate.color).splashFeasible
             }
@@ -300,7 +300,7 @@ object DeckProjector {
             identityReasons = identity.reasons,
             powerConfidence = power.confidenceLabel,
             powerReasons = (if (splashColor != null) listOf(
-                "Splash justified by " + splashedSpells.mapNotNull { card -> HaymakerAssessment.reason(card, metrics, meta(card.name), synergy, chosen)?.let { "${card.name}: $it" } }.joinToString(),
+                "Splash justified by " + splashedSpells.mapNotNull { card -> HaymakerAssessment.reason(card, metrics, meta(card.name))?.let { "${card.name}: $it" } }.joinToString(),
                 "$splashColor sources: ${manaSources.totalSources[splashColor] ?: 0}/${manaSources.requiredSources[splashColor] ?: 0} required; base colors supported",
             ) else emptyList()) + power.reasons,
             spells = chosen.sortedWith(compareBy({ meta(it.name)?.cmc ?: 9 }, { -(it.gihWr ?: 0.0) })),
@@ -333,14 +333,13 @@ object DeckProjector {
         cardScore: (RankedCard) -> Double,
         meta: (String) -> CardMeta?,
         policy: DeckConstructionPolicy,
-        synergy: SynergyIndex?,
     ): List<SplashUpgrade> {
         val byColor = LinkedHashMap<Char, MutableList<RankedCard>>()
         for (card in spells.filterNot(onColor)) {
             val m = meta(card.name) ?: continue
             val splashColors = singleColorSplashOptions(card, pairSet, m)
             if (splashColors.isEmpty()) continue
-            val impactful = isSplashHaymaker(card, metrics, m, synergy, base + card)
+            val impactful = isSplashHaymaker(card, metrics, m)
             if (impactful || isStrongSplashCompanion(card, metrics)) splashColors.forEach { color ->
                 if (color !in m.heavyPipColors) byColor.getOrPut(color) { mutableListOf() }.add(card)
             }
@@ -356,7 +355,7 @@ object DeckProjector {
                 if (cardScore(cand) < cardScore(weakestFirst[i]) + policy.splashUpgradeMargin) break
                 removed += weakestFirst[i]
                 added += cand
-                if (added.any { isSplashHaymaker(it, metrics, meta(it.name), synergy, base.toMutableList().apply { removed.forEach(::remove) } + added) }) {
+                if (added.any { isSplashHaymaker(it, metrics, meta(it.name)) }) {
                     prefixes += SplashUpgrade(color, removed.toList(), added.toList())
                 }
             }
@@ -374,14 +373,12 @@ object DeckProjector {
         meta: (String) -> CardMeta?,
         policy: DeckConstructionPolicy,
         metrics: SetMetrics,
-        synergy: SynergyIndex?,
-        base: List<RankedCard>,
     ): List<SplashChoice> {
         if (deficit <= 0) return emptyList()
         val byColor = LinkedHashMap<Char, MutableList<RankedCard>>()
         for (card in spells.filterNot(onColor)) {
             val m = meta(card.name) ?: continue
-            if (!isSplashHaymaker(card, metrics, m, synergy, base + card) && !isStrongSplashCompanion(card, metrics)) continue
+            if (!isSplashHaymaker(card, metrics, m) && !isStrongSplashCompanion(card, metrics)) continue
             singleColorSplashOptions(card, pairSet, m).forEach { color ->
                 if (color !in m.heavyPipColors) byColor.getOrPut(color) { mutableListOf() }.add(card)
             }
@@ -394,7 +391,7 @@ object DeckProjector {
                     .drop(1)
                     .map { SplashChoice(color, it) }
             }
-            .filter { choice -> choice.cards.any { isSplashHaymaker(it, metrics, meta(it.name), synergy, base + choice.cards) } }
+            .filter { choice -> choice.cards.any { isSplashHaymaker(it, metrics, meta(it.name)) } }
             .sortedByDescending { choice -> choice.cards.sumOf(cardScore) }
     }
 
@@ -405,9 +402,7 @@ object DeckProjector {
         card: RankedCard,
         metrics: SetMetrics,
         meta: CardMeta? = null,
-        synergy: SynergyIndex? = null,
-        deck: List<RankedCard> = emptyList(),
-    ): Boolean = HaymakerAssessment.reason(card, metrics, meta, synergy, deck) != null
+    ): Boolean = HaymakerAssessment.reason(card, metrics, meta) != null
 
     /** Set-wide archetype speeds supply a prior; the specific pair supplies the stronger signal. */
     internal fun adaptiveCurvePolicy(
