@@ -42,6 +42,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalDensity
@@ -65,40 +66,65 @@ import com.firstpick.advisor.ValueBreakdown
 import kotlin.math.roundToInt
 
 @Composable
-internal fun AppBrandMark(modifier: Modifier = Modifier) {
-    val shape = RoundedCornerShape(7.dp)
+internal fun AppBrandMark(
+    modifier: Modifier = Modifier,
+    size: Dp = 26.dp,
+    cornerRadius: Dp = 7.dp,
+) {
+    val shape = RoundedCornerShape(cornerRadius)
     Box(
         modifier = modifier
-            .size(24.dp)
+            .size(size)
             .clip(shape)
             .background(
-                Brush.linearGradient(
-                    colors = listOf(Color(0xFFFF6363), Color(0xFFF59E0B)),
-                    start = Offset(0f, 0f),
-                    end = Offset(64f, 64f),
+                Brush.verticalGradient(
+                    colors = listOf(Color(0xFF1E1E24), Color(0xFF111114)),
                 ),
-            ),
+            )
+            .border(1.dp, Color(0xFFFFFFFF).copy(alpha = 0.14f), shape),
         contentAlignment = Alignment.Center,
     ) {
         Canvas(Modifier.fillMaxSize()) {
-            val w = size.width
-            val h = size.height
-            rotate(degrees = -9f, pivot = Offset(w * 0.44f, h * 0.54f)) {
+            val w = this.size.width
+            val h = this.size.height
+            rotate(degrees = -11f, pivot = Offset(w * 0.39f, h * 0.54f)) {
                 drawRoundRect(
-                    color = Color(0xFF111114).copy(alpha = 0.24f),
-                    topLeft = Offset(w * 0.22f, h * 0.22f),
-                    size = Size(w * 0.34f, h * 0.54f),
-                    cornerRadius = CornerRadius(w * 0.06f),
+                    color = Color(0xFF9A3412),
+                    topLeft = Offset(w * 0.18f, h * 0.25f),
+                    size = Size(w * 0.36f, h * 0.56f),
+                    cornerRadius = CornerRadius(w * 0.065f),
                 )
             }
+            rotate(degrees = 11f, pivot = Offset(w * 0.61f, h * 0.54f)) {
+                drawRoundRect(
+                    color = Color(0xFFD97706),
+                    topLeft = Offset(w * 0.46f, h * 0.25f),
+                    size = Size(w * 0.36f, h * 0.56f),
+                    cornerRadius = CornerRadius(w * 0.065f),
+                )
+            }
+            drawRoundRect(
+                brush = Brush.linearGradient(
+                    colors = listOf(Color(0xFFFF6363), Color(0xFFF59E0B)),
+                    start = Offset(w * 0.32f, h * 0.17f),
+                    end = Offset(w * 0.68f, h * 0.77f),
+                ),
+                topLeft = Offset(w * 0.32f, h * 0.17f),
+                size = Size(w * 0.36f, h * 0.60f),
+                cornerRadius = CornerRadius(w * 0.07f),
+            )
+            val onePath = Path().apply {
+                moveTo(w * 0.455f, h * 0.365f)
+                lineTo(w * 0.518f, h * 0.312f)
+                lineTo(w * 0.566f, h * 0.312f)
+                lineTo(w * 0.566f, h * 0.628f)
+                lineTo(w * 0.494f, h * 0.628f)
+                lineTo(w * 0.494f, h * 0.412f)
+                lineTo(w * 0.455f, h * 0.442f)
+                close()
+            }
+            drawPath(path = onePath, color = Color(0xFF111114))
         }
-        Text(
-            text = "FP",
-            fontSize = 10.sp,
-            fontWeight = FontWeight.Black,
-            letterSpacing = (-0.4).sp,
-            color = Color(0xFFFFFFFF),
-        )
     }
 }
 

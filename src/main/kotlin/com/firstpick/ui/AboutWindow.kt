@@ -223,43 +223,9 @@ internal fun aboutVersionLabel(version: String?): String {
 
 @Composable
 private fun FirstPickAppMark(modifier: Modifier = Modifier) {
-    val shape = RoundedCornerShape(18.dp)
-    Box(
-        modifier = modifier
-            .clip(shape)
-            .background(AppTheme.colors.surfaceElevated)
-            .border(1.dp, AppTheme.colors.borderDefault, shape),
-        contentAlignment = Alignment.Center,
-    ) {
-        Canvas(Modifier.fillMaxSize()) {
-            rotate(-11f, pivot = Offset(size.width * 0.39f, size.height * 0.54f)) {
-                drawRoundRect(
-                    color = Color(0xFFB45309),
-                    topLeft = Offset(size.width * 0.21f, size.height * 0.29f),
-                    size = Size(size.width * 0.35f, size.height * 0.55f),
-                    cornerRadius = CornerRadius(size.width * 0.055f),
-                )
-            }
-            rotate(11f, pivot = Offset(size.width * 0.61f, size.height * 0.54f)) {
-                drawRoundRect(
-                    color = AppTheme.colors.accentSecondary,
-                    topLeft = Offset(size.width * 0.44f, size.height * 0.29f),
-                    size = Size(size.width * 0.35f, size.height * 0.55f),
-                    cornerRadius = CornerRadius(size.width * 0.055f),
-                )
-            }
-            drawRoundRect(
-                color = AppTheme.colors.accent,
-                topLeft = Offset(size.width * 0.35f, size.height * 0.19f),
-                size = Size(size.width * 0.30f, size.height * 0.58f),
-                cornerRadius = CornerRadius(size.width * 0.055f),
-            )
-        }
-        Text(
-            text = "1",
-            color = AppTheme.colors.textOnAccent,
-            fontSize = 32.sp,
-            fontWeight = FontWeight.Black,
-        )
-    }
+    AppBrandMark(
+        modifier = modifier,
+        size = 76.dp,
+        cornerRadius = 18.dp,
+    )
 }
