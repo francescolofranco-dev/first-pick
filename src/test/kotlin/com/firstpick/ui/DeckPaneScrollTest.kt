@@ -2,6 +2,9 @@ package com.firstpick.ui
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.ImageComposeScene
 import androidx.compose.ui.semantics.SemanticsActions
@@ -19,7 +22,7 @@ import kotlin.test.assertTrue
 @OptIn(ExperimentalComposeUiApi::class)
 class DeckPaneScrollTest {
     @Test
-    fun shortBuilderScrollsPastWrappedOptionsToLandsAndBackToConfirmation() {
+    fun shortBuilderScrollsPastWrappedOptionsToLandsAndBackToSelection() {
         val options = listOf("WU", "UG", "BR").map(::deck)
         var confirmed: DeckOptionUi? = null
         PaneScene(width = 500, height = 180) {
@@ -42,11 +45,32 @@ class DeckPaneScrollTest {
             assertTrue(pane.isTextVisible("Island"), "The final land must be reachable in a short pane")
             assertFalse(pane.isTextVisible("Draft complete — choose your build"))
 
-            pane.scrollUntilVisible("Use this build", -100f)
-            val action = generateSequence(assertNotNull(pane.textNode("Use this build"))) { it.parent }
+            pane.scrollUntilVisible(options.first().title, -100f)
+            val action = generateSequence(assertNotNull(pane.textNode(options.first().title))) { it.parent }
                 .firstNotNullOfOrNull { it.config.getOrNull(SemanticsActions.OnClick)?.action }
             assertTrue(assertNotNull(action).invoke())
             assertEquals(options.first(), confirmed, "Scrolling must preserve the selected build")
+        }
+    }
+
+    @Test
+    fun clickingBuildCardsStartsAndSwitchesGuidanceWithoutAConfirmationButton() {
+        val options = listOf("WU", "UG").map(::deck)
+        var active by mutableStateOf<DeckOptionUi?>(null)
+        PaneScene(width = 500, height = 700) {
+            DeckBuilderPane(options, committedDeck = active,
+                onUseDeck = { active = it }, onStopGuidance = { active = null })
+        }.use { pane ->
+            assertEquals(null, active, "Displaying a default build must not start guidance")
+            assertEquals(null, pane.textNode("Use this build"))
+            pane.click(options.last().title)
+            assertEquals(options.last(), active)
+            assertNotNull(pane.textNode("GUIDANCE ACTIVE"))
+            pane.click(options.first().title)
+            assertEquals(options.first(), active)
+            pane.click("Stop guidance")
+            assertEquals(null, active)
+            assertEquals(null, pane.textNode("GUIDANCE ACTIVE"))
         }
     }
 
@@ -84,6 +108,13 @@ class DeckPaneScrollTest {
             val bounds = node.boundsInRoot
             return bounds.width > 0f && bounds.height > 0f && bounds.top >= 0f && bounds.bottom <= height &&
                 abs(bounds.height - node.size.height) < 1f
+        }
+
+        fun click(text: String) {
+            val action = generateSequence(assertNotNull(textNode(text))) { it.parent }
+                .firstNotNullOfOrNull { it.config.getOrNull(SemanticsActions.OnClick)?.action }
+            assertTrue(assertNotNull(action).invoke())
+            renderFrames(3)
         }
 
         fun scrollBy(distance: Float) {

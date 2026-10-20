@@ -57,8 +57,8 @@ source.
 
 **Post-draft deck builder.** When the final pick is confirmed, get 2–3 buildable decks
 ranked by power, each with a letter tier, deck type, archetype, confidence, and an
-explainable strength summary. Preview any option, then explicitly choose **Use this
-build**; the choice can be changed or guidance can be stopped at any time.
+explainable strength summary. Click a build card to select it and start Arena
+guidance. Click another card to switch builds, or stop guidance at any time.
 
 <picture>
   <img src="docs/screenshots/deck-builder.png" width="820" alt="Post-draft deck builder options" />

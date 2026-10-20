@@ -26,7 +26,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -92,9 +91,9 @@ internal fun DeckBuilderPane(
                 Spacer(Modifier.height(2.dp))
                 Text(
                     if (committedDeck == null) {
-                        "Preview a build, then confirm it to start Arena guidance."
+                        "Click a build card to select it and start Arena guidance."
                     } else {
-                        "Guidance active for ${committedDeck.title}. Preview another build and confirm to change it."
+                        "Guidance active for ${committedDeck.title}. Click another build card to switch."
                     },
                     fontSize = 11.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -123,28 +122,16 @@ internal fun DeckBuilderPane(
                             previewed = opt.deckBuildKey == resolvedPreviewKey,
                             active = opt.deckBuildKey == committedKey,
                             modifier = Modifier.fillMaxRowHeight(),
-                            onClick = { previewKey = opt.deckBuildKey },
+                            onClick = {
+                                previewKey = opt.deckBuildKey
+                                onUseDeck(opt)
+                            },
                         )
                     }
                 }
-                Spacer(Modifier.height(10.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                    GuidanceAction(
-                        label = when {
-                            committedKey == null -> "Use this build"
-                            committedKey == resolvedPreviewKey -> "Guidance active"
-                            else -> "Use this build"
-                        },
-                        enabled = committedKey != resolvedPreviewKey,
-                        onClick = { onUseDeck(sel) },
-                    )
-                    if (committedDeck != null) {
-                        GuidanceAction(
-                            label = "Stop guidance",
-                            emphasized = false,
-                            onClick = onStopGuidance,
-                        )
-                    }
+                if (committedDeck != null) {
+                    Spacer(Modifier.height(10.dp))
+                    OutlinedButton(onClick = onStopGuidance) { Text("Stop guidance") }
                 }
                 Spacer(Modifier.height(10.dp))
                 Text(
@@ -338,7 +325,7 @@ private fun OptionCard(opt: DeckOptionUi, recommended: Boolean, previewed: Boole
             .semantics {
                 selected = previewed
                 stateDescription = buildString {
-                    append(if (previewed) "Previewed" else "Not previewed")
+                    append(if (previewed) "Selected" else "Not selected")
                     if (active) append(", guidance active")
                 }
             }
@@ -378,23 +365,7 @@ private fun DeckPowerSummary(deck: DeckOptionUi) {
     }
 }
 
-@Composable
-private fun GuidanceAction(
-    label: String,
-    enabled: Boolean = true,
-    emphasized: Boolean = true,
-    onClick: () -> Unit,
-) {
-    if (emphasized) {
-        Button(onClick = onClick, enabled = enabled) {
-            Text(label, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-        }
-    } else {
-        OutlinedButton(onClick = onClick, enabled = enabled) {
-            Text(label, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-        }
-    }
-}
+
 
 @Composable
 private fun TierBadge(tier: String) {
