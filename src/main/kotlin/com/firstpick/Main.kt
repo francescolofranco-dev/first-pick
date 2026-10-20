@@ -39,6 +39,9 @@ import java.net.URI
 import java.nio.file.Path
 
 fun main() {
+    if (System.getProperty("os.name").lowercase().contains("mac")) {
+        System.setProperty("apple.awt.application.appearance", "NSAppearanceNameDarkAqua")
+    }
     AppPaths.ensureDirectories()
 
     val logPath = System.getenv("FIRSTPICK_LOG")?.let(Path::of) ?: AppPaths.defaultPlayerLog
@@ -87,6 +90,7 @@ fun main() {
         ) {
             LaunchedEffect(window) {
                 window.minimumSize = Dimension(600, 640)
+                com.firstpick.ui.MacOverlay.configureDarkWindow(window)
             }
             App(
                 state = state,

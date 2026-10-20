@@ -1,7 +1,5 @@
 package com.firstpick.ui
 
-import com.firstpick.advisor.DeckNeeds
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,35 +14,32 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.firstpick.advisor.DeckNeeds
 
 @Composable
 internal fun Sidebar(state: DraftUiState, modifier: Modifier = Modifier.width(232.dp)) {
     Column(
         modifier.fillMaxHeight().verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         if (state.poolSize == 0 && state.topPairs.isNotEmpty()) {
             val title = if (state.setCode != null) "Top color pairs for ${state.setCode.uppercase()}" else "Top color pairs"
             Panel(title) {
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
                     state.topPairs.forEach { pair ->
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             PipRow(pair.toList())
                             val name = guildName(pair)
                             if (name.isNotBlank()) {
                                 Spacer(Modifier.width(8.dp))
-                                Text(name, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface)
+                                Text(name, style = AppTheme.typography.body, color = AppTheme.colors.textPrimary)
                             }
                         }
                     }
@@ -53,7 +48,7 @@ internal fun Sidebar(state: DraftUiState, modifier: Modifier = Modifier.width(23
         } else {
             Panel("Likely base colors") {
                 if (state.laneColors.isEmpty()) {
-                    Text("Undecided", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("Undecided", style = AppTheme.typography.body, color = AppTheme.colors.textSecondary)
                 } else {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         PipRow(state.laneColors)
@@ -61,14 +56,18 @@ internal fun Sidebar(state: DraftUiState, modifier: Modifier = Modifier.width(23
                             val name = guildName(pair)
                             if (name.isNotBlank()) {
                                 Spacer(Modifier.width(8.dp))
-                                Text(name, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface)
+                                Text(
+                                    name,
+                                    style = AppTheme.typography.body.copy(fontWeight = FontWeight.Medium),
+                                    color = AppTheme.colors.textPrimary,
+                                )
                             }
                         } ?: run {
                             Spacer(Modifier.width(8.dp))
                             Text(
                                 if (state.laneColors.size == 1) "Second color open" else "Unsettled",
-                                fontSize = 12.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                style = AppTheme.typography.body,
+                                color = AppTheme.colors.textSecondary,
                             )
                         }
                     }
@@ -85,22 +84,23 @@ internal fun Sidebar(state: DraftUiState, modifier: Modifier = Modifier.width(23
                 Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
                     state.archetypes.take(6).forEach { a ->
                         val frac = archetypeFraction(a.winRate, min, max)
-                        val color = if (a.isLane) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
+                        val color = if (a.isLane) AppTheme.colors.accent else AppTheme.colors.accentSecondary
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
                                 a.pair,
-                                fontFamily = FontFamily.Monospace,
-                                fontSize = 11.sp,
-                                fontWeight = if (a.isLane) FontWeight.Bold else FontWeight.Normal,
-                                color = if (a.isLane) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                                style = AppTheme.typography.monoSmall.copy(
+                                    fontWeight = if (a.isLane) FontWeight.Bold else FontWeight.Normal,
+                                ),
+                                color = if (a.isLane) AppTheme.colors.accent else AppTheme.colors.textPrimary,
                                 modifier = Modifier.width(26.dp),
                             )
                             Bar(frac, color, Modifier.weight(1f))
                             Spacer(Modifier.width(6.dp))
                             Text(
                                 "%.1f".format(a.winRate * 100),
-                                fontFamily = FontFamily.Monospace,
-                                fontSize = 11.sp,
+                                style = AppTheme.typography.monoSmall,
+                                color = if (a.isLane) AppTheme.colors.textPrimary else AppTheme.colors.textSecondary,
+                                textAlign = TextAlign.End,
                                 modifier = Modifier.width(30.dp),
                             )
                         }
@@ -117,8 +117,11 @@ internal fun Sidebar(state: DraftUiState, modifier: Modifier = Modifier.width(23
             tooltip = "Which individual colors appear open, based on the quality of cards being passed to you. These are pivot signals, not your current deck.",
         ) {
             if (state.openLanes.isEmpty()) {
-                Text(if (state.picksPerChoice == 2) "Timing signals unavailable for Pick Two" else "Reading signals…",
-                    fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(
+                    if (state.picksPerChoice == 2) "Timing signals unavailable for Pick Two" else "Reading signals…",
+                    style = AppTheme.typography.body,
+                    color = AppTheme.colors.textSecondary,
+                )
             } else {
                 val max = state.openLanes.maxOfOrNull { it.score } ?: 0.0
                 Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
@@ -131,13 +134,18 @@ internal fun Sidebar(state: DraftUiState, modifier: Modifier = Modifier.width(23
             Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
                 state.manaCurve.forEach { bar ->
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(bar.cmcLabel, fontFamily = FontFamily.Monospace, fontSize = 11.sp, modifier = Modifier.width(24.dp))
-                        Bar(bar.count.toFloat() / max, MaterialTheme.colorScheme.primary, Modifier.weight(1f))
-                        Spacer(Modifier.width(10.dp))
+                        Text(
+                            bar.cmcLabel,
+                            style = AppTheme.typography.monoSmall,
+                            color = AppTheme.colors.textSecondary,
+                            modifier = Modifier.width(24.dp),
+                        )
+                        Bar(bar.count.toFloat() / max, AppTheme.colors.accent, Modifier.weight(1f))
+                        Spacer(Modifier.width(8.dp))
                         Text(
                             "${bar.count}",
-                            fontFamily = FontFamily.Monospace,
-                            fontSize = 11.sp,
+                            style = AppTheme.typography.monoSmall,
+                            color = AppTheme.colors.textSecondary,
                             textAlign = TextAlign.End,
                             modifier = Modifier.width(22.dp),
                         )
@@ -148,15 +156,17 @@ internal fun Sidebar(state: DraftUiState, modifier: Modifier = Modifier.width(23
         Panel("Pool · ${state.poolSize}") {
             Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
                 if (state.poolColorCounts.isEmpty()) {
-                    Text("No picks yet", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("No picks yet", style = AppTheme.typography.body, color = AppTheme.colors.textSecondary)
                 } else {
                     val max = state.poolColorCounts.maxOfOrNull { it.score } ?: 0.0
-                    state.poolColorCounts.forEach { ColorBar(it.color, safeScoreFraction(it.score, max), "${it.score.toInt()}") }
+                    state.poolColorCounts.forEach {
+                        ColorBar(it.color, safeScoreFraction(it.score, max), "${it.score.toInt()}")
+                    }
                     Spacer(Modifier.height(2.dp))
                     Text(
                         "${state.poolCreatures} creatures · ${state.poolNonCreatures} spells",
-                        fontSize = 11.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = AppTheme.typography.caption,
+                        color = AppTheme.colors.textSecondary,
                     )
                 }
             }
@@ -170,39 +180,50 @@ private fun NeedsContent(needs: List<String>, poolSize: Int, available: Boolean)
     when {
         poolSize == 0 -> Text(
             "Pick on raw value early.",
-            fontSize = 12.sp,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = AppTheme.typography.body,
+            color = AppTheme.colors.textSecondary,
         )
         poolSize < DeckNeeds.DISPLAY_MIN_POOL -> Text(
             "Too early to assess gaps · $poolSize/${DeckNeeds.DISPLAY_MIN_POOL} picks. Prioritize strong cards and stay open.",
-            fontSize = 12.sp,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = AppTheme.typography.body,
+            color = AppTheme.colors.textSecondary,
         )
         !available -> Text(
             "Waiting for card data to assess gaps…",
-            fontSize = 12.sp,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = AppTheme.typography.body,
+            color = AppTheme.colors.textSecondary,
         )
         needs.isEmpty() -> Text(
             "No projected role gaps. Keep checking your colors and curve.",
-            fontSize = 12.sp,
-            color = MaterialTheme.colorScheme.primary,
+            style = AppTheme.typography.body,
+            color = AppTheme.colors.accent,
         )
-        else -> Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        else -> Column(verticalArrangement = Arrangement.spacedBy(7.dp)) {
             Text(
                 "Projected gaps · $poolSize picks. Reassess as your colors settle.",
-                fontSize = 11.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = AppTheme.typography.caption,
+                color = AppTheme.colors.textSecondary,
             )
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
                 needs.forEach { need ->
                     Box(
                         Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(MaterialTheme.colorScheme.tertiary.copy(alpha = 0.20f))
-                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                            .appBadge(
+                                AppTheme.colors.warning,
+                                fillAlpha = 0.14f,
+                                borderAlpha = 0.34f,
+                                shape = RoundedCornerShape(AppTheme.radii.xs),
+                            )
+                            .padding(horizontal = 7.dp, vertical = 3.dp),
                     ) {
-                        Text(need, fontSize = 11.sp, color = MaterialTheme.colorScheme.tertiary)
+                        Text(
+                            need,
+                            style = AppTheme.typography.micro.copy(fontWeight = FontWeight.SemiBold),
+                            color = AppTheme.colors.warning,
+                        )
                     }
                 }
             }

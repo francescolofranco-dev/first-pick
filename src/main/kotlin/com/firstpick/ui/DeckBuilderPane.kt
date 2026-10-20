@@ -3,7 +3,6 @@ package com.firstpick.ui
 import androidx.compose.foundation.LocalScrollbarStyle
 import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
@@ -11,6 +10,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -25,7 +25,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -40,9 +39,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.selected
-import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -86,7 +84,11 @@ internal fun DeckBuilderPane(
     ScrollableDeckPane {
         item {
             Column(Modifier.fillMaxWidth()) {
-                Text("Draft complete — choose your build", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Text(
+                    "Draft complete — choose your build",
+                    style = AppTheme.typography.paneTitle,
+                    color = AppTheme.colors.textPrimary,
+                )
                 Spacer(Modifier.height(2.dp))
                 Text(
                     if (!guidanceEnabled) {
@@ -94,8 +96,8 @@ internal fun DeckBuilderPane(
                     } else {
                         "Arena guidance is on for ${sel.title}. Use Hide overlay to turn it off."
                     },
-                    fontSize = 11.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = AppTheme.typography.caption,
+                    color = AppTheme.colors.textSecondary,
                 )
                 savedDeck?.let { saved ->
                     val comparison = com.firstpick.overlay.DeckGuidance.evaluate(
@@ -104,9 +106,9 @@ internal fun DeckBuilderPane(
                     )
                     Text(
                         savedDeckComparisonLabel(comparison),
-                        fontSize = 11.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(top = 6.dp),
+                        style = AppTheme.typography.caption,
+                        color = AppTheme.colors.textSecondary,
+                        modifier = Modifier.padding(top = 4.dp),
                     )
                 }
                 Spacer(Modifier.height(10.dp))
@@ -128,20 +130,27 @@ internal fun DeckBuilderPane(
                         )
                     }
                 }
+                Spacer(Modifier.height(12.dp))
+                Column(
+                    Modifier
+                        .fillMaxWidth()
+                        .appPanel(padding = 10.dp, radius = AppTheme.radii.md),
+                    verticalArrangement = Arrangement.spacedBy(2.dp),
+                ) {
+                    Text(
+                        "${sel.title} (${sel.colors}) · $spellCount spells · ${sel.landLine}",
+                        style = AppTheme.typography.body.copy(fontWeight = FontWeight.SemiBold),
+                        color = AppTheme.colors.textPrimary,
+                    )
+                    Text(
+                        (listOf(sel.identityLine) + sel.identityReasons.take(2) + sel.powerReasons.take(2)).joinToString(" · "),
+                        style = AppTheme.typography.caption,
+                        color = AppTheme.colors.textSecondary,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
                 Spacer(Modifier.height(10.dp))
-                Text(
-                    "${sel.title} (${sel.colors}) · $spellCount spells · ${sel.landLine}",
-                    fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Text(
-                    (listOf(sel.identityLine) + sel.identityReasons.take(2) + sel.powerReasons.take(2)).joinToString(" · "),
-                    fontSize = 10.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                Spacer(Modifier.height(8.dp))
                 DeckListHeader()
                 Spacer(Modifier.height(4.dp))
             }
@@ -154,41 +163,54 @@ internal fun DeckBuilderPane(
     }
 }
 
-
 @Composable
 internal fun DeckSoFarPane(deck: DeckOptionUi, cuts: List<DeckSpellUi>) {
     val spellCount = deck.spells.sumOf { it.count }
     ScrollableDeckPane {
         item {
             Column(Modifier.fillMaxWidth()) {
-                Text("Deck so far", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Text(
+                    "Deck so far",
+                    style = AppTheme.typography.paneTitle,
+                    color = AppTheme.colors.textPrimary,
+                )
                 Spacer(Modifier.height(2.dp))
                 Text(
                     "Projected from your picks — updates every pick, not a final build.",
-                    fontSize = 11.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = AppTheme.typography.caption,
+                    color = AppTheme.colors.textSecondary,
                 )
                 Spacer(Modifier.height(10.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    PipRow(deck.colors.toList())
-                    Spacer(Modifier.width(6.dp))
-                    Text(deck.title, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                    Spacer(Modifier.width(10.dp))
-                    DeckPowerSummary(deck)
+                Column(
+                    Modifier
+                        .fillMaxWidth()
+                        .appPanel(padding = 12.dp, radius = AppTheme.radii.md),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        PipRow(deck.colors.toList())
+                        Spacer(Modifier.width(7.dp))
+                        Text(
+                            deck.title,
+                            style = AppTheme.typography.cardTitle,
+                            color = AppTheme.colors.textPrimary,
+                        )
+                        Spacer(Modifier.width(10.dp))
+                        DeckPowerSummary(deck)
+                    }
+                    Text(
+                        "$spellCount/23 spells · ${deck.creatures} creatures · ${deck.removal} removal",
+                        style = AppTheme.typography.body,
+                        color = AppTheme.colors.textSecondary,
+                    )
+                    Text(
+                        (listOf(deck.identityLine) + deck.powerReasons.take(2)).joinToString(" · "),
+                        style = AppTheme.typography.caption,
+                        color = AppTheme.colors.textMuted,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                    )
                 }
-                Spacer(Modifier.height(6.dp))
-                Text(
-                    "$spellCount/23 spells · ${deck.creatures} creatures · ${deck.removal} removal",
-                    fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Text(
-                    (listOf(deck.identityLine) + deck.powerReasons.take(2)).joinToString(" · "),
-                    fontSize = 10.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                )
                 Spacer(Modifier.height(10.dp))
                 DeckListHeader()
                 Spacer(Modifier.height(4.dp))
@@ -211,19 +233,21 @@ internal fun DeckSoFarPane(deck: DeckOptionUi, cuts: List<DeckSpellUi>) {
 @Composable
 private fun ScrollableDeckPane(content: LazyListScope.() -> Unit) {
     val scrollState = rememberLazyListState()
+    val scrolledPastHeader = scrollState.firstVisibleItemIndex > 0
     Box(Modifier.fillMaxSize()) {
         LazyColumn(
             modifier = Modifier.fillMaxSize().padding(end = 12.dp),
             state = scrollState,
-            verticalArrangement = Arrangement.spacedBy(3.dp),
+            contentPadding = PaddingValues(bottom = if (scrolledPastHeader) 0.01.dp else 0.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
             content = content,
         )
         VerticalScrollbar(
             adapter = rememberScrollbarAdapter(scrollState),
             modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(),
             style = LocalScrollbarStyle.current.copy(
-                unhoverColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                hoverColor = MaterialTheme.colorScheme.primary,
+                unhoverColor = AppTheme.colors.borderDefault,
+                hoverColor = AppTheme.colors.accent,
             ),
         )
     }
@@ -231,11 +255,35 @@ private fun ScrollableDeckPane(content: LazyListScope.() -> Unit) {
 
 @Composable
 private fun DeckListHeader() {
-    Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-        Text("Cost", fontSize = 10.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.width(DeckManaCostWidth))
-        Text("Card", fontSize = 10.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
-        Text("Type / role", fontSize = 10.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.width(132.dp))
-        Text("GIH%", fontSize = 10.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.End, modifier = Modifier.width(44.dp))
+    Row(
+        Modifier.fillMaxWidth().padding(horizontal = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            "COST",
+            style = AppTheme.typography.sectionHeader,
+            color = AppTheme.colors.textMuted,
+            modifier = Modifier.width(DeckManaCostWidth),
+        )
+        Text(
+            "CARD",
+            style = AppTheme.typography.sectionHeader,
+            color = AppTheme.colors.textMuted,
+            modifier = Modifier.weight(1f),
+        )
+        Text(
+            "TYPE / ROLE",
+            style = AppTheme.typography.sectionHeader,
+            color = AppTheme.colors.textMuted,
+            modifier = Modifier.width(136.dp),
+        )
+        Text(
+            "GIH%",
+            style = AppTheme.typography.sectionHeader,
+            color = AppTheme.colors.textMuted,
+            textAlign = TextAlign.End,
+            modifier = Modifier.width(44.dp),
+        )
     }
 }
 
@@ -243,44 +291,78 @@ private fun DeckListHeader() {
 private fun SectionLabel(text: String) {
     Text(
         text.uppercase(),
-        fontSize = 10.sp,
-        fontWeight = FontWeight.Bold,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.padding(top = 6.dp, bottom = 2.dp, start = 8.dp),
+        style = AppTheme.typography.sectionHeader,
+        color = AppTheme.colors.textSecondary,
+        modifier = Modifier.padding(top = 8.dp, bottom = 2.dp, start = 10.dp),
     )
 }
 
 @Composable
 private fun DeckSpellRow(s: DeckSpellUi, muted: Boolean = false) {
     Row(
-        Modifier.fillMaxWidth().alpha(if (muted) 0.5f else 1f).clip(RoundedCornerShape(6.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
-            .padding(horizontal = 8.dp, vertical = 5.dp),
+        Modifier
+            .fillMaxWidth()
+            .alpha(if (muted) 0.5f else 1f)
+            .appRow(paddingValues = PaddingValues(horizontal = 10.dp, vertical = 5.dp)),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        ManaCost(s.manaCost, isLand = s.isLand, modifier = Modifier.width(DeckManaCostWidth).padding(end = 6.dp))
+        ManaCost(
+            s.manaCost,
+            isLand = s.isLand,
+            modifier = Modifier.width(DeckManaCostWidth).padding(end = 6.dp),
+        )
         Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
             if (s.count > 1) {
                 Box(
-                    Modifier.clip(RoundedCornerShape(4.dp)).background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
-                        .padding(horizontal = 4.dp, vertical = 1.dp),
+                    Modifier
+                        .appBadge(
+                            AppTheme.colors.accent,
+                            fillAlpha = 0.14f,
+                            borderAlpha = 0.34f,
+                            shape = RoundedCornerShape(AppTheme.radii.xs),
+                        )
+                        .padding(horizontal = 5.dp, vertical = 1.dp),
                 ) {
-                    Text("${s.count}×", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                    Text(
+                        "${s.count}×",
+                        style = AppTheme.typography.monoMicro.copy(fontWeight = FontWeight.Bold),
+                        color = AppTheme.colors.accent,
+                    )
                 }
                 Spacer(Modifier.width(6.dp))
             }
             CardPreview(s.imageUrl, description = s.name) {
-                Text(s.name, fontSize = 12.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(
+                    s.name,
+                    style = AppTheme.typography.body.copy(fontWeight = FontWeight.Medium),
+                    color = AppTheme.colors.textPrimary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
             }
         }
-        Row(Modifier.width(132.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-            Text(s.typeLabel, fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
-            s.role?.let { RoleChip(it) }
+        Row(
+            Modifier.width(136.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Text(
+                s.typeLabel,
+                style = AppTheme.typography.micro,
+                color = AppTheme.colors.textSecondary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f, fill = false),
+            )
+            s.role?.let {
+                Spacer(Modifier.width(5.dp))
+                RoleChip(it)
+            }
         }
         Text(
             s.gihWr.asPct(),
-            fontFamily = FontFamily.Monospace,
-            fontSize = 11.sp,
+            style = AppTheme.typography.monoSmall,
+            color = AppTheme.colors.textPrimary,
             textAlign = TextAlign.End,
             modifier = Modifier.width(44.dp),
         )
@@ -291,32 +373,46 @@ private fun DeckSpellRow(s: DeckSpellUi, muted: Boolean = false) {
 private fun RoleChip(role: String) {
     val color = roleColor(role)
     Box(
-        Modifier.clip(RoundedCornerShape(4.dp)).background(color.copy(alpha = 0.2f)).padding(horizontal = 5.dp, vertical = 1.dp),
+        Modifier
+            .appBadge(
+                color,
+                fillAlpha = 0.14f,
+                borderAlpha = 0.36f,
+                shape = RoundedCornerShape(AppTheme.radii.xs),
+            )
+            .padding(horizontal = 5.dp, vertical = 1.dp),
     ) {
-        Text(role, fontSize = 9.sp, fontWeight = FontWeight.Bold, color = color, maxLines = 1)
+        Text(
+            role,
+            fontSize = 9.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = color,
+            maxLines = 1,
+        )
     }
 }
 
 @Composable
 private fun roleColor(role: String): Color = when (role) {
-    "Removal" -> MaterialTheme.colorScheme.error
-    "Fixing" -> MaterialTheme.colorScheme.primary
-    "Finisher" -> MaterialTheme.colorScheme.tertiary
-    else -> MaterialTheme.colorScheme.secondary
+    "Removal" -> AppTheme.colors.danger
+    "Fixing" -> AppTheme.colors.accent
+    "Finisher" -> AppTheme.colors.warning
+    else -> AppTheme.colors.accentSecondary
 }
 
 @Composable
-private fun OptionCard(opt: DeckOptionUi, recommended: Boolean, previewed: Boolean, active: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
+private fun OptionCard(
+    opt: DeckOptionUi,
+    recommended: Boolean,
+    previewed: Boolean,
+    active: Boolean,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+) {
     Column(
         modifier
-            .width(160.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(if (previewed) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface)
-            .border(
-                width = if (active) 2.dp else 1.dp,
-                color = if (active) MaterialTheme.colorScheme.primary else Color.Transparent,
-                shape = RoundedCornerShape(12.dp),
-            )
+            .width(204.dp)
+            .appCard(selected = previewed, active = active, radius = AppTheme.radii.lg)
             .semantics {
                 selected = previewed
                 stateDescription = buildString {
@@ -326,26 +422,62 @@ private fun OptionCard(opt: DeckOptionUi, recommended: Boolean, previewed: Boole
             }
             .focusable()
             .clickable(role = Role.RadioButton, onClick = onClick)
-            .padding(12.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
+            .padding(11.dp),
+        verticalArrangement = Arrangement.spacedBy(5.dp),
     ) {
-        if (active || recommended) {
-            Text(
-                if (active) "GUIDANCE ACTIVE" else "RECOMMENDED",
-                fontSize = 9.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary,
-            )
+        Box(
+            modifier = Modifier.height(13.dp),
+            contentAlignment = Alignment.CenterStart,
+        ) {
+            when {
+                active -> Text(
+                    "GUIDANCE ACTIVE",
+                    style = AppTheme.typography.sectionHeader.copy(fontSize = 9.sp),
+                    color = AppTheme.colors.accent,
+                )
+                recommended -> Text(
+                    "RECOMMENDED",
+                    style = AppTheme.typography.sectionHeader.copy(fontSize = 9.sp),
+                    color = AppTheme.colors.accent,
+                )
+                else -> Text(
+                    "ALTERNATIVE",
+                    style = AppTheme.typography.sectionHeader.copy(fontSize = 9.sp),
+                    color = AppTheme.colors.textMuted,
+                )
+            }
         }
         Row(verticalAlignment = Alignment.CenterVertically) {
             PipRow(opt.colors.toList())
             Spacer(Modifier.width(6.dp))
-            Text(opt.title, fontWeight = FontWeight.Bold, fontSize = 13.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            Text(
+                opt.title,
+                style = AppTheme.typography.cardTitle,
+                color = AppTheme.colors.textPrimary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
         }
         DeckPowerSummary(opt)
-        Text(opt.identityLine, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurface)
-        Text(opt.outlook, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Text("${opt.creatures} creatures · ${opt.removal} removal", fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(
+            opt.identityLine,
+            style = AppTheme.typography.caption,
+            color = AppTheme.colors.textPrimary,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+        Text(
+            opt.outlook,
+            style = AppTheme.typography.caption,
+            color = AppTheme.colors.textSecondary,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+        Text(
+            "${opt.creatures} creatures · ${opt.removal} removal",
+            style = AppTheme.typography.micro,
+            color = AppTheme.colors.textMuted,
+        )
     }
 }
 
@@ -354,20 +486,30 @@ private fun DeckPowerSummary(deck: DeckOptionUi) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         deck.displayTier?.let {
             TierBadge(it)
-            Spacer(Modifier.width(8.dp))
+            Spacer(Modifier.width(7.dp))
         }
-        Text(deck.powerLabel, fontSize = 12.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
+        Text(
+            deck.powerLabel,
+            style = AppTheme.typography.monoValue.copy(fontWeight = FontWeight.SemiBold),
+            color = AppTheme.colors.accent,
+        )
     }
 }
-
-
 
 @Composable
 private fun TierBadge(tier: String) {
     Box(
-        Modifier.clip(RoundedCornerShape(6.dp)).background(MaterialTheme.colorScheme.tertiary).padding(horizontal = 7.dp, vertical = 2.dp),
+        Modifier
+            .clip(RoundedCornerShape(AppTheme.radii.xs))
+            .background(AppTheme.colors.warning)
+            .padding(horizontal = 6.dp, vertical = 1.dp),
     ) {
-        Text(tier, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimary)
+        Text(
+            tier,
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Bold,
+            color = AppTheme.colors.textOnAccent,
+        )
     }
 }
 

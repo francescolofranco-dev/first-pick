@@ -7,6 +7,7 @@ import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -23,9 +24,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -38,9 +36,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
-import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -50,6 +47,7 @@ import com.firstpick.advisor.ConfidenceLevel
 import com.firstpick.model.DraftPhase
 import com.firstpick.sim.DraftSimulator
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun PackPane(
     state: DraftUiState,
@@ -57,10 +55,17 @@ internal fun PackPane(
     onOpenGuide: () -> Unit = {},
 ) = when {
     state.loadingRatings && state.packCards.isEmpty() -> Centered {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            CircularProgressIndicator(Modifier.width(18.dp), strokeWidth = 2.dp)
+        Row(
+            modifier = Modifier.appPanel(padding = 14.dp, radius = AppTheme.radii.md),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp, color = AppTheme.colors.accent)
             Spacer(Modifier.width(10.dp))
-            Text(if (state.simulating) "Setting up the demo draft…" else "Loading 17Lands data…", style = MaterialTheme.typography.bodyMedium)
+            Text(
+                if (state.simulating) "Setting up the demo draft…" else "Loading 17Lands data…",
+                style = AppTheme.typography.body,
+                color = AppTheme.colors.textPrimary,
+            )
         }
     }
 
@@ -69,38 +74,44 @@ internal fun PackPane(
         Column(
             modifier = Modifier.widthIn(max = 460.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(36.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(
+                modifier = Modifier.fillMaxWidth().appPanel(padding = 16.dp, radius = AppTheme.radii.lg),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
                 Text(
                     if (idle) "Start a draft in MTG Arena" else "No cards in the current pack",
-                    fontSize = 18.sp,
+                    fontSize = 15.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface,
+                    color = AppTheme.colors.textPrimary,
                     textAlign = TextAlign.Center,
                 )
                 if (idle) {
                     Text(
                         "Enable Options → Account → Detailed Logs (Plugin Support)",
-                        fontSize = 13.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = AppTheme.typography.caption,
+                        color = AppTheme.colors.textSecondary,
                         textAlign = TextAlign.Center,
                     )
                 }
             }
 
             if (DevFlags.demoEnabled && idle && !state.simulating) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Column(
+                    modifier = Modifier.fillMaxWidth().appPanel(padding = 14.dp, radius = AppTheme.radii.lg),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
                     Text(
                         "OR TRY A DEMO DRAFT",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        letterSpacing = 0.7.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = AppTheme.typography.sectionHeader,
+                        color = AppTheme.colors.textSecondary,
                     )
                     FlowRow(
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally),
+                        verticalArrangement = Arrangement.spacedBy(6.dp),
                     ) {
                         DraftSimulator.SETS.forEachIndexed { index, set ->
                             DemoSetButton(set, recommended = index == 0) { onSimulate(set) }
@@ -118,34 +129,46 @@ internal fun PackPane(
     else -> Column(Modifier.fillMaxSize()) {
         if (state.picksPerChoice == 2) {
             val pair = state.packCards.filter { it.recommendedPair }
-            Text(
-                if (pair.size == 2) "Suggested pair: ${pair.joinToString(" + ") { it.name }}"
-                else if (state.packCards.size == 1) "Take the remaining card"
-                else "Choose two cards; pair advice unavailable",
-                fontSize = 13.sp, color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(vertical = 6.dp),
-            )
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 6.dp)
+                    .appBadge(AppTheme.colors.accent, fillAlpha = 0.11f, borderAlpha = 0.30f, shape = RoundedCornerShape(AppTheme.radii.sm))
+                    .padding(horizontal = 10.dp, vertical = 6.dp),
+            ) {
+                Text(
+                    if (pair.size == 2) "Suggested pair: ${pair.joinToString(" + ") { it.name }}"
+                    else if (state.packCards.size == 1) "Take the remaining card"
+                    else "Choose two cards; pair advice unavailable",
+                    style = AppTheme.typography.body.copy(fontWeight = FontWeight.SemiBold),
+                    color = AppTheme.colors.accent,
+                )
+            }
         }
         if (shouldShowGuideStarter(state)) {
             SetGuideStarter(state, onOpenGuide)
-            Spacer(Modifier.height(7.dp))
+            Spacer(Modifier.height(6.dp))
         }
         if (hasUnratedCards(state.packCards)) {
             Text(
                 "Card power is unavailable for unrated cards. Pool fit and synergy notes update as you draft.",
-                fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp),
+                style = AppTheme.typography.caption,
+                color = AppTheme.colors.textSecondary,
+                modifier = Modifier.padding(horizontal = 4.dp, vertical = 6.dp),
             )
         }
         if (state.picksPerChoice == 1) ConfidenceBanner(state.packCards)
         LazyColumn(
             Modifier.fillMaxSize(),
             contentPadding = PaddingValues(vertical = 2.dp),
-            verticalArrangement = Arrangement.spacedBy(5.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             items(state.packCards, key = { "${it.grpId}#${it.rank}" }) {
-                PackRow(it, state.packCards.size, showBestPick = !hasUnratedCards(state.packCards) && state.picksPerChoice == 1)
+                PackRow(
+                    it,
+                    state.packCards.size,
+                    showBestPick = !hasUnratedCards(state.packCards) && state.picksPerChoice == 1,
+                )
             }
         }
     }
@@ -168,48 +191,54 @@ private fun SetGuideStarter(state: DraftUiState, onOpenGuide: () -> Unit) {
         state.guideLoading -> "Preparing themes, color pairs, and top cards…"
         else -> "Draft fundamentals"
     }
+    val shape = RoundedCornerShape(AppTheme.radii.sm)
     Row(
         Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(9.dp))
-            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.11f))
-            .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.28f), RoundedCornerShape(9.dp))
+            .clip(shape)
+            .background(AppTheme.colors.surfaceSelected)
+            .border(1.dp, AppTheme.colors.borderAccent, shape)
             .semantics { role = Role.Button }
             .focusable()
             .clickable(role = Role.Button, onClick = onOpenGuide)
-            .padding(horizontal = 10.dp, vertical = 7.dp),
+            .padding(horizontal = 10.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(Modifier.weight(1f)) {
             Text(
                 "$title draft guide",
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary,
+                style = AppTheme.typography.body.copy(fontWeight = FontWeight.SemiBold),
+                color = AppTheme.colors.accent,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
                 detail,
-                fontSize = 10.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = AppTheme.typography.micro,
+                color = AppTheme.colors.textSecondary,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
         }
         Spacer(Modifier.width(8.dp))
-        Text("Open guide  ›", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+        Text(
+            "Open guide  ›",
+            style = AppTheme.typography.caption.copy(fontWeight = FontWeight.SemiBold),
+            color = AppTheme.colors.accent,
+        )
     }
 }
 
 @Composable
 private fun SynergyCoverage(researched: List<String>, grounded: List<String>, modelSets: List<String> = emptyList()) {
     var expandedTier by remember { mutableStateOf<String?>(null) }
+    val shape = RoundedCornerShape(AppTheme.radii.lg)
     Column(
-        Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp))
-            .background(MaterialTheme.colorScheme.surface)
-            .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(14.dp))
-            .padding(vertical = 8.dp),
+        Modifier
+            .fillMaxWidth()
+            .clip(shape)
+            .background(AppTheme.colors.surface)
+            .border(1.dp, AppTheme.colors.borderSubtle, shape),
     ) {
         CoverageRow(
             "Deep synergy", researched, "Full archetype + combo synergy on these sets.",
@@ -234,7 +263,7 @@ private fun SynergyCoverage(researched: List<String>, grounded: List<String>, mo
 
 @Composable
 private fun CoverageDivider() {
-    Box(Modifier.fillMaxWidth().height(1.dp).background(MaterialTheme.colorScheme.surfaceVariant))
+    Box(Modifier.fillMaxWidth().height(1.dp).background(AppTheme.colors.borderSubtle))
 }
 
 @Composable
@@ -257,24 +286,31 @@ private fun CoverageRow(
             .clickable(role = Role.Button, onClick = onToggle),
     ) {
         Row(
-            Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 10.dp),
+            Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 9.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Box(Modifier.size(6.dp).clip(CircleShape).background(dotColor))
-                Text(label, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
+                Text(label, style = AppTheme.typography.body.copy(fontWeight = FontWeight.SemiBold), color = AppTheme.colors.textPrimary)
             }
             Text(
                 "${sets.size} sets ${if (expanded) "︿" else "⌄"}",
-                fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = AppTheme.typography.monoSmall,
+                color = AppTheme.colors.textSecondary,
             )
         }
         if (expanded) {
-            Column(Modifier.padding(start = 20.dp, end = 20.dp, bottom = 10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(sets.joinToString("  "), fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
-                Text(description, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Column(
+                Modifier.padding(start = 14.dp, end = 14.dp, bottom = 9.dp),
+                verticalArrangement = Arrangement.spacedBy(3.dp),
+            ) {
+                Text(
+                    sets.joinToString("  "),
+                    style = AppTheme.typography.monoSmall.copy(fontWeight = FontWeight.SemiBold),
+                    color = AppTheme.colors.textPrimary,
+                )
+                Text(description, style = AppTheme.typography.caption, color = AppTheme.colors.textSecondary)
             }
         }
     }
@@ -282,14 +318,16 @@ private fun CoverageRow(
 
 @Composable
 private fun DemoSetButton(set: String, recommended: Boolean, onClick: () -> Unit) {
-    if (recommended) {
-        Button(onClick = onClick) {
-            Text(set, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimary)
-        }
-    } else {
-        OutlinedButton(onClick = onClick) {
-            Text(set, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.secondary)
-        }
+    AppButton(
+        onClick = onClick,
+        variant = if (recommended) AppButtonVariant.Primary else AppButtonVariant.Subtle,
+        contentPadding = PaddingValues(horizontal = 11.dp, vertical = 5.dp),
+    ) {
+        Text(
+            set,
+            style = AppTheme.typography.monoValue.copy(fontWeight = FontWeight.Bold),
+            color = if (recommended) AppTheme.colors.textOnAccent else AppTheme.colors.textPrimary,
+        )
     }
 }
 
@@ -298,20 +336,33 @@ private fun ConfidenceBanner(cards: List<PackCardUi>) {
     val confidence = packConfidence(cards) ?: return
     if (confidence.level == ConfidenceLevel.CLEAR) return
     val tossUp = confidence.level == ConfidenceLevel.TOSS_UP
-    val accent = if (tossUp) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.secondary
+    val accent = if (tossUp) AppTheme.colors.warning else AppTheme.colors.accentSecondary
     Row(
-        Modifier.fillMaxWidth().padding(bottom = 8.dp).clip(RoundedCornerShape(8.dp))
-            .background(accent.copy(alpha = 0.13f)).padding(horizontal = 10.dp, vertical = 6.dp),
+        Modifier
+            .fillMaxWidth()
+            .padding(bottom = 6.dp)
+            .appBadge(accent, fillAlpha = 0.11f, borderAlpha = 0.28f, shape = RoundedCornerShape(AppTheme.radii.sm))
+            .padding(horizontal = 9.dp, vertical = 5.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Box(Modifier.clip(RoundedCornerShape(6.dp)).background(accent).padding(horizontal = 7.dp, vertical = 2.dp)) {
-            Text(if (tossUp) "Toss-up" else "Lean", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimary)
+        Box(
+            Modifier
+                .clip(RoundedCornerShape(AppTheme.radii.xs))
+                .background(accent)
+                .padding(horizontal = 6.dp, vertical = 1.dp),
+        ) {
+            Text(
+                if (tossUp) "Toss-up" else "Lean",
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Bold,
+                color = AppTheme.colors.textOnAccent,
+            )
         }
         Spacer(Modifier.width(8.dp))
         Text(
             if (tossUp) "Top ${confidence.contenders} are nearly tied — trust your read." else "Only a slight edge to the top pick.",
-            fontSize = 12.sp,
-            color = MaterialTheme.colorScheme.onSurface,
+            style = AppTheme.typography.caption,
+            color = AppTheme.colors.textPrimary,
         )
     }
 }
@@ -319,30 +370,18 @@ private fun ConfidenceBanner(cards: List<PackCardUi>) {
 @Composable
 private fun PackRow(card: PackCardUi, packSize: Int, showBestPick: Boolean) {
     val top = card.recommendedPair || (showBestPick && card.rank == 1 && card.value != null)
-
-
     val bombConsistent = card.isBomb && isBombTier(card.value)
+
     Row(
         Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(10.dp))
-            .background(
-                if (top) MaterialTheme.colorScheme.primary.copy(alpha = 0.10f)
-                else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.28f),
-            )
-            .border(
-                if (top) 1.dp else 0.dp,
-                if (top) MaterialTheme.colorScheme.primary.copy(alpha = 0.35f) else Color.Transparent,
-                RoundedCornerShape(10.dp),
-            )
-            .padding(horizontal = 8.dp, vertical = 7.dp),
+            .appRow(highlighted = top, paddingValues = PaddingValues(horizontal = 10.dp, vertical = 6.dp)),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
             if (card.value == null) "—" else "${card.rank}",
-            fontFamily = FontFamily.Monospace,
-            fontSize = 12.sp,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = AppTheme.typography.monoSmall,
+            color = if (top) AppTheme.colors.accent else AppTheme.colors.textMuted,
             modifier = Modifier.width(20.dp),
         )
         if (card.breakdown != null) {
@@ -359,16 +398,19 @@ private fun PackRow(card: PackCardUi, packSize: Int, showBestPick: Boolean) {
         } else {
             GradeBadge(card.value)
         }
-        Spacer(Modifier.width(11.dp))
+        Spacer(Modifier.width(10.dp))
         Column(Modifier.weight(1f)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                if (bombConsistent) Text("★ ", fontSize = 13.sp, color = MaterialTheme.colorScheme.tertiary)
+                if (bombConsistent) {
+                    Text("★ ", fontSize = 12.sp, color = AppTheme.colors.warning)
+                }
                 CardPreview(card.imageUrl, description = card.name) {
                     Text(
                         card.name,
-                        fontSize = 14.sp,
-                        fontWeight = if (top) FontWeight.Bold else FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onSurface,
+                        style = AppTheme.typography.rowTitle.copy(
+                            fontWeight = if (top) FontWeight.SemiBold else FontWeight.Medium,
+                        ),
+                        color = AppTheme.colors.textPrimary,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
@@ -378,8 +420,8 @@ private fun PackRow(card: PackCardUi, packSize: Int, showBestPick: Boolean) {
             if (shownReasons.isNotEmpty()) {
                 Text(
                     shownReasons.joinToString(" · "),
-                    fontSize = 11.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = AppTheme.typography.caption,
+                    color = AppTheme.colors.textSecondary,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -390,9 +432,17 @@ private fun PackRow(card: PackCardUi, packSize: Int, showBestPick: Boolean) {
             PipRow(card.color.toList())
             Spacer(Modifier.width(10.dp))
         }
-        Column(horizontalAlignment = Alignment.End, modifier = Modifier.width(44.dp)) {
-            Text(card.gihWr.asPct(), fontFamily = FontFamily.Monospace, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurface)
-            Text("GIH", fontSize = 9.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Column(horizontalAlignment = Alignment.End, modifier = Modifier.width(42.dp)) {
+            Text(
+                card.gihWr.asPct(),
+                style = AppTheme.typography.monoValue,
+                color = AppTheme.colors.textPrimary,
+            )
+            Text(
+                "GIH",
+                style = AppTheme.typography.monoMicro,
+                color = AppTheme.colors.textMuted,
+            )
         }
     }
 }

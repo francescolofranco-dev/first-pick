@@ -6,13 +6,14 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -21,7 +22,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -31,13 +31,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -47,7 +45,6 @@ import com.firstpick.guide.GuideCard
 import com.firstpick.guide.GuideCombo
 import com.firstpick.guide.GuidePrinciple
 import com.firstpick.guide.GuideSource
-import com.firstpick.guide.LimitedGuidance
 import com.firstpick.guide.SetDraftGuide
 
 @Composable
@@ -77,22 +74,29 @@ private fun SetGuideContent(state: DraftUiState, onOpenSource: (String) -> Unit)
 
 @Composable
 private fun GuideLoadingState(setCode: String) = Centered {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        CircularProgressIndicator(Modifier.size(19.dp), strokeWidth = 2.dp)
+    Row(
+        modifier = Modifier.appPanel(padding = 14.dp, radius = AppTheme.radii.md),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp, color = AppTheme.colors.accent)
         Spacer(Modifier.width(10.dp))
-        Text("Preparing the $setCode draft guide…", color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text("Preparing the $setCode draft guide…", style = AppTheme.typography.body, color = AppTheme.colors.textSecondary)
     }
 }
 
 @Composable
 private fun GuideEmptyState(title: String, body: String) = Centered {
-    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.width(430.dp)) {
-        Text(title, fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
-        Spacer(Modifier.height(7.dp))
-        Text(body, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.width(420.dp).appPanel(padding = 18.dp, radius = AppTheme.radii.lg),
+    ) {
+        Text(title, style = AppTheme.typography.paneTitle, color = AppTheme.colors.textPrimary)
+        Spacer(Modifier.height(6.dp))
+        Text(body, style = AppTheme.typography.body, color = AppTheme.colors.textSecondary)
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun SetGuideReady(guide: SetDraftGuide, onOpenSource: (String) -> Unit) {
     var expandedPair by remember(guide.setCode) { mutableStateOf<String?>(null) }
@@ -115,17 +119,34 @@ private fun SetGuideReady(guide: SetDraftGuide, onOpenSource: (String) -> Unit) 
                         if (guide.dataFormat.isNotBlank()) append(" · ${guideFormatLabel(guide.dataFormat)} data")
                         if (guide.generated.isNotBlank()) append(" · updated ${guide.generated}")
                     },
-                    fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = AppTheme.typography.caption,
+                    color = AppTheme.colors.textSecondary,
                 )
                 if (guide.mechanics.isNotEmpty()) {
-                    Spacer(Modifier.height(7.dp))
-                    Text(
-                        guide.mechanics.joinToString("  ·  ") { it.name },
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.primary,
-                    )
+                    Spacer(Modifier.height(8.dp))
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        guide.mechanics.forEach { mechanic ->
+                            Box(
+                                Modifier
+                                    .appBadge(
+                                        AppTheme.colors.accent,
+                                        fillAlpha = 0.11f,
+                                        borderAlpha = 0.28f,
+                                        shape = RoundedCornerShape(AppTheme.radii.xs),
+                                    )
+                                    .padding(horizontal = 7.dp, vertical = 3.dp),
+                            ) {
+                                Text(
+                                    mechanic.name,
+                                    style = AppTheme.typography.micro.copy(fontWeight = FontWeight.SemiBold),
+                                    color = AppTheme.colors.accent,
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -180,7 +201,7 @@ private fun SetGuideReady(guide: SetDraftGuide, onOpenSource: (String) -> Unit) 
                     }
                 }
                 if (observedDataSources.isNotEmpty()) {
-                    Spacer(Modifier.height(7.dp))
+                    Spacer(Modifier.height(6.dp))
                     GuideCitations(observedDataSources, onOpenSource)
                 }
             }
@@ -209,16 +230,18 @@ private fun SetGuideReady(guide: SetDraftGuide, onOpenSource: (String) -> Unit) 
 
         if (guide.sources.isNotEmpty()) {
             item { GuideSectionLabel("Sources", "Open the original articles, data references, and shows") }
-            items(guide.sources, key = { it.id.ifBlank { it.url } }) { source -> GuideSourceRow(source, onOpenSource) }
+            items(guide.sources, key = { it.id.ifBlank { it.url } }) { source ->
+                GuideSourceRow(source, onOpenSource)
+            }
         }
     }
 }
 
 @Composable
 private fun GuideSectionLabel(title: String, subtitle: String) {
-    Column(Modifier.padding(top = 5.dp, start = 3.dp, end = 3.dp)) {
-        Text(title, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
-        Text(subtitle, fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    Column(Modifier.padding(top = 6.dp, start = 2.dp, end = 2.dp)) {
+        Text(title, style = AppTheme.typography.cardTitle, color = AppTheme.colors.textPrimary)
+        Text(subtitle, style = AppTheme.typography.micro, color = AppTheme.colors.textSecondary)
     }
 }
 
@@ -230,7 +253,7 @@ private fun GuideTextCard(
     onOpenSource: (String) -> Unit = {},
 ) {
     Panel(title) {
-        Text(body, fontSize = 12.sp, lineHeight = 17.sp, color = MaterialTheme.colorScheme.onSurface)
+        Text(body, style = AppTheme.typography.body, color = AppTheme.colors.textPrimary)
         GuideCitations(sources, onOpenSource)
     }
 }
@@ -246,8 +269,7 @@ private fun ArchetypeGuideCard(
     Column(
         Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .background(MaterialTheme.colorScheme.surface)
+            .appCard(selected = expanded, radius = AppTheme.radii.lg)
             .clickable(onClick = onToggle)
             .padding(12.dp),
     ) {
@@ -257,30 +279,39 @@ private fun ArchetypeGuideCard(
             Column(Modifier.weight(1f)) {
                 Text(
                     "${guildName(archetype.pair).ifBlank { archetype.pair }} · ${archetype.name}",
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface,
+                    style = AppTheme.typography.cardTitle,
+                    color = AppTheme.colors.textPrimary,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(7.dp)) {
                     archetype.speed.takeIf(String::isNotBlank)?.let {
-                        Text(it.replaceFirstChar(Char::uppercaseChar), fontSize = 10.sp, color = MaterialTheme.colorScheme.primary)
+                        Text(
+                            it.replaceFirstChar(Char::uppercaseChar),
+                            style = AppTheme.typography.micro,
+                            color = AppTheme.colors.accent,
+                        )
                     }
                     archetype.winRate?.let {
                         Text(
                             "${it.asPct()} estimated pair WR",
-                            fontSize = 10.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = AppTheme.typography.monoMicro,
+                            color = AppTheme.colors.textSecondary,
                         )
                     }
                 }
             }
-            Text(if (expanded) "︿" else "⌄", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(
+                if (expanded) "︿" else "⌄",
+                fontSize = 12.sp,
+                color = AppTheme.colors.textSecondary,
+            )
         }
         if (expanded) {
-            Spacer(Modifier.height(9.dp))
-            Text(archetype.plan, fontSize = 12.sp, lineHeight = 17.sp, color = MaterialTheme.colorScheme.onSurface)
+            Spacer(Modifier.height(8.dp))
+            Box(Modifier.fillMaxWidth().height(1.dp).background(AppTheme.colors.borderSubtle))
+            Spacer(Modifier.height(8.dp))
+            Text(archetype.plan, style = AppTheme.typography.body, color = AppTheme.colors.textPrimary)
             GuideNames("Signposts", archetype.signposts)
             GuideNames("Enablers", archetype.enablers)
             GuideNames("Payoffs", archetype.payoffs)
@@ -298,27 +329,30 @@ private fun GuideCitations(sources: List<GuideSource>, onOpenSource: (String) ->
         sources.forEach { source ->
             Row(
                 Modifier
-                    .clip(RoundedCornerShape(6.dp))
-                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.09f))
-                    .heightIn(min = 44.dp)
+                    .appBadge(
+                        AppTheme.colors.accent,
+                        fillAlpha = 0.09f,
+                        borderAlpha = 0.24f,
+                        shape = RoundedCornerShape(AppTheme.radii.xs),
+                    )
                     .semantics {
                         role = Role.Button
                         contentDescription = "Open source: ${source.title}"
                     }
                     .clickable { onOpenSource(source.url) }
-                    .padding(horizontal = 7.dp, vertical = 4.dp),
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
                     "${source.kind} · ${source.title}",
                     modifier = Modifier.weight(1f),
-                    fontSize = 9.sp,
-                    color = MaterialTheme.colorScheme.primary,
+                    style = AppTheme.typography.micro,
+                    color = AppTheme.colors.accent,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
                 Spacer(Modifier.width(6.dp))
-                Text("↗", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                Text("↗", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = AppTheme.colors.accent)
             }
         }
     }
@@ -328,8 +362,16 @@ private fun GuideCitations(sources: List<GuideSource>, onOpenSource: (String) ->
 private fun GuideNames(label: String, names: List<String>) {
     if (names.isEmpty()) return
     Spacer(Modifier.height(7.dp))
-    Text(label.uppercase(), fontSize = 9.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
-    Text(names.joinToString(" · "), fontSize = 11.sp, lineHeight = 15.sp, color = MaterialTheme.colorScheme.onSurface)
+    Text(
+        label.uppercase(),
+        style = AppTheme.typography.sectionHeader.copy(fontSize = 9.sp),
+        color = AppTheme.colors.textSecondary,
+    )
+    Text(
+        names.joinToString(" · "),
+        style = AppTheme.typography.caption,
+        color = AppTheme.colors.textPrimary,
+    )
 }
 
 @Composable
@@ -340,7 +382,7 @@ private fun GuideComboCard(
 ) {
     Panel(combo.cards.joinToString(" + ")) {
         if (combo.note.isNotBlank()) {
-            Text(combo.note, fontSize = 12.sp, lineHeight = 17.sp, color = MaterialTheme.colorScheme.onSurface)
+            Text(combo.note, style = AppTheme.typography.body, color = AppTheme.colors.textPrimary)
         }
         GuideCitations(sources, onOpenSource)
     }
@@ -350,10 +392,14 @@ private fun GuideComboCard(
 private fun ColorGuideButton(color: Char, selected: Boolean, onClick: () -> Unit) {
     Box(
         Modifier
-            .size(44.dp)
+            .size(36.dp)
             .clip(CircleShape)
-            .background(if (selected) pipColor(color).copy(alpha = 0.22f) else MaterialTheme.colorScheme.surface)
-            .border(if (selected) 1.dp else 0.dp, pipColor(color).copy(alpha = 0.65f), CircleShape)
+            .background(if (selected) pipColor(color).copy(alpha = 0.20f) else AppTheme.colors.surface)
+            .border(
+                if (selected) 1.5.dp else 1.dp,
+                if (selected) pipColor(color).copy(alpha = 0.72f) else AppTheme.colors.borderSubtle,
+                CircleShape,
+            )
             .semantics {
                 role = Role.RadioButton
                 this.selected = selected
@@ -362,19 +408,19 @@ private fun ColorGuideButton(color: Char, selected: Boolean, onClick: () -> Unit
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
-        Pip(color, 21.dp)
+        Pip(color, 18.dp)
     }
 }
 
 @Composable
 private fun GuideCardList(cards: List<GuideCard>, emptyLabel: String) {
     if (cards.isEmpty()) {
-        Text(emptyLabel, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(emptyLabel, style = AppTheme.typography.body, color = AppTheme.colors.textSecondary)
         return
     }
-    Column(verticalArrangement = Arrangement.spacedBy(7.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         cards.forEachIndexed { index, card ->
-            if (index > 0) Box(Modifier.fillMaxWidth().height(1.dp).background(MaterialTheme.colorScheme.surfaceVariant))
+            if (index > 0) Box(Modifier.fillMaxWidth().height(1.dp).background(AppTheme.colors.borderSubtle))
             GuideCardRow(card)
         }
     }
@@ -389,25 +435,24 @@ private fun GuideCardRow(card: GuideCard) {
             CardPreview(card.imageUrl) {
                 Text(
                     card.name,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface,
+                    style = AppTheme.typography.body.copy(fontWeight = FontWeight.SemiBold),
+                    color = AppTheme.colors.textPrimary,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
             }
             Text(
                 card.rarity.replaceFirstChar(Char::uppercaseChar),
-                fontSize = 9.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = AppTheme.typography.micro.copy(fontSize = 9.sp),
+                color = AppTheme.colors.textSecondary,
             )
         }
         Column(horizontalAlignment = Alignment.End) {
-            Text(card.gihWr.asPct(), fontSize = 12.sp, fontFamily = FontFamily.Monospace)
+            Text(card.gihWr.asPct(), style = AppTheme.typography.monoValue, color = AppTheme.colors.textPrimary)
             Text(
                 if (card.games > 0) "${card.games} games" else "GIH WR",
-                fontSize = 9.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = AppTheme.typography.monoMicro,
+                color = AppTheme.colors.textMuted,
             )
         }
     }
@@ -420,15 +465,13 @@ private fun GuidePrincipleCard(
     onOpenSource: (String) -> Unit = {},
 ) {
     Panel(principle.title) {
-        Text(principle.summary, fontSize = 12.sp, lineHeight = 17.sp, color = MaterialTheme.colorScheme.onSurface)
+        Text(principle.summary, style = AppTheme.typography.body, color = AppTheme.colors.textPrimary)
         if (principle.appliedByFirstPick.isNotBlank()) {
             Spacer(Modifier.height(7.dp))
             Text(
                 "FIRSTPICK · ${principle.appliedByFirstPick}",
-                fontSize = 10.sp,
-                lineHeight = 14.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.primary,
+                style = AppTheme.typography.micro.copy(fontWeight = FontWeight.SemiBold),
+                color = AppTheme.colors.accent,
             )
         }
         GuideCitations(sources, onOpenSource)
@@ -440,40 +483,37 @@ private fun GuideSourceRow(source: GuideSource, onOpenSource: (String) -> Unit) 
     Row(
         Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(10.dp))
-            .background(MaterialTheme.colorScheme.surface)
-            .clickable { onOpenSource(source.url) }
-            .padding(horizontal = 12.dp, vertical = 9.dp),
+            .appRow(paddingValues = PaddingValues(horizontal = 12.dp, vertical = 9.dp))
+            .clickable { onOpenSource(source.url) },
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(Modifier.weight(1f)) {
             Text(
                 source.title,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface,
+                style = AppTheme.typography.body.copy(fontWeight = FontWeight.SemiBold),
+                color = AppTheme.colors.textPrimary,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
                 "${source.kind} · ${source.publisher}",
-                fontSize = 10.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = AppTheme.typography.micro,
+                color = AppTheme.colors.textSecondary,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
             if (source.author.isNotBlank() || source.date.isNotBlank()) {
                 Text(
                     listOf(source.author, source.date).filter(String::isNotBlank).joinToString(" · "),
-                    fontSize = 9.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = AppTheme.typography.micro.copy(fontSize = 9.sp),
+                    color = AppTheme.colors.textMuted,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
             }
         }
         Spacer(Modifier.width(8.dp))
-        Text("↗", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+        Text("↗", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = AppTheme.colors.accent)
     }
 }
 

@@ -33,6 +33,17 @@ object MacOverlay {
 
     private fun sel(name: String): Pointer? = selRegFn?.invokePointer(arrayOf<Any>(name))
 
+    fun configureDarkWindow(window: java.awt.Window) {
+        runCatching {
+            val bg = java.awt.Color(0x0A, 0x0E, 0x0D)
+            window.background = bg
+            if (window is javax.swing.RootPaneContainer) {
+                window.rootPane.background = bg
+                window.rootPane.putClientProperty("apple.awt.windowAppearance", "NSAppearanceNameDarkAqua")
+            }
+        }
+    }
+
 
     fun setClickThrough(window: ComposeWindow, enabled: Boolean): Boolean {
         if (!isMac) return false

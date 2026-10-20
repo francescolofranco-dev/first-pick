@@ -238,14 +238,14 @@ private fun DeckGuidanceOverlayModel.needsChangesLabel(): String {
 }
 
 object DeckGuidanceOverlayPalette {
-    val RemoveAccent = Color(0xFFFF4D5E)
+    val RemoveAccent = Color(0xFFF2555A)
 
-    val AddAccent = Color(0xFF50D890)
+    val AddAccent = Color(0xFF4CC38A)
 
-    val ReadingAccent = Color(0xFFFFC857)
-    val UnableAccent = Color(0xFFA8AFB8)
-    val PillBackground = Color(0xF2181718)
-    val PillText = Color(0xFFF7F1E8)
+    val ReadingAccent = Color(0xFFF5B638)
+    val UnableAccent = Color(0xFFA0A5B1)
+    val PillBackground = Color(0xF51A1C22)
+    val PillText = Color(0xFFF3F4F6)
 }
 
 private val BADGE_SHAPE = RoundedCornerShape(5.dp)

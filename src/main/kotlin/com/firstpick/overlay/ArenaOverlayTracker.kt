@@ -383,13 +383,13 @@ private fun CaptureHint(modifier: Modifier) {
     Box(
         modifier
             .offset(y = 44.dp)
-            .background(Color(0xF01A1512), RoundedCornerShape(8.dp))
-            .border(1.dp, Color(0xFFFFC02E), RoundedCornerShape(8.dp))
+            .background(Color(0xF51A1C22), RoundedCornerShape(8.dp))
+            .border(1.dp, Color(0xFFF5B638).copy(alpha = 0.72f), RoundedCornerShape(8.dp))
             .padding(horizontal = 14.dp, vertical = 8.dp),
     ) {
         Text(
             "FirstPick can't capture Arena — enable Screen Recording for FirstPick (or window-capture) in System Settings › Privacy & Security, then reopen the overlay.",
-            color = Color(0xFFF0E6D8),
+            color = Color(0xFFF3F4F6),
             fontSize = 12.sp,
             fontWeight = FontWeight.Medium,
         )

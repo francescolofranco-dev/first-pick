@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -14,20 +15,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -36,11 +33,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.firstpick.core.AppVersion
@@ -73,54 +71,50 @@ fun App(
         mutableStateOf(if (state.phase == DraftPhase.COMPLETE) AppScreen.DECK_BUILDER else AppScreen.DRAFT_POOL)
     }
 
-    MaterialTheme(colorScheme = DraftColorScheme) {
-        Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+    AppTheme {
+        Surface(Modifier.fillMaxSize(), color = AppTheme.colors.background) {
             BoxWithConstraints(Modifier.fillMaxSize()) {
                 val compact = maxWidth < 680.dp
-                Column(Modifier.fillMaxSize().padding(14.dp)) {
+                Column(Modifier.fillMaxSize().padding(horizontal = 14.dp, vertical = 12.dp)) {
                     Header(
-                        state,
-                        isOverlayOpen,
-                        overlayHealth,
-                        isOverlayOpen,
-                        onToggleOverlay,
-                        onSelectPickCount,
-                        onStopSim,
-                        onTogglePause,
-                        onRetryRatings,
-                        onNewDraft,
-                        compact,
+                        state = state,
+                        isOverlayOpen = isOverlayOpen,
+                        overlayHealth = overlayHealth,
+                        overlayRelevant = isOverlayOpen,
+                        onToggleOverlay = onToggleOverlay,
+                        onSelectPickCount = onSelectPickCount,
+                        onStopSim = onStopSim,
+                        onTogglePause = onTogglePause,
+                        onRetryRatings = onRetryRatings,
+                        onNewDraft = onNewDraft,
+                        compact = compact,
                     )
 
                     val deckTabEnabled = state.deckOptions.isNotEmpty() || state.deckSoFar != null
-                    Spacer(Modifier.height(8.dp))
+                    val deckTabLabel = if (state.deckOptions.isNotEmpty()) "Deck builder" else "Deck so far"
+                    Spacer(Modifier.height(10.dp))
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                        TabRow(
-                            selectedTabIndex = currentScreen.ordinal,
-                            modifier = Modifier.fillMaxWidth().widthIn(max = 440.dp).clip(RoundedCornerShape(8.dp)),
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                            contentColor = MaterialTheme.colorScheme.primary,
-                        ) {
-                            Tab(
-                                selected = currentScreen == AppScreen.DRAFT_POOL,
-                                onClick = { currentScreen = AppScreen.DRAFT_POOL },
-                                text = { Text("Draft pool", fontSize = 13.sp, fontWeight = FontWeight.Bold) },
-                            )
-                            Tab(
-                                selected = currentScreen == AppScreen.DECK_BUILDER,
-                                onClick = { currentScreen = AppScreen.DECK_BUILDER },
-                                enabled = deckTabEnabled,
-                                text = {
-                                    val label = if (state.deckOptions.isNotEmpty()) "Deck builder" else "Deck so far"
-                                    Text(label, fontSize = 13.sp, fontWeight = FontWeight.Bold)
-                                },
-                            )
-                            Tab(
-                                selected = currentScreen == AppScreen.GUIDES,
-                                onClick = { currentScreen = AppScreen.GUIDES },
-                                text = { Text("Guides", fontSize = 13.sp, fontWeight = FontWeight.Bold) },
-                            )
-                        }
+                        AppSegmentedTabs(
+                            modifier = Modifier.widthIn(max = 420.dp).fillMaxWidth(),
+                            tabs = listOf(
+                                SegmentedTabItem(
+                                    label = "Draft pool",
+                                    selected = currentScreen == AppScreen.DRAFT_POOL,
+                                    onClick = { currentScreen = AppScreen.DRAFT_POOL },
+                                ),
+                                SegmentedTabItem(
+                                    label = deckTabLabel,
+                                    selected = currentScreen == AppScreen.DECK_BUILDER,
+                                    enabled = deckTabEnabled,
+                                    onClick = { currentScreen = AppScreen.DECK_BUILDER },
+                                ),
+                                SegmentedTabItem(
+                                    label = "Guides",
+                                    selected = currentScreen == AppScreen.GUIDES,
+                                    onClick = { currentScreen = AppScreen.GUIDES },
+                                ),
+                            ),
+                        )
                     }
 
                     Spacer(Modifier.height(10.dp))
@@ -128,15 +122,15 @@ fun App(
                         (state.poolSize > 0 || state.packCards.isNotEmpty())
                     if (compact && showSidebar) {
                         Column(Modifier.fillMaxSize()) {
-                            Box(Modifier.weight(0.62f).fillMaxWidth()) {
+                            Box(Modifier.weight(0.68f).fillMaxWidth()) {
                                 PackPane(
                                     state = state,
                                     onSimulate = onSimulate,
                                     onOpenGuide = { currentScreen = AppScreen.GUIDES },
                                 )
                             }
-                            Spacer(Modifier.height(10.dp))
-                            Sidebar(state, Modifier.fillMaxWidth().weight(0.38f))
+                            Spacer(Modifier.height(8.dp))
+                            Sidebar(state, Modifier.fillMaxWidth().weight(0.32f))
                         }
                     } else {
                         Row(Modifier.fillMaxSize()) {
@@ -186,10 +180,18 @@ internal fun SynergyTierBadge(tier: String) {
         else -> "• Data synergy"
     }
     Box(
-        Modifier.clip(RoundedCornerShape(6.dp)).background(accent.copy(alpha = 0.18f))
-            .padding(horizontal = 8.dp, vertical = 3.dp),
+        Modifier
+            .appBadge(accent, fillAlpha = 0.14f, borderAlpha = 0.34f, shape = RoundedCornerShape(AppTheme.radii.xs))
+            .padding(horizontal = 6.dp, vertical = 2.dp),
     ) {
-        Text(label, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = accent)
+        Text(
+            label,
+            fontSize = 10.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = accent,
+            maxLines = 1,
+            softWrap = false,
+        )
     }
 }
 
@@ -200,6 +202,7 @@ internal fun tierAccent(tier: String) = when (tier) {
     else -> MaterialTheme.colorScheme.tertiary
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun Header(
     state: DraftUiState,
@@ -214,150 +217,197 @@ private fun Header(
     onNewDraft: () -> Unit,
     compact: Boolean,
 ) {
-    val brand = @Composable {
-        Column {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("FirstPick", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                Spacer(Modifier.width(6.dp))
+    val brandRow = @Composable {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                "FirstPick",
+                style = AppTheme.typography.appTitle,
+                color = AppTheme.colors.textPrimary,
+            )
+            Spacer(Modifier.width(6.dp))
+            Box(
+                Modifier
+                    .clip(RoundedCornerShape(AppTheme.radii.xs))
+                    .background(AppTheme.colors.surfaceElevated)
+                    .padding(horizontal = 5.dp, vertical = 1.dp),
+            ) {
                 Text(
                     "v${AppVersion.value}",
-                    fontSize = 10.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = AppTheme.typography.monoMicro,
+                    color = AppTheme.colors.textSecondary,
                     maxLines = 1,
                 )
-                Spacer(Modifier.width(10.dp))
-                if (state.laneColors.isNotEmpty()) PipRow(state.laneColors)
-                state.synergyTier?.let {
-                    Spacer(Modifier.width(10.dp))
-                    SynergyTierBadge(it)
-                }
             }
-            Spacer(Modifier.height(2.dp))
-            Text(state.headline, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
-            state.dataError?.let {
-                Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+            if (state.laneColors.isNotEmpty()) {
+                Spacer(Modifier.width(6.dp))
+                PipRow(state.laneColors)
             }
-            RatingsHealthStatus(state, onRetryRatings)
-            if (overlayRelevant) {
-                Spacer(Modifier.height(4.dp))
-                OverlayHealthStatus(overlayHealth)
+            state.synergyTier?.let {
+                Spacer(Modifier.width(6.dp))
+                SynergyTierBadge(it)
             }
         }
     }
 
     val actions = @Composable {
         FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp),
+            horizontalArrangement = Arrangement.spacedBy(5.dp),
+            verticalArrangement = Arrangement.spacedBy(5.dp),
         ) {
             if (state.simulating) {
-                FilledTonalButton(
+                AppButton(
                     onClick = onTogglePause,
+                    variant = AppButtonVariant.Tonal,
                     contentPadding = HeaderButtonPadding,
                 ) {
                     Text(
                         text = if (state.simPaused) "▶ Resume demo" else "❚❚ Pause demo",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = AppTheme.colors.accent,
                     )
                 }
-                OutlinedButton(
+                AppButton(
                     onClick = onStopSim,
+                    variant = AppButtonVariant.Warning,
                     contentPadding = HeaderButtonPadding,
                 ) {
                     Text(
                         text = "✕ Exit demo",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.tertiary,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = AppTheme.colors.warning,
                     )
                 }
             }
             if (!state.simulating) {
-                OutlinedButton(onClick = onNewDraft, contentPadding = HeaderButtonPadding) {
-                    Text("New draft", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                AppButton(
+                    onClick = onNewDraft,
+                    variant = AppButtonVariant.Subtle,
+                    contentPadding = HeaderButtonPadding,
+                ) {
+                    Text(
+                        "New draft",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = AppTheme.colors.textPrimary,
+                    )
                 }
             }
             PickCountSelector(state.pickCountOverride, state.picksPerChoice, onSelectPickCount)
-            FilledTonalButton(
-                enabled = state.phase != DraftPhase.COMPLETE || state.deckOptions.isNotEmpty(),
+            val overlayEnabled = state.phase != DraftPhase.COMPLETE || state.deckOptions.isNotEmpty()
+            AppButton(
+                enabled = overlayEnabled,
                 onClick = onToggleOverlay,
+                variant = if (isOverlayOpen) AppButtonVariant.Tonal else AppButtonVariant.Subtle,
+                active = isOverlayOpen,
                 contentPadding = HeaderButtonPadding,
                 modifier = Modifier.semantics {
                     stateDescription = if (isOverlayOpen) "Overlay shown" else "Overlay hidden"
                 },
             ) {
+                Box(
+                    Modifier
+                        .size(6.dp)
+                        .clip(CircleShape)
+                        .background(if (isOverlayOpen) AppTheme.colors.accent else AppTheme.colors.textMuted),
+                )
+                Spacer(Modifier.width(5.dp))
                 Text(
                     text = if (isOverlayOpen) "Hide overlay" else "Show overlay",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = if (isOverlayOpen) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = if (isOverlayOpen) AppTheme.colors.accent else AppTheme.colors.textPrimary,
                 )
             }
         }
     }
 
-    if (compact) {
-        Column(Modifier.fillMaxWidth()) {
-            brand()
-            Spacer(Modifier.height(8.dp))
+    Column(Modifier.fillMaxWidth()) {
+        if (compact) {
+            brandRow()
+            Spacer(Modifier.height(6.dp))
             actions()
+        } else {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Box(Modifier.weight(1f, fill = false)) { brandRow() }
+                Spacer(Modifier.width(6.dp))
+                actions()
+            }
         }
-    } else {
-        Row(
+        Spacer(Modifier.height(6.dp))
+        FlowRow(
             modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+            itemVerticalAlignment = Alignment.CenterVertically,
         ) {
-            Box(Modifier.weight(1f)) { brand() }
-            Spacer(Modifier.width(12.dp))
-            Box(Modifier.widthIn(max = 380.dp)) { actions() }
+            Text(
+                state.headline,
+                style = AppTheme.typography.body.copy(fontWeight = FontWeight.Medium),
+                color = AppTheme.colors.accent,
+            )
+            RatingsHealthStatus(state, onRetryRatings)
+            if (overlayRelevant) {
+                OverlayHealthStatus(overlayHealth)
+            }
+        }
+        state.dataError?.let {
+            Spacer(Modifier.height(3.dp))
+            Text(it, style = AppTheme.typography.caption, color = AppTheme.colors.danger)
         }
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun RatingsHealthStatus(state: DraftUiState, onRetry: () -> Unit) {
     if (state.ratingsDataStatus == RatingsDataStatus.IDLE) return
     val color = when (state.ratingsDataStatus) {
-        RatingsDataStatus.FRESH -> MaterialTheme.colorScheme.primary
-        RatingsDataStatus.CACHED -> MaterialTheme.colorScheme.secondary
-        RatingsDataStatus.LOADING -> MaterialTheme.colorScheme.secondary
-        RatingsDataStatus.STALE_CACHE -> MaterialTheme.colorScheme.tertiary
-        RatingsDataStatus.CARD_CATALOG -> MaterialTheme.colorScheme.tertiary
-        RatingsDataStatus.ERROR -> MaterialTheme.colorScheme.error
-        RatingsDataStatus.IDLE -> MaterialTheme.colorScheme.onSurfaceVariant
+        RatingsDataStatus.FRESH -> AppTheme.colors.accent
+        RatingsDataStatus.CACHED -> AppTheme.colors.accentSecondary
+        RatingsDataStatus.LOADING -> AppTheme.colors.accentSecondary
+        RatingsDataStatus.STALE_CACHE -> AppTheme.colors.warning
+        RatingsDataStatus.CARD_CATALOG -> AppTheme.colors.warning
+        RatingsDataStatus.ERROR -> AppTheme.colors.danger
+        RatingsDataStatus.IDLE -> AppTheme.colors.textSecondary
     }
-    Column {
-        Spacer(Modifier.height(4.dp))
-        FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-        ) {
-            Surface(
-                color = color.copy(alpha = 0.13f),
-                shape = RoundedCornerShape(7.dp),
-                modifier = Modifier.semantics {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(
+            modifier = Modifier
+                .appBadge(color, fillAlpha = 0.11f, borderAlpha = 0.28f, shape = RoundedCornerShape(AppTheme.radii.xs))
+                .semantics {
                     liveRegion = LiveRegionMode.Polite
                     stateDescription = ratingsDataDescription(state)
-                },
-            ) {
-                Text(
-                    ratingsDataDescription(state),
-                    color = color,
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                )
-            }
-            if (state.canRetryRatings) {
-                TextButton(onClick = onRetry) {
-                    Text("Retry data", fontSize = 11.sp, fontWeight = FontWeight.Bold)
                 }
+                .padding(horizontal = 7.dp, vertical = 2.dp),
+        ) {
+            Text(
+                ratingsDataDescription(state),
+                color = color,
+                style = AppTheme.typography.micro,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+        if (state.canRetryRatings) {
+            AppButton(
+                onClick = onRetry,
+                variant = AppButtonVariant.Subtle,
+                contentPadding = PaddingValues(horizontal = 7.dp, vertical = 2.dp),
+            ) {
+                Text("Retry data", fontSize = 10.sp, fontWeight = FontWeight.SemiBold, color = AppTheme.colors.accent)
             }
         }
         state.ratingsDataWarning?.let {
-            Text(it, color = color, fontSize = 10.sp)
+            Text(it, color = color, style = AppTheme.typography.micro, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
     }
 }
@@ -391,28 +441,29 @@ private val RatingsTimeFormatter: DateTimeFormatter =
 @Composable
 private fun OverlayHealthStatus(health: OverlayHealth) {
     val color = when (health.state) {
-        OverlayHealthState.ACTIVE -> MaterialTheme.colorScheme.primary
-        OverlayHealthState.READING -> MaterialTheme.colorScheme.secondary
-        OverlayHealthState.WAITING_FOR_ARENA, OverlayHealthState.INACTIVE -> MaterialTheme.colorScheme.onSurfaceVariant
+        OverlayHealthState.ACTIVE -> AppTheme.colors.accent
+        OverlayHealthState.READING -> AppTheme.colors.accentSecondary
+        OverlayHealthState.WAITING_FOR_ARENA, OverlayHealthState.INACTIVE -> AppTheme.colors.textSecondary
         OverlayHealthState.CAPTURE_UNAVAILABLE,
         OverlayHealthState.UNSUPPORTED_LAYOUT,
         OverlayHealthState.CLICK_THROUGH_FAILED,
-        -> MaterialTheme.colorScheme.error
+        -> AppTheme.colors.danger
     }
-    Surface(
-        color = color.copy(alpha = 0.13f),
-        shape = RoundedCornerShape(7.dp),
-        modifier = Modifier.semantics {
-            liveRegion = LiveRegionMode.Polite
-            stateDescription = "Overlay ${health.state.label}. ${health.detail}"
-        },
+    Box(
+        modifier = Modifier
+            .appBadge(color, fillAlpha = 0.11f, borderAlpha = 0.28f, shape = RoundedCornerShape(AppTheme.radii.xs))
+            .semantics {
+                liveRegion = LiveRegionMode.Polite
+                stateDescription = "Overlay ${health.state.label}. ${health.detail}"
+            }
+            .padding(horizontal = 7.dp, vertical = 2.dp),
     ) {
         Text(
             text = "Overlay · ${health.state.label}${if (health.needsAttention) " — ${health.detail}" else ""}",
             color = color,
-            fontSize = 11.sp,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+            style = AppTheme.typography.micro,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
         )
     }
 }
@@ -421,19 +472,22 @@ private fun OverlayHealthStatus(health: OverlayHealth) {
 private fun PickCountSelector(current: Int, detected: Int, onSelect: (Int) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
     Box {
-        OutlinedButton(
+        AppButton(
             onClick = { expanded = true },
+            variant = AppButtonVariant.Subtle,
             contentPadding = HeaderButtonPadding,
-            modifier = Modifier.semantics { stateDescription = if (current == 0) "Auto · ${DraftPickMode.label(detected)}" else DraftPickMode.label(current) },
+            modifier = Modifier.semantics {
+                stateDescription = if (current == 0) "Auto · ${DraftPickMode.label(detected)}" else DraftPickMode.label(current)
+            },
         ) {
             Text(
                 text = "Draft picks: ${DraftPickMode.label(current)}",
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = AppTheme.colors.textPrimary,
             )
             Spacer(Modifier.width(4.dp))
-            Text("▾", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text("▾", fontSize = 10.sp, color = AppTheme.colors.textSecondary)
         }
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             DraftPickMode.choices.forEach { choice ->
@@ -449,4 +503,4 @@ private fun PickCountSelector(current: Int, detected: Int, onSelect: (Int) -> Un
     }
 }
 
-private val HeaderButtonPadding = ButtonDefaults.ContentPadding
+private val HeaderButtonPadding = PaddingValues(horizontal = 7.dp, vertical = 4.dp)
