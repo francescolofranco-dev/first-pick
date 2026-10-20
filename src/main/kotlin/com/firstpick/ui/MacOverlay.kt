@@ -41,6 +41,21 @@ object MacOverlay {
                 window.rootPane.background = bg
                 window.rootPane.putClientProperty("apple.awt.windowAppearance", "NSAppearanceNameDarkAqua")
             }
+            configureAppIcon(window)
+        }
+    }
+
+    fun configureAppIcon(window: java.awt.Window? = null) {
+        runCatching {
+            val iconStream = MacOverlay::class.java.getResourceAsStream("/icons/app_icon.png") ?: return
+            val image = javax.imageio.ImageIO.read(iconStream) ?: return
+            window?.iconImages = listOf(image)
+            if (java.awt.Taskbar.isTaskbarSupported()) {
+                val taskbar = java.awt.Taskbar.getTaskbar()
+                if (taskbar.isSupported(java.awt.Taskbar.Feature.ICON_IMAGE)) {
+                    taskbar.iconImage = image
+                }
+            }
         }
     }
 

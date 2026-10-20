@@ -68,6 +68,11 @@ def install_and_launch(source):
                 if backup.exists():
                     backup.rename(destination)
                 raise
+        subprocess.run(["touch", str(destination)], check=False)
+        lsregister = "/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister"
+        if Path(lsregister).exists():
+            subprocess.run([lsregister, "-f", str(destination)], check=False)
+        subprocess.run(["killall", "Dock"], check=False)
         arguments = ["open"]
         for name, value in {
             "FIRSTPICK_DEMO": "0", "FIRSTPICK_OVERLAY_TRACK": "0", "FIRSTPICK_FORCE_DECKS": "0",
