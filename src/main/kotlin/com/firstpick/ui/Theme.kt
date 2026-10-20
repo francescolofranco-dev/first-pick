@@ -47,10 +47,11 @@ object AppColors {
     val textMuted = Color(0xFF71717A)
     val textOnAccent = Color(0xFF111114)
 
-    // Semantic accents (Raycast Coral #FF6363 + Amber Gold #F59E0B + Emerald + Rose)
-    val accent = Color(0xFFFF6363)
-    val accentBright = Color(0xFFF97316)
+    // Semantic color system: Green = Good, Amber = Caution/Average, Red = Bad/Error, Info/Slate = Neutral Role/Category
+    val accent = Color(0xFF34D399)
+    val accentBright = Color(0xFF10B981)
     val accentSecondary = Color(0xFFF59E0B)
+    val info = Color(0xFF94A3B8)
     val positive = Color(0xFF34D399)
     val warning = Color(0xFFFBBF24)
     val danger = Color(0xFFF43F5E)
@@ -217,6 +218,7 @@ fun Modifier.appPanel(
 }
 
 fun Modifier.appHeroCard(
+    accentColor: Color = AppColors.positive,
     radius: Dp = AppTheme.radii.xl,
 ): Modifier {
     val shape = RoundedCornerShape(radius)
@@ -225,15 +227,15 @@ fun Modifier.appHeroCard(
         .background(
             Brush.linearGradient(
                 colors = listOf(
-                    AppColors.accent.copy(alpha = 0.16f),
-                    AppColors.accentSecondary.copy(alpha = 0.06f),
+                    accentColor.copy(alpha = 0.14f),
+                    accentColor.copy(alpha = 0.04f),
                     AppColors.surface,
                 ),
                 start = Offset(0f, 0f),
                 end = Offset(720f, 220f),
             ),
         )
-        .border(1.dp, AppColors.accent.copy(alpha = 0.45f), shape)
+        .border(1.dp, accentColor.copy(alpha = 0.42f), shape)
 }
 
 fun Modifier.appTable(
@@ -249,28 +251,28 @@ fun Modifier.appTable(
 fun Modifier.appCard(
     selected: Boolean = false,
     active: Boolean = false,
+    accentColor: Color = AppColors.positive,
     radius: Dp = AppTheme.radii.xl,
 ): Modifier {
     val shape = RoundedCornerShape(radius)
-    val topColor = when {
-        active -> Color(0xFF2B1C20)
-        selected -> Color(0xFF241B1E)
-        else -> Color(0xFF1C1C21)
-    }
-    val bottomColor = when {
-        active -> Color(0xFF21171A)
-        selected -> Color(0xFF1C171A)
-        else -> AppColors.surface
+    val bgBrush = when {
+        active || selected -> Brush.verticalGradient(
+            listOf(
+                accentColor.copy(alpha = 0.12f),
+                AppColors.surface,
+            ),
+        )
+        else -> Brush.verticalGradient(listOf(Color(0xFF1C1C21), AppColors.surface))
     }
     val borderColor = when {
-        active -> AppColors.accent
-        selected -> AppColors.accent.copy(alpha = 0.55f)
+        active -> accentColor
+        selected -> accentColor.copy(alpha = 0.55f)
         else -> AppColors.borderSubtle
     }
     val borderWidth = if (active) 1.5.dp else 1.dp
     return this
         .clip(shape)
-        .background(Brush.verticalGradient(listOf(topColor, bottomColor)))
+        .background(bgBrush)
         .border(borderWidth, borderColor, shape)
 }
 
@@ -345,13 +347,27 @@ fun pipColor(c: Char): Color = when (c) {
 
 fun valueTierColor(value: Double?): Color = when {
     value == null -> Color(0xFF64748B)
-    value >= 80 -> Color(0xFFFBBF24) // A+ Bomb (Amber Gold)
-    value >= 72 -> Color(0xFF34D399) // A Great (Emerald)
-    value >= 64 -> Color(0xFF2DD4BF) // B+ Strong (Teal)
-    value >= 56 -> Color(0xFF60A5FA) // B Good (Sky Blue)
-    value >= 48 -> Color(0xFF94A3B8) // C Playable (Slate)
-    value >= 40 -> Color(0xFFFB923C) // D Filler (Orange)
-    else -> Color(0xFFF43F5E)        // F Weak (Rose)
+    value >= 80 -> Color(0xFF10B981) // A+ Bomb (Vibrant Emerald Green)
+    value >= 72 -> Color(0xFF34D399) // A  Great (Green)
+    value >= 64 -> Color(0xFF6EE7B7) // B+ Strong (Mint Green)
+    value >= 56 -> Color(0xFFA3E635) // B  Good (Lime Green)
+    value >= 48 -> Color(0xFFFBBF24) // C  Playable / Average (Amber Yellow)
+    value >= 40 -> Color(0xFFFB7185) // D  Filler (Rose Red)
+    else -> Color(0xFFF43F5E)        // F  Weak (Crimson Red)
+}
+
+fun buildTierColor(tier: String?): Color = when (tier?.trim()?.uppercase()) {
+    "A+", "A", "A-", "B+", "B", "B-" -> AppColors.positive
+    "C+", "C", "C-" -> AppColors.warning
+    "D+", "D", "D-", "F" -> AppColors.danger
+    else -> AppColors.info
+}
+
+fun winRateColor(gihWr: Double?): Color = when {
+    gihWr == null || gihWr.isNaN() -> AppColors.textMuted
+    gihWr >= 0.565 -> AppColors.positive
+    gihWr >= 0.535 -> AppColors.warning
+    else -> AppColors.danger
 }
 
 fun isBombTier(value: Double?): Boolean = value != null && value >= 80.0

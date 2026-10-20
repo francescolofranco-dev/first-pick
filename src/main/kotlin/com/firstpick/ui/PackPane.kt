@@ -334,13 +334,19 @@ private fun HeroPickCard(
         !showBestPick -> "#1 IN PACK"
         confidence == null -> "BEST PICK"
         confidence.level == ConfidenceLevel.TOSS_UP -> "TOSS-UP · ±${"%.1f".format(confidence.gap)} PTS"
+        confidence.level != ConfidenceLevel.CLEAR -> "CLOSE CALL · +${"%.1f".format(confidence.gap)} PTS"
         else -> "BEST PICK · +${"%.1f".format(confidence.gap)} PTS"
+    }
+    val bannerColor = if (confidence != null && confidence.level != ConfidenceLevel.CLEAR) {
+        AppTheme.colors.warning
+    } else {
+        AppTheme.colors.positive
     }
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .appHeroCard(radius = AppTheme.radii.xl)
+            .appHeroCard(accentColor = bannerColor, radius = AppTheme.radii.xl)
             .padding(horizontal = 14.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -367,10 +373,7 @@ private fun HeroPickCard(
                     Box(
                         Modifier
                             .clip(RoundedCornerShape(AppTheme.radii.pill))
-                            .background(
-                                if (confidence?.level == ConfidenceLevel.TOSS_UP) AppTheme.colors.warning
-                                else AppTheme.colors.accent,
-                            )
+                            .background(bannerColor)
                             .padding(horizontal = 8.dp, vertical = 2.dp),
                     ) {
                         Text(
@@ -490,7 +493,7 @@ private fun HeroPickCard(
                     fontSize = 20.sp,
                     lineHeight = 22.sp,
                     fontWeight = FontWeight.Black,
-                    color = if (card.gihWr != null) AppTheme.colors.accent else AppTheme.colors.textMuted,
+                    color = winRateColor(card.gihWr),
                 )
                 Text(
                     text = "GIH Win%",
@@ -629,7 +632,7 @@ private fun PackBentoCard(
                 Text(
                     text = if (card.gihWr != null) "${card.gihWr.asPct()}%" else "—",
                     style = AppTheme.typography.monoSmall,
-                    color = if (card.gihWr != null) AppTheme.colors.textSecondary else AppTheme.colors.textMuted,
+                    color = winRateColor(card.gihWr),
                 )
             }
         }

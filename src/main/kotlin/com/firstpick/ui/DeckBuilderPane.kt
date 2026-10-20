@@ -184,14 +184,19 @@ private fun DeckBentoSummaryCard(
     val outlookShort = deck.outlook.substringBefore(" · ").trim()
     val outlookLower = outlookShort.lowercase()
     val outlookColor = when {
-        "fragile" in outlookLower || "risky" in outlookLower || "short" in outlookLower -> AppTheme.colors.warning
-        "average" in outlookLower && "above" !in outlookLower -> AppTheme.colors.accentSecondary
-        "provisional" in outlookLower -> AppTheme.colors.accentSecondary
+        "fragile" in outlookLower ||
+            "risky" in outlookLower ||
+            "short" in outlookLower ||
+            "weak" in outlookLower ||
+            "unplayable" in outlookLower -> AppTheme.colors.danger
+        ("average" in outlookLower && "above" !in outlookLower) ||
+            "playable" in outlookLower ||
+            "provisional" in outlookLower -> AppTheme.colors.warning
         else -> AppTheme.colors.positive
     }
     val highlights = remember(deck) {
         val redundantCountsRegex = Regex("^\\d+\\s+creatures\\s+and\\s+\\d+\\s+removal$", RegexOption.IGNORE_CASE)
-        (deck.identityReasons.take(2) + deck.powerReasons.take(2))
+        (deck.identityReasons.take(2) + deck.powerReasons.take(3))
             .map { it.trim() }
             .filter {
                 it.isNotBlank() &&
@@ -205,7 +210,7 @@ private fun DeckBentoSummaryCard(
     Column(
         Modifier
             .fillMaxWidth()
-            .appHeroCard(radius = AppTheme.radii.xl)
+            .appCard(selected = true, accentColor = outlookColor, radius = AppTheme.radii.xl)
             .padding(horizontal = 14.dp, vertical = 10.dp),
         verticalArrangement = Arrangement.spacedBy(7.dp),
     ) {
@@ -236,7 +241,7 @@ private fun DeckBentoSummaryCard(
             verticalArrangement = Arrangement.spacedBy(6.dp),
             itemVerticalAlignment = Alignment.CenterVertically,
         ) {
-            // Left: Archetype Plan Badge + Build Outlook Badge
+            // Left: Archetype Plan Badge (neutral descriptive) + Build Outlook Badge (semantic health)
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -255,9 +260,9 @@ private fun DeckBentoSummaryCard(
                     Box(
                         Modifier
                             .appBadge(
-                                AppTheme.colors.accent,
-                                fillAlpha = 0.16f,
-                                borderAlpha = 0.38f,
+                                AppTheme.colors.info,
+                                fillAlpha = 0.14f,
+                                borderAlpha = 0.34f,
                                 shape = RoundedCornerShape(AppTheme.radii.xs),
                             )
                             .padding(horizontal = 7.dp, vertical = 2.dp),
@@ -265,7 +270,7 @@ private fun DeckBentoSummaryCard(
                         Text(
                             deck.type,
                             style = AppTheme.typography.micro.copy(fontWeight = FontWeight.Bold),
-                            color = AppTheme.colors.accent,
+                            color = AppTheme.colors.textPrimary,
                         )
                     }
                 }
@@ -286,8 +291,8 @@ private fun DeckBentoSummaryCard(
                             Modifier
                                 .appBadge(
                                     outlookColor,
-                                    fillAlpha = 0.12f,
-                                    borderAlpha = 0.32f,
+                                    fillAlpha = 0.14f,
+                                    borderAlpha = 0.38f,
                                     shape = RoundedCornerShape(AppTheme.radii.xs),
                                 )
                                 .padding(horizontal = 7.dp, vertical = 2.dp),
@@ -463,9 +468,9 @@ private fun DeckSpellRow(s: DeckSpellUi, muted: Boolean = false) {
                 Box(
                     Modifier
                         .appBadge(
-                            AppTheme.colors.accent,
-                            fillAlpha = 0.16f,
-                            borderAlpha = 0.38f,
+                            AppTheme.colors.info,
+                            fillAlpha = 0.14f,
+                            borderAlpha = 0.34f,
                             shape = RoundedCornerShape(AppTheme.radii.xs),
                         )
                         .padding(horizontal = 5.dp, vertical = 1.dp),
@@ -473,7 +478,7 @@ private fun DeckSpellRow(s: DeckSpellUi, muted: Boolean = false) {
                     Text(
                         "${s.count}×",
                         style = AppTheme.typography.monoMicro.copy(fontWeight = FontWeight.Bold),
-                        color = AppTheme.colors.accent,
+                        color = AppTheme.colors.textPrimary,
                     )
                 }
                 Spacer(Modifier.width(6.dp))
@@ -531,8 +536,8 @@ private fun RoleChip(role: String) {
             Modifier
                 .appBadge(
                     color,
-                    fillAlpha = 0.14f,
-                    borderAlpha = 0.36f,
+                    fillAlpha = 0.12f,
+                    borderAlpha = 0.30f,
                     shape = RoundedCornerShape(AppTheme.radii.xs),
                 )
                 .padding(horizontal = 5.dp, vertical = 1.dp),
@@ -541,7 +546,7 @@ private fun RoleChip(role: String) {
                 role,
                 fontSize = 9.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = color,
+                color = AppTheme.colors.textSecondary,
                 maxLines = 1,
             )
         }
@@ -549,12 +554,7 @@ private fun RoleChip(role: String) {
 }
 
 @Composable
-private fun roleColor(role: String): Color = when (role) {
-    "Removal" -> AppTheme.colors.danger
-    "Fixing" -> AppTheme.colors.positive
-    "Finisher" -> AppTheme.colors.warning
-    else -> AppTheme.colors.accent
-}
+private fun roleColor(role: String): Color = AppTheme.colors.info
 
 @Composable
 private fun OptionCard(
@@ -565,10 +565,16 @@ private fun OptionCard(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
+    val tierColor = buildTierColor(opt.displayTier)
     val powerFraction = (opt.power / 100f).coerceIn(0.12f, 1f)
     Column(
         modifier
-            .appCard(selected = previewed, active = active, radius = AppTheme.radii.xl)
+            .appCard(
+                selected = previewed,
+                active = active,
+                accentColor = tierColor,
+                radius = AppTheme.radii.xl,
+            )
             .semantics {
                 selected = previewed
                 stateDescription = buildString {
@@ -590,14 +596,14 @@ private fun OptionCard(
                 active -> Text(
                     "GUIDANCE ACTIVE",
                     style = AppTheme.typography.sectionHeader.copy(fontSize = 9.sp),
-                    color = AppTheme.colors.accent,
+                    color = tierColor,
                     maxLines = 1,
                     softWrap = false,
                 )
                 recommended -> Text(
                     "RECOMMENDED",
                     style = AppTheme.typography.sectionHeader.copy(fontSize = 9.sp),
-                    color = AppTheme.colors.accent,
+                    color = tierColor,
                     maxLines = 1,
                     softWrap = false,
                 )
@@ -628,7 +634,7 @@ private fun OptionCard(
             )
         }
         Spacer(Modifier.weight(1f))
-        // Raycast Coral-to-Amber Power Progress Bar
+        // Semantic Tier Power Progress Bar
         Box(
             Modifier
                 .fillMaxWidth()
@@ -642,15 +648,7 @@ private fun OptionCard(
                     .fillMaxWidth(powerFraction)
                     .clip(RoundedCornerShape(99.dp))
                     .background(
-                        if (previewed || recommended) {
-                            Brush.horizontalGradient(
-                                listOf(AppTheme.colors.accent, AppTheme.colors.accentSecondary),
-                            )
-                        } else {
-                            Brush.horizontalGradient(
-                                listOf(AppTheme.colors.textMuted, AppTheme.colors.textSecondary),
-                            )
-                        },
+                        tierColor.copy(alpha = if (previewed) 1f else 0.72f),
                     ),
             )
         }
@@ -659,6 +657,7 @@ private fun OptionCard(
 
 @Composable
 private fun DeckPowerSummary(deck: DeckOptionUi) {
+    val tierColor = buildTierColor(deck.displayTier)
     AppTooltip(
         title = "Projected Build Power",
         tooltip = "Overall deck strength (0–100) and letter tier estimated from your 23 best playables, mana curve balance, and color consistency.",
@@ -666,13 +665,13 @@ private fun DeckPowerSummary(deck: DeckOptionUi) {
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             deck.displayTier?.let {
-                TierBadge(it)
+                TierBadge(it, tierColor)
                 Spacer(Modifier.width(6.dp))
             }
             Text(
                 deck.powerLabel,
                 style = AppTheme.typography.monoSmall.copy(fontWeight = FontWeight.Bold),
-                color = AppTheme.colors.accent,
+                color = tierColor,
                 maxLines = 1,
                 softWrap = false,
             )
@@ -681,11 +680,11 @@ private fun DeckPowerSummary(deck: DeckOptionUi) {
 }
 
 @Composable
-private fun TierBadge(tier: String) {
+private fun TierBadge(tier: String, tierColor: Color) {
     Box(
         Modifier
             .clip(RoundedCornerShape(AppTheme.radii.xs))
-            .background(AppTheme.colors.accentSecondary)
+            .background(tierColor)
             .padding(horizontal = 5.dp, vertical = 1.dp),
     ) {
         Text(

@@ -135,6 +135,11 @@ private fun LaneBentoCard(state: DraftUiState) {
                 }
             }
         } else {
+            val statusColor = when {
+                settled -> AppTheme.colors.positive
+                state.laneColors.isNotEmpty() -> AppTheme.colors.warning
+                else -> AppTheme.colors.textSecondary
+            }
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -163,11 +168,6 @@ private fun LaneBentoCard(state: DraftUiState) {
                     settled -> "SETTLED"
                     state.laneColors.isNotEmpty() -> "LEANING"
                     else -> "OPEN"
-                }
-                val statusColor = when {
-                    settled -> AppTheme.colors.positive
-                    state.laneColors.isNotEmpty() -> AppTheme.colors.accentSecondary
-                    else -> AppTheme.colors.textSecondary
                 }
                 val currentStatusSummary = when {
                     settled -> "Committed to a two-color pair — prioritize on-color playables, curve gaps, and synergy."
@@ -242,13 +242,13 @@ private fun LaneBentoCard(state: DraftUiState) {
                             Text(
                                 "${laneArchetype.winRate.asPct()}% WR",
                                 style = AppTheme.typography.monoSmall.copy(fontWeight = FontWeight.Bold),
-                                color = AppTheme.colors.accent,
+                                color = winRateColor(laneArchetype.winRate),
                             )
                         }
                     }
                 }
 
-                // Raycast Coral-to-Amber Confidence Progress Bar
+                // Semantic Lane Confidence Progress Bar
                 Box(
                     Modifier
                         .fillMaxWidth()
@@ -261,11 +261,7 @@ private fun LaneBentoCard(state: DraftUiState) {
                             .fillMaxHeight()
                             .fillMaxWidth(confidencePct)
                             .clip(RoundedCornerShape(99.dp))
-                            .background(
-                                Brush.horizontalGradient(
-                                    listOf(AppTheme.colors.accent, AppTheme.colors.accentSecondary),
-                                ),
-                            ),
+                            .background(statusColor),
                     )
                 }
             }
@@ -330,7 +326,7 @@ private fun PoolAndCurveBentoCard(state: DraftUiState) {
             BentoMiniStatTile(
                 label = "Non-creatures",
                 value = "${state.poolNonCreatures} spells",
-                valueColor = AppTheme.colors.accentSecondary,
+                valueColor = AppTheme.colors.textPrimary,
                 modifier = Modifier.weight(1f),
             )
         }
@@ -420,10 +416,10 @@ private fun ManaCurveHistogram(state: DraftUiState) {
                                             listOf(AppTheme.colors.borderSubtle, AppTheme.colors.borderSubtle),
                                         )
                                         isPeak -> Brush.verticalGradient(
-                                            listOf(AppTheme.colors.accent, AppTheme.colors.accentBright),
+                                            listOf(AppTheme.colors.positive, AppTheme.colors.accentBright),
                                         )
                                         else -> Brush.verticalGradient(
-                                            listOf(AppTheme.colors.accentSecondary, AppTheme.colors.accentSecondary.copy(alpha = 0.70f)),
+                                            listOf(AppTheme.colors.info.copy(alpha = 0.85f), AppTheme.colors.info.copy(alpha = 0.50f)),
                                         )
                                     },
                                 ),

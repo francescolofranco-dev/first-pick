@@ -73,11 +73,6 @@ fun App(
 
     val deckTabEnabled = state.deckOptions.isNotEmpty() || state.deckSoFar != null
     val deckTabLabel = if (state.deckOptions.isNotEmpty()) "Deck builder" else "Deck so far"
-    val deckTabBadge = when {
-        state.deckOptions.isNotEmpty() -> "${state.deckOptions.size}"
-        state.deckSoFar != null -> "${state.poolSize}"
-        else -> null
-    }
     val draftTabBadge = if (state.packCards.isNotEmpty()) "${state.packCards.size}" else null
 
     AppTheme {
@@ -97,7 +92,6 @@ fun App(
                         onSelectScreen = { currentScreen = it },
                         draftTabBadge = draftTabBadge,
                         deckTabLabel = deckTabLabel,
-                        deckTabBadge = deckTabBadge,
                         deckTabEnabled = deckTabEnabled,
                         isOverlayOpen = isOverlayOpen,
                         onToggleOverlay = onToggleOverlay,
@@ -237,7 +231,6 @@ private fun FloatingCommandHeader(
     onSelectScreen: (AppScreen) -> Unit,
     draftTabBadge: String?,
     deckTabLabel: String,
-    deckTabBadge: String?,
     deckTabEnabled: Boolean,
     isOverlayOpen: Boolean,
     onToggleOverlay: () -> Unit,
@@ -256,14 +249,12 @@ private fun FloatingCommandHeader(
         ),
         SegmentedTabItem(
             label = deckTabLabel,
-            badge = deckTabBadge,
             selected = currentScreen == AppScreen.DECK_BUILDER,
             enabled = deckTabEnabled,
             onClick = { onSelectScreen(AppScreen.DECK_BUILDER) },
         ),
         SegmentedTabItem(
             label = "Guides",
-            badge = state.setCode,
             selected = currentScreen == AppScreen.GUIDES,
             onClick = { onSelectScreen(AppScreen.GUIDES) },
         ),
@@ -292,20 +283,6 @@ private fun FloatingCommandHeader(
                         maxLines = 1,
                         softWrap = false,
                     )
-                    state.setCode?.let { set ->
-                        Box(
-                            Modifier
-                                .clip(RoundedCornerShape(4.dp))
-                                .background(AppTheme.colors.accent.copy(alpha = 0.16f))
-                                .padding(horizontal = 5.dp, vertical = 1.dp),
-                        ) {
-                            Text(
-                                set,
-                                style = AppTheme.typography.monoMicro.copy(fontWeight = FontWeight.Bold),
-                                color = AppTheme.colors.accent,
-                            )
-                        }
-                    }
                 }
                 Row(
                     verticalAlignment = Alignment.CenterVertically,

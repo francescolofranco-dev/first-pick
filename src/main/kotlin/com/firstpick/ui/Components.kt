@@ -260,15 +260,15 @@ internal fun AppSegmentedTabs(
                         Modifier
                             .clip(RoundedCornerShape(4.dp))
                             .background(
-                                if (tab.selected) AppTheme.colors.accent.copy(alpha = 0.22f)
+                                if (tab.selected) Color(0xFFFFFFFF).copy(alpha = 0.12f)
                                 else AppTheme.colors.surfaceElevated,
                             )
-                            .padding(horizontal = 4.dp, vertical = 1.dp),
+                            .padding(horizontal = 5.dp, vertical = 1.dp),
                     ) {
                         Text(
                             text = tab.badge,
                             style = AppTheme.typography.monoMicro,
-                            color = if (tab.selected) AppTheme.colors.accent else AppTheme.colors.textSecondary,
+                            color = if (tab.selected) AppTheme.colors.textPrimary else AppTheme.colors.textSecondary,
                             maxLines = 1,
                         )
                     }
@@ -347,7 +347,7 @@ internal fun AppTooltip(
                         Text(
                             title.uppercase(),
                             style = AppTheme.typography.sectionHeader,
-                            color = AppTheme.colors.accent,
+                            color = AppTheme.colors.textSecondary,
                         )
                         Box(Modifier.fillMaxWidth().height(1.dp).background(AppTheme.colors.borderSubtle))
                     }
@@ -381,17 +381,56 @@ internal fun reasonChipTooltip(reason: String): String {
     }
 }
 
+internal fun reasonSemanticColor(reason: String): Color {
+    val lower = reason.lowercase()
+    // Mana curve readouts ("2.8 average mana value"): healthy Limited curves sit around 2.6–3.4.
+    if ("average mana value" in lower || "mana curve" in lower) {
+        val mv = Regex("(\\d+(?:\\.\\d+)?)").find(lower)?.value?.toDoubleOrNull()
+        if (mv != null) {
+            return if (mv in 2.6..3.4) AppTheme.colors.positive else AppTheme.colors.warning
+        }
+    }
+    return when {
+        // Green first for explicit above-average phrasing so the bare word "average" doesn't demote it
+        "above the set average" in lower || "above average" in lower || "above-average" in lower ->
+            AppTheme.colors.positive
+
+        // Red = Bad / Penalty / Shortfall / Off-color
+        "off-color" in lower ||
+            "heavy" in lower ||
+            "unsupported" in lower ||
+            "unrated" in lower ||
+            "restricted" in lower ||
+            "weak" in lower ||
+            "lower" in lower ||
+            "short" in lower ||
+            "fragile" in lower ||
+            "risky" in lower ||
+            "shallow" in lower ||
+            "fewer" in lower ||
+            "lacks" in lower ||
+            "missing" in lower ||
+            "below the set average" in lower ||
+            "wheel" in lower -> AppTheme.colors.danger
+
+        // Amber/Yellow = Caution / Gap that still needs filling / Average
+        "needs" in lower ||
+            "speculative" in lower ||
+            "near the set average" in lower ||
+            "average" in lower ||
+            "stretches" in lower ||
+            "splash" in lower ||
+            "provisional" in lower ||
+            "utility land" in lower -> AppTheme.colors.warning
+
+        // Green = Good / Positive / Strong / Synergy / On-color
+        else -> AppTheme.colors.positive
+    }
+}
+
 @Composable
 internal fun ReasonChip(reason: String, tooltip: String? = reasonChipTooltip(reason)) {
-    val lower = reason.lowercase()
-    val accent = when {
-        "bomb" in lower || "finisher" in lower -> AppTheme.colors.warning
-        "removal" in lower || "efficient" in lower -> AppTheme.colors.danger
-        "synergy" in lower || "archetype" in lower || "glue" in lower -> AppTheme.colors.accent
-        "on-color" in lower || "fixing" in lower || "pair" in lower -> AppTheme.colors.positive
-        "off-color" in lower || "unrated" in lower || "restricted" in lower -> AppTheme.colors.textMuted
-        else -> AppTheme.colors.accentSecondary
-    }
+    val accent = reasonSemanticColor(reason)
     val shape = RoundedCornerShape(AppTheme.radii.xs)
     val chipContent = @Composable {
         Box(
@@ -406,7 +445,7 @@ internal fun ReasonChip(reason: String, tooltip: String? = reasonChipTooltip(rea
                 fontSize = 9.sp,
                 lineHeight = 12.sp,
                 fontWeight = FontWeight.Medium,
-                color = if (accent == AppTheme.colors.textMuted) AppTheme.colors.textSecondary else accent,
+                color = accent,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
@@ -432,13 +471,7 @@ internal fun WinRateMeter(
     } else {
         ((gihWr - 0.50) / 0.15).toFloat().coerceIn(0.08f, 1f)
     }
-    val barColor = when {
-        gihWr == null -> AppTheme.colors.borderDefault
-        gihWr >= 0.60 -> AppTheme.colors.accent
-        gihWr >= 0.57 -> AppTheme.colors.positive
-        gihWr >= 0.54 -> AppTheme.colors.accentSecondary
-        else -> AppTheme.colors.textMuted
-    }
+    val barColor = winRateColor(gihWr)
     AppTooltip(
         title = "GIH Win Rate",
         tooltip = "17Lands Games in Hand win rate — how often players win games when this card is drawn or in their opening hand.",
