@@ -61,7 +61,6 @@ fun App(
     onToggleOverlay: () -> Unit,
     committedDeck: DeckOptionUi? = null,
     onUseDeck: (DeckOptionUi) -> Unit = {},
-    onStopGuidance: () -> Unit = {},
     onSelectPickCount: (Int) -> Unit = {},
     onSimulate: (String) -> Unit = {},
     onStopSim: () -> Unit = {},
@@ -83,7 +82,7 @@ fun App(
                         state,
                         isOverlayOpen,
                         overlayHealth,
-                        isOverlayOpen || committedDeck != null,
+                        isOverlayOpen,
                         onToggleOverlay,
                         onSelectPickCount,
                         onStopSim,
@@ -150,7 +149,7 @@ fun App(
                                             savedDeck = state.savedDeck,
                                             committedDeck = committedDeck,
                                             onUseDeck = onUseDeck,
-                                            onStopGuidance = onStopGuidance,
+                                            guidanceEnabled = isOverlayOpen,
                                         )
                                         state.deckSoFar != null -> DeckSoFarPane(state.deckSoFar, state.deckSoFarCuts)
                                         else -> PackPane(
@@ -281,21 +280,20 @@ private fun Header(
                 }
             }
             PickCountSelector(state.pickCountOverride, state.picksPerChoice, onSelectPickCount)
-            if (state.phase != DraftPhase.COMPLETE) {
-                FilledTonalButton(
-                    onClick = onToggleOverlay,
-                    contentPadding = HeaderButtonPadding,
-                    modifier = Modifier.semantics {
-                        stateDescription = if (isOverlayOpen) "Overlay shown" else "Overlay hidden"
-                    },
-                ) {
-                    Text(
-                        text = if (isOverlayOpen) "Hide overlay" else "Show overlay",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = if (isOverlayOpen) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
-                    )
-                }
+            FilledTonalButton(
+                enabled = state.phase != DraftPhase.COMPLETE || state.deckOptions.isNotEmpty(),
+                onClick = onToggleOverlay,
+                contentPadding = HeaderButtonPadding,
+                modifier = Modifier.semantics {
+                    stateDescription = if (isOverlayOpen) "Overlay shown" else "Overlay hidden"
+                },
+            ) {
+                Text(
+                    text = if (isOverlayOpen) "Hide overlay" else "Show overlay",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = if (isOverlayOpen) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                )
             }
         }
     }

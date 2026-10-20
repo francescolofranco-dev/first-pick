@@ -68,9 +68,10 @@ fun main() {
         var committedDeck by remember(state.sessionKey, state.phase == DraftPhase.COMPLETE) {
             mutableStateOf<DeckOptionUi?>(null)
         }
+        val selectedDeck = committedDeck ?: state.deckOptions.firstOrNull()
         val activeOverlayHealth = when {
-            state.phase == DraftPhase.COMPLETE && committedDeck != null -> deckOverlayHealth
-            isOverlayOpen -> draftOverlayHealth
+            state.phase == DraftPhase.COMPLETE && isOverlayOpen && selectedDeck != null -> deckOverlayHealth
+            state.phase != DraftPhase.COMPLETE && isOverlayOpen -> draftOverlayHealth
             else -> OverlayHealth(OverlayHealthState.INACTIVE, "Overlay is turned off.")
         }
 
@@ -92,11 +93,10 @@ fun main() {
                 isOverlayOpen = isOverlayOpen,
                 overlayHealth = activeOverlayHealth,
                 onToggleOverlay = { isOverlayOpen = !isOverlayOpen },
-                committedDeck = committedDeck,
+                committedDeck = selectedDeck,
                 onUseDeck = {
                     if (state.phase == DraftPhase.COMPLETE) committedDeck = it
                 },
-                onStopGuidance = { committedDeck = null },
                 onSelectPickCount = viewModel::setPickCountOverride,
                 onSimulate = { viewModel.startSimulation(it) },
                 onStopSim = { viewModel.stopSimulation() },
@@ -115,8 +115,7 @@ fun main() {
         }
 
         when {
-            state.phase == DraftPhase.COMPLETE && committedDeck != null -> {
-                val selectedDeck = requireNotNull(committedDeck)
+            state.phase == DraftPhase.COMPLETE && isOverlayOpen && selectedDeck != null -> {
                 val target = remember(selectedDeck) { deckGuidanceTarget(selectedDeck) }
                 val draftPool = remember(state.draftPool) { deckGuidancePool(state.draftPool) }
                 ArenaDeckBuilderOverlay(

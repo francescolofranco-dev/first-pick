@@ -31,7 +31,6 @@ class DeckPaneScrollTest {
                 savedDeck = DeckSnapshot(emptyList(), 0),
                 committedDeck = null,
                 onUseDeck = { confirmed = it },
-                onStopGuidance = {},
             )
         }.use { pane ->
             val firstOption = assertNotNull(pane.textNode(options.first().title))
@@ -54,23 +53,27 @@ class DeckPaneScrollTest {
     }
 
     @Test
-    fun clickingBuildCardsStartsAndSwitchesGuidanceWithoutAConfirmationButton() {
+    fun selectingBuildsNeverChangesExplicitGuidanceVisibility() {
         val options = listOf("WU", "UG").map(::deck)
-        var active by mutableStateOf<DeckOptionUi?>(null)
+        var selection by mutableStateOf<DeckOptionUi?>(null)
+        var enabled by mutableStateOf(false)
         PaneScene(width = 500, height = 700) {
-            DeckBuilderPane(options, committedDeck = active,
-                onUseDeck = { active = it }, onStopGuidance = { active = null })
+            DeckBuilderPane(options, committedDeck = selection,
+                onUseDeck = { selection = it }, guidanceEnabled = enabled)
         }.use { pane ->
-            assertEquals(null, active, "Displaying a default build must not start guidance")
             assertEquals(null, pane.textNode("Use this build"))
             pane.click(options.last().title)
-            assertEquals(options.last(), active)
-            assertNotNull(pane.textNode("GUIDANCE ACTIVE"))
-            pane.click(options.first().title)
-            assertEquals(options.first(), active)
-            pane.click("Stop guidance")
-            assertEquals(null, active)
+            assertEquals(options.last(), selection)
             assertEquals(null, pane.textNode("GUIDANCE ACTIVE"))
+            assertEquals(null, pane.textNode("Stop guidance"))
+            enabled = true
+            pane.click(options.first().title)
+            assertEquals(options.first(), selection)
+            assertNotNull(pane.textNode("GUIDANCE ACTIVE"))
+            enabled = false
+            pane.click(options.last().title)
+            assertEquals(options.last(), selection)
+            assertEquals(null, pane.textNode("GUIDANCE ACTIVE"), "Switching builds must not re-enable guidance")
         }
     }
 

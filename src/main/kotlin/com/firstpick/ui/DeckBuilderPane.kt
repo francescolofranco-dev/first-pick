@@ -26,7 +26,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -69,7 +68,7 @@ internal fun DeckBuilderPane(
     savedDeck: com.firstpick.overlay.DeckSnapshot? = null,
     committedDeck: DeckOptionUi?,
     onUseDeck: (DeckOptionUi) -> Unit,
-    onStopGuidance: () -> Unit,
+    guidanceEnabled: Boolean = false,
 ) {
     if (options.isEmpty()) return
 
@@ -90,10 +89,10 @@ internal fun DeckBuilderPane(
                 Text("Draft complete — choose your build", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                 Spacer(Modifier.height(2.dp))
                 Text(
-                    if (committedDeck == null) {
-                        "Click a build card to select it and start Arena guidance."
+                    if (!guidanceEnabled) {
+                        "Click a build card to select it. Use Show overlay for Arena guidance."
                     } else {
-                        "Guidance active for ${committedDeck.title}. Click another build card to switch."
+                        "Arena guidance is on for ${sel.title}. Use Hide overlay to turn it off."
                     },
                     fontSize = 11.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -120,7 +119,7 @@ internal fun DeckBuilderPane(
                             opt = opt,
                             recommended = index == 0,
                             previewed = opt.deckBuildKey == resolvedPreviewKey,
-                            active = opt.deckBuildKey == committedKey,
+                            active = guidanceEnabled && opt.deckBuildKey == committedKey,
                             modifier = Modifier.fillMaxRowHeight(),
                             onClick = {
                                 previewKey = opt.deckBuildKey
@@ -128,10 +127,6 @@ internal fun DeckBuilderPane(
                             },
                         )
                     }
-                }
-                if (committedDeck != null) {
-                    Spacer(Modifier.height(10.dp))
-                    OutlinedButton(onClick = onStopGuidance) { Text("Stop guidance") }
                 }
                 Spacer(Modifier.height(10.dp))
                 Text(
