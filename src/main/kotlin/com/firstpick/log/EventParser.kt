@@ -147,6 +147,7 @@ class EventParser(
         @SerialName("DraftStatus") val draftStatus: String = "",
         @SerialName("PackNumber") val packNumber: Int = 0,
         @SerialName("PickNumber") val pickNumber: Int = 0,
+        @SerialName("NumCardsToPick") val picksPerChoice: Int? = null,
         @SerialName("DraftPack") val draftPack: List<String> = emptyList(),
         @SerialName("PickedCards") val pickedCards: List<String> = emptyList(),
     )
@@ -166,6 +167,7 @@ class EventParser(
             pick = payload.pickNumber + 1,
             packCards = payload.draftPack.toInts(),
             pool = payload.pickedCards.toInts(),
+            picksPerChoice = payload.picksPerChoice?.takeIf { it in 1..2 },
             complete = payload.draftStatus.equals("Complete", ignoreCase = true) ||
                 payload.draftStatus.equals("Completed", ignoreCase = true),
         )
@@ -213,7 +215,8 @@ class EventParser(
         val pick = obj.findInt("SelfPick") ?: obj.findInt("PickNumber")?.plus(1) ?: 1
         val eventName = obj.findString("EventName") ?: obj.findString("InternalEventName") ?: ""
         return DraftEvent.PackSeen(eventName, pack, pick, packCards.toInts(),
-            obj.findString("draftId") ?: obj.findString("DraftId"))
+            obj.findString("draftId") ?: obj.findString("DraftId"),
+            obj.findInt("NumCardsToPick")?.takeIf { it in 1..2 })
     }
 
     private fun parsePremierPick(line: String): DraftEvent.PickMade? {

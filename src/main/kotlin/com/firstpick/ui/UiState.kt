@@ -40,6 +40,7 @@ data class PackCardUi(
 
     val modelRank: Int? = null,
     val guideConstrained: Boolean = false,
+    val recommendedPair: Boolean = false,
 )
 
 data class ColorScore(val color: Char, val score: Double)
@@ -133,6 +134,9 @@ data class DraftUiState(
     val pack: Int = 0,
     val pick: Int = 0,
     val poolSize: Int = 0,
+    val picksPerChoice: Int = 1,
+    /** 0 = automatic detection; 1/2 = manual override. */
+    val pickCountOverride: Int = 0,
     val loadingRatings: Boolean = false,
     val dataError: String? = null,
     val ratingsDataStatus: RatingsDataStatus = RatingsDataStatus.IDLE,
@@ -175,11 +179,13 @@ data class DraftUiState(
     val pickModelActive: Boolean = false,
     val modelSets: List<String> = emptyList(),
 ) {
+    private val draftModeLabel: String get() = if (picksPerChoice == 2) "Pick Two Draft" else format.label
+
     val headline: String
         get() = when (phase) {
             DraftPhase.IDLE -> "Waiting for an MTG Arena draft…"
-            DraftPhase.COMPLETE -> "${setCode ?: ""} · ${format.label} · Draft complete"
-            DraftPhase.DRAFTING -> "${setCode ?: "?"} · ${format.label} · Pack $pack, Pick $pick"
+            DraftPhase.COMPLETE -> "${setCode ?: ""} · ${draftModeLabel} · Draft complete"
+            DraftPhase.DRAFTING -> "${setCode ?: "?"} · ${draftModeLabel} · Pack $pack, Pick $pick"
         }
 }
 

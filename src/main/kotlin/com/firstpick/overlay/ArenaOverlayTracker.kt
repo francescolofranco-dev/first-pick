@@ -67,6 +67,7 @@ data class OverlayCard(
 
     val originalIndex: Int = -1,
     val isRoom: Boolean = false,
+    val recommendedPair: Boolean = false,
 )
 
 private data class Mark(val x: Int, val y: Int, val w: Int, val h: Int, val value: Double?, val number: Int?, val isBest: Boolean)
@@ -410,7 +411,7 @@ private fun geometryMarks(
     return rects.map { r ->
         val ci = assignment[r.index]
         if (ci == null) Mark(r.x, r.y, r.w, r.h, null, null, false)
-        else Mark(r.x, r.y, r.w, r.h, cards[ci].value, null, ci == bestCard)
+        else Mark(r.x, r.y, r.w, r.h, cards[ci].value, null, if (cards.any { it.recommendedPair }) cards[ci].recommendedPair else ci == bestCard)
     }
 }
 

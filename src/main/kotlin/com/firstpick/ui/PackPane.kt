@@ -116,6 +116,16 @@ internal fun PackPane(
     }
 
     else -> Column(Modifier.fillMaxSize()) {
+        if (state.picksPerChoice == 2) {
+            val pair = state.packCards.filter { it.recommendedPair }
+            Text(
+                if (pair.size == 2) "Suggested pair: ${pair.joinToString(" + ") { it.name }}"
+                else if (state.packCards.size == 1) "Take the remaining card"
+                else "Choose two cards; pair advice unavailable",
+                fontSize = 13.sp, color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(vertical = 6.dp),
+            )
+        }
         if (shouldShowGuideStarter(state)) {
             SetGuideStarter(state, onOpenGuide)
             Spacer(Modifier.height(7.dp))
@@ -128,14 +138,14 @@ internal fun PackPane(
                 modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp),
             )
         }
-        ConfidenceBanner(state.packCards)
+        if (state.picksPerChoice == 1) ConfidenceBanner(state.packCards)
         LazyColumn(
             Modifier.fillMaxSize(),
             contentPadding = PaddingValues(vertical = 2.dp),
             verticalArrangement = Arrangement.spacedBy(5.dp),
         ) {
             items(state.packCards, key = { "${it.grpId}#${it.rank}" }) {
-                PackRow(it, state.packCards.size, showBestPick = !hasUnratedCards(state.packCards))
+                PackRow(it, state.packCards.size, showBestPick = !hasUnratedCards(state.packCards) && state.picksPerChoice == 1)
             }
         }
     }
@@ -308,7 +318,7 @@ private fun ConfidenceBanner(cards: List<PackCardUi>) {
 
 @Composable
 private fun PackRow(card: PackCardUi, packSize: Int, showBestPick: Boolean) {
-    val top = showBestPick && card.rank == 1 && card.value != null
+    val top = card.recommendedPair || (showBestPick && card.rank == 1 && card.value != null)
 
 
     val bombConsistent = card.isBomb && isBombTier(card.value)

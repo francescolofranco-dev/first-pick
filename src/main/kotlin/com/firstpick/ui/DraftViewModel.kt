@@ -95,7 +95,7 @@ class DraftViewModel(
         simPaused.value = false
         scope.launch { publish() }
         simJob = scope.launch(Dispatchers.IO) {
-            tracker.consume(simulator.simulate(set, paused = simPaused))
+            tracker.consume(simulator.simulate(set, paused = simPaused, picksPerChoice = pickCountOverride.takeIf { it == 2 } ?: 1))
             if (tracker.state.value.setCode == null) {
                 currentError = "Not enough identified Arena cards to simulate ${set.uppercase()}"
                 simulating = false
@@ -125,6 +125,7 @@ class DraftViewModel(
     /** Discard buffered/history lines as well as the old draft before following new activity. */
     fun newDraft() {
         if (simulating) return
+        pickCountOverride = 0
         val previousWatcher = watcherJob
         previousWatcher?.cancel()
         watcherJob = scope.launch(Dispatchers.IO) {
@@ -134,6 +135,14 @@ class DraftViewModel(
             publish()
             tracker.consume(watcher.lines(fromStart = false))
         }
+    }
+
+    @Volatile private var pickCountOverride = 0
+
+    fun setPickCountOverride(count: Int) {
+        require(count in 0..2)
+        pickCountOverride = count
+        scope.launch { publish() }
     }
 
     fun setFormatChoice(choice: String) {
@@ -230,6 +239,8 @@ class DraftViewModel(
     }
 
     private fun buildUi(state: DraftState): DraftUiState {
+        val override = pickCountOverride
+        val picksPerChoice = override.takeIf { it != 0 } ?: state.picksPerChoice
         val format = RatingsFormat.resolve(formatChoice, state.format)
         val dataKey = state.setCode?.let { "${it.uppercase()}_$format" }
         val loaded = state.setCode?.let { repo.isLoadedFor(it, format) } == true
@@ -256,7 +267,7 @@ class DraftViewModel(
             { _, _ -> null }
         }
         val pool = if (loaded) state.pool.map(repo::resolve) else emptyList()
-        val signals = if (loaded) SignalsEngine.openLanes(state.seen, repo::resolve) else emptyMap()
+        val signals = if (loaded && picksPerChoice == 1) SignalsEngine.openLanes(state.seen, repo::resolve) else emptyMap()
         val lane = if (loaded) {
             LaneDetector.detect(
                 pool,
@@ -315,9 +326,23 @@ class DraftViewModel(
                 synergy = synergy,
                 deckFit = deckFitProbe(pool, liveProjection, pairStrength, synergy, meta, archetypeRating),
                 activeManaSources = activeManaSources,
+                picksPerChoice = picksPerChoice,
             )
             val ranked = net?.let { PickNetRanker.rerank(it, scored, pool.map { c -> c.name }) } ?: scored
-            packRows(ranked, basicLands, state.packCards)
+            val pair = if (picksPerChoice == 2) {
+                com.firstpick.advisor.PairAdvisor.recommend(ranked) { candidate, partner ->
+                    advisor.score(
+                        pack = listOf(candidate), pool = pool + listOfNotNull(partner),
+                        packNumber = state.pack.coerceAtLeast(1), pickNumber = state.pick.coerceAtLeast(1),
+                        metrics = repo.setMetrics, lane = lane, archetypeRating = archetypeRating,
+                        meta = meta, synergy = synergy, activeManaSources = activeManaSources,
+                        picksPerChoice = picksPerChoice,
+                    ).single()
+                }
+            } else emptySet()
+            packRows(ranked, basicLands, state.packCards).mapIndexed { index, row ->
+                row.copy(recommendedPair = index in pair)
+            }
         } else {
             emptyList()
         }
@@ -352,6 +377,8 @@ class DraftViewModel(
             pack = state.pack,
             pick = state.pick,
             poolSize = state.pool.size,
+            picksPerChoice = picksPerChoice,
+            pickCountOverride = override,
             loadingRatings = ratingsLoading,
             dataError = null,
             ratingsDataStatus = ratingsStatus,

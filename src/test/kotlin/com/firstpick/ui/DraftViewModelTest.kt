@@ -34,6 +34,42 @@ import kotlin.test.assertTrue
 class DraftViewModelTest {
 
     @Test
+    fun automaticPairAdviceAndManualOverrideReachTheUi() = runBlocking {
+        val cache = createTempDirectory("fp-vm-picktwo")
+        for (format in listOf("PremierDraft", "QuickDraft", "TradDraft")) {
+            Files.writeString(cache.resolve("ratings3_DSK_$format.json"), """{"data":[
+                {"name":"Test A","mtga_id":1,"color":"U","ever_drawn_win_rate":0.58,"ever_drawn_game_count":1000},
+                {"name":"Test B","mtga_id":2,"color":"U","ever_drawn_win_rate":0.57,"ever_drawn_game_count":1000},
+                {"name":"Test C","mtga_id":3,"color":"U","ever_drawn_win_rate":0.52,"ever_drawn_game_count":1000}
+            ]}""")
+            Files.writeString(cache.resolve("colorratings_DSK_$format.json"), "[]")
+        }
+        val line = """DraftNotify {"EventName":"PickTwoDraft_DSK_20260929","SelfPack":1,"SelfPick":1,"PackCards":[1,2,3],"NumCardsToPick":2}"""
+        val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+        try {
+            val vm = DraftViewModel(
+                scope = scope, watcher = FakeWatcher(line), tracker = DraftTracker(),
+                repo = CardRepository(SeventeenLandsClient(cacheDir = cache)),
+                metaRepo = CardMetaRepository().apply { index(listOf(
+                    CardMeta("Test A", 2, true, false), CardMeta("Test B", 3, true, false),
+                    CardMeta("Test C", 4, true, false),
+                ), "DSK") },
+                archetypeRepo = ArchetypeRepository(SeventeenLandsClient(cacheDir = cache)),
+            )
+            vm.start()
+            val auto = withTimeout(10_000) { vm.ui.first { it.packCards.size == 3 } }
+            assertEquals(2, auto.picksPerChoice)
+            assertEquals(setOf("Test A", "Test B"), auto.packCards.filter { it.recommendedPair }.map { it.name }.toSet())
+            vm.setPickCountOverride(1)
+            val single = withTimeout(10_000) { vm.ui.first { it.pickCountOverride == 1 } }
+            assertEquals(1, single.picksPerChoice)
+            assertTrue(single.packCards.none { it.recommendedPair })
+            vm.setPickCountOverride(0)
+            assertEquals(2, withTimeout(10_000) { vm.ui.first { it.pickCountOverride == 0 } }.picksPerChoice)
+        } finally { scope.cancel() }
+    }
+
+    @Test
     fun draftedCardsCarryThePrintedCostIntoTheUi() = runBlocking {
         val cache = createTempDirectory("fp-vm-mana")
         for (format in listOf("PremierDraft", "QuickDraft", "TradDraft")) {

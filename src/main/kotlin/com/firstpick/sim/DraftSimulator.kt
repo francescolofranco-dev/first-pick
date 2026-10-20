@@ -25,7 +25,11 @@ class DraftSimulator(
         set: String,
         format: String = "PremierDraft",
         paused: StateFlow<Boolean> = MutableStateFlow(false),
+        picksPerChoice: Int = 1,
     ): Flow<String> = flow {
+        require(picksPerChoice in 1..2)
+        val seats = if (picksPerChoice == 2) 4 else SEATS
+        val choicesPerPack = (CARDS_PER_PACK + picksPerChoice - 1) / picksPerChoice
         val cards = runCatching {
             repository.load(set, format)
             repository.cardRatings
@@ -36,27 +40,30 @@ class DraftSimulator(
             return@flow
         }
         val byId = cards.associateBy { it.mtgaId!! }
-        val eventName = "QuickDraftEmblem_${set.uppercase()}_20260101"
-        val pools = Array(SEATS) { ArrayList<Int>() }
+        val eventName = if (picksPerChoice == 2) "PickTwoDraft_${set.uppercase()}_20260101"
+            else "QuickDraftEmblem_${set.uppercase()}_20260101"
+        val pools = Array(seats) { ArrayList<Int>() }
 
         for (round in 0 until PACKS) {
-            val held = Array(SEATS) { cards.shuffled(random).take(CARDS_PER_PACK).toMutableList() }
+            val held = Array(seats) { cards.shuffled(random).take(CARDS_PER_PACK).toMutableList() }
             val clockwise = round % 2 == 0
-            for (pick in 0 until CARDS_PER_PACK) {
-                emit(snapshot(eventName, round, pick, held[YOU].map { it.mtgaId!! }, pools[YOU], "PickNext"))
+            for (pick in 0 until choicesPerPack) {
+                emit(snapshot(eventName, round, pick, held[YOU].map { it.mtgaId!! }, pools[YOU], "PickNext", minOf(picksPerChoice, held[YOU].size)))
                 paused.first { !it }
                 delay(pickInterval)
-                for (seat in 0 until SEATS) {
+                for (seat in 0 until seats) {
                     val pack = held[seat]
                     if (pack.isEmpty()) continue
-                    val picked = autoPick(pack, pools[seat], byId)
-                    pools[seat].add(picked.mtgaId!!)
-                    pack.remove(picked)
+                    repeat(minOf(picksPerChoice, pack.size)) {
+                        val picked = autoPick(pack, pools[seat], byId)
+                        pools[seat].add(picked.mtgaId!!)
+                        pack.remove(picked)
+                    }
                 }
                 rotate(held, clockwise)
             }
         }
-        emit(snapshot(eventName, PACKS - 1, CARDS_PER_PACK - 1, emptyList(), pools[YOU], "Complete"))
+        emit(snapshot(eventName, PACKS - 1, choicesPerPack - 1, emptyList(), pools[YOU], "Complete"))
     }
 
     private fun rotate(held: Array<MutableList<CardRating>>, clockwise: Boolean) {
@@ -104,11 +111,12 @@ class DraftSimulator(
         packIds: List<Int>,
         pickedIds: List<Int>,
         status: String,
+        picksPerChoice: Int = 1,
     ): String {
         fun arr(xs: List<Int>) = xs.joinToString(",") { "\\\"$it\\\"" }
         val payload = "{\\\"Result\\\":\\\"Success\\\",\\\"EventName\\\":\\\"$eventName\\\"," +
             "\\\"DraftStatus\\\":\\\"$status\\\",\\\"PackNumber\\\":$pack0,\\\"PickNumber\\\":$pick0," +
-            "\\\"NumCardsToPick\\\":1,\\\"DraftPack\\\":[${arr(packIds)}]," +
+            "\\\"NumCardsToPick\\\":$picksPerChoice,\\\"DraftPack\\\":[${arr(packIds)}]," +
             "\\\"PackStyles\\\":[],\\\"PickedCards\\\":[${arr(pickedIds)}],\\\"PickedStyles\\\":[]}"
         return "{\"CurrentModule\":\"BotDraft\",\"Payload\":\"$payload\"}"
     }

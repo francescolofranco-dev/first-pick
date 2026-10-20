@@ -117,7 +117,8 @@ internal fun Sidebar(state: DraftUiState, modifier: Modifier = Modifier.width(23
             tooltip = "Which individual colors appear open, based on the quality of cards being passed to you. These are pivot signals, not your current deck.",
         ) {
             if (state.openLanes.isEmpty()) {
-                Text("Reading signals…", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(if (state.picksPerChoice == 2) "Timing signals unavailable for Pick Two" else "Reading signals…",
+                    fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             } else {
                 val max = state.openLanes.maxOfOrNull { it.score } ?: 0.0
                 Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {

@@ -86,8 +86,20 @@ class DeckBuildAuditTest {
                 assertEquals(DraftPhase.COMPLETE, tracker.state.value.phase)
                 assertEquals(45, tracker.state.value.pool.size)
                 val demo = tracker.state.value.pool.map(repo::resolve)
+                val pickTwoTracker = DraftTracker()
+                var pickTwoEvents = 0
+                DraftSimulator(client, KotlinDuration.ZERO, Random(seed), repo)
+                    .simulate(set, picksPerChoice = 2).collect {
+                        assertTrue(pickTwoTracker.onLine(it))
+                        pickTwoEvents++
+                    }
+                assertEquals(25, pickTwoEvents)
+                assertEquals(DraftPhase.COMPLETE, pickTwoTracker.state.value.phase)
+                assertEquals(2, pickTwoTracker.state.value.picksPerChoice)
+                assertEquals(45, pickTwoTracker.state.value.pool.size)
+                val pickTwo = pickTwoTracker.state.value.pool.map(repo::resolve)
                 val random = List(45) { all[Random(seed * 1000 + it).nextInt(all.size)] }
-                for ((kind, pool) in listOf("demo" to demo, "random" to random)) {
+                for ((kind, pool) in listOf("demo" to demo, "pick-two" to pickTwo, "random" to random)) {
                     val options = DeckBuilder.build(pool, metrics, meta, synergy = synergy)
                     assertTrue(options.isNotEmpty(), "$set/$seed/$kind: no deck suggestions")
                     assertTrue(options.size <= 3, "$set/$seed/$kind: exceeded the requested option count")
@@ -158,7 +170,7 @@ class DeckBuildAuditTest {
         }
         report.append("\n$builds builds; $completeBuilds complete builds; $splashBuilds splash builds; " +
             "$threeOptionPools pools with three options; $findings selection findings.\n")
-        report.append("Seeds $firstSeed..${firstSeed + seeds - 1}; ${seeds * 6} pools across three sets and two pool types.\n")
+        report.append("Seeds $firstSeed..${firstSeed + seeds - 1}; ${seeds * 9} pools across three sets and three pool types.\n")
         val output = Path.of("build/reports/deck-audit.md")
         Files.createDirectories(output.parent)
         Files.writeString(output, report)

@@ -63,6 +63,7 @@ fun App(
     onUseDeck: (DeckOptionUi) -> Unit = {},
     onStopGuidance: () -> Unit = {},
     onSelectFormat: (String) -> Unit = {},
+    onSelectPickCount: (Int) -> Unit = {},
     onSimulate: (String) -> Unit = {},
     onStopSim: () -> Unit = {},
     onTogglePause: () -> Unit = {},
@@ -124,6 +125,19 @@ fun App(
                         }
                     }
 
+                    if (currentScreen == AppScreen.DRAFT_POOL) {
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            Text("Picks", fontSize = 12.sp)
+                            listOf(0 to "Auto", 1 to "One", 2 to "Two").forEach { (count, label) ->
+                                androidx.compose.material3.FilterChip(
+                                    selected = state.pickCountOverride == count,
+                                    onClick = { onSelectPickCount(count) },
+                                    label = { Text(label) },
+                                )
+                            }
+                            Text(if (state.picksPerChoice == 2) "Pick Two" else "Pick One", fontSize = 12.sp)
+                        }
+                    }
                     Spacer(Modifier.height(10.dp))
                     val showSidebar = currentScreen == AppScreen.DRAFT_POOL &&
                         (state.poolSize > 0 || state.packCards.isNotEmpty())

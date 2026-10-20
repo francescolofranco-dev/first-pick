@@ -98,6 +98,7 @@ fun main() {
                 },
                 onStopGuidance = { committedDeck = null },
                 onSelectFormat = { viewModel.setFormatChoice(it) },
+                onSelectPickCount = viewModel::setPickCountOverride,
                 onSimulate = { viewModel.startSimulation(it) },
                 onStopSim = { viewModel.stopSimulation() },
                 onTogglePause = { viewModel.toggleSimulationPause() },
@@ -163,6 +164,7 @@ internal fun overlayCards(packCards: List<PackCardUi>): List<OverlayCard> =
             name = it.name,
             originalIndex = it.originalIndex,
             isRoom = it.isRoom,
+            recommendedPair = it.recommendedPair,
         )
     }
 

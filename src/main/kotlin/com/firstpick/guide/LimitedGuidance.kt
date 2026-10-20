@@ -111,6 +111,8 @@ object LimitedGuidance {
     private const val DRAFT_SIGNALS = "draft-signals"
     private const val LIMITED_THEMES = "limited-themes"
     private const val DRAFT_HARD_WAY = "draft-hard-way"
+    private const val DAVIS_CONTEXT = "davis-draft-context"
+    private const val DAVIS_SPEED = "davis-draft-speed"
     private const val METRICS = "17lands-metrics"
     private const val MANA_BASICS = "mana-basics"
     private const val MANA_SOURCES = "mana-sources"
@@ -137,21 +139,21 @@ object LimitedGuidance {
             title = "Draft a functioning deck",
             summary = "Protect your creature count, early plays, interaction, curve, and ways to close—not just the average rating of your pile.",
             appliedByFirstPick = "Later picks receive contextual value for filling creature, two-drop, removal, fixing, and finisher needs.",
-            sourceIds = listOf(DRAFT_BASICS),
+            sourceIds = listOf(DRAFT_BASICS, DAVIS_SPEED),
         ),
         GuidePrinciple(
             id = "supported-synergy",
             title = "Synergy needs support",
             summary = "Treat signposts as directions, not commands. Payoffs improve only when your pool contains the enablers and playables they require.",
-            appliedByFirstPick = "Archetype and combo bonuses are gated by matching cards already in your pool and capped below raw power.",
-            sourceIds = listOf(LIMITED_THEMES, DRAFT_BASICS),
+            appliedByFirstPick = "Archetype and combo bonuses depend on matching cards in your pool. Pick Two also evaluates each partner in the pool, with a bounded pair adjustment.",
+            sourceIds = listOf(LIMITED_THEMES, DRAFT_BASICS, DAVIS_CONTEXT),
         ),
         GuidePrinciple(
             id = "mana-discipline",
             title = "Respect the mana",
             summary = "Default to a castable two-color core. Splash only impactful, light-pip cards when the power gain justifies the fixing and tempo cost.",
             appliedByFirstPick = "The model cannot promote unsupported off-lane cards once a deck is projectable; completed splashes must meet pip- and timing-aware colored-source targets.",
-            sourceIds = listOf(MANA_BASICS, MANA_SOURCES, MAKING_A_SPLASH),
+            sourceIds = listOf(MANA_BASICS, MANA_SOURCES, MAKING_A_SPLASH, DAVIS_SPEED),
         ),
     )
 
@@ -186,6 +188,16 @@ object LimitedGuidance {
     )
 
     val draftSources: List<GuideSource> = listOf(
+        GuideSource(
+            "Going From Bronze To Mythic In Dominaria United Draft",
+            "CoolStuffInc", "https://www.coolstuffinc.com/a/jimdavis-10142022-going-from-bronze-to-mythic-in-dominaria-united-draft",
+            kind = "Pro analysis", id = DAVIS_CONTEXT, author = "Jim Davis", date = "2022-10-14",
+        ),
+        GuideSource(
+            "Going From Bronze To Mythic In The Lost Caverns of Ixalan Draft",
+            "CoolStuffInc", "https://www.coolstuffinc.com/a/jimdavis-12012023-going-from-bronze-to-mythic-in-the-lost-caverns-of-ixalan-draft",
+            kind = "Pro analysis", id = DAVIS_SPEED, author = "Jim Davis", date = "2023-12-01",
+        ),
         GuideSource(
             "The Basics of Booster Draft",
             "Wizards of the Coast",

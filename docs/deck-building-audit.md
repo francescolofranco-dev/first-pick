@@ -1,7 +1,7 @@
 # Randomized deck-building validation
 
 The regular `./gradlew test` runs a fast multi-set sample. Run the larger
-offline audit (100 seeds, three sets, two pool types = 600 pools) with:
+offline audit (100 seeds, three sets, three pool types = 900 pools) with:
 
 ```sh
 ./gradlew deckAudit
@@ -16,8 +16,9 @@ Reproduce a seed or use a new range:
 
 Each seed/set runs the existing DraftSimulator with zero delay through the real
 EventParser, DraftTracker, repository resolver, and DeckBuilder. It checks all
-46 snapshots and the final 45-card pool. A second, uniformly random 45-card pool
-with replacement stresses unfocused pools and duplicate copies. Neither sample
+46 ordinary-draft snapshots and the final 45-card pool. A four-seat Pick Two draft
+adds 25 snapshots and another 45-card pool. A uniformly random 45-card pool
+with replacement stresses unfocused pools and duplicate copies. None of these samples
 uses the advisor to pick cards, so deck selection is tested independently of
 the recommendation engine.
 
@@ -59,7 +60,7 @@ Across both ranges: 1,200 pools, 2,638 builds, and 152 splash builds checked.
 
 This audit detects concrete construction and selection regressions. It does
 not prove global deck optimality or predict match wins. The demo uses weighted
-random picks with a color preference, six seats, and randomly assembled packs;
+random picks with a color preference, six seats (four for Pick Two), and randomly assembled packs;
 it does not reproduce booster rarity collation, eight-player draft signals,
 or opponent gameplay.
 

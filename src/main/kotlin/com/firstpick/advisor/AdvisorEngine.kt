@@ -80,10 +80,12 @@ class AdvisorEngine(
         synergy: SynergyIndex? = null,
         deckFit: ((RankedCard) -> DeckProjector.Fit?)? = null,
         activeManaSources: ManaSourceReport? = null,
+        picksPerChoice: Int = 1,
     ): List<ScoredCard> {
         val poolMetas = pool.mapNotNull { meta(it.name) }
         val needs = PoolNeeds.analyze(poolMetas, pool.size)
-        val picksTaken = (packNumber - 1) * config.picksPerPack + (pickNumber - 1)
+        val picksTaken = if (picksPerChoice == 2) pool.size else
+            (packNumber - 1) * config.picksPerPack + (pickNumber - 1)
         val progress = (picksTaken.toDouble() / config.totalPicks).coerceIn(0.0, 1.0)
         // A tentative pool identity is useful to display before it is strong
         // enough to rule out taking a better card in another color.
@@ -115,7 +117,7 @@ class AdvisorEngine(
 
         val heuristicOrder = pack.map { card ->
             val fit = if (fitW > 0.0) deckFit?.invoke(card) else null
-            evaluate(card, scoringLane, metrics, archetypeRating, meta, progress, needs, theme, poolCounts[card.name] ?: 0, splashColors, fit, fitW)
+            evaluate(card, scoringLane, metrics, archetypeRating, meta, progress, needs, theme, poolCounts[card.name] ?: 0, splashColors, fit, fitW, picksPerChoice == 1)
         }.sortedWith(compareByDescending<ScoredCard> { it.rawValue }.thenBy { it.card.displayName })
         // Hard guide feasibility applies even when PickNet is unavailable or
         // lacks enough pack coverage to run.
@@ -161,6 +163,7 @@ class AdvisorEngine(
         splashColors: Set<Char>,
         fit: DeckProjector.Fit?,
         fitWeight: Double,
+        useWheelHeuristic: Boolean,
     ): ScoredCard {
         val reasons = mutableListOf<String>()
         val globalWr = card.gihWr
@@ -291,7 +294,7 @@ class AdvisorEngine(
 
         var wheelPts = 0.0
         val alsa = card.rating?.alsa
-        if (alsa != null && alsa >= config.wheelAlsa) {
+        if (useWheelHeuristic && alsa != null && alsa >= config.wheelAlsa) {
             reasons += "Likely to wheel"
             wheelPts = config.wheelPenaltyPts
         }

@@ -54,6 +54,7 @@ sealed interface DraftEvent {
         val complete: Boolean,
         val courseId: String? = null,
         val savedDeck: SavedDeck? = null,
+        val picksPerChoice: Int? = null,
     ) : DraftEvent
 
     data class PackSeen(
@@ -62,6 +63,7 @@ sealed interface DraftEvent {
         val pick: Int,
         val packCards: List<Int>,
         val draftId: String? = null,
+        val picksPerChoice: Int? = null,
     ) : DraftEvent
 
     data class PickMade(
@@ -70,6 +72,9 @@ sealed interface DraftEvent {
         val cardIds: List<Int>,
     ) : DraftEvent
 }
+
+fun isPickTwoEvent(name: String): Boolean =
+    "picktwo" in name.lowercase().filter { it.isLetterOrDigit() }
 
 enum class DraftPhase { IDLE, DRAFTING, COMPLETE }
 
@@ -88,6 +93,7 @@ data class DraftState(
     /** False when some pool cards came from an unordered snapshot rather than PickMade events. */
     val poolOrderKnown: Boolean = true,
     val seen: Map<Pair<Int, Int>, List<Int>> = emptyMap(),
+    val picksPerChoice: Int = if (isPickTwoEvent(eventName.orEmpty())) 2 else 1,
 ) {
     fun reduce(event: DraftEvent): DraftState = when (event) {
         is DraftEvent.DeckSaved -> if (
@@ -99,6 +105,7 @@ data class DraftState(
             val resettingForNewEvent = isNewEvent(event.eventName, event.courseId)
             val base = if (resettingForNewEvent) DraftState() else this
             base.copy(
+                picksPerChoice = if (isPickTwoEvent(event.eventName)) 2 else base.picksPerChoice,
                 format = DraftFormat.fromEventName(event.eventName),
                 setCode = setCodeFromEventName(event.eventName) ?: base.setCode,
                 eventName = event.eventName,
@@ -119,6 +126,7 @@ data class DraftState(
                 pack = event.pack,
                 pick = event.pick,
                 courseId = event.courseId ?: base.courseId,
+                picksPerChoice = if (event.picksPerChoice == 2 || isPickTwoEvent(event.eventName)) 2 else base.picksPerChoice,
                 packCards = event.packCards,
                 pool = reconciled.cards,
                 poolOrderKnown = base.poolOrderKnown && reconciled.addedCardCount <= 1,
@@ -140,6 +148,7 @@ data class DraftState(
                 eventName = if (event.eventName.isNotEmpty()) event.eventName else base.eventName,
                 pack = event.pack,
                 pick = event.pick,
+                picksPerChoice = if (event.picksPerChoice == 2 || isPickTwoEvent(event.eventName)) 2 else base.picksPerChoice,
                 packCards = event.packCards,
                 seen = base.recordSeen(event.pack, event.pick, event.packCards),
             )
@@ -158,6 +167,7 @@ data class DraftState(
                 phase = newPhase,
                 pack = if (event.pack > 0) event.pack else pack,
                 pick = if (event.pick > 0) event.pick else pick,
+                picksPerChoice = if (event.cardIds.size == 2 && packCards.size > 2) 2 else picksPerChoice,
                 pool = newPool,
 
 
