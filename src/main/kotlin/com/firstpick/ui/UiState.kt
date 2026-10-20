@@ -59,11 +59,39 @@ data class DeckSpellUi(
     val imageUrl: String? = null,
     val count: Int = 1,
     val typeLabel: String = "",
-    val role: String? = null,
+    val roles: List<String> = emptyList(),
     val isLand: Boolean = false,
     val isBasicLand: Boolean = false,
     val manaCost: String? = null,
-)
+) {
+    constructor(
+        name: String,
+        cmc: Int,
+        color: String,
+        gihWr: Double?,
+        imageUrl: String?,
+        count: Int,
+        typeLabel: String,
+        role: String?,
+        isLand: Boolean,
+        isBasicLand: Boolean,
+        manaCost: String?,
+    ) : this(
+        name = name,
+        cmc = cmc,
+        color = color,
+        gihWr = gihWr,
+        imageUrl = imageUrl,
+        count = count,
+        typeLabel = typeLabel,
+        roles = if (role != null) listOf(role) else emptyList(),
+        isLand = isLand,
+        isBasicLand = isBasicLand,
+        manaCost = manaCost,
+    )
+
+    val role: String? get() = roles.firstOrNull()
+}
 
 fun deckColorRank(color: String): Int {
     val c = color.trim()

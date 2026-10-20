@@ -386,6 +386,9 @@ private fun ScrollableDeckPane(content: LazyListScope.() -> Unit) {
     }
 }
 
+internal val DeckRowHeight = 32.dp
+internal val DeckTypeRoleWidth = 168.dp
+
 @Composable
 private fun DeckListHeader() {
     Row(
@@ -408,7 +411,7 @@ private fun DeckListHeader() {
             "TYPE / ROLE",
             style = AppTheme.typography.sectionHeader,
             color = AppTheme.colors.textMuted,
-            modifier = Modifier.width(142.dp),
+            modifier = Modifier.width(DeckTypeRoleWidth),
         )
         AppTooltip(
             title = "GIH Win Rate",
@@ -440,8 +443,9 @@ private fun DeckSpellRow(s: DeckSpellUi, muted: Boolean = false) {
     Row(
         Modifier
             .fillMaxWidth()
+            .height(DeckRowHeight)
             .alpha(if (muted) 0.5f else 1f)
-            .appRow(paddingValues = PaddingValues(horizontal = 10.dp, vertical = 5.dp)),
+            .appRow(paddingValues = PaddingValues(horizontal = 10.dp, vertical = 0.dp)),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         val landColors = if (s.isLand && s.manaCost.isNullOrBlank()) {
@@ -494,7 +498,7 @@ private fun DeckSpellRow(s: DeckSpellUi, muted: Boolean = false) {
             }
         }
         Row(
-            Modifier.width(142.dp),
+            Modifier.width(DeckTypeRoleWidth),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
@@ -506,9 +510,16 @@ private fun DeckSpellRow(s: DeckSpellUi, muted: Boolean = false) {
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f, fill = false),
             )
-            s.role?.let {
+            if (s.roles.isNotEmpty()) {
                 Spacer(Modifier.width(5.dp))
-                RoleChip(it)
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    for (role in s.roles) {
+                        RoleChip(role)
+                    }
+                }
             }
         }
         WinRateMeter(s.gihWr)
@@ -545,6 +556,7 @@ private fun RoleChip(role: String) {
             Text(
                 role,
                 fontSize = 9.sp,
+                lineHeight = 11.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = AppTheme.colors.textSecondary,
                 maxLines = 1,

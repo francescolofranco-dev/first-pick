@@ -484,7 +484,7 @@ class DraftViewModel(
                 gihWr = c.gihWr,
                 imageUrl = c.imageUrl,
                 typeLabel = if (c.isBasicLand) "Land" else deckCardType(c.rating, m),
-                role = deckCardRole(m),
+                roles = deckCardRoles(m),
                 isLand = c.isBasicLand || m?.isLand == true,
                 isBasicLand = c.isBasicLand,
                 manaCost = m?.manaCost,
@@ -507,14 +507,15 @@ class DraftViewModel(
         }
     }
 
-    private fun deckCardRole(meta: CardMeta?): String? = when {
-        meta == null -> null
-        meta.isRemoval -> "Removal"
-        meta.isFixing -> "Fixing"
-        meta.isFinisher -> "Finisher"
-        meta.isCardDraw -> "Draw"
-        meta.isEvasion -> "Evasion"
-        else -> null
+    private fun deckCardRoles(meta: CardMeta?): List<String> {
+        if (meta == null) return emptyList()
+        return buildList {
+            if (meta.isRemoval) add("Removal")
+            if (meta.isCardDraw) add("Draw")
+            if (meta.isEvasion) add("Evasion")
+            if (meta.isFinisher) add("Finisher")
+            if (meta.isFixing) add("Fixing")
+        }
     }
 
     private fun archetypeRows(lanePair: String?): List<ArchetypeRow> =
