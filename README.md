@@ -8,19 +8,9 @@
   A native macOS draft assistant for <b>Magic: The Gathering Arena</b>, built with Kotlin + Compose Multiplatform.
 </p>
 
-FirstPick supports Draft events only.
-
-During a draft, FirstPick watches Arena's log, and for each pack it ranks the
-cards by how good a **pick** they are — driven by [17Lands](https://www.17lands.com/)
-win-rate data and adjusted for the deck you're actually building: your colors,
-your archetype, your curve, and the roles your pool still needs. When the draft
-ends, it proposes 2–3 finished decks with a power estimate.
-
-Every draft also has an always-available set guide: mechanics, color-pair plans,
-combos, and the strongest commons and non-commons in each color. Every curated
-claim links to its supporting sources, and live rankings link to their exact data
-query. The same cited archetype profiles and Draft construction rules are used
-by the advisor itself.
+FirstPick watches Arena's log during a Draft, ranks every card in the pack using
+[17Lands](https://www.17lands.com/) data adjusted to your colors, archetype, curve,
+and needs, then proposes 2–3 finished decks when the draft ends.
 
 > Unofficial fan project. Not affiliated with or endorsed by Wizards of the Coast.
 
@@ -30,347 +20,58 @@ by the advisor itself.
   </picture>
 </p>
 
-## Screenshots
+## Features
 
-**Live draft assistant.** Every card in the pack is graded **A+ → F** with a 0–100 value,
-best pick on top, and a confidence banner when the call is close. The sidebar (above) tracks
-your likely base colors, sample-adjusted color-pair strength, the roles your deck still needs,
-open colors, your mana curve, and your pool — all updating as you pick.
+- **Live pack ranking** — every card graded **A+ → F** with a 0–100 value, best pick on top.
+- **Deck-aware scoring** — blends global and in-color win rates, archetype synergy, and missing roles.
+- **Dashboard** — likely colors, archetypes, open-color signals, curve, and pool.
+- **On-card overlay** — grades drawn directly on Arena's cards, at any window size.
+- **Set guides** — color-pair themes and key commons/uncommons per set, with cited sources.
+- **Deck builder** — 2–3 ranked builds with manabase, then red/green guidance in Arena's deck builder.
 
-**Hover for the card.** Mouse over any card to see its full image while you read the ranking.
+Hover any card to preview it:
 
 <picture>
   <img src="docs/screenshots/card-preview.png" width="320" alt="Card-image preview on hover" />
 </picture>
 
-**Draft picks.** Use the header dropdown to detect the number of picks automatically,
-or select One or Two manually. Premier 17Lands data and matching learned models
-are used consistently for Premier, Quick and Pick Two drafts. Traditional Draft
-and Sealed are unsupported.
-
-**Set reference.** The Guides tab lists every supported set as an accordion.
-Open a set to see its color pairs and themes, with up to three commons and three
-uncommons tagged as supporting each theme, ranked using Premier data. Hover a card
-name to preview its art. Themes are available offline; card lists load on demand.
-
-**Post-draft deck builder.** When the final pick is confirmed, get 2–3 buildable decks
-ranked by power, each with a letter tier, deck type, archetype, confidence, and an
-explainable strength summary. Click a build card to select it. Use **Show overlay**
-or **Hide overlay** in the header to control Arena guidance independently;
-switching builds preserves that on/off choice.
+After the draft, compare builds and review the full list:
 
 <picture>
   <img src="docs/screenshots/deck-builder.png" width="820" alt="Post-draft deck builder options" />
 </picture>
 
-**The full deck list.** Each build is laid out by mana value and WUBRG color, with role
-tags (removal · fixing · finisher · draw · evasion), copy counts, and a source-checked
-manabase with an exact basic-land split.
-
 <picture>
   <img src="docs/screenshots/deck-list.png" width="820" alt="Deck list with roles and manabase" />
 </picture>
 
-**Build it in Arena.** Once a build is confirmed, FirstPick moves the guidance directly
-onto Arena's Limited deck builder. Excess visible deck rows get a strong red outline;
-visible pool cards that still need to be added get a green tint. Visible cards can be marked while the rest of the deck is still being checked. The
-status reports exact remaining changes only after the nonbasic counts are verified;
-unseen cards are never assumed absent. Unreadable or outdated frames clear instructions. Basic-land
-composition is left to Arena; exact drafted nonbasic counts and a 40-card total determine
-when the deck matches.
+## Install
 
-## What it does
+1. Download the `.dmg` for your Mac (`arm64` for Apple Silicon, `x86_64` for Intel) from
+   [**Releases**](../../releases/latest) and drag **FirstPick** to Applications.
+2. In Arena, enable **Options → Account → Detailed Logs (Plugin Support)**.
+3. For overlays, grant **Screen Recording** permission. Frames are processed locally and never stored or uploaded.
 
-- **Live pack ranking** — every card scored 0–100 (`VALUE`), best pick on top,
-  updating as you draft.
-- **Archetype gravity** — knows each set's strong color-pair archetypes (17Lands
-  pair win rates) and blends a card's global win rate with its win rate *in your
-  colors*, weighting the archetype more as the draft commits. Cards that
-  overperform in your pair get a synergy/glue bonus.
-- **Smart deck-color detection** — your likely base pair follows the cards you have
-  actually drafted, with meaningful support required in both colors before it is
-  treated as established. Passed-card signals stay separate as possible pivots.
-- **Dynamic deck-needs** — tracks removal, creatures, 2-drops, fixing, and
-  finishers; nudges cards that fill gaps. The pressure ramps up through the draft,
-  so early picks stay value-driven and late picks build a balanced deck.
-- **Shared Limited guide** — the visible set archetypes and deck-construction
-  principles are also consumed by pick scoring and deck projection, so explanations
-  and recommendations follow the same model rather than a disconnected article.
-- **Model guardrails** — the learned PickNet model can refine guide-compliant choices,
-  but it cannot promote unsupported off-lane cards, heavy splashes, or irrelevant
-  fixing above viable cards once the lane and deck are established.
-- **Exact colored-source planning** — pure and hybrid mana pips, casting timing,
-  drafted dual lands, the available land slots, and timely nonland fixing determine
-  whether a splash is actually castable. Unsupported splashes are rejected.
-- **At-a-glance dashboard** — your likely base colors, ranked archetypes, open-color signals,
-  mana curve, pool, and current deck needs.
-- **On-card overlay** — a transparent, click-through layer pinned to the Arena
-  window that draws each card's grade (A+→F + 0–100) right on the card, locating
-  them by screen capture so it stays aligned at any window size.
-- **Post-draft deck builder** — 2–3 buildable decks with a sample-aware power score,
-  tier, aggro/tempo/midrange/control/ramp classification, manabase, and reasons,
-  followed by live red/green guidance in Arena's vertical Limited deck builder.
-
-## Requirements
-
-- macOS (Apple Silicon or Intel)
-- MTG Arena, with **Options → Account → Detailed Logs (Plugin Support)** enabled
-- For the draft and deck-builder overlays: **Screen Recording** permission (System Settings →
-  Privacy & Security → Screen Recording). macOS prompts on first use; FirstPick uses
-  it solely to find where the cards are drawn. Frames are processed locally through
-  short-lived temporary files that are deleted after each pass; they are never retained
-  or sent anywhere. The rest of the app works without it.
-
-Deck guidance currently supports Arena's vertical compact deck list with the sideboard
-collapsed. It marks only cards and rows visible on the current pool page or deck-list
-scroll position. A persistent native worker reads the deck panel and pool title bands,
-reusing OCR for unchanged regions. Returning from another app or an unreadable builder
-requires fresh verification. Scroll through the deck or pool to expose unknown cards.
-
-The build page also compares your chosen build with Arena's **last saved deck**, using
-server-confirmed course data from the log. This comparison is explicitly separate from
-unsaved on-screen edits. The chosen build stays fixed until you choose another build.
-
-## Download & install
-
-Grab the latest `.dmg` from the [**Releases**](../../releases/latest) page:
-
-- **Apple Silicon** (M1/M2/M3/M4 Macs): `FirstPick-<version>-arm64.dmg`
-- **Intel** Macs: `FirstPick-<version>-x86_64.dmg`
-
-> Not sure which? Apple menu  → **About This Mac** → look at "Chip" (Apple Silicon)
-> vs "Processor" (Intel).
-
-Open the `.dmg` and drag **FirstPick** into Applications. Tagged releases are
-required to be signed and notarized, so artifacts produced by the current release
-workflow should open normally. Older releases and explicitly labelled
-`*-unsigned.dmg` manual-test artifacts can still be blocked by Gatekeeper. For one
-of those older/test builds, allow it **either** by:
-
-- **System Settings → Privacy & Security**, scroll to the *"FirstPick was blocked…"*
-  notice and click **Open Anyway**, then **Open** in the confirmation dialog; **or**
-- run this once in Terminal:
-  ```bash
-  xattr -dr com.apple.quarantine "/Applications/FirstPick.app"
-  ```
-
-Then launch FirstPick, start a draft in Arena, and it updates live.
-
-FirstPick can check GitHub's latest-release metadata and identify the `.dmg` for
-your Mac's architecture. It never downloads or installs an update automatically.
-See [the distribution runbook](docs/distribution.md) for the release guarantees.
+Older or `*-unsigned.dmg` builds may need **Open Anyway** in Privacy & Security, or
+`xattr -dr com.apple.quarantine "/Applications/FirstPick.app"`.
 
 ## Run from source
 
 ```bash
 git clone https://github.com/francescolofranco-dev/first-pick firstpick && cd firstpick
-native/macos/build.sh  # build the local window-capture/OCR helpers
-./gradlew run     # needs a full JDK 21, e.g. brew install --cask temurin@21
+native/macos/build.sh   # native capture/OCR helpers
+./gradlew run           # needs a full JDK 21
+./gradlew runProduction # build, install, and open the production app
 ```
 
-Start a draft in Arena and FirstPick updates live.
+See [technical notes](docs/technical-notes.md), [CONTRIBUTING.md](CONTRIBUTING.md),
+and [distribution](docs/distribution.md) for architecture, builds, and advisor details.
 
-## How it works
+## Attribution
 
-A coroutine pipeline: tail `~/Library/Logs/Wizards of the Coast/MTGA/Player.log`
-→ reconstruct the live draft → fetch + cache 17Lands ratings, archetype data, and
-Scryfall card facts → combine them with bundled, reviewed set guidance → run the
-contextual advisor → render a Compose dashboard.
-It only ever **reads** the log and your local MTGA card database — plus, when the
-overlays are on, screen frames of the Arena window analyzed locally to locate cards
-and read the visible deck-builder counts. Capture and OCR use short-lived temporary
-files that are deleted after each pass. FirstPick never writes to Arena, blocks Arena's
-Done button, or retains or uploads frames.
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for the architecture.
-
-## Build an app for everyday use
-
-From your up-to-date repository checkout on macOS:
-
-```bash
-./gradlew buildProduction      # compile native helpers, run tests, and build FirstPick.app
-./gradlew runProduction        # do the same, then replace and open the installed app
-```
-
-The app is written to `build/compose/binaries/main/app/FirstPick.app`.
-`runProduction` quits existing packaged FirstPick instances, installs the verified
-build at `~/Applications/FirstPick.app`, and opens that copy. Use this command for
-updates so every checkout launches the same installation.
-It bundles its own JVM and the optimized capture/OCR helpers for your Mac's
-architecture, and does not enable the development demo launcher. `runProduction`
-also disables the demo, overlay tracking, deck-preview, and smoke-test environment
-flags. The first build needs
-the Xcode command-line tools and can take several minutes; unchanged native
-helpers and tests are reused on later builds. Changes to the Swift toolchain,
-SDK, or native sources trigger a rebuild. To force all build steps to run again,
-add `--rerun-tasks`. `createDistributable` also includes these native-build and
-test checks; ordinary `run` and `test` do not require a native rebuild.
-Without `MACOS_SIGNING_IDENTITY`, `buildProduction` signs the app and its bundled
-helpers with a persistent local certificate. The keychain and its unlock file live
-in `~/Library/Application Support/FirstPick/signing` with private permissions;
-keep this directory across builds and checkouts. No system trust or screen-recording
-settings are changed. This is local signing, not Apple notarization. Switching from
-an older ad-hoc build may require one new Screen Recording grant and a full quit
-and reopen. Subsequent builds retain the same certificate-backed identity.
-`createDistributable` alone remains an unsigned packaging test when no Developer ID
-is configured; use `buildProduction` or `runProduction` for everyday local builds.
-
-Local builds target this Mac. For cross-architecture packaging, use a matching
-JDK and add `-PnativeArchitecture=universal`; the release workflow uses that
-option to bundle both native architectures (which requires an SDK supporting
-both).
-
-This is the same build type used by the shipped DMG, not the experimental
-ProGuard `*Release` tasks. Both development and packaged apps use JVM JIT
-optimization; packaging is not a different OCR algorithm and does not itself fix
-card-recognition errors. Local builds are not notarized unless signing and
-notarization are configured (see [the distribution runbook](docs/distribution.md)).
-If packaging cannot find a full JDK, pass `-PcomposeJdk=/path/to/full/jdk21` to
-either command, or set `COMPOSE_JDK`.
-
-## Development
-
-```bash
-native/macos/build.sh          # once per native-helper change (macOS only)
-./gradlew run                  # launch the app (fastest; uses your dev JDK)
-./gradlew test                 # unit tests
-./gradlew createDistributable  # build a runnable FirstPick.app for local testing
-./gradlew packageDmg           # build the macOS .dmg
-
-# dev helpers (replay / inspect real logs)
-./gradlew replay   -PlogPath="$HOME/Library/Logs/Wizards of the Coast/MTGA/Player.log"
-./gradlew rankDemo -PlogPath="<log>" -Pstop="2:3"   # advisor output for a mid-draft pack
-```
-
-`createDistributable` writes `build/compose/binaries/main/app/FirstPick.app`
-(`open` it or copy to /Applications). Packaging needs a **full** JDK that ships
-`jpackage`; if your default JDK is an IDE's bundled JBR (which omits it), point
-packaging at one:
-
-```bash
-./gradlew createDistributable -PcomposeJdk="$(/usr/libexec/java_home)"   # or set COMPOSE_JDK
-```
-
-Env vars: `FIRSTPICK_LOG=<path>` watches a custom log; `FIRSTPICK_FORCE_DECKS=1`
-previews the deck builder mid-draft; `FIRSTPICK_SMOKE=1` opens then self-exits;
-`FIRSTPICK_DEMO=1` shows the built-in demo-draft launcher (a dev aid that `./gradlew
-run` sets automatically, and the packaged app omits).
-
-Brand assets live in `packaging/icon/` (SVG source + `AppIcon.iconset`) and `docs/`
-(banner, mark, social preview). Regenerate the `.icns` from the iconset with
-`packaging/icon/build-icon.sh` (macOS only).
-
-## Data sources & attribution
-
-### Reality Fracture
-
-`FRA` has a researched guide covering all ten color pairs, card roles, twenty
-interactions, and the set's mechanics, including empower Jace, Heartwood, and
-prepare. The advisor and deck builder use the same profile as the guide.
-
-FRA includes a dedicated Premier Draft PickNet model trained on public 17Lands
-FRA picks. It refines suggestions within the existing guide and mana guardrails;
-other formats continue to use their own live ratings and contextual advisor.
-See the [model validation report](docs/fra-model-validation.md) for provenance,
-card coverage, and the independent held-out comparison.
-
-When 17Lands has no ratings for a format yet, FirstPick loads card details from
-Scryfall and resolves missing Arena IDs from the installed Arena database.
-The app labels this as card-catalog mode and leaves unobserved card power unrated.
-Retry ratings to use 17Lands data once published. FRA remains eligible for the
-existing weekly model-training selection as its public draft data grows.
-
-### Attribution
-
-- Win-rate and archetype data from [17Lands](https://www.17lands.com/), licensed
-  CC-BY-4.0. Fetched politely (cached, throttled, descriptive User-Agent).
-- Every bundled set-profile claim has a validated source ID. Mechanics and card
-  interactions cite Wizards' mechanics articles and release notes; color-pair plans
-  cite official prerelease/Limited guides where available and 17Lands observations.
-- General Limited principles are original summaries based on source-linked work by
-  Reid Duke, Nate Price, Gavin Verhey, Mark Rosewater, Frank Karsten, and Ben Stark,
-  plus 17Lands' metric definitions. FirstPick links out; it does not scrape or
-  reproduce articles, videos, podcasts, datasets, or transcripts at runtime.
-- Card metadata, the `otag:removal` role tag, and the mana symbol SVGs in
-  `src/main/resources/symbols/` from [Scryfall](https://scryfall.com/).
-- Magic: The Gathering is © Wizards of the Coast. This is an unofficial fan tool.
+Win-rate data from [17Lands](https://www.17lands.com/) (CC-BY-4.0); card data and mana
+symbols from [Scryfall](https://scryfall.com/). Magic: The Gathering is © Wizards of the Coast.
 
 ## License
 
 [MIT](LICENSE) © 2026 Francesco Lo Franco
-
-### Starting another draft
-
-FirstPick clears the old pool and signals when Arena reports a new draft or course ID,
-including repeated runs of Pick Two Draft. If detection misses a transition, click
-**New draft** in the header before entering the draft in Arena. This clears the tracked
-pool, pack, and recommendations and follows only new log activity. If the new pack is
-already open, re-enter the draft in Arena to obtain a fresh snapshot. Cards from before
-the reset can only be recovered if Arena sends a full pool snapshot.
-
-
-### Deck construction and splashes
-
-Draft creature-curve targets combine the set profile's archetype speeds with the
-selected color pair's plan. Missing speed guidance uses the existing balanced
-curve.
-
-The builder compares clean two-color builds and each possible single-color
-splash, aiming for three credible options. It does not pad the third slot with
-incomplete builds or a build more than 12 power-score points behind the leader.
-
-A splash package needs a haymaker assessment separate from mana feasibility.
-The same rules apply to every set, with no named-card exceptions or reviewed
-haymaker lists. Reliable results must be exceptional relative to that set:
-at least 200 games, 1.5 standard deviations above the mean and 4.5 percentage
-points of improvement when drawn, or 2 standard deviations when improvement
-data is unavailable.
-
-Effect metadata identifies broad unconditional creature sweepers, planeswalkers
-with interaction or card draw, repeatable card-advantage triggers, finishers,
-and card-draw roles. High mana value, an ordinary body, single-target removal,
-or the planeswalker type alone does not qualify a card. Cards costing three or
-less also need repeatable advantage, at least 2.5 standard deviations above the
-mean, and 6 percentage points of improvement when drawn. These are general
-heuristics, not a complete rules-text interpreter. Conditional sweepers are not
-assumed to have their setup satisfied. Unknown performance does not establish a
-haymaker.
-
-Every completed splash still needs the pip-, timing-, and fixing-aware mana
-checks without starving its base colors. The explanation names the qualifying
-card, describes its general impact, and shows available versus required splash
-sources. These rules also apply when filling short pools.
-
-### Randomized deck-building audit
-
-`./gradlew deckAudit` validates complete seeded demo drafts and random pools
-against frozen data from three sets. It checks card conservation, color and
-splash legality, completeness, and conservative quality substitutions.
-Use `-PauditSeedStart=100 -PauditSeeds=100` to check another 600 pools.
-See [the audit report and reproduction instructions](docs/deck-building-audit.md).
-
-
-### Mana access and fixing
-
-Draft uses full base-color source targets without a two-source discount. Basic and typed landcycling use their printed activation
-cost and require an allocated basic of a matching type. Unknown costs, late
-activation, and activation requiring the missing splash color receive no
-credit. The cycling credit is capped by matching basic targets; it is not also
-counted as a normal fixing spell.
-
-Timely base-colored draw, draw/discard, scry, and surveil effects receive 0.25
-source-equivalent credit per extra card seen, capped at one for the deck.
-This is a bounded heuristic, not a calibrated draw-probability calculation.
-Credit applies to splash access only; it cannot lower the base-color targets
-or replace the minimum three source accesses to the splash color. Splash-colored
-or late draw cannot justify its own mana. Known conditional fixing (such as
-Treasure on death) is not promised as an unconditional source.
-
-Ordinary eligible fixing spells still count as one source. Tapped-land tempo,
-full one-use/repeatable mana simulation, and complex conditional effects remain
-approximations. Metadata refreshes once to recognize the new effects, retaining
-older metadata if offline. The splash explanation shows landcycling and partial
-selection credit separately.
-
-Landcycling rules follow the [official mechanics explanation](https://magic.wizards.com/en/news/feature/final-fantasy-mechanics).
