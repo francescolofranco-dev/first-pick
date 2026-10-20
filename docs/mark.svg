@@ -1,13 +1,23 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
   <defs>
-    <linearGradient id="heroCardGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#FF6363"/>
       <stop offset="100%" stop-color="#F59E0B"/>
     </linearGradient>
+    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#000000" stop-opacity="0.34"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.18"/>
+    </linearGradient>
   </defs>
-  <path d="M116.14 169.02 213.96 148.23C229.08 145.01 243.95 154.67 247.17 169.79L285.42 349.77C288.64 364.90 278.98 379.77 263.86 382.98L166.04 403.77C150.92 406.99 136.05 397.33 132.83 382.21L94.58 202.23C91.36 187.10 101.02 172.23 116.14 169.02Z" fill="#9A3412"/>
-  <path d="M298.04 148.23 395.86 169.02C410.98 172.23 420.64 187.10 417.42 202.23L379.17 382.21C375.95 397.33 361.08 406.99 345.96 403.77L248.14 382.98C233.02 379.77 223.36 364.90 226.58 349.77L264.83 169.79C268.05 154.67 282.92 145.01 298.04 148.23Z" fill="#D97706"/>
-  <rect x="174" y="94" width="164" height="274" rx="30" fill="url(#heroCardGrad)"/>
-  <path d="M236 208 264.5 183.5H287V328H253V228.5L236 242.5Z" fill="#111114"/>
+  <rect x="50" y="50" width="412" height="412" rx="92" fill="url(#bgGrad)"/>
+  <rect x="50" y="50" width="412" height="412" rx="92" fill="none" stroke="#FFFFFF" stroke-opacity="0.24" stroke-width="3"/>
+  <g transform="rotate(-9 235 260)">
+    <rect x="128" y="105" width="177" height="275" rx="27" fill="url(#cardGrad)"/>
+    <rect x="128" y="105" width="177" height="275" rx="27" fill="none" stroke="#FFFFFF" stroke-opacity="0.12" stroke-width="2"/>
+  </g>
+  <g fill="#FFFFFF">
+    <path d="M 135 170 L 250 170 L 250 213 L 184 213 L 184 247 L 238 247 L 238 288 L 184 288 L 184 350 L 135 350 Z"/>
+    <path d="M 268 170 L 344 170 C 374 170 389 185 389 211 C 389 237 374 252 344 252 L 317 252 L 317 350 L 268 350 Z M 317 214 L 341 214 C 352 214 358 209 358 201.5 C 358 194 352 189 341 189 L 317 189 Z"/>
+  </g>
 </svg>
