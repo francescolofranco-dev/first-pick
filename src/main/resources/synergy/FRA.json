@@ -78,6 +78,7 @@
     {
       "pair": "WU",
       "name": "Fatehold surveil aggro",
+      "referenceTheme": "Surveil & evasive attacks",
       "playstyle": "Develop evasive threats, then scry or surveil before combat to enable attacks and team pumps. Preserve a Jace token for repeatable selection; prepared Peer Review spells add both a Cadet and another surveil trigger.",
       "speed": "aggro",
       "sourceIds": ["fra-limited-guide", "fra-release-notes", "fra-card-reference"],
@@ -89,6 +90,7 @@
     {
       "pair": "WB",
       "name": "Liliana's attrition",
+      "referenceTheme": "Sacrifice & recursion",
       "playstyle": "Trade expendable creatures, then reuse their entry and death effects. Sacrifice outlets convert small bodies into removal or larger threats; recursion keeps the engine supplied while death triggers build life and loyalty.",
       "speed": "midrange",
       "sourceIds": ["fra-limited-guide", "fra-release-notes", "fra-card-reference"],
@@ -100,6 +102,7 @@
     {
       "pair": "WR",
       "name": "Ajani's Army counters",
+      "referenceTheme": "Go-wide & +1/+1 counters",
       "playstyle": "Build a broad board with Cadet makers and distribute counters onto attackers. Counters enable haste, flying and cheaper equipment moves; team pumps turn multiple bodies into a finishing attack.",
       "speed": "aggro",
       "sourceIds": ["fra-limited-guide", "fra-release-notes", "fra-card-reference"],
@@ -111,6 +114,7 @@
     {
       "pair": "WG",
       "name": "Vigorbloom life gain and counters",
+      "referenceTheme": "Life gain & counters",
       "playstyle": "Combine frequent life gain with creatures that grow or draw from it. Prepared Seed Suture spells supply both life and counters; vigilance lets the enlarged board attack while protecting Jace.",
       "speed": "midrange",
       "sourceIds": ["fra-limited-guide", "fra-release-notes", "fra-card-reference"],
@@ -122,6 +126,7 @@
     {
       "pair": "UB",
       "name": "Theorix graveyard math",
+      "referenceTheme": "Threshold & graveyard",
       "playstyle": "Use self-mill, surveil and cheap interaction to reach seven graveyard cards. Threshold improves your threats, while flashback and reanimation convert the stocked graveyard into resources. Recount before spending graveyard cards.",
       "speed": "control",
       "sourceIds": ["fra-limited-guide", "fra-release-notes", "fra-card-reference"],
@@ -133,6 +138,7 @@
     {
       "pair": "UR",
       "name": "Chandra's prowess",
+      "referenceTheme": "Prowess & noncreature spells",
       "playstyle": "Deploy spell payoffs before chaining cheap noncreature spells. Prepare and flashback provide additional casts for prowess and Thopters; bounce and burn clear attacks while spell discounts help maintain momentum.",
       "speed": "tempo",
       "sourceIds": ["fra-limited-guide", "fra-release-notes", "fra-card-reference"],
@@ -144,6 +150,7 @@
     {
       "pair": "UG",
       "name": "Jace's mastery",
+      "referenceTheme": "Empower Jace & loyalty",
       "playstyle": "Protect Jace while repeated empower effects grow creatures and fund loyalty abilities. Activate before combat for Kiora's evasion; choose between immediate cards and saving loyalty for larger creature tokens.",
       "speed": "midrange",
       "sourceIds": ["fra-limited-guide", "fra-release-notes", "fra-card-reference"],
@@ -155,6 +162,7 @@
     {
       "pair": "BR",
       "name": "Stingerquill face burn",
+      "referenceTheme": "Noncombat damage",
       "playstyle": "Deal noncombat damage to the opponent to unlock recursion, flying and haste. Prepared Vicious Verse spells make repeatable enablers; retain enough removal to keep attacking while damage triggers accumulate.",
       "speed": "aggro",
       "sourceIds": ["fra-limited-guide", "fra-release-notes", "fra-card-reference"],
@@ -166,6 +174,7 @@
     {
       "pair": "BG",
       "name": "Garruk's bestiary",
+      "referenceTheme": "Creatures & recursion",
       "playstyle": "Build around creatures with useful entry effects, then recur them after trades. Mill and basic landcycling supply graveyard targets and support Hapatra; large bodies let green's damage spells answer threats.",
       "speed": "midrange",
       "sourceIds": ["fra-limited-guide", "fra-release-notes", "fra-card-reference"],
@@ -177,6 +186,7 @@
     {
       "pair": "RG",
       "name": "Konstrari Heartwood ramp",
+      "referenceTheme": "Heartwood tokens & ramp",
       "playstyle": "Invest early in Heartwood and other mana sources, then cast large creatures or spend mana on repeatable abilities. Artifact payoffs reward the same tokens that accelerate your curve; keep enough early blockers.",
       "speed": "ramp",
       "sourceIds": ["fra-limited-guide", "fra-release-notes", "fra-card-reference"],

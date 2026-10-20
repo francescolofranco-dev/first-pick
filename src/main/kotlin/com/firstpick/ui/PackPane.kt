@@ -63,7 +63,6 @@ import kotlin.math.roundToInt
 internal fun PackPane(
     state: DraftUiState,
     onSimulate: (String) -> Unit = {},
-    onOpenGuide: () -> Unit = {},
 ) = when {
     state.loadingRatings && state.packCards.isEmpty() -> Centered {
         Row(
@@ -190,7 +189,6 @@ internal fun PackPane(
 
     else -> BoxWithConstraints(Modifier.fillMaxSize()) {
         val useTwoColumns = maxWidth >= 340.dp
-        val showGuide = shouldShowGuideStarter(state)
         val unrated = hasUnratedCards(state.packCards)
         val showBestPick = !unrated && state.picksPerChoice == 1
         val conf = remember(state.packCards) { packConfidence(state.packCards) }
@@ -228,12 +226,6 @@ internal fun PackPane(
                                 color = AppTheme.colors.accent,
                             )
                         }
-                    }
-                }
-
-                if (showGuide) {
-                    item(key = "guide-starter") {
-                        SetGuideStarter(state, onOpenGuide)
                     }
                 }
 
@@ -636,58 +628,6 @@ private fun PackBentoCard(
                 )
             }
         }
-    }
-}
-
-internal fun shouldShowGuideStarter(state: DraftUiState): Boolean =
-    state.phase == DraftPhase.DRAFTING &&
-        state.pack == 1 &&
-        state.pick == 1 &&
-        state.setCode != null &&
-        state.packCards.isNotEmpty()
-
-@Composable
-private fun SetGuideStarter(state: DraftUiState, onOpenGuide: () -> Unit) {
-    val guide = state.setGuide
-    val title = guide?.setName?.takeIf { it.isNotBlank() } ?: state.setCode.orEmpty()
-    val detail = when {
-        guide != null && guide.mechanics.isNotEmpty() -> guide.mechanics.take(3).joinToString(" · ") { it.name }
-        guide != null -> "Color pairs, themes, and the set's best cards"
-        state.guideLoading -> "Preparing themes, color pairs, and top cards…"
-        else -> "Draft fundamentals"
-    }
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .appCard(selected = true, radius = AppTheme.radii.xl)
-            .semantics { role = Role.Button }
-            .focusable()
-            .clickable(role = Role.Button, onClick = onOpenGuide)
-            .padding(horizontal = 12.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Column(Modifier.weight(1f)) {
-            Text(
-                "$title draft guide",
-                style = AppTheme.typography.body.copy(fontWeight = FontWeight.SemiBold),
-                color = AppTheme.colors.accent,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-            Text(
-                detail,
-                style = AppTheme.typography.micro,
-                color = AppTheme.colors.textSecondary,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-        }
-        Spacer(Modifier.width(8.dp))
-        Text(
-            "Open guide  ›",
-            style = AppTheme.typography.caption.copy(fontWeight = FontWeight.SemiBold),
-            color = AppTheme.colors.accent,
-        )
     }
 }
 

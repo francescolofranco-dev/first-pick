@@ -33,9 +33,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
-import java.awt.Desktop
 import java.awt.Dimension
-import java.net.URI
 import java.nio.file.Path
 
 fun main() {
@@ -105,7 +103,7 @@ fun main() {
                 onSimulate = { viewModel.startSimulation(it) },
                 onStopSim = { viewModel.stopSimulation() },
                 onTogglePause = { viewModel.toggleSimulationPause() },
-                onOpenGuideSource = ::openGuideSource,
+                onLoadReferenceSet = viewModel::loadReferenceCards,
                 onRetryRatings = { viewModel.retryRatings() },
                 onNewDraft = {
                     committedDeck = null
@@ -142,19 +140,6 @@ fun main() {
 
             !isOverlayOpen && DevFlags.overlayTrack -> ArenaOverlayTracker()
         }
-    }
-}
-
-internal fun guideSourceUri(url: String): URI? = runCatching { URI(url.trim()) }
-    .getOrNull()
-    ?.takeIf { it.scheme.equals("https", ignoreCase = true) && !it.host.isNullOrBlank() }
-
-private fun openGuideSource(url: String) {
-    val uri = guideSourceUri(url) ?: return
-    runCatching {
-        Desktop.getDesktop()
-            .takeIf { Desktop.isDesktopSupported() && it.isSupported(Desktop.Action.BROWSE) }
-            ?.browse(uri)
     }
 }
 

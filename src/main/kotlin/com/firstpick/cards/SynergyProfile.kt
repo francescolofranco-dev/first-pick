@@ -52,6 +52,7 @@ data class SynergyArchetype(
     val payoffs: List<String> = emptyList(),
     val enablers: List<String> = emptyList(),
     val keyCards: List<String> = emptyList(),
+    val referenceTheme: String = "",
 )
 
 @Serializable

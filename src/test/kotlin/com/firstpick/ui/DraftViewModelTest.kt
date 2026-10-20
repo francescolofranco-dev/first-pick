@@ -225,11 +225,11 @@ class DraftViewModelTest {
             assertEquals(true, byId.getValue(102490).isRoom)
             assertEquals(false, byId.getValue(102496).isRoom)
 
-            val guide = withTimeout(15_000) {
-                vm.ui.first { it.setGuide?.setCode == "SOS" && it.setGuide.archetypes.isNotEmpty() }
-            }.setGuide!!
-            assertTrue(guide.principles.isNotEmpty())
-            assertTrue(guide.archetypes.isNotEmpty())
+            val references = withTimeout(15_000) {
+                vm.ui.first { it.setReferences.isNotEmpty() }
+            }.setReferences
+            assertTrue(references.any { it.code == "SOS" && it.themes.isNotEmpty() })
+            assertEquals(com.firstpick.cards.StandardSets.codes, references.map { it.code }.toSet())
         } finally {
             scope.cancel()
         }

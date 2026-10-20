@@ -48,12 +48,10 @@ or select One or Two manually. Premier 17Lands data and matching learned models
 are used consistently for Premier, Quick and Pick Two drafts. Traditional Draft
 and Sealed are unsupported.
 
-**Draft guides.** Open the Guide tab at any time for the current set's
-mechanics, color-pair themes, signposts, enablers, payoffs, and per-color top commons
-and non-commons. The card lists use Premier 17Lands data; the strategy text is
-bundled for reliable offline access, and mechanics, archetypes, combos, and general
-principles each link directly to the supporting expert, official, or observed-data
-source.
+**Set reference.** The Guides tab lists every supported set as an accordion.
+Open a set to see its color pairs and themes, with up to three commons and three
+uncommons tagged as supporting each theme, ranked using Premier data. Hover a card
+name to preview its art. Themes are available offline; card lists load on demand.
 
 **Post-draft deck builder.** When the final pick is confirmed, get 2–3 buildable decks
 ranked by power, each with a letter tier, deck type, archetype, confidence, and an

@@ -63,7 +63,7 @@ fun App(
     onSimulate: (String) -> Unit = {},
     onStopSim: () -> Unit = {},
     onTogglePause: () -> Unit = {},
-    onOpenGuideSource: (String) -> Unit = {},
+    onLoadReferenceSet: (String) -> Unit = {},
     onRetryRatings: () -> Unit = {},
     onNewDraft: () -> Unit = {},
 ) {
@@ -119,7 +119,6 @@ fun App(
                                     PackPane(
                                         state = state,
                                         onSimulate = onSimulate,
-                                        onOpenGuide = { currentScreen = AppScreen.GUIDES },
                                     )
                                 }
                                 Sidebar(state, Modifier.fillMaxWidth().weight(0.32f))
@@ -131,7 +130,7 @@ fun App(
                             ) {
                                 Box(Modifier.weight(1f).fillMaxHeight()) {
                                     when (currentScreen) {
-                                        AppScreen.GUIDES -> GuidePane(state, onOpenGuideSource)
+                                        AppScreen.GUIDES -> GuidePane(state, onLoadReferenceSet)
                                         AppScreen.DECK_BUILDER -> when {
                                             state.deckOptions.isNotEmpty() -> DeckBuilderPane(
                                                 options = state.deckOptions,
@@ -144,13 +143,11 @@ fun App(
                                             else -> PackPane(
                                                 state = state,
                                                 onSimulate = onSimulate,
-                                                onOpenGuide = { currentScreen = AppScreen.GUIDES },
                                             )
                                         }
                                         AppScreen.DRAFT_POOL -> PackPane(
                                             state = state,
                                             onSimulate = onSimulate,
-                                            onOpenGuide = { currentScreen = AppScreen.GUIDES },
                                         )
                                     }
                                 }

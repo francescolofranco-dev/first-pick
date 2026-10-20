@@ -2,7 +2,6 @@ package com.firstpick.ui
 
 import com.firstpick.model.DraftFormat
 import com.firstpick.model.DraftPhase
-import com.firstpick.guide.SetDraftGuide
 import java.time.Instant
 
 enum class RatingsDataStatus {
@@ -187,8 +186,7 @@ data class DraftUiState(
     val deckNeeds: List<String> = emptyList(),
     val deckNeedsAvailable: Boolean = false,
     val deckOptions: List<DeckOptionUi> = emptyList(),
-    val setGuide: SetDraftGuide? = null,
-    val guideLoading: Boolean = false,
+    val setReferences: List<com.firstpick.guide.SetReference> = emptyList(),
 
     /** Every card drafted, grouped by display name, for post-draft client guidance. */
     val draftPool: List<DeckSpellUi> = emptyList(),

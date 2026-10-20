@@ -31,7 +31,6 @@ import com.firstpick.model.PickNetRepository
 import com.firstpick.signals.SignalsEngine
 import com.firstpick.sim.DraftSimulator
 import com.firstpick.guide.LimitedPolicy
-import com.firstpick.guide.SetDraftGuideBuilder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -55,6 +54,7 @@ class DraftViewModel(
     private val pickNetRepo: PickNetRepository = PickNetRepository(),
     private val advisor: AdvisorEngine = AdvisorEngine(),
     private val simulator: DraftSimulator = DraftSimulator(),
+    private val references: com.firstpick.guide.SetReferenceRepository = com.firstpick.guide.SetReferenceRepository(),
 ) {
     private val _ui = MutableStateFlow(DraftUiState())
     val ui: StateFlow<DraftUiState> = _ui.asStateFlow()
@@ -70,7 +70,37 @@ class DraftViewModel(
     @Volatile private var simulating = false
     private val simPaused = MutableStateFlow(false)
 
+    private var setReferences = emptyList<com.firstpick.guide.SetReference>()
+
+    fun loadReferenceCards(code: String) {
+        scope.launch(Dispatchers.IO) {
+            val load = mutex.withLock {
+                val set = setReferences.firstOrNull { it.code == code } ?: return@withLock false
+                if (set.cardsLoaded || set.loadingCards) return@withLock false
+                setReferences = setReferences.map { if (it.code == code) it.copy(loadingCards = true, cardError = false) else it }
+                true
+            }
+            if (!load) return@launch
+            publish()
+            val result = runCatching { references.cards(code) }
+            mutex.withLock {
+                setReferences = setReferences.map { set ->
+                    if (set.code != code) set else set.copy(
+                        themes = result.getOrNull() ?: set.themes,
+                        loadingCards = false, cardsLoaded = result.isSuccess, cardError = result.isFailure,
+                    )
+                }
+            }
+            publish()
+        }
+    }
+
     fun start() {
+        scope.launch(Dispatchers.IO) {
+            val sets = references.sets()
+            mutex.withLock { setReferences = sets }
+            publish()
+        }
         watcherJob = scope.launch(Dispatchers.IO) { tracker.consume(watcher.lines(fromStart = true)) }
         scope.launch {
             tracker.state.collect { state ->
@@ -270,20 +300,6 @@ class DraftViewModel(
         val poolMetas = pool.mapNotNull { meta(it.name) }
         val net = pickNetRepo.netFor(state.setCode, format)
 
-        val guideReady = state.setCode != null && (synergyLoaded || loaded)
-        val setGuide = if (guideReady) {
-            SetDraftGuideBuilder.build(
-                setCode = state.setCode!!,
-                dataFormat = format,
-                ratings = if (loaded) repo.cardRatings else emptyList(),
-                synergy = synergy,
-                pairStrength = pairStrength,
-            )
-        } else {
-            null
-        }
-
-
         val liveProjection = if (loaded && lane.hasBaseColorEvidence) {
             DeckProjector.project(
                 pool, repo.setMetrics, meta, archetypeRating, pairStrength, synergy,
@@ -392,8 +408,7 @@ class DraftViewModel(
             deckNeeds = deckNeeds,
             deckNeedsAvailable = loaded && poolMetas.size == state.pool.size,
             deckOptions = deckOptions,
-            setGuide = setGuide,
-            guideLoading = state.setCode != null && setGuide == null,
+            setReferences = setReferences,
             draftPool = pool.toDeckSpells(),
             sessionKey = state.courseId ?: state.draftId ?: state.eventName,
             savedDeck = if (loaded) state.savedDeck?.let { saved ->
