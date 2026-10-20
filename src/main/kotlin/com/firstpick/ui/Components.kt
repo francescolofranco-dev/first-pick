@@ -161,7 +161,6 @@ internal fun AppButton(
 internal data class SegmentedTabItem(
     val label: String,
     val badge: String? = null,
-    val shortcut: String? = null,
     val selected: Boolean,
     val enabled: Boolean = true,
     val onClick: () -> Unit,
@@ -244,21 +243,6 @@ internal fun AppSegmentedTabs(
                             text = tab.badge,
                             style = AppTheme.typography.monoMicro,
                             color = if (tab.selected) AppTheme.colors.accent else AppTheme.colors.textSecondary,
-                            maxLines = 1,
-                        )
-                    }
-                } else if (tab.shortcut != null) {
-                    Spacer(Modifier.width(5.dp))
-                    Box(
-                        Modifier
-                            .clip(RoundedCornerShape(4.dp))
-                            .background(if (tab.selected) AppTheme.colors.background else Color.Transparent)
-                            .padding(horizontal = 4.dp, vertical = 1.dp),
-                    ) {
-                        Text(
-                            text = tab.shortcut,
-                            style = AppTheme.typography.monoMicro,
-                            color = if (tab.selected) AppTheme.colors.textSecondary else AppTheme.colors.textMuted,
                             maxLines = 1,
                         )
                     }

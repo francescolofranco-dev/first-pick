@@ -251,14 +251,12 @@ private fun FloatingCommandHeader(
         SegmentedTabItem(
             label = "Draft pool",
             badge = draftTabBadge,
-            shortcut = "⌘1",
             selected = currentScreen == AppScreen.DRAFT_POOL,
             onClick = { onSelectScreen(AppScreen.DRAFT_POOL) },
         ),
         SegmentedTabItem(
             label = deckTabLabel,
             badge = deckTabBadge,
-            shortcut = "⌘2",
             selected = currentScreen == AppScreen.DECK_BUILDER,
             enabled = deckTabEnabled,
             onClick = { onSelectScreen(AppScreen.DECK_BUILDER) },
@@ -266,7 +264,6 @@ private fun FloatingCommandHeader(
         SegmentedTabItem(
             label = "Guides",
             badge = state.setCode,
-            shortcut = "⌘3",
             selected = currentScreen == AppScreen.GUIDES,
             onClick = { onSelectScreen(AppScreen.GUIDES) },
         ),
