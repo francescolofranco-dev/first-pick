@@ -354,21 +354,32 @@ private fun HeroPickCard(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(7.dp),
             ) {
-                Box(
-                    Modifier
-                        .clip(RoundedCornerShape(AppTheme.radii.pill))
-                        .background(
-                            if (confidence?.level == ConfidenceLevel.TOSS_UP) AppTheme.colors.warning
-                            else AppTheme.colors.accent,
-                        )
-                        .padding(horizontal = 8.dp, vertical = 2.dp),
+                AppTooltip(
+                    title = "Pick Confidence",
+                    tooltip = buildString {
+                        append("Score gap between #1 and #2 in this pack.\n\n")
+                        append("• BEST PICK (+3.0+ pts) — Clear standout card.\n")
+                        append("• CLOSE CALL (1.5–3.0 pts) — Slight edge to #1.\n")
+                        append("• TOSS-UP (<1.5 pts) — Top contenders are nearly tied; consider open color signals.")
+                    },
+                    width = 264.dp,
                 ) {
-                    Text(
-                        bestPickLabel,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Black,
-                        color = AppTheme.colors.textOnAccent,
-                    )
+                    Box(
+                        Modifier
+                            .clip(RoundedCornerShape(AppTheme.radii.pill))
+                            .background(
+                                if (confidence?.level == ConfidenceLevel.TOSS_UP) AppTheme.colors.warning
+                                else AppTheme.colors.accent,
+                            )
+                            .padding(horizontal = 8.dp, vertical = 2.dp),
+                    ) {
+                        Text(
+                            bestPickLabel,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Black,
+                            color = AppTheme.colors.textOnAccent,
+                        )
+                    }
                 }
 
                 val tierBadgeContent: @Composable () -> Unit = {
@@ -464,29 +475,35 @@ private fun HeroPickCard(
         Spacer(Modifier.width(12.dp))
 
         // Right GIH Win Rate Spotlight Column
-        Column(
-            horizontalAlignment = Alignment.End,
-            verticalArrangement = Arrangement.spacedBy(2.dp),
+        AppTooltip(
+            title = "17Lands Card Telemetry",
+            tooltip = "• GIH Win%: Games in Hand win rate — how often players win games when this card is drawn or in their opening hand.\n• ALSA: Average Last Seen At — average pick number where drafters last see this card (lower = taken earlier).",
+            width = 264.dp,
         ) {
-            Text(
-                text = if (card.gihWr != null) "${card.gihWr.asPct()}%" else "—",
-                fontFamily = AppTheme.typography.monoValue.fontFamily,
-                fontSize = 20.sp,
-                lineHeight = 22.sp,
-                fontWeight = FontWeight.Black,
-                color = if (card.gihWr != null) AppTheme.colors.accent else AppTheme.colors.textMuted,
-            )
-            Text(
-                text = "GIH Win%",
-                style = AppTheme.typography.micro,
-                color = AppTheme.colors.textSecondary,
-            )
-            if (card.alsa != null) {
+            Column(
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.spacedBy(2.dp),
+            ) {
                 Text(
-                    text = "ALSA ${card.alsa.as1dp()}",
-                    style = AppTheme.typography.monoMicro,
-                    color = AppTheme.colors.textMuted,
+                    text = if (card.gihWr != null) "${card.gihWr.asPct()}%" else "—",
+                    fontFamily = AppTheme.typography.monoValue.fontFamily,
+                    fontSize = 20.sp,
+                    lineHeight = 22.sp,
+                    fontWeight = FontWeight.Black,
+                    color = if (card.gihWr != null) AppTheme.colors.accent else AppTheme.colors.textMuted,
                 )
+                Text(
+                    text = "GIH Win%",
+                    style = AppTheme.typography.micro,
+                    color = AppTheme.colors.textSecondary,
+                )
+                if (card.alsa != null) {
+                    Text(
+                        text = "ALSA ${card.alsa.as1dp()}",
+                        style = AppTheme.typography.monoMicro,
+                        color = AppTheme.colors.textMuted,
+                    )
+                }
             }
         }
     }
@@ -605,11 +622,16 @@ private fun PackBentoCard(
             } else {
                 gradePill()
             }
-            Text(
-                text = if (card.gihWr != null) "${card.gihWr.asPct()}%" else "—",
-                style = AppTheme.typography.monoSmall,
-                color = if (card.gihWr != null) AppTheme.colors.textSecondary else AppTheme.colors.textMuted,
-            )
+            AppTooltip(
+                title = "GIH Win Rate",
+                tooltip = "17Lands Games in Hand win rate — how often players win games when this card is drawn or in their opening hand.",
+            ) {
+                Text(
+                    text = if (card.gihWr != null) "${card.gihWr.asPct()}%" else "—",
+                    style = AppTheme.typography.monoSmall,
+                    color = if (card.gihWr != null) AppTheme.colors.textSecondary else AppTheme.colors.textMuted,
+                )
+            }
         }
     }
 }

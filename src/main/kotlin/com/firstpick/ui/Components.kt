@@ -313,8 +313,66 @@ internal fun GradeBadge(value: Double?, modifier: Modifier = Modifier) {
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-internal fun ReasonChip(reason: String) {
+internal fun AppTooltip(
+    tooltip: String,
+    title: String? = null,
+    width: Dp = 236.dp,
+    delayMillis: Int = 160,
+    content: @Composable () -> Unit,
+) {
+    TooltipArea(
+        delayMillis = delayMillis,
+        tooltip = {
+            Box(
+                modifier = Modifier
+                    .padding(4.dp)
+                    .appPopover(radius = AppTheme.radii.lg)
+                    .padding(horizontal = 10.dp, vertical = 8.dp)
+                    .width(width),
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    if (!title.isNullOrBlank()) {
+                        Text(
+                            title.uppercase(),
+                            style = AppTheme.typography.sectionHeader,
+                            color = AppTheme.colors.accent,
+                        )
+                        Box(Modifier.fillMaxWidth().height(1.dp).background(AppTheme.colors.borderSubtle))
+                    }
+                    Text(
+                        tooltip,
+                        style = AppTheme.typography.caption,
+                        color = AppTheme.colors.textPrimary,
+                    )
+                }
+            }
+        },
+        content = content,
+    )
+}
+
+internal fun reasonChipTooltip(reason: String): String {
+    val lower = reason.lowercase()
+    return when {
+        "bomb" in lower -> "Premium game-winning card that can take over a match on its own."
+        "finisher" in lower -> "High-impact threat that helps your deck close out stalled board states."
+        "removal" in lower -> "Interaction spell that answers opposing creatures or permanents."
+        "fixing" in lower -> "Helps cast your second color or splash cards reliably."
+        "synergy" in lower || "archetype" in lower || "glue" in lower -> "Synergizes directly with your drafted archetype theme and cards already in your pool."
+        "on-color" in lower -> "Matches your active color lane and can be cast without straining your mana base."
+        "off-color" in lower -> "Outside your current color lane — requires pivoting or splashing to play."
+        "2-drop" in lower || "early" in lower || "cheap" in lower -> "Supports your early mana curve so you don't fall behind on board."
+        "combat trick" in lower -> "Instant-speed buff that wins combat exchanges and pushes damage."
+        "evasion" in lower -> "Hard-to-block threat (such as flying or menace) that pressures life totals."
+        "wheel" in lower -> "Often seen late in packs — you may be able to pass it now and take it on the wheel."
+        else -> "Scoring factor contributing to this recommendation."
+    }
+}
+
+@Composable
+internal fun ReasonChip(reason: String, tooltip: String? = reasonChipTooltip(reason)) {
     val lower = reason.lowercase()
     val accent = when {
         "bomb" in lower || "finisher" in lower -> AppTheme.colors.warning
@@ -325,22 +383,31 @@ internal fun ReasonChip(reason: String) {
         else -> AppTheme.colors.accentSecondary
     }
     val shape = RoundedCornerShape(AppTheme.radii.xs)
-    Box(
-        Modifier
-            .clip(shape)
-            .background(accent.copy(alpha = 0.14f))
-            .border(1.dp, accent.copy(alpha = 0.34f), shape)
-            .padding(horizontal = 5.dp, vertical = 1.dp),
-    ) {
-        Text(
-            text = reason,
-            fontSize = 9.sp,
-            lineHeight = 12.sp,
-            fontWeight = FontWeight.Medium,
-            color = if (accent == AppTheme.colors.textMuted) AppTheme.colors.textSecondary else accent,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
+    val chipContent = @Composable {
+        Box(
+            Modifier
+                .clip(shape)
+                .background(accent.copy(alpha = 0.14f))
+                .border(1.dp, accent.copy(alpha = 0.34f), shape)
+                .padding(horizontal = 5.dp, vertical = 1.dp),
+        ) {
+            Text(
+                text = reason,
+                fontSize = 9.sp,
+                lineHeight = 12.sp,
+                fontWeight = FontWeight.Medium,
+                color = if (accent == AppTheme.colors.textMuted) AppTheme.colors.textSecondary else accent,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+    }
+    if (!tooltip.isNullOrBlank()) {
+        AppTooltip(tooltip = tooltip, title = reason) {
+            chipContent()
+        }
+    } else {
+        chipContent()
     }
 }
 
@@ -362,32 +429,37 @@ internal fun WinRateMeter(
         gihWr >= 0.54 -> AppTheme.colors.accentSecondary
         else -> AppTheme.colors.textMuted
     }
-    Column(
-        modifier = modifier.width(48.dp),
-        horizontalAlignment = Alignment.End,
-        verticalArrangement = Arrangement.spacedBy(2.dp),
+    AppTooltip(
+        title = "GIH Win Rate",
+        tooltip = "17Lands Games in Hand win rate — how often players win games when this card is drawn or in their opening hand.",
     ) {
-        Text(
-            text = if (gihWr != null) "$pctText%" else "—",
-            style = AppTheme.typography.monoSmall.copy(fontWeight = FontWeight.SemiBold),
-            color = if (gihWr != null) AppTheme.colors.textPrimary else AppTheme.colors.textMuted,
-            maxLines = 1,
-        )
-        Box(
-            Modifier
-                .width(38.dp)
-                .height(3.dp)
-                .clip(RoundedCornerShape(99.dp))
-                .background(AppTheme.colors.surfaceElevated),
+        Column(
+            modifier = modifier.width(48.dp),
+            horizontalAlignment = Alignment.End,
+            verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
-            if (gihWr != null) {
-                Box(
-                    Modifier
-                        .fillMaxHeight()
-                        .fillMaxWidth(fraction)
-                        .clip(RoundedCornerShape(99.dp))
-                        .background(barColor),
-                )
+            Text(
+                text = if (gihWr != null) "$pctText%" else "—",
+                style = AppTheme.typography.monoSmall.copy(fontWeight = FontWeight.SemiBold),
+                color = if (gihWr != null) AppTheme.colors.textPrimary else AppTheme.colors.textMuted,
+                maxLines = 1,
+            )
+            Box(
+                Modifier
+                    .width(38.dp)
+                    .height(3.dp)
+                    .clip(RoundedCornerShape(99.dp))
+                    .background(AppTheme.colors.surfaceElevated),
+            ) {
+                if (gihWr != null) {
+                    Box(
+                        Modifier
+                            .fillMaxHeight()
+                            .fillMaxWidth(fraction)
+                            .clip(RoundedCornerShape(99.dp))
+                            .background(barColor),
+                    )
+                }
             }
         }
     }
@@ -511,7 +583,6 @@ internal fun Panel(
     trailing: String? = null,
     content: @Composable () -> Unit,
 ) {
-    var helpExpanded by remember(title, tooltip) { mutableStateOf(false) }
     Column(
         Modifier
             .fillMaxWidth()
@@ -523,33 +594,15 @@ internal fun Panel(
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             if (tooltip != null) {
-                TooltipArea(
-                    tooltip = {
-                        Box(
-                            modifier = Modifier
-                                .padding(4.dp)
-                                .appPopover(radius = AppTheme.radii.lg)
-                                .padding(horizontal = 10.dp, vertical = 8.dp)
-                                .width(220.dp),
-                        ) {
-                            Text(
-                                tooltip,
-                                style = AppTheme.typography.caption,
-                                color = AppTheme.colors.textPrimary,
-                            )
-                        }
-                    },
+                AppTooltip(
+                    title = title,
+                    tooltip = tooltip,
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .semantics {
-                                role = Role.Button
-                                contentDescription = "Help for $title"
-                                stateDescription = if (helpExpanded) "Help expanded" else "Help collapsed"
-                            }
-                            .focusable()
-                            .clickable(role = Role.Button) { helpExpanded = !helpExpanded },
+                        modifier = Modifier.semantics {
+                            contentDescription = "$title: $tooltip"
+                        },
                     ) {
                         Text(
                             title.uppercase(),
@@ -578,14 +631,6 @@ internal fun Panel(
                     color = AppTheme.colors.textMuted,
                 )
             }
-        }
-        if (tooltip != null && helpExpanded) {
-            Spacer(Modifier.height(4.dp))
-            Text(
-                tooltip,
-                style = AppTheme.typography.caption,
-                color = AppTheme.colors.textSecondary,
-            )
         }
         Spacer(Modifier.height(8.dp))
         content()

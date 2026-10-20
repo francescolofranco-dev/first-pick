@@ -8,9 +8,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -91,49 +93,56 @@ internal fun DeckBuilderPane(
                     style = AppTheme.typography.paneTitle,
                     color = AppTheme.colors.textPrimary,
                 )
-                Spacer(Modifier.height(2.dp))
-                Text(
-                    if (!guidanceEnabled) {
-                        "Click a build card to select it. Use Show overlay for Arena guidance."
+                Spacer(Modifier.height(8.dp))
+                BoxWithConstraints(Modifier.fillMaxWidth()) {
+                    if (maxWidth >= 600.dp) {
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            var globalIndex = 0
+                            for (rowOptions in options.chunked(3)) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                ) {
+                                    for (opt in rowOptions) {
+                                        val index = globalIndex++
+                                        OptionCard(
+                                            opt = opt,
+                                            recommended = index == 0,
+                                            previewed = opt.deckBuildKey == resolvedPreviewKey,
+                                            active = guidanceEnabled && opt.deckBuildKey == committedKey,
+                                            modifier = Modifier.weight(1f).fillMaxHeight(),
+                                            onClick = {
+                                                previewKey = opt.deckBuildKey
+                                                onUseDeck(opt)
+                                            },
+                                        )
+                                    }
+                                }
+                            }
+                        }
                     } else {
-                        "Arena guidance is on for ${sel.title}. Use Hide overlay to turn it off."
-                    },
-                    style = AppTheme.typography.caption,
-                    color = AppTheme.colors.textSecondary,
-                )
-                savedDeck?.let { saved ->
-                    val comparison = com.firstpick.overlay.DeckGuidance.evaluate(
-                        com.firstpick.deckGuidanceTarget(committedDeck ?: sel),
-                        com.firstpick.overlay.DeckReadState.Ready(saved),
-                    )
-                    Text(
-                        savedDeckComparisonLabel(comparison),
-                        style = AppTheme.typography.caption,
-                        color = AppTheme.colors.textSecondary,
-                        modifier = Modifier.padding(top = 4.dp),
-                    )
-                }
-                Spacer(Modifier.height(10.dp))
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    options.forEachIndexed { index, opt ->
-                        OptionCard(
-                            opt = opt,
-                            recommended = index == 0,
-                            previewed = opt.deckBuildKey == resolvedPreviewKey,
-                            active = guidanceEnabled && opt.deckBuildKey == committedKey,
-                            modifier = Modifier.fillMaxRowHeight(),
-                            onClick = {
-                                previewKey = opt.deckBuildKey
-                                onUseDeck(opt)
-                            },
-                        )
+                        FlowRow(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            options.forEachIndexed { index, opt ->
+                                OptionCard(
+                                    opt = opt,
+                                    recommended = index == 0,
+                                    previewed = opt.deckBuildKey == resolvedPreviewKey,
+                                    active = guidanceEnabled && opt.deckBuildKey == committedKey,
+                                    modifier = Modifier.width(214.dp).fillMaxRowHeight(),
+                                    onClick = {
+                                        previewKey = opt.deckBuildKey
+                                        onUseDeck(opt)
+                                    },
+                                )
+                            }
+                        }
                     }
                 }
                 Spacer(Modifier.height(10.dp))
-                DeckBentoSummaryCard(sel, spellCount)
+                DeckBentoSummaryCard(sel, spellCount, showTitleHeader = false)
                 Spacer(Modifier.height(10.dp))
                 DeckListHeader()
                 Spacer(Modifier.height(4.dp))
@@ -184,54 +193,184 @@ internal fun DeckSoFarPane(deck: DeckOptionUi, cuts: List<DeckSpellUi>) {
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun DeckBentoSummaryCard(
     deck: DeckOptionUi,
     spellCount: Int,
     targetSpells: Int? = null,
+    showTitleHeader: Boolean = true,
 ) {
+    val outlookShort = deck.outlook.substringBefore(" · ").trim()
+    val outlookLower = outlookShort.lowercase()
+    val outlookColor = when {
+        "fragile" in outlookLower || "risky" in outlookLower || "short" in outlookLower -> AppTheme.colors.warning
+        "average" in outlookLower && "above" !in outlookLower -> AppTheme.colors.accentSecondary
+        "provisional" in outlookLower -> AppTheme.colors.accentSecondary
+        else -> AppTheme.colors.positive
+    }
+    val highlights = remember(deck) {
+        val redundantCountsRegex = Regex("^\\d+\\s+creatures\\s+and\\s+\\d+\\s+removal$", RegexOption.IGNORE_CASE)
+        (deck.identityReasons.take(2) + deck.powerReasons.take(2))
+            .map { it.trim() }
+            .filter {
+                it.isNotBlank() &&
+                    !it.endsWith("confidence", ignoreCase = true) &&
+                    !redundantCountsRegex.matches(it)
+            }
+            .distinct()
+    }
+    val spellsLabel = if (targetSpells != null) "$spellCount/$targetSpells spells" else "$spellCount spells"
+
     Column(
         Modifier
             .fillMaxWidth()
             .appHeroCard(radius = AppTheme.radii.xl)
             .padding(horizontal = 14.dp, vertical = 10.dp),
-        verticalArrangement = Arrangement.spacedBy(5.dp),
+        verticalArrangement = Arrangement.spacedBy(7.dp),
     ) {
+        if (showTitleHeader) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(7.dp),
+                ) {
+                    PipRow(deck.colors.toList(), size = 16.dp)
+                    Text(
+                        deck.title,
+                        style = AppTheme.typography.cardTitle.copy(fontSize = 14.sp, fontWeight = FontWeight.Bold),
+                        color = AppTheme.colors.textPrimary,
+                    )
+                }
+                DeckPowerSummary(deck)
+            }
+        }
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
+            // Left: Archetype Plan Badge + Build Outlook Badge
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(7.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
             ) {
-                PipRow(deck.colors.toList(), size = 16.dp)
-                Text(
-                    deck.title,
-                    style = AppTheme.typography.cardTitle.copy(fontSize = 14.sp, fontWeight = FontWeight.Bold),
-                    color = AppTheme.colors.textPrimary,
-                )
-                DeckPowerSummary(deck)
+                AppTooltip(
+                    title = "Deck Plan · ${deck.type}",
+                    tooltip = buildString {
+                        append("Plan confidence: ${deck.identityConfidence}.")
+                        if (deck.identityReasons.isNotEmpty()) {
+                            append("\n\n")
+                            append(deck.identityReasons.joinToString("\n") { "• $it" })
+                        }
+                    },
+                    width = 252.dp,
+                ) {
+                    Box(
+                        Modifier
+                            .appBadge(
+                                AppTheme.colors.accent,
+                                fillAlpha = 0.16f,
+                                borderAlpha = 0.38f,
+                                shape = RoundedCornerShape(AppTheme.radii.xs),
+                            )
+                            .padding(horizontal = 7.dp, vertical = 2.dp),
+                    ) {
+                        Text(
+                            deck.type,
+                            style = AppTheme.typography.micro.copy(fontWeight = FontWeight.Bold),
+                            color = AppTheme.colors.accent,
+                        )
+                    }
+                }
+
+                if (outlookShort.isNotEmpty()) {
+                    AppTooltip(
+                        title = "Build Outlook",
+                        tooltip = buildString {
+                            append("${deck.outlook}.")
+                            if (deck.powerReasons.isNotEmpty()) {
+                                append("\n\n")
+                                append(deck.powerReasons.joinToString("\n") { "• $it" })
+                            }
+                        },
+                        width = 252.dp,
+                    ) {
+                        Box(
+                            Modifier
+                                .appBadge(
+                                    outlookColor,
+                                    fillAlpha = 0.12f,
+                                    borderAlpha = 0.32f,
+                                    shape = RoundedCornerShape(AppTheme.radii.xs),
+                                )
+                                .padding(horizontal = 7.dp, vertical = 2.dp),
+                        ) {
+                            Text(
+                                outlookShort,
+                                style = AppTheme.typography.micro.copy(fontWeight = FontWeight.SemiBold),
+                                color = outlookColor,
+                            )
+                        }
+                    }
+                }
             }
+
+            // Right: Composition Stat Pills
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
             ) {
-                val spellsLabel = if (targetSpells != null) "$spellCount/$targetSpells spells" else "$spellCount spells"
-                Text(
-                    "$spellsLabel · ${deck.creatures} creatures · ${deck.removal} removal",
-                    style = AppTheme.typography.monoSmall,
-                    color = AppTheme.colors.textSecondary,
-                )
+                DeckStatPill(spellsLabel)
+                DeckStatPill("${deck.creatures} creatures")
+                DeckStatPill("${deck.removal} removal")
+                if (deck.landLine.isNotBlank()) {
+                    AppTooltip(
+                        title = "Suggested Mana Base",
+                        tooltip = "${deck.landLine}\nBalanced automatically against your spells' colored mana symbol requirements.",
+                    ) {
+                        DeckStatPill(deck.landLine.substringBefore(" · ").substringBefore(" ("))
+                    }
+                }
             }
         }
+
+        if (highlights.isNotEmpty()) {
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(5.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                for (reason in highlights) {
+                    ReasonChip(
+                        reason = reason,
+                        tooltip = "Build insight based on your 23-card curve, creature density, and card quality.",
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun DeckStatPill(text: String) {
+    val shape = RoundedCornerShape(AppTheme.radii.xs)
+    Box(
+        Modifier
+            .clip(shape)
+            .background(AppTheme.colors.background)
+            .border(1.dp, AppTheme.colors.borderHairline, shape)
+            .padding(horizontal = 6.dp, vertical = 2.dp),
+    ) {
         Text(
-            (listOf(deck.identityLine) + deck.identityReasons.take(2) + deck.powerReasons.take(2)).joinToString(" · "),
-            style = AppTheme.typography.caption,
+            text = text,
+            style = AppTheme.typography.monoMicro,
             color = AppTheme.colors.textSecondary,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
+            maxLines = 1,
         )
     }
 }
@@ -284,13 +423,18 @@ private fun DeckListHeader() {
             color = AppTheme.colors.textMuted,
             modifier = Modifier.width(142.dp),
         )
-        Text(
-            "GIH%",
-            style = AppTheme.typography.sectionHeader,
-            color = AppTheme.colors.textMuted,
-            textAlign = TextAlign.End,
-            modifier = Modifier.width(48.dp),
-        )
+        AppTooltip(
+            title = "GIH Win Rate",
+            tooltip = "17Lands Games in Hand win rate — how often players win games when this card is drawn or in their opening hand.",
+        ) {
+            Text(
+                "GIH%",
+                style = AppTheme.typography.sectionHeader,
+                color = AppTheme.colors.textMuted,
+                textAlign = TextAlign.End,
+                modifier = Modifier.width(48.dp),
+            )
+        }
     }
 }
 
@@ -397,23 +541,28 @@ private fun basicLandSymbol(name: String): Char? = when (name) {
 @Composable
 private fun RoleChip(role: String) {
     val color = roleColor(role)
-    Box(
-        Modifier
-            .appBadge(
-                color,
-                fillAlpha = 0.14f,
-                borderAlpha = 0.36f,
-                shape = RoundedCornerShape(AppTheme.radii.xs),
-            )
-            .padding(horizontal = 5.dp, vertical = 1.dp),
+    AppTooltip(
+        title = "Tactical Role · $role",
+        tooltip = reasonChipTooltip(role),
     ) {
-        Text(
-            role,
-            fontSize = 9.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = color,
-            maxLines = 1,
-        )
+        Box(
+            Modifier
+                .appBadge(
+                    color,
+                    fillAlpha = 0.14f,
+                    borderAlpha = 0.36f,
+                    shape = RoundedCornerShape(AppTheme.radii.xs),
+                )
+                .padding(horizontal = 5.dp, vertical = 1.dp),
+        ) {
+            Text(
+                role,
+                fontSize = 9.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = color,
+                maxLines = 1,
+            )
+        }
     }
 }
 
@@ -437,7 +586,6 @@ private fun OptionCard(
     val powerFraction = (opt.power / 100f).coerceIn(0.12f, 1f)
     Column(
         modifier
-            .width(204.dp)
             .appCard(selected = previewed, active = active, radius = AppTheme.radii.xl)
             .semantics {
                 selected = previewed
@@ -448,8 +596,8 @@ private fun OptionCard(
             }
             .focusable()
             .clickable(role = Role.RadioButton, onClick = onClick)
-            .padding(11.dp),
-        verticalArrangement = Arrangement.spacedBy(5.dp),
+            .padding(horizontal = 12.dp, vertical = 10.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -461,18 +609,25 @@ private fun OptionCard(
                     "GUIDANCE ACTIVE",
                     style = AppTheme.typography.sectionHeader.copy(fontSize = 9.sp),
                     color = AppTheme.colors.accent,
+                    maxLines = 1,
+                    softWrap = false,
                 )
                 recommended -> Text(
                     "RECOMMENDED",
                     style = AppTheme.typography.sectionHeader.copy(fontSize = 9.sp),
                     color = AppTheme.colors.accent,
+                    maxLines = 1,
+                    softWrap = false,
                 )
                 else -> Text(
                     "ALTERNATIVE",
                     style = AppTheme.typography.sectionHeader.copy(fontSize = 9.sp),
                     color = AppTheme.colors.textMuted,
+                    maxLines = 1,
+                    softWrap = false,
                 )
             }
+            Spacer(Modifier.width(6.dp))
             DeckPowerSummary(opt)
         }
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -512,40 +667,29 @@ private fun OptionCard(
                     ),
             )
         }
-        Text(
-            opt.identityLine,
-            style = AppTheme.typography.caption,
-            color = AppTheme.colors.textPrimary,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
-        Text(
-            opt.outlook,
-            style = AppTheme.typography.caption,
-            color = AppTheme.colors.textSecondary,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
-        Text(
-            "${opt.creatures} creatures · ${opt.removal} removal",
-            style = AppTheme.typography.micro,
-            color = AppTheme.colors.textMuted,
-        )
     }
 }
 
 @Composable
 private fun DeckPowerSummary(deck: DeckOptionUi) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        deck.displayTier?.let {
-            TierBadge(it)
-            Spacer(Modifier.width(6.dp))
+    AppTooltip(
+        title = "Projected Build Power",
+        tooltip = "Overall deck strength (0–100) and letter tier estimated from your 23 best playables, mana curve balance, and color consistency.",
+        width = 248.dp,
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            deck.displayTier?.let {
+                TierBadge(it)
+                Spacer(Modifier.width(6.dp))
+            }
+            Text(
+                deck.powerLabel,
+                style = AppTheme.typography.monoSmall.copy(fontWeight = FontWeight.Bold),
+                color = AppTheme.colors.accent,
+                maxLines = 1,
+                softWrap = false,
+            )
         }
-        Text(
-            deck.powerLabel,
-            style = AppTheme.typography.monoSmall.copy(fontWeight = FontWeight.Bold),
-            color = AppTheme.colors.accent,
-        )
     }
 }
 

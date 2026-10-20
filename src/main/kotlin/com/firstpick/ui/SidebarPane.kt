@@ -140,25 +140,64 @@ private fun LaneBentoCard(state: DraftUiState) {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(
-                    "LANE CONFIDENCE",
-                    style = AppTheme.typography.sectionHeader,
-                    color = AppTheme.colors.textSecondary,
-                )
-                val statusColor = if (settled) AppTheme.colors.positive else AppTheme.colors.accentSecondary
-                val statusText = if (settled) "SETTLED" else "EXPLORING"
-                Box(
-                    Modifier
-                        .appBadge(statusColor, fillAlpha = 0.14f, borderAlpha = 0.36f, shape = RoundedCornerShape(AppTheme.radii.xs))
-                        .padding(horizontal = 6.dp, vertical = 1.dp),
+                AppTooltip(
+                    title = "Lane Confidence",
+                    tooltip = "Estimates your most likely two-color pair from your drafted pool's card quality, color commitment, and 17Lands archetype win rates.",
+                    width = 248.dp,
                 ) {
-                    Text(
-                        statusText,
-                        fontSize = 8.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 0.5.sp,
-                        color = statusColor,
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            "LANE CONFIDENCE",
+                            style = AppTheme.typography.sectionHeader,
+                            color = AppTheme.colors.textSecondary,
+                        )
+                        Spacer(Modifier.width(4.dp))
+                        Text(
+                            "ⓘ",
+                            fontSize = 10.sp,
+                            color = AppTheme.colors.textMuted,
+                        )
+                    }
+                }
+                val statusText = when {
+                    settled -> "SETTLED"
+                    state.laneColors.isNotEmpty() -> "LEANING"
+                    else -> "OPEN"
+                }
+                val statusColor = when {
+                    settled -> AppTheme.colors.positive
+                    state.laneColors.isNotEmpty() -> AppTheme.colors.accentSecondary
+                    else -> AppTheme.colors.textSecondary
+                }
+                val currentStatusSummary = when {
+                    settled -> "Committed to a two-color pair — prioritize on-color playables, curve gaps, and synergy."
+                    state.laneColors.isNotEmpty() -> "Anchored in a primary color while the second color remains flexible."
+                    else -> "No color commitment yet — take the strongest card in the pack."
+                }
+                AppTooltip(
+                    title = "Lane Status · $statusText",
+                    tooltip = buildString {
+                        append(currentStatusSummary)
+                        append("\n\nPossible states:\n")
+                        append("• OPEN — Early picks; prioritize raw card power.\n")
+                        append("• LEANING — Primary color emerging; second color still open.\n")
+                        append("• SETTLED — Committed two-color lane; prioritize on-color fit and curve needs.")
+                    },
+                    width = 268.dp,
+                ) {
+                    Box(
+                        Modifier
+                            .appBadge(statusColor, fillAlpha = 0.14f, borderAlpha = 0.36f, shape = RoundedCornerShape(AppTheme.radii.xs))
+                            .padding(horizontal = 6.dp, vertical = 1.dp),
+                    ) {
+                        Text(
+                            statusText,
+                            fontSize = 8.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 0.5.sp,
+                            color = statusColor,
+                        )
+                    }
                 }
             }
 
@@ -196,11 +235,16 @@ private fun LaneBentoCard(state: DraftUiState) {
                         )
                     }
                     if (laneArchetype != null) {
-                        Text(
-                            "${laneArchetype.winRate.asPct()}% WR",
-                            style = AppTheme.typography.monoSmall.copy(fontWeight = FontWeight.Bold),
-                            color = AppTheme.colors.accent,
-                        )
+                        AppTooltip(
+                            title = "Archetype Win Rate",
+                            tooltip = "Sample-adjusted 17Lands win rate for this color pair across Premier Draft games.",
+                        ) {
+                            Text(
+                                "${laneArchetype.winRate.asPct()}% WR",
+                                style = AppTheme.typography.monoSmall.copy(fontWeight = FontWeight.Bold),
+                                color = AppTheme.colors.accent,
+                            )
+                        }
                     }
                 }
 
@@ -246,11 +290,25 @@ private fun PoolAndCurveBentoCard(state: DraftUiState) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(
-                "POOL & MANA CURVE",
-                style = AppTheme.typography.sectionHeader,
-                color = AppTheme.colors.textSecondary,
-            )
+            AppTooltip(
+                title = "Pool & Mana Curve",
+                tooltip = "Shows your drafted creature vs. non-creature balance, mana curve histogram (mana values ≤1 through 6+), and card counts per color.",
+                width = 248.dp,
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        "POOL & MANA CURVE",
+                        style = AppTheme.typography.sectionHeader,
+                        color = AppTheme.colors.textSecondary,
+                    )
+                    Spacer(Modifier.width(4.dp))
+                    Text(
+                        "ⓘ",
+                        fontSize = 10.sp,
+                        color = AppTheme.colors.textMuted,
+                    )
+                }
+            }
             Text(
                 "${state.poolSize} picks",
                 style = AppTheme.typography.monoMicro,
@@ -523,23 +581,40 @@ private fun NeedsContent(needs: List<String>, poolSize: Int, available: Boolean)
             verticalArrangement = Arrangement.spacedBy(5.dp),
         ) {
             needs.forEach { need ->
-                Box(
-                    Modifier
-                        .appBadge(
-                            AppTheme.colors.accentSecondary,
-                            fillAlpha = 0.14f,
-                            borderAlpha = 0.36f,
-                            shape = RoundedCornerShape(AppTheme.radii.xs),
-                        )
-                        .padding(horizontal = 6.dp, vertical = 2.dp),
+                AppTooltip(
+                    title = "Deck Need · $need",
+                    tooltip = needTooltip(need),
                 ) {
-                    Text(
-                        need,
-                        style = AppTheme.typography.micro.copy(fontWeight = FontWeight.SemiBold),
-                        color = AppTheme.colors.accentSecondary,
-                    )
+                    Box(
+                        Modifier
+                            .appBadge(
+                                AppTheme.colors.accentSecondary,
+                                fillAlpha = 0.14f,
+                                borderAlpha = 0.36f,
+                                shape = RoundedCornerShape(AppTheme.radii.xs),
+                            )
+                            .padding(horizontal = 6.dp, vertical = 2.dp),
+                    ) {
+                        Text(
+                            need,
+                            style = AppTheme.typography.micro.copy(fontWeight = FontWeight.SemiBold),
+                            color = AppTheme.colors.accentSecondary,
+                        )
+                    }
                 }
             }
         }
+    }
+}
+
+private fun needTooltip(need: String): String {
+    val lower = need.lowercase()
+    return when {
+        "2-drop" in lower || "early" in lower -> "Your pool is light on early plays (mana value ≤ 2). Early creatures receive a score bonus in upcoming packs."
+        "removal" in lower -> "Your pool needs more interaction spells to answer opposing threats."
+        "fixing" in lower -> "Your color commitments benefit from dual lands, treasures, or mana fixing."
+        "finisher" in lower -> "Your pool needs a top-end threat to close out stalled board states."
+        "creature" in lower -> "Your creature count is below target for a consistent Limited curve."
+        else -> "Current gap in your drafted pool — cards filling this role receive a score boost."
     }
 }

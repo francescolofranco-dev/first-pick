@@ -188,19 +188,37 @@ internal fun SynergyTierBadge(tier: String) {
         "researched" -> "✦ Deep synergy"
         else -> "• Data synergy"
     }
-    Box(
-        Modifier
-            .appBadge(accent, fillAlpha = 0.14f, borderAlpha = 0.34f, shape = RoundedCornerShape(AppTheme.radii.xs))
-            .padding(horizontal = 6.dp, vertical = 2.dp),
+    val activeDesc = when (tier) {
+        "model" -> "Active mode: Learned neural pick model trained on winning 17Lands drafters, combined with set synergy."
+        "researched" -> "Active mode: Hand-researched set archetype & combo synergy rules combined with 17Lands win rates."
+        else -> "Active mode: Statistical 17Lands win rates, color pair strength, and mana curve needs."
+    }
+    val fullTooltip = buildString {
+        append(activeDesc)
+        append("\n\nAdvisor modes:\n")
+        append("• ✦ Deep synergy — Full archetype + card combo rules.\n")
+        append("• ◆ AI picks — Neural pick model trained on trophy drafters.\n")
+        append("• • Data synergy — Statistical 17Lands ratings & curve fit.")
+    }
+    AppTooltip(
+        title = "Advisor Engine · $label",
+        tooltip = fullTooltip,
+        width = 264.dp,
     ) {
-        Text(
-            label,
-            fontSize = 10.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = accent,
-            maxLines = 1,
-            softWrap = false,
-        )
+        Box(
+            Modifier
+                .appBadge(accent, fillAlpha = 0.14f, borderAlpha = 0.34f, shape = RoundedCornerShape(AppTheme.radii.xs))
+                .padding(horizontal = 6.dp, vertical = 2.dp),
+        ) {
+            Text(
+                label,
+                fontSize = 10.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = accent,
+                maxLines = 1,
+                softWrap = false,
+            )
+        }
     }
 }
 
@@ -477,22 +495,28 @@ private fun RatingsHealthStatus(state: DraftUiState, onRetry: () -> Unit) {
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Box(
-            modifier = Modifier
-                .appBadge(color, fillAlpha = 0.12f, borderAlpha = 0.30f, shape = RoundedCornerShape(AppTheme.radii.xs))
-                .semantics {
-                    liveRegion = LiveRegionMode.Polite
-                    stateDescription = ratingsDataDescription(state)
-                }
-                .padding(horizontal = 7.dp, vertical = 2.dp),
+        AppTooltip(
+            title = "17Lands Telemetry",
+            tooltip = "Shows whether Premier Draft card win-rate data is fresh or cached locally, how many cards have reliable sample sizes, and the median games per card.",
+            width = 252.dp,
         ) {
-            Text(
-                ratingsDataDescription(state),
-                color = color,
-                style = AppTheme.typography.micro,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
+            Box(
+                modifier = Modifier
+                    .appBadge(color, fillAlpha = 0.12f, borderAlpha = 0.30f, shape = RoundedCornerShape(AppTheme.radii.xs))
+                    .semantics {
+                        liveRegion = LiveRegionMode.Polite
+                        stateDescription = ratingsDataDescription(state)
+                    }
+                    .padding(horizontal = 7.dp, vertical = 2.dp),
+            ) {
+                Text(
+                    ratingsDataDescription(state),
+                    color = color,
+                    style = AppTheme.typography.micro,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
         }
         if (state.canRetryRatings) {
             AppButton(
@@ -546,22 +570,28 @@ private fun OverlayHealthStatus(health: OverlayHealth) {
         OverlayHealthState.CLICK_THROUGH_FAILED,
         -> AppTheme.colors.danger
     }
-    Box(
-        modifier = Modifier
-            .appBadge(color, fillAlpha = 0.12f, borderAlpha = 0.30f, shape = RoundedCornerShape(AppTheme.radii.xs))
-            .semantics {
-                liveRegion = LiveRegionMode.Polite
-                stateDescription = "Overlay ${health.state.label}. ${health.detail}"
-            }
-            .padding(horizontal = 7.dp, vertical = 2.dp),
+    AppTooltip(
+        title = "Arena Overlay · ${health.state.label}",
+        tooltip = "${health.detail.ifBlank { "Tracks the live MTG Arena window to display in-game pick and deck guidance." }}",
+        width = 248.dp,
     ) {
-        Text(
-            text = "Overlay · ${health.state.label}${if (health.needsAttention) " — ${health.detail}" else ""}",
-            color = color,
-            style = AppTheme.typography.micro,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
+        Box(
+            modifier = Modifier
+                .appBadge(color, fillAlpha = 0.12f, borderAlpha = 0.30f, shape = RoundedCornerShape(AppTheme.radii.xs))
+                .semantics {
+                    liveRegion = LiveRegionMode.Polite
+                    stateDescription = "Overlay ${health.state.label}. ${health.detail}"
+                }
+                .padding(horizontal = 7.dp, vertical = 2.dp),
+        ) {
+            Text(
+                text = "Overlay · ${health.state.label}${if (health.needsAttention) " — ${health.detail}" else ""}",
+                color = color,
+                style = AppTheme.typography.micro,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
     }
 }
 
