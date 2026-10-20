@@ -43,6 +43,9 @@ class AdvisorEngine(
         val comboCapPts: Double = 4.0,
         val synergyTotalCapPts: Double = 8.0,
         val earlyBombThemeFuelBonus: Double = 1.0,
+        val openingQualityPicks: Int = LimitedPolicy.OPENING_QUALITY_PICKS,
+        val openingSynergyCapPts: Double = LimitedPolicy.OPENING_SYNERGY_CAP,
+        val openingModelScoreWindow: Double = LimitedPolicy.OPENING_MODEL_SCORE_WINDOW,
         val penaltyRampStart: Double = LimitedPolicy.COLOR_COMMITMENT_RAMP_START,
         val penaltyMax: Double = 3.0,
         val needsRampStart: Double = LimitedPolicy.DECK_NEEDS_RAMP_START,
@@ -86,6 +89,7 @@ class AdvisorEngine(
         val needs = PoolNeeds.analyze(poolMetas, pool.size)
         val picksTaken = if (picksPerChoice == 2) pool.size else
             (packNumber - 1) * config.picksPerPack + (pickNumber - 1)
+        val opening = picksTaken < config.openingQualityPicks
         val progress = (picksTaken.toDouble() / config.totalPicks).coerceIn(0.0, 1.0)
         // A tentative pool identity is useful to display before it is strong
         // enough to rule out taking a better card in another color.
@@ -117,11 +121,14 @@ class AdvisorEngine(
 
         val heuristicOrder = pack.map { card ->
             val fit = if (fitW > 0.0) deckFit?.invoke(card) else null
-            evaluate(card, scoringLane, metrics, archetypeRating, meta, progress, needs, theme, poolCounts[card.name] ?: 0, splashColors, fit, fitW, picksPerChoice == 1)
+            evaluate(card, scoringLane, metrics, archetypeRating, meta, progress, needs, theme, poolCounts[card.name] ?: 0, splashColors, fit, fitW, picksPerChoice == 1, opening)
         }.sortedWith(compareByDescending<ScoredCard> { it.rawValue }.thenBy { it.card.displayName })
         // Hard guide feasibility applies even when PickNet is unavailable or
         // lacks enough pack coverage to run.
-        return applyGuideScores(heuristicOrder)
+        val guided = applyGuideScores(heuristicOrder)
+        if (!opening) return guided
+        val top = guided.maxOfOrNull { it.value } ?: return guided
+        return guided.map { it.copy(openingQualityEligible = it.value >= top - config.openingModelScoreWindow) }
     }
 
     private fun applyGuideScores(heuristicOrder: List<ScoredCard>): List<ScoredCard> {
@@ -164,6 +171,7 @@ class AdvisorEngine(
         fit: DeckProjector.Fit?,
         fitWeight: Double,
         useWheelHeuristic: Boolean,
+        opening: Boolean,
     ): ScoredCard {
         val reasons = mutableListOf<String>()
         val globalWr = card.gihWr
@@ -177,16 +185,18 @@ class AdvisorEngine(
         val archSamples = archCard?.everDrawnGameCount ?: 0
         val archShiftZ = archetypeShiftZ(globalWr, archWr, archSamples, progress, metrics)
         val blendedZ = baseZ + archShiftZ
-        val statSynergyPts = synergyBonus(card, globalWr, archWr, archSamples, reasons)
+        val synergyCap = if (opening) minOf(config.synergyTotalCapPts, config.openingSynergyCapPts)
+            else config.synergyTotalCapPts
+        val statSynergyPts = synergyBonus(card, globalWr, archWr, archSamples, reasons).coerceAtMost(synergyCap)
 
         val activeGuidePair = if (lane.isEstablished) lane.pair ?: canonicalPair(lane.colors) else null
         val themeResult = theme?.evaluate(card, config, activeGuidePair) ?: ThemeSynergy.Result.NONE
 
 
         val totalSynergyPts = if (themeResult.points > 0.0) {
-            (statSynergyPts + themeResult.points).coerceAtMost(config.synergyTotalCapPts)
+            (statSynergyPts + themeResult.points).coerceAtMost(synergyCap)
         } else {
-            statSynergyPts
+            statSynergyPts.coerceAtMost(synergyCap)
         }
         val themePts = totalSynergyPts - statSynergyPts
         if (themePts > 0.0) reasons += themeResult.reasons

@@ -45,7 +45,9 @@ object PickNetRanker {
     ): List<ScoredCard> {
         val promotable = candidateOrder.filter { it.guardrail.modelPromotable }
         if (promotable.isEmpty()) return fallbackOrder
-        return promotable + candidateOrder.filterNot { it.guardrail.modelPromotable }
+        return promotable.filter { it.openingQualityEligible } +
+            promotable.filterNot { it.openingQualityEligible } +
+            candidateOrder.filterNot { it.guardrail.modelPromotable }
     }
 
     const val MODEL_PICK_REASON = "Model pick"

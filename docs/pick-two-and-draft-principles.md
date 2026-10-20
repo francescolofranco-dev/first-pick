@@ -25,3 +25,11 @@ The two Bronze to Mythic articles are now attributed in the in-app guide. These 
 Regression tests cover event-name and explicit-count detection, mode reset, final odd cards, duplicate entries, automatic/manual UI state, complementary pairs, quality gaps and feasibility constraints. The seeded audit now runs ordinary demo drafts, four-seat Pick Two drafts and random pools across FRA, BLB and DSK, checking the same completed-deck legality, copies, mana and splash invariants. These tests do not establish optimal play or predict match results.
 
 Release validation for 1.9.0: 494 regression tests passed. Seeds 0–99 covered 900 pools, 1,986 suggested builds and 37 splash builds, with zero audit findings.
+
+## Opening picks policy (1.9.1)
+
+The first five card selections emphasize quality, with a maximum three-point bonus for synergies actually supported by the pool. A same-color card alone earns no synergy bonus. A close supported partner can win; a large quality gap stays decisive. During this opening, the learned ranker can lead with cards only within three contextual heuristic score points of the best option. Its raw ranking remains visible in explanations. These score limits are tuning choices, not win-rate percentages.
+
+After five selections, color pressure and deck-fit scoring begin when repeated pool evidence supports a base color or pair. Lane detection still requires at least two supporting cards per color and a margin over competing pairs; five scattered picks do not establish a pair. Mono-color pools keep a second color open. Both the first-five checkpoint and the close-choice preference implement the user's requested heuristic; no specific video timestamp or verified five-pick quotation is claimed. Pick Two measures this opening in cards drafted, matching its existing progress calculation, and retains its separate bounded pair adjustment.
+
+Release validation for 1.9.1: all 501 tests passed. The production replay visibly retained the strongest heuristic opening option ahead of a much weaker model-preferred card. Normal Arena-log tracking was restored after verification.

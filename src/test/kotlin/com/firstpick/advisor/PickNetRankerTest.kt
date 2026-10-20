@@ -48,6 +48,16 @@ class PickNetRankerTest {
     )
 
     @Test
+    fun openingQualityWindowLimitsLearnedPromotionsButAllowsCloseChoices() {
+        val pack = listOf(scored("Angel", 80.0), scored("Bolt", 78.0),
+            scored("Carrion", 40.0).copy(openingQualityEligible = false))
+        val ranked = PickNetRanker.rerank(net(), pack, emptyList())!!
+        assertEquals(listOf("Bolt", "Angel", "Carrion"), ranked.map { it.card.name })
+        assertEquals(1, ranked.last().modelRank,
+            "raw model rank remains visible even when its preferred card is outside the opening window")
+    }
+
+    @Test
     fun `net order wins, values transplant rank-preservingly`() {
 
         val ranked = PickNetRanker.rerank(net(), listOf(scored("Angel", 80.0), scored("Bolt", 60.0), scored("Carrion", 40.0)), emptyList())

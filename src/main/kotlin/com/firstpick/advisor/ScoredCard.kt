@@ -12,6 +12,8 @@ data class ScoredCard(
     val rawValue: Double = value,
 
     val modelRank: Int? = null,
+    /** Opening model promotions stay near the best contextual heuristic score. */
+    val openingQualityEligible: Boolean = true,
 
     /** Typed policy result consumed by learned re-rankers; never inferred from display reasons. */
     val guardrail: PickGuardrail = PickGuardrail.OPEN,

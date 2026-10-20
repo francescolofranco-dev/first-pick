@@ -27,7 +27,10 @@ object LimitedPolicy {
     const val POOL_FINISHER_TARGET = 2.0
     const val POOL_TOP_END_LIMIT = 6
 
-    const val COLOR_COMMITMENT_RAMP_START = 0.15
+    const val OPENING_QUALITY_PICKS = 5
+    const val OPENING_SYNERGY_CAP = 3.0
+    const val OPENING_MODEL_SCORE_WINDOW = 3.0
+    const val COLOR_COMMITMENT_RAMP_START = OPENING_QUALITY_PICKS.toDouble() / DRAFT_TOTAL_PICKS
     const val DECK_NEEDS_RAMP_START = 0.25
     const val DECK_NEEDS_RAMP_SPAN = 0.55
     const val DECK_FIT_RAMP_START = 0.10
@@ -124,7 +127,7 @@ object LimitedGuidance {
             id = "power-and-flexibility",
             title = "Take power early; stay flexible",
             summary = "Bombs, premium interaction, and flexible cards lead early. Do not lock into a color because of one pick.",
-            appliedByFirstPick = "Raw card quality dominates early; color penalties and deck-fit pressure ramp up as the draft develops.",
+            appliedByFirstPick = "For the first five picks, real synergy can break close comparisons, with a capped bonus and a narrow model promotion window. Color pressure begins after five picks when the pool supports a direction.",
             sourceIds = listOf(DRAFT_BASICS, DRAFT_HARD_WAY),
         ),
         GuidePrinciple(
