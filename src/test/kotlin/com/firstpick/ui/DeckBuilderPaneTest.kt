@@ -83,6 +83,31 @@ class DeckBuilderPaneTest {
     @Test
     fun deckRowHeightIsFixedConstant() {
         assertEquals(32, DeckRowHeight.value.toInt())
-        assertEquals(168, DeckTypeRoleWidth.value.toInt())
+        assertEquals(228, DeckTypeRoleWidth.value.toInt())
+    }
+
+    @Test
+    fun deckSpellUiSupportsManyRolesWithoutTruncationBudgetIssues() {
+        val threeRoles = DeckSpellUi(
+            name = "Ruric Thar, Biomagus",
+            cmc = 6,
+            color = "RG",
+            gihWr = 0.557,
+            roles = listOf("Draw", "Evasion", "Finisher"),
+            typeLabel = "Creature",
+        )
+        assertEquals(3, threeRoles.roles.size)
+        assertEquals("Creature", threeRoles.typeLabel)
+
+        val fourRoles = DeckSpellUi(
+            name = "Omnath, Locus of All",
+            cmc = 5,
+            color = "WUBRG",
+            gihWr = 0.580,
+            roles = listOf("Removal", "Draw", "Evasion", "Finisher"),
+            typeLabel = "Creature",
+        )
+        assertEquals(4, fourRoles.roles.size)
+        assertEquals(listOf("Removal", "Draw", "Evasion", "Finisher"), fourRoles.roles)
     }
 }

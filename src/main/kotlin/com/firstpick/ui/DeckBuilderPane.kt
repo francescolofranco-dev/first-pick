@@ -387,7 +387,7 @@ private fun ScrollableDeckPane(content: LazyListScope.() -> Unit) {
 }
 
 internal val DeckRowHeight = 32.dp
-internal val DeckTypeRoleWidth = 168.dp
+internal val DeckTypeRoleWidth = 228.dp
 
 @Composable
 private fun DeckListHeader() {
@@ -507,17 +507,21 @@ private fun DeckSpellRow(s: DeckSpellUi, muted: Boolean = false) {
                 style = AppTheme.typography.micro,
                 color = AppTheme.colors.textSecondary,
                 maxLines = 1,
+                softWrap = false,
                 overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.weight(1f, fill = false),
             )
             if (s.roles.isNotEmpty()) {
-                Spacer(Modifier.width(5.dp))
+                Spacer(Modifier.width(4.dp))
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    for (role in s.roles) {
+                    val displayRoles = if (s.roles.size <= 3) s.roles else s.roles.take(2)
+                    for (role in displayRoles) {
                         RoleChip(role)
+                    }
+                    if (s.roles.size > displayRoles.size) {
+                        MoreRolesChip(s.roles.drop(displayRoles.size))
                     }
                 }
             }
@@ -537,6 +541,34 @@ private fun basicLandSymbol(name: String): Char? = when (name) {
 }
 
 @Composable
+private fun MoreRolesChip(extraRoles: List<String>) {
+    AppTooltip(
+        title = "Additional Roles",
+        tooltip = extraRoles.joinToString(", ") { "$it (${reasonChipTooltip(it)})" },
+    ) {
+        Box(
+            Modifier
+                .appBadge(
+                    AppTheme.colors.info,
+                    fillAlpha = 0.12f,
+                    borderAlpha = 0.30f,
+                    shape = RoundedCornerShape(AppTheme.radii.xs),
+                )
+                .padding(horizontal = 4.dp, vertical = 1.dp),
+        ) {
+            Text(
+                "+${extraRoles.size}",
+                fontSize = 9.sp,
+                lineHeight = 11.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = AppTheme.colors.textSecondary,
+                maxLines = 1,
+            )
+        }
+    }
+}
+
+@Composable
 private fun RoleChip(role: String) {
     val color = roleColor(role)
     AppTooltip(
@@ -551,7 +583,7 @@ private fun RoleChip(role: String) {
                     borderAlpha = 0.30f,
                     shape = RoundedCornerShape(AppTheme.radii.xs),
                 )
-                .padding(horizontal = 5.dp, vertical = 1.dp),
+                .padding(horizontal = 4.dp, vertical = 1.dp),
         ) {
             Text(
                 role,
