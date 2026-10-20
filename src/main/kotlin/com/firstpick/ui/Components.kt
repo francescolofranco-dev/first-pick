@@ -1,5 +1,6 @@
 package com.firstpick.ui
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.TooltipArea
@@ -35,8 +36,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.loadSvgPainter
@@ -47,15 +53,54 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import com.firstpick.advisor.ValueBreakdown
+import kotlin.math.roundToInt
+
+@Composable
+internal fun AppBrandMark(modifier: Modifier = Modifier) {
+    val shape = RoundedCornerShape(7.dp)
+    Box(
+        modifier = modifier
+            .size(24.dp)
+            .clip(shape)
+            .background(
+                Brush.linearGradient(
+                    colors = listOf(Color(0xFFFF6363), Color(0xFFF59E0B)),
+                    start = Offset(0f, 0f),
+                    end = Offset(64f, 64f),
+                ),
+            ),
+        contentAlignment = Alignment.Center,
+    ) {
+        Canvas(Modifier.fillMaxSize()) {
+            val w = size.width
+            val h = size.height
+            rotate(degrees = -9f, pivot = Offset(w * 0.44f, h * 0.54f)) {
+                drawRoundRect(
+                    color = Color(0xFF111114).copy(alpha = 0.24f),
+                    topLeft = Offset(w * 0.22f, h * 0.22f),
+                    size = Size(w * 0.34f, h * 0.54f),
+                    cornerRadius = CornerRadius(w * 0.06f),
+                )
+            }
+        }
+        Text(
+            text = "FP",
+            fontSize = 10.sp,
+            fontWeight = FontWeight.Black,
+            letterSpacing = (-0.4).sp,
+            color = Color(0xFFFFFFFF),
+        )
+    }
+}
 
 internal enum class AppButtonVariant {
     Primary,
@@ -74,29 +119,36 @@ internal fun AppButton(
     contentPadding: PaddingValues = PaddingValues(horizontal = 10.dp, vertical = 5.dp),
     content: @Composable RowScope.() -> Unit,
 ) {
-    val shape = RoundedCornerShape(AppTheme.radii.sm)
-    val bg = when {
-        !enabled -> AppTheme.colors.surface
-        variant == AppButtonVariant.Primary -> AppTheme.colors.accent
-        active || variant == AppButtonVariant.Tonal -> AppTheme.colors.surfaceSelected
-        variant == AppButtonVariant.Warning -> AppTheme.colors.warning.copy(alpha = 0.12f)
-        else -> AppTheme.colors.surfaceElevated
+    val shape = RoundedCornerShape(AppTheme.radii.md)
+    val bgBrush = when {
+        !enabled -> Brush.verticalGradient(listOf(AppTheme.colors.surface, AppTheme.colors.surface))
+        variant == AppButtonVariant.Primary -> Brush.verticalGradient(
+            listOf(AppTheme.colors.accent, AppTheme.colors.accentBright),
+        )
+        active || variant == AppButtonVariant.Tonal -> Brush.verticalGradient(
+            listOf(AppTheme.colors.accent.copy(alpha = 0.20f), AppTheme.colors.accent.copy(alpha = 0.12f)),
+        )
+        variant == AppButtonVariant.Warning -> Brush.verticalGradient(
+            listOf(AppTheme.colors.warning.copy(alpha = 0.20f), AppTheme.colors.warning.copy(alpha = 0.12f)),
+        )
+        else -> Brush.verticalGradient(
+            listOf(Color(0xFF25252C), AppTheme.colors.surfaceElevated),
+        )
     }
     val borderColor = when {
         !enabled -> AppTheme.colors.borderSubtle
         variant == AppButtonVariant.Primary -> AppTheme.colors.accent
-        active || variant == AppButtonVariant.Tonal -> AppTheme.colors.borderAccent
-        variant == AppButtonVariant.Warning -> AppTheme.colors.warning.copy(alpha = 0.42f)
+        active || variant == AppButtonVariant.Tonal -> AppTheme.colors.accent.copy(alpha = 0.45f)
+        variant == AppButtonVariant.Warning -> AppTheme.colors.warning.copy(alpha = 0.45f)
         else -> AppTheme.colors.borderDefault
     }
     Row(
         modifier = modifier
-            .heightIn(min = 28.dp)
-            .alpha(if (enabled) 1f else 0.45f)
+            .heightIn(min = 27.dp)
+            .alpha(if (enabled) 1f else 0.42f)
             .clip(shape)
-            .background(bg)
+            .background(bgBrush)
             .border(1.dp, borderColor, shape)
-            .semantics { role = Role.Button }
             .focusable(enabled)
             .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
             .padding(contentPadding),
@@ -108,6 +160,8 @@ internal fun AppButton(
 
 internal data class SegmentedTabItem(
     val label: String,
+    val badge: String? = null,
+    val shortcut: String? = null,
     val selected: Boolean,
     val enabled: Boolean = true,
     val onClick: () -> Unit,
@@ -117,46 +171,142 @@ internal data class SegmentedTabItem(
 internal fun AppSegmentedTabs(
     tabs: List<SegmentedTabItem>,
     modifier: Modifier = Modifier,
+    fillWidth: Boolean = false,
 ) {
-    val outerShape = RoundedCornerShape(AppTheme.radii.md)
-    val innerShape = RoundedCornerShape(AppTheme.radii.sm)
     Row(
-        modifier = modifier
-            .height(32.dp)
-            .clip(outerShape)
-            .background(AppTheme.colors.surface)
-            .border(1.dp, AppTheme.colors.borderSubtle, outerShape)
-            .padding(3.dp),
-        horizontalArrangement = Arrangement.spacedBy(3.dp),
+        modifier = modifier.height(30.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        tabs.forEach { tab ->
-            Box(
-                modifier = Modifier
-                    .weight(1f)
+        for (tab in tabs) {
+            val itemShape = RoundedCornerShape(AppTheme.radii.md)
+            val tabModifier = if (fillWidth) Modifier.weight(1f) else Modifier
+            Row(
+                modifier = tabModifier
                     .fillMaxHeight()
-                    .alpha(if (tab.enabled) 1f else 0.42f)
-                    .clip(innerShape)
-                    .background(if (tab.selected) AppTheme.colors.surfaceElevated else Color.Transparent)
-                    .border(
-                        width = 1.dp,
-                        color = if (tab.selected) AppTheme.colors.borderDefault else Color.Transparent,
-                        shape = innerShape,
+                    .alpha(if (tab.enabled) 1f else 0.38f)
+                    .clip(itemShape)
+                    .background(
+                        if (tab.selected) {
+                            Brush.verticalGradient(
+                                listOf(Color(0xFF2D2D36), AppTheme.colors.surfaceSelected),
+                            )
+                        } else {
+                            Brush.verticalGradient(
+                                listOf(Color.Transparent, Color.Transparent),
+                            )
+                        },
+                    )
+                    .then(
+                        if (tab.selected) {
+                            Modifier.border(1.dp, Color(0xFF3F3F48), itemShape)
+                        } else {
+                            Modifier
+                        },
                     )
                     .semantics {
-                        role = Role.Tab
                         selected = tab.selected
+                        stateDescription = when {
+                            !tab.enabled -> "Disabled"
+                            tab.selected -> "Selected"
+                            else -> "Not selected"
+                        }
                     }
                     .focusable(tab.enabled)
-                    .clickable(enabled = tab.enabled, role = Role.Tab, onClick = tab.onClick),
-                contentAlignment = Alignment.Center,
+                    .clickable(
+                        enabled = tab.enabled,
+                        role = Role.Tab,
+                        onClick = tab.onClick,
+                    )
+                    .padding(horizontal = 10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
             ) {
                 Text(
                     text = tab.label,
-                    fontSize = 12.sp,
+                    fontSize = 11.sp,
                     fontWeight = if (tab.selected) FontWeight.SemiBold else FontWeight.Medium,
-                    color = if (tab.selected) AppTheme.colors.accent else AppTheme.colors.textSecondary,
+                    color = if (tab.selected) AppTheme.colors.textPrimary else AppTheme.colors.textSecondary,
                     maxLines = 1,
+                )
+                if (tab.badge != null) {
+                    Spacer(Modifier.width(5.dp))
+                    Box(
+                        Modifier
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(
+                                if (tab.selected) AppTheme.colors.accent.copy(alpha = 0.22f)
+                                else AppTheme.colors.surfaceElevated,
+                            )
+                            .padding(horizontal = 4.dp, vertical = 1.dp),
+                    ) {
+                        Text(
+                            text = tab.badge,
+                            style = AppTheme.typography.monoMicro,
+                            color = if (tab.selected) AppTheme.colors.accent else AppTheme.colors.textSecondary,
+                            maxLines = 1,
+                        )
+                    }
+                } else if (tab.shortcut != null) {
+                    Spacer(Modifier.width(5.dp))
+                    Box(
+                        Modifier
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(if (tab.selected) AppTheme.colors.background else Color.Transparent)
+                            .padding(horizontal = 4.dp, vertical = 1.dp),
+                    ) {
+                        Text(
+                            text = tab.shortcut,
+                            style = AppTheme.typography.monoMicro,
+                            color = if (tab.selected) AppTheme.colors.textSecondary else AppTheme.colors.textMuted,
+                            maxLines = 1,
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+internal fun GradeBadge(value: Double?, modifier: Modifier = Modifier) {
+    val c = valueTierColor(value)
+    val grade = letterGrade(value)
+    val shape = RoundedCornerShape(AppTheme.radii.sm)
+    Box(
+        modifier
+            .width(38.dp)
+            .height(34.dp)
+            .clip(shape)
+            .background(
+                Brush.verticalGradient(
+                    listOf(c.copy(alpha = 0.22f), c.copy(alpha = 0.08f)),
+                ),
+            )
+            .border(1.dp, c.copy(alpha = 0.50f), shape),
+        contentAlignment = Alignment.Center,
+    ) {
+        if (value == null) {
+            Text(
+                grade,
+                color = c,
+                fontWeight = FontWeight.Bold,
+                fontSize = 13.sp,
+                lineHeight = 13.sp,
+            )
+        } else {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    grade,
+                    color = c,
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 13.sp,
+                    lineHeight = 13.sp,
+                )
+                Text(
+                    value.roundToInt().toString(),
+                    color = AppTheme.colors.textPrimary.copy(alpha = 0.90f),
+                    style = AppTheme.typography.monoMicro.copy(fontSize = 9.sp, lineHeight = 10.sp),
                 )
             }
         }
@@ -164,48 +314,107 @@ internal fun AppSegmentedTabs(
 }
 
 @Composable
-fun GradeBadge(value: Double?, modifier: Modifier = Modifier, size: Dp = 36.dp) {
-    val color = valueTierColor(value)
-    val shape = RoundedCornerShape(AppTheme.radii.sm)
-    Column(
-        modifier = modifier
-            .width(size)
+internal fun ReasonChip(reason: String) {
+    val lower = reason.lowercase()
+    val accent = when {
+        "bomb" in lower || "finisher" in lower -> AppTheme.colors.warning
+        "removal" in lower || "efficient" in lower -> AppTheme.colors.danger
+        "synergy" in lower || "archetype" in lower || "glue" in lower -> AppTheme.colors.accent
+        "on-color" in lower || "fixing" in lower || "pair" in lower -> AppTheme.colors.positive
+        "off-color" in lower || "unrated" in lower || "restricted" in lower -> AppTheme.colors.textMuted
+        else -> AppTheme.colors.accentSecondary
+    }
+    val shape = RoundedCornerShape(AppTheme.radii.xs)
+    Box(
+        Modifier
             .clip(shape)
-            .background(color.copy(alpha = 0.14f))
-            .border(1.dp, color.copy(alpha = 0.42f), shape)
-            .padding(vertical = 3.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
+            .background(accent.copy(alpha = 0.14f))
+            .border(1.dp, accent.copy(alpha = 0.34f), shape)
+            .padding(horizontal = 5.dp, vertical = 1.dp),
     ) {
         Text(
-            letterGrade(value),
-            color = color,
-            fontWeight = FontWeight.Bold,
-            fontSize = 14.sp,
-            lineHeight = 15.sp,
+            text = reason,
+            fontSize = 9.sp,
+            lineHeight = 12.sp,
+            fontWeight = FontWeight.Medium,
+            color = if (accent == AppTheme.colors.textMuted) AppTheme.colors.textSecondary else accent,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
         )
+    }
+}
+
+@Composable
+internal fun WinRateMeter(
+    gihWr: Double?,
+    modifier: Modifier = Modifier,
+) {
+    val pctText = gihWr.asPct()
+    val fraction = if (gihWr == null || gihWr.isNaN()) {
+        0f
+    } else {
+        ((gihWr - 0.50) / 0.15).toFloat().coerceIn(0.08f, 1f)
+    }
+    val barColor = when {
+        gihWr == null -> AppTheme.colors.borderDefault
+        gihWr >= 0.60 -> AppTheme.colors.accent
+        gihWr >= 0.57 -> AppTheme.colors.positive
+        gihWr >= 0.54 -> AppTheme.colors.accentSecondary
+        else -> AppTheme.colors.textMuted
+    }
+    Column(
+        modifier = modifier.width(48.dp),
+        horizontalAlignment = Alignment.End,
+        verticalArrangement = Arrangement.spacedBy(2.dp),
+    ) {
         Text(
-            value.asInt(),
-            color = color.copy(alpha = 0.85f),
-            style = AppTheme.typography.monoMicro,
+            text = if (gihWr != null) "$pctText%" else "—",
+            style = AppTheme.typography.monoSmall.copy(fontWeight = FontWeight.SemiBold),
+            color = if (gihWr != null) AppTheme.colors.textPrimary else AppTheme.colors.textMuted,
+            maxLines = 1,
         )
+        Box(
+            Modifier
+                .width(38.dp)
+                .height(3.dp)
+                .clip(RoundedCornerShape(99.dp))
+                .background(AppTheme.colors.surfaceElevated),
+        ) {
+            if (gihWr != null) {
+                Box(
+                    Modifier
+                        .fillMaxHeight()
+                        .fillMaxWidth(fraction)
+                        .clip(RoundedCornerShape(99.dp))
+                        .background(barColor),
+                )
+            }
+        }
     }
 }
 
-@Composable
-fun PipRow(colors: List<Char>) {
-    Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
-        colors.forEach { Pip(it) }
-    }
+internal fun manaColorName(color: Char): String = when (color.uppercaseChar()) {
+    'W' -> "White mana"
+    'U' -> "Blue mana"
+    'B' -> "Black mana"
+    'R' -> "Red mana"
+    'G' -> "Green mana"
+    'C' -> "Colorless mana"
+    else -> "Colorless mana"
 }
 
 @Composable
-fun Pip(color: Char, size: Dp = 15.dp) {
-    val painter = manaPainter(color)
+internal fun Pip(color: Char, size: Dp = 15.dp) {
+    val painter = manaPainter(color.uppercaseChar())
     if (painter != null) {
         Image(painter, contentDescription = manaColorName(color), modifier = Modifier.size(size))
     } else {
         Box(
-            Modifier.size(size).clip(RoundedCornerShape(50)).background(pipColor(color)),
+            Modifier
+                .size(size)
+                .clip(RoundedCornerShape(50))
+                .background(pipColor(color))
+                .semantics { contentDescription = manaColorName(color) },
             contentAlignment = Alignment.Center,
         ) {
             Text(
@@ -214,36 +423,37 @@ fun Pip(color: Char, size: Dp = 15.dp) {
                 lineHeight = 9.sp,
                 textAlign = TextAlign.Center,
                 fontWeight = FontWeight.Bold,
-                color = if (color == 'W') Color(0xFF333333) else Color(0xFF111111),
+                color = TierInk,
             )
         }
     }
 }
 
-internal fun manaColorName(color: Char): String = when (color) {
-    'W' -> "White mana"
-    'U' -> "Blue mana"
-    'B' -> "Black mana"
-    'R' -> "Red mana"
-    'G' -> "Green mana"
-    else -> "Colorless mana"
-}
-
 @Composable
 private fun manaPainter(color: Char): Painter? {
     val density = LocalDensity.current
-    return remember(color) {
+    return remember(color, density) {
         runCatching { useResource("symbols/$color.svg") { loadSvgPainter(it, density) } }.getOrNull()
+    }
+}
+
+@Composable
+internal fun PipRow(colors: List<Char>, size: Dp = 15.dp) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(3.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        for (c in colors) Pip(c, size = size)
     }
 }
 
 @Composable
 internal fun Bar(fraction: Float, color: Color, modifier: Modifier = Modifier) {
     val safeFraction = safeFloatFraction(fraction)
-    val shape = RoundedCornerShape(AppTheme.radii.xs)
+    val shape = RoundedCornerShape(AppTheme.radii.pill)
     Box(
         modifier
-            .height(6.dp)
+            .height(5.dp)
             .clip(shape)
             .background(AppTheme.colors.surfaceElevated),
     ) {
@@ -260,7 +470,7 @@ internal fun Bar(fraction: Float, color: Color, modifier: Modifier = Modifier) {
 @Composable
 internal fun ColorBar(color: Char, fraction: Double, trailing: String? = null) {
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Pip(color)
+        Pip(color, size = 14.dp)
         Spacer(Modifier.width(6.dp))
         Bar(safeFloatFraction(fraction.toFloat()), pipColor(color), Modifier.weight(1f))
         if (trailing != null) {
@@ -295,63 +505,85 @@ internal fun archetypeFraction(winRate: Double, minWinRate: Double, maxWinRate: 
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-internal fun Panel(title: String, tooltip: String? = null, content: @Composable () -> Unit) {
+internal fun Panel(
+    title: String,
+    tooltip: String? = null,
+    trailing: String? = null,
+    content: @Composable () -> Unit,
+) {
     var helpExpanded by remember(title, tooltip) { mutableStateOf(false) }
     Column(
         Modifier
             .fillMaxWidth()
-            .appPanel(padding = AppTheme.spacing.lg, radius = AppTheme.radii.lg),
+            .appPanel(padding = 11.dp, radius = AppTheme.radii.xl),
     ) {
-        if (tooltip != null) {
-            TooltipArea(
-                tooltip = {
-                    Box(
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            if (tooltip != null) {
+                TooltipArea(
+                    tooltip = {
+                        Box(
+                            modifier = Modifier
+                                .padding(4.dp)
+                                .appPopover(radius = AppTheme.radii.lg)
+                                .padding(horizontal = 10.dp, vertical = 8.dp)
+                                .width(220.dp),
+                        ) {
+                            Text(
+                                tooltip,
+                                style = AppTheme.typography.caption,
+                                color = AppTheme.colors.textPrimary,
+                            )
+                        }
+                    },
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
-                            .padding(4.dp)
-                            .appPopover()
-                            .padding(10.dp)
-                            .width(210.dp),
+                            .semantics {
+                                role = Role.Button
+                                contentDescription = "Help for $title"
+                                stateDescription = if (helpExpanded) "Help expanded" else "Help collapsed"
+                            }
+                            .focusable()
+                            .clickable(role = Role.Button) { helpExpanded = !helpExpanded },
                     ) {
                         Text(
-                            text = tooltip,
-                            color = AppTheme.colors.textPrimary,
-                            style = AppTheme.typography.caption,
+                            title.uppercase(),
+                            style = AppTheme.typography.sectionHeader,
+                            color = AppTheme.colors.textSecondary,
+                        )
+                        Spacer(Modifier.width(4.dp))
+                        Text(
+                            "ⓘ",
+                            fontSize = 10.sp,
+                            color = AppTheme.colors.textMuted,
                         )
                     }
-                },
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .semantics {
-                            role = Role.Button
-                            contentDescription = "Help for $title"
-                            stateDescription = if (helpExpanded) "Help expanded" else "Help collapsed"
-                        }
-                        .focusable()
-                        .clickable(role = Role.Button) { helpExpanded = !helpExpanded },
-                ) {
-                    Text(
-                        title.uppercase(),
-                        style = AppTheme.typography.sectionHeader,
-                        color = AppTheme.colors.textSecondary,
-                    )
-                    Spacer(Modifier.width(4.dp))
-                    Text(
-                        "ⓘ",
-                        fontSize = 11.sp,
-                        color = AppTheme.colors.textMuted,
-                    )
                 }
+            } else {
+                Text(
+                    title.uppercase(),
+                    style = AppTheme.typography.sectionHeader,
+                    color = AppTheme.colors.textSecondary,
+                )
             }
-            if (helpExpanded) {
-                Spacer(Modifier.height(6.dp))
-                Text(tooltip, style = AppTheme.typography.caption, color = AppTheme.colors.textSecondary)
+            if (trailing != null) {
+                Text(
+                    trailing,
+                    style = AppTheme.typography.monoMicro,
+                    color = AppTheme.colors.textMuted,
+                )
             }
-        } else {
+        }
+        if (tooltip != null && helpExpanded) {
+            Spacer(Modifier.height(4.dp))
             Text(
-                title.uppercase(),
-                style = AppTheme.typography.sectionHeader,
+                tooltip,
+                style = AppTheme.typography.caption,
                 color = AppTheme.colors.textSecondary,
             )
         }
@@ -521,15 +753,26 @@ fun BreakdownTooltip(b: ValueBreakdown, model: ModelExplain? = null) {
     Box(
         modifier = Modifier
             .padding(4.dp)
-            .appPopover(radius = AppTheme.radii.md)
+            .appPopover(radius = AppTheme.radii.lg)
             .padding(12.dp),
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(
-                "SCORE BREAKDOWN",
-                style = AppTheme.typography.sectionHeader,
-                color = AppTheme.colors.textSecondary,
-            )
+            Row(
+                modifier = Modifier.width(216.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    "SCORE BREAKDOWN",
+                    style = AppTheme.typography.sectionHeader,
+                    color = AppTheme.colors.textSecondary,
+                )
+                Text(
+                    letterGrade(b.finalScore),
+                    style = AppTheme.typography.monoSmall.copy(fontWeight = FontWeight.ExtraBold),
+                    color = valueTierColor(b.finalScore),
+                )
+            }
             Box(Modifier.width(216.dp).height(1.dp).background(AppTheme.colors.borderSubtle))
             Spacer(Modifier.height(1.dp))
             BreakdownRow("Base power", String.format("%.1f", b.baseScore))
@@ -551,6 +794,7 @@ fun BreakdownTooltip(b: ValueBreakdown, model: ModelExplain? = null) {
                             .width(216.dp)
                             .clip(RoundedCornerShape(AppTheme.radii.xs))
                             .background(AppTheme.colors.surfaceElevated)
+                            .border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(AppTheme.radii.xs))
                             .padding(horizontal = 7.dp, vertical = 5.dp),
                         verticalArrangement = Arrangement.spacedBy(2.dp),
                     ) {
@@ -575,7 +819,7 @@ fun BreakdownTooltip(b: ValueBreakdown, model: ModelExplain? = null) {
 private fun BreakdownRow(label: String, value: String, bold: Boolean = false, delta: Double = 0.0) {
     val valueColor = when {
         bold -> AppTheme.colors.accent
-        delta > 0.0 -> AppTheme.colors.accent
+        delta > 0.0 -> AppTheme.colors.positive
         delta < 0.0 -> AppTheme.colors.danger
         else -> AppTheme.colors.textPrimary
     }

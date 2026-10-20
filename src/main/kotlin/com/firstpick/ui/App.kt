@@ -1,6 +1,7 @@
 package com.firstpick.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -17,7 +18,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DropdownMenu
@@ -54,9 +54,9 @@ enum class AppScreen { DRAFT_POOL, DECK_BUILDER, GUIDES }
 @Composable
 fun App(
     state: DraftUiState,
-    isOverlayOpen: Boolean,
+    isOverlayOpen: Boolean = false,
     overlayHealth: OverlayHealth = OverlayHealth(OverlayHealthState.INACTIVE),
-    onToggleOverlay: () -> Unit,
+    onToggleOverlay: () -> Unit = {},
     committedDeck: DeckOptionUi? = null,
     onUseDeck: (DeckOptionUi) -> Unit = {},
     onSelectPickCount: (Int) -> Unit = {},
@@ -71,100 +71,109 @@ fun App(
         mutableStateOf(if (state.phase == DraftPhase.COMPLETE) AppScreen.DECK_BUILDER else AppScreen.DRAFT_POOL)
     }
 
+    val deckTabEnabled = state.deckOptions.isNotEmpty() || state.deckSoFar != null
+    val deckTabLabel = if (state.deckOptions.isNotEmpty()) "Deck builder" else "Deck so far"
+    val deckTabBadge = when {
+        state.deckOptions.isNotEmpty() -> "${state.deckOptions.size}"
+        state.deckSoFar != null -> "${state.poolSize}"
+        else -> null
+    }
+    val draftTabBadge = if (state.packCards.isNotEmpty()) "${state.packCards.size}" else null
+
     AppTheme {
         Surface(Modifier.fillMaxSize(), color = AppTheme.colors.background) {
             BoxWithConstraints(Modifier.fillMaxSize()) {
                 val compact = maxWidth < 680.dp
-                Column(Modifier.fillMaxSize().padding(horizontal = 14.dp, vertical = 12.dp)) {
-                    Header(
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 12.dp, vertical = 10.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    // Floating Raycast Command Header
+                    FloatingCommandHeader(
                         state = state,
+                        currentScreen = currentScreen,
+                        onSelectScreen = { currentScreen = it },
+                        draftTabBadge = draftTabBadge,
+                        deckTabLabel = deckTabLabel,
+                        deckTabBadge = deckTabBadge,
+                        deckTabEnabled = deckTabEnabled,
                         isOverlayOpen = isOverlayOpen,
-                        overlayHealth = overlayHealth,
-                        overlayRelevant = isOverlayOpen,
                         onToggleOverlay = onToggleOverlay,
                         onSelectPickCount = onSelectPickCount,
                         onStopSim = onStopSim,
                         onTogglePause = onTogglePause,
-                        onRetryRatings = onRetryRatings,
                         onNewDraft = onNewDraft,
                         compact = compact,
                     )
 
-                    val deckTabEnabled = state.deckOptions.isNotEmpty() || state.deckSoFar != null
-                    val deckTabLabel = if (state.deckOptions.isNotEmpty()) "Deck builder" else "Deck so far"
-                    Spacer(Modifier.height(10.dp))
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                        AppSegmentedTabs(
-                            modifier = Modifier.widthIn(max = 420.dp).fillMaxWidth(),
-                            tabs = listOf(
-                                SegmentedTabItem(
-                                    label = "Draft pool",
-                                    selected = currentScreen == AppScreen.DRAFT_POOL,
-                                    onClick = { currentScreen = AppScreen.DRAFT_POOL },
-                                ),
-                                SegmentedTabItem(
-                                    label = deckTabLabel,
-                                    selected = currentScreen == AppScreen.DECK_BUILDER,
-                                    enabled = deckTabEnabled,
-                                    onClick = { currentScreen = AppScreen.DECK_BUILDER },
-                                ),
-                                SegmentedTabItem(
-                                    label = "Guides",
-                                    selected = currentScreen == AppScreen.GUIDES,
-                                    onClick = { currentScreen = AppScreen.GUIDES },
-                                ),
-                            ),
-                        )
+                    state.dataError?.let {
+                        Text(it, style = AppTheme.typography.caption, color = AppTheme.colors.danger)
                     }
 
-                    Spacer(Modifier.height(10.dp))
+                    // Bento Main Workspace
                     val showSidebar = currentScreen == AppScreen.DRAFT_POOL &&
                         (state.poolSize > 0 || state.packCards.isNotEmpty())
-                    if (compact && showSidebar) {
-                        Column(Modifier.fillMaxSize()) {
-                            Box(Modifier.weight(0.68f).fillMaxWidth()) {
-                                PackPane(
-                                    state = state,
-                                    onSimulate = onSimulate,
-                                    onOpenGuide = { currentScreen = AppScreen.GUIDES },
-                                )
-                            }
-                            Spacer(Modifier.height(8.dp))
-                            Sidebar(state, Modifier.fillMaxWidth().weight(0.32f))
-                        }
-                    } else {
-                        Row(Modifier.fillMaxSize()) {
-                            Box(Modifier.weight(1f).fillMaxHeight()) {
-                                when (currentScreen) {
-                                    AppScreen.GUIDES -> GuidePane(state, onOpenGuideSource)
-                                    AppScreen.DECK_BUILDER -> when {
-                                        state.deckOptions.isNotEmpty() -> DeckBuilderPane(
-                                            options = state.deckOptions,
-                                            savedDeck = state.savedDeck,
-                                            committedDeck = committedDeck,
-                                            onUseDeck = onUseDeck,
-                                            guidanceEnabled = isOverlayOpen,
-                                        )
-                                        state.deckSoFar != null -> DeckSoFarPane(state.deckSoFar, state.deckSoFarCuts)
-                                        else -> PackPane(
-                                            state = state,
-                                            onSimulate = onSimulate,
-                                            onOpenGuide = { currentScreen = AppScreen.GUIDES },
-                                        )
-                                    }
-                                    AppScreen.DRAFT_POOL -> PackPane(
+                    Box(Modifier.weight(1f).fillMaxWidth()) {
+                        if (compact && showSidebar) {
+                            Column(
+                                Modifier.fillMaxSize(),
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                Box(Modifier.weight(0.68f).fillMaxWidth()) {
+                                    PackPane(
                                         state = state,
                                         onSimulate = onSimulate,
                                         onOpenGuide = { currentScreen = AppScreen.GUIDES },
                                     )
                                 }
+                                Sidebar(state, Modifier.fillMaxWidth().weight(0.32f))
                             }
-                            if (showSidebar) {
-                                Spacer(Modifier.width(12.dp))
-                                Sidebar(state)
+                        } else {
+                            Row(
+                                Modifier.fillMaxSize(),
+                                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                            ) {
+                                Box(Modifier.weight(1f).fillMaxHeight()) {
+                                    when (currentScreen) {
+                                        AppScreen.GUIDES -> GuidePane(state, onOpenGuideSource)
+                                        AppScreen.DECK_BUILDER -> when {
+                                            state.deckOptions.isNotEmpty() -> DeckBuilderPane(
+                                                options = state.deckOptions,
+                                                savedDeck = state.savedDeck,
+                                                committedDeck = committedDeck,
+                                                onUseDeck = onUseDeck,
+                                                guidanceEnabled = isOverlayOpen,
+                                            )
+                                            state.deckSoFar != null -> DeckSoFarPane(state.deckSoFar, state.deckSoFarCuts)
+                                            else -> PackPane(
+                                                state = state,
+                                                onSimulate = onSimulate,
+                                                onOpenGuide = { currentScreen = AppScreen.GUIDES },
+                                            )
+                                        }
+                                        AppScreen.DRAFT_POOL -> PackPane(
+                                            state = state,
+                                            onSimulate = onSimulate,
+                                            onOpenGuide = { currentScreen = AppScreen.GUIDES },
+                                        )
+                                    }
+                                }
+                                if (showSidebar) {
+                                    Sidebar(state, Modifier.width(252.dp).fillMaxHeight())
+                                }
                             }
                         }
                     }
+
+                    // Bottom Telemetry Footer
+                    BottomTelemetryFooter(
+                        state = state,
+                        isOverlayOpen = isOverlayOpen,
+                        overlayHealth = overlayHealth,
+                        onRetryRatings = onRetryRatings,
+                    )
                 }
             }
         }
@@ -204,52 +213,105 @@ internal fun tierAccent(tier: String) = when (tier) {
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun Header(
+private fun FloatingCommandHeader(
     state: DraftUiState,
+    currentScreen: AppScreen,
+    onSelectScreen: (AppScreen) -> Unit,
+    draftTabBadge: String?,
+    deckTabLabel: String,
+    deckTabBadge: String?,
+    deckTabEnabled: Boolean,
     isOverlayOpen: Boolean,
-    overlayHealth: OverlayHealth,
-    overlayRelevant: Boolean,
     onToggleOverlay: () -> Unit,
     onSelectPickCount: (Int) -> Unit,
     onStopSim: () -> Unit,
     onTogglePause: () -> Unit,
-    onRetryRatings: () -> Unit,
     onNewDraft: () -> Unit,
     compact: Boolean,
 ) {
-    val brandRow = @Composable {
+    val tabs = listOf(
+        SegmentedTabItem(
+            label = "Draft pool",
+            badge = draftTabBadge,
+            shortcut = "⌘1",
+            selected = currentScreen == AppScreen.DRAFT_POOL,
+            onClick = { onSelectScreen(AppScreen.DRAFT_POOL) },
+        ),
+        SegmentedTabItem(
+            label = deckTabLabel,
+            badge = deckTabBadge,
+            shortcut = "⌘2",
+            selected = currentScreen == AppScreen.DECK_BUILDER,
+            enabled = deckTabEnabled,
+            onClick = { onSelectScreen(AppScreen.DECK_BUILDER) },
+        ),
+        SegmentedTabItem(
+            label = "Guides",
+            badge = state.setCode,
+            shortcut = "⌘3",
+            selected = currentScreen == AppScreen.GUIDES,
+            onClick = { onSelectScreen(AppScreen.GUIDES) },
+        ),
+    )
+
+    val brandCluster = @Composable {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                "FirstPick",
-                style = AppTheme.typography.appTitle,
-                color = AppTheme.colors.textPrimary,
-            )
-            Spacer(Modifier.width(6.dp))
-            Box(
-                Modifier
-                    .clip(RoundedCornerShape(AppTheme.radii.xs))
-                    .background(AppTheme.colors.surfaceElevated)
-                    .padding(horizontal = 5.dp, vertical = 1.dp),
-            ) {
-                Text(
-                    "v${AppVersion.value}",
-                    style = AppTheme.typography.monoMicro,
-                    color = AppTheme.colors.textSecondary,
-                    maxLines = 1,
-                )
-            }
-            if (state.laneColors.isNotEmpty()) {
-                Spacer(Modifier.width(6.dp))
-                PipRow(state.laneColors)
-            }
-            state.synergyTier?.let {
-                Spacer(Modifier.width(6.dp))
-                SynergyTierBadge(it)
+            AppBrandMark()
+            Spacer(Modifier.width(9.dp))
+            Column(verticalArrangement = Arrangement.spacedBy(1.dp)) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    Text(
+                        "FirstPick",
+                        style = AppTheme.typography.appTitle,
+                        color = AppTheme.colors.textPrimary,
+                        maxLines = 1,
+                        softWrap = false,
+                    )
+                    Text(
+                        "v${AppVersion.value}",
+                        style = AppTheme.typography.monoMicro.copy(fontSize = 9.sp),
+                        color = AppTheme.colors.textMuted,
+                        maxLines = 1,
+                        softWrap = false,
+                    )
+                    state.setCode?.let { set ->
+                        Box(
+                            Modifier
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(AppTheme.colors.accent.copy(alpha = 0.16f))
+                                .padding(horizontal = 5.dp, vertical = 1.dp),
+                        ) {
+                            Text(
+                                set,
+                                style = AppTheme.typography.monoMicro.copy(fontWeight = FontWeight.Bold),
+                                color = AppTheme.colors.accent,
+                            )
+                        }
+                    }
+                }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(5.dp),
+                ) {
+                    if (state.laneColors.isNotEmpty()) {
+                        PipRow(state.laneColors, size = 13.dp)
+                    }
+                    Text(
+                        state.headline,
+                        style = AppTheme.typography.micro,
+                        color = AppTheme.colors.textSecondary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
             }
         }
     }
 
-    val actions = @Composable {
+    val actionCluster = @Composable {
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(5.dp),
             verticalArrangement = Arrangement.spacedBy(5.dp),
@@ -279,8 +341,7 @@ private fun Header(
                         color = AppTheme.colors.warning,
                     )
                 }
-            }
-            if (!state.simulating) {
+            } else {
                 AppButton(
                     onClick = onNewDraft,
                     variant = AppButtonVariant.Subtle,
@@ -323,52 +384,88 @@ private fun Header(
         }
     }
 
-    Column(Modifier.fillMaxWidth()) {
-        if (compact) {
-            brandRow()
-            Spacer(Modifier.height(6.dp))
-            actions()
-        } else {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                Box(Modifier.weight(1f, fill = false)) { brandRow() }
-                Spacer(Modifier.width(6.dp))
-                actions()
+    val headerShape = RoundedCornerShape(AppTheme.radii.xl)
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .clip(headerShape)
+            .background(AppTheme.colors.surface)
+            .border(1.dp, AppTheme.colors.borderDefault, headerShape)
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Box(Modifier.weight(1f, fill = false)) { brandCluster() }
+            if (!compact) {
+                Spacer(Modifier.width(8.dp))
+                actionCluster()
             }
+        }
+        if (compact) {
+            Spacer(Modifier.height(6.dp))
+            actionCluster()
         }
         Spacer(Modifier.height(6.dp))
-        FlowRow(
+        AppSegmentedTabs(
+            tabs = tabs,
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-            itemVerticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                state.headline,
-                style = AppTheme.typography.body.copy(fontWeight = FontWeight.Medium),
-                color = AppTheme.colors.accent,
-            )
-            RatingsHealthStatus(state, onRetryRatings)
-            if (overlayRelevant) {
-                OverlayHealthStatus(overlayHealth)
-            }
-        }
-        state.dataError?.let {
-            Spacer(Modifier.height(3.dp))
-            Text(it, style = AppTheme.typography.caption, color = AppTheme.colors.danger)
-        }
+            fillWidth = true,
+        )
     }
 }
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
+private fun BottomTelemetryFooter(
+    state: DraftUiState,
+    isOverlayOpen: Boolean,
+    overlayHealth: OverlayHealth,
+    onRetryRatings: () -> Unit,
+) {
+    if (state.synergyTier == null && state.ratingsDataStatus == RatingsDataStatus.IDLE && !isOverlayOpen) return
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            state.synergyTier?.let {
+                SynergyTierBadge(it)
+            }
+            if (state.poolSize > 0) {
+                Text(
+                    "${state.poolSize} cards in pool",
+                    style = AppTheme.typography.monoMicro,
+                    color = AppTheme.colors.textMuted,
+                )
+            }
+        }
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+            itemVerticalAlignment = Alignment.CenterVertically,
+        ) {
+            RatingsHealthStatus(state, onRetryRatings)
+            if (isOverlayOpen) {
+                OverlayHealthStatus(overlayHealth)
+            }
+        }
+    }
+}
+
+@Composable
 private fun RatingsHealthStatus(state: DraftUiState, onRetry: () -> Unit) {
     if (state.ratingsDataStatus == RatingsDataStatus.IDLE) return
     val color = when (state.ratingsDataStatus) {
-        RatingsDataStatus.FRESH -> AppTheme.colors.accent
+        RatingsDataStatus.FRESH -> AppTheme.colors.positive
         RatingsDataStatus.CACHED -> AppTheme.colors.accentSecondary
         RatingsDataStatus.LOADING -> AppTheme.colors.accentSecondary
         RatingsDataStatus.STALE_CACHE -> AppTheme.colors.warning
@@ -382,7 +479,7 @@ private fun RatingsHealthStatus(state: DraftUiState, onRetry: () -> Unit) {
     ) {
         Box(
             modifier = Modifier
-                .appBadge(color, fillAlpha = 0.11f, borderAlpha = 0.28f, shape = RoundedCornerShape(AppTheme.radii.xs))
+                .appBadge(color, fillAlpha = 0.12f, borderAlpha = 0.30f, shape = RoundedCornerShape(AppTheme.radii.xs))
                 .semantics {
                     liveRegion = LiveRegionMode.Polite
                     stateDescription = ratingsDataDescription(state)
@@ -441,7 +538,7 @@ private val RatingsTimeFormatter: DateTimeFormatter =
 @Composable
 private fun OverlayHealthStatus(health: OverlayHealth) {
     val color = when (health.state) {
-        OverlayHealthState.ACTIVE -> AppTheme.colors.accent
+        OverlayHealthState.ACTIVE -> AppTheme.colors.positive
         OverlayHealthState.READING -> AppTheme.colors.accentSecondary
         OverlayHealthState.WAITING_FOR_ARENA, OverlayHealthState.INACTIVE -> AppTheme.colors.textSecondary
         OverlayHealthState.CAPTURE_UNAVAILABLE,
@@ -451,7 +548,7 @@ private fun OverlayHealthStatus(health: OverlayHealth) {
     }
     Box(
         modifier = Modifier
-            .appBadge(color, fillAlpha = 0.11f, borderAlpha = 0.28f, shape = RoundedCornerShape(AppTheme.radii.xs))
+            .appBadge(color, fillAlpha = 0.12f, borderAlpha = 0.30f, shape = RoundedCornerShape(AppTheme.radii.xs))
             .semantics {
                 liveRegion = LiveRegionMode.Polite
                 stateDescription = "Overlay ${health.state.label}. ${health.detail}"
@@ -503,4 +600,4 @@ private fun PickCountSelector(current: Int, detected: Int, onSelect: (Int) -> Un
     }
 }
 
-private val HeaderButtonPadding = PaddingValues(horizontal = 7.dp, vertical = 4.dp)
+private val HeaderButtonPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)

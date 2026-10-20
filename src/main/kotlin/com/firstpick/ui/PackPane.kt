@@ -1,17 +1,22 @@
 package com.firstpick.ui
 
+import androidx.compose.foundation.LocalScrollbarStyle
+import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -21,8 +26,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,6 +41,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
@@ -39,13 +49,14 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.firstpick.advisor.ConfidenceLevel
+import com.firstpick.advisor.PickConfidence
 import com.firstpick.model.DraftPhase
 import com.firstpick.sim.DraftSimulator
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -56,7 +67,7 @@ internal fun PackPane(
 ) = when {
     state.loadingRatings && state.packCards.isEmpty() -> Centered {
         Row(
-            modifier = Modifier.appPanel(padding = 14.dp, radius = AppTheme.radii.md),
+            modifier = Modifier.appPanel(padding = 14.dp, radius = AppTheme.radii.xl),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp, color = AppTheme.colors.accent)
@@ -71,36 +82,87 @@ internal fun PackPane(
 
     state.packCards.isEmpty() -> Centered {
         val idle = state.phase == DraftPhase.IDLE
+        val scrollState = rememberScrollState()
         Column(
-            modifier = Modifier.widthIn(max = 460.dp),
+            modifier = Modifier
+                .widthIn(max = 520.dp)
+                .fillMaxWidth()
+                .verticalScroll(scrollState)
+                .padding(vertical = 6.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
+            // Raycast Hero Connection Status Card
             Column(
-                modifier = Modifier.fillMaxWidth().appPanel(padding = 16.dp, radius = AppTheme.radii.lg),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(6.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .appHeroCard(radius = AppTheme.radii.xl)
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        Box(
+                            Modifier
+                                .size(7.dp)
+                                .clip(CircleShape)
+                                .background(AppTheme.colors.positive),
+                        )
+                        Text(
+                            "ARENA LOG WATCHER ACTIVE",
+                            style = AppTheme.typography.sectionHeader,
+                            color = AppTheme.colors.positive,
+                        )
+                    }
+                    PipRow(listOf('W', 'U', 'B', 'R', 'G'), size = 14.dp)
+                }
                 Text(
                     if (idle) "Start a draft in MTG Arena" else "No cards in the current pack",
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.SemiBold,
+                    style = AppTheme.typography.paneTitle.copy(fontSize = 17.sp, fontWeight = FontWeight.Bold),
                     color = AppTheme.colors.textPrimary,
-                    textAlign = TextAlign.Center,
                 )
                 if (idle) {
-                    Text(
-                        "Enable Options → Account → Detailed Logs (Plugin Support)",
-                        style = AppTheme.typography.caption,
-                        color = AppTheme.colors.textSecondary,
-                        textAlign = TextAlign.Center,
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(5.dp),
+                    ) {
+                        Text(
+                            "Enable",
+                            style = AppTheme.typography.caption,
+                            color = AppTheme.colors.textSecondary,
+                        )
+                        for ((idx, step) in listOf("Options", "Account", "Detailed Logs (Plugin Support)").withIndex()) {
+                            if (idx > 0) {
+                                Text("→", style = AppTheme.typography.micro, color = AppTheme.colors.textMuted)
+                            }
+                            Box(
+                                Modifier
+                                    .clip(RoundedCornerShape(AppTheme.radii.xs))
+                                    .background(AppTheme.colors.surfaceElevated)
+                                    .border(1.dp, AppTheme.colors.borderDefault, RoundedCornerShape(AppTheme.radii.xs))
+                                    .padding(horizontal = 6.dp, vertical = 2.dp),
+                            ) {
+                                Text(
+                                    step,
+                                    style = AppTheme.typography.monoMicro,
+                                    color = AppTheme.colors.textPrimary,
+                                )
+                            }
+                        }
+                    }
                 }
             }
 
             if (DevFlags.demoEnabled && idle && !state.simulating) {
                 Column(
-                    modifier = Modifier.fillMaxWidth().appPanel(padding = 14.dp, radius = AppTheme.radii.lg),
+                    modifier = Modifier.fillMaxWidth().appPanel(padding = 14.dp, radius = AppTheme.radii.xl),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
@@ -126,50 +188,428 @@ internal fun PackPane(
         }
     }
 
-    else -> Column(Modifier.fillMaxSize()) {
-        if (state.picksPerChoice == 2) {
-            val pair = state.packCards.filter { it.recommendedPair }
-            Box(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 6.dp)
-                    .appBadge(AppTheme.colors.accent, fillAlpha = 0.11f, borderAlpha = 0.30f, shape = RoundedCornerShape(AppTheme.radii.sm))
-                    .padding(horizontal = 10.dp, vertical = 6.dp),
+    else -> BoxWithConstraints(Modifier.fillMaxSize()) {
+        val useTwoColumns = maxWidth >= 340.dp
+        val showGuide = shouldShowGuideStarter(state)
+        val unrated = hasUnratedCards(state.packCards)
+        val showBestPick = !unrated && state.picksPerChoice == 1
+        val conf = remember(state.packCards) { packConfidence(state.packCards) }
+        val packSize = state.packCards.size
+        val heroCard = state.packCards.first()
+        val restCards = state.packCards.drop(1)
+        val listState = rememberLazyListState()
+
+        Box(Modifier.fillMaxSize()) {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize().padding(end = 10.dp),
+                state = listState,
+                contentPadding = PaddingValues(vertical = 2.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                Text(
-                    if (pair.size == 2) "Suggested pair: ${pair.joinToString(" + ") { it.name }}"
-                    else if (state.packCards.size == 1) "Take the remaining card"
-                    else "Choose two cards; pair advice unavailable",
-                    style = AppTheme.typography.body.copy(fontWeight = FontWeight.SemiBold),
-                    color = AppTheme.colors.accent,
-                )
+                if (state.picksPerChoice == 2) {
+                    item(key = "pair-banner") {
+                        val pair = state.packCards.filter { it.recommendedPair }
+                        Box(
+                            Modifier
+                                .fillMaxWidth()
+                                .appBadge(
+                                    AppTheme.colors.accent,
+                                    fillAlpha = 0.14f,
+                                    borderAlpha = 0.36f,
+                                    shape = RoundedCornerShape(AppTheme.radii.md),
+                                )
+                                .padding(horizontal = 10.dp, vertical = 6.dp),
+                        ) {
+                            Text(
+                                if (pair.size == 2) "Suggested pair: ${pair.joinToString(" + ") { it.name }}"
+                                else if (state.packCards.size == 1) "Take the remaining card"
+                                else "Choose two cards; pair advice unavailable",
+                                style = AppTheme.typography.body.copy(fontWeight = FontWeight.SemiBold),
+                                color = AppTheme.colors.accent,
+                            )
+                        }
+                    }
+                }
+
+                if (showGuide) {
+                    item(key = "guide-starter") {
+                        SetGuideStarter(state, onOpenGuide)
+                    }
+                }
+
+                if (unrated) {
+                    item(key = "unrated-note") {
+                        Text(
+                            "Card power is unavailable for unrated cards. Pool fit and synergy notes update as you draft.",
+                            style = AppTheme.typography.caption,
+                            color = AppTheme.colors.textSecondary,
+                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp),
+                        )
+                    }
+                }
+
+                // Hero #1 Recommended Pick Spotlight Card
+                item(key = "hero-${heroCard.grpId}-${heroCard.rank}") {
+                    HeroPickCard(
+                        card = heroCard,
+                        packSize = packSize,
+                        confidence = if (state.picksPerChoice == 1) conf else null,
+                        showBestPick = showBestPick,
+                    )
+                }
+
+                // Remaining Pack Cards in a 2-Column Bento Grid (or 1-Column when narrow)
+                if (restCards.isNotEmpty()) {
+                    if (useTwoColumns) {
+                        val pairs = restCards.chunked(2)
+                        items(pairs, key = { pair -> "pair-${pair.first().grpId}-${pair.first().rank}" }) { pair ->
+                            Row(
+                                modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                val first = pair[0]
+                                PackBentoCard(
+                                    card = first,
+                                    packSize = packSize,
+                                    highlight = first.recommendedPair,
+                                    modifier = Modifier.weight(1f).fillMaxHeight(),
+                                )
+                                if (pair.size > 1) {
+                                    val second = pair[1]
+                                    PackBentoCard(
+                                        card = second,
+                                        packSize = packSize,
+                                        highlight = second.recommendedPair,
+                                        modifier = Modifier.weight(1f).fillMaxHeight(),
+                                    )
+                                } else {
+                                    Spacer(Modifier.weight(1f))
+                                }
+                            }
+                        }
+                    } else {
+                        items(restCards, key = { "${it.grpId}#${it.rank}" }) { card ->
+                            PackBentoCard(
+                                card = card,
+                                packSize = packSize,
+                                highlight = card.recommendedPair,
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                        }
+                    }
+                }
             }
-        }
-        if (shouldShowGuideStarter(state)) {
-            SetGuideStarter(state, onOpenGuide)
-            Spacer(Modifier.height(6.dp))
-        }
-        if (hasUnratedCards(state.packCards)) {
-            Text(
-                "Card power is unavailable for unrated cards. Pool fit and synergy notes update as you draft.",
-                style = AppTheme.typography.caption,
-                color = AppTheme.colors.textSecondary,
-                modifier = Modifier.padding(horizontal = 4.dp, vertical = 6.dp),
+            VerticalScrollbar(
+                adapter = rememberScrollbarAdapter(listState),
+                modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(),
+                style = LocalScrollbarStyle.current.copy(
+                    unhoverColor = AppTheme.colors.borderDefault,
+                    hoverColor = AppTheme.colors.accent,
+                ),
             )
         }
-        if (state.picksPerChoice == 1) ConfidenceBanner(state.packCards)
-        LazyColumn(
-            Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(vertical = 2.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun HeroPickCard(
+    card: PackCardUi,
+    packSize: Int,
+    confidence: PickConfidence?,
+    showBestPick: Boolean,
+) {
+    val bombConsistent = card.isBomb && isBombTier(card.value)
+    val tierColor = valueTierColor(card.value)
+    val modelExplain = card.breakdown?.takeIf { it.modelShift != 0.0 && card.modelRank != null }?.let { b ->
+        ModelExplain(
+            rank = card.modelRank!!,
+            packSize = packSize,
+            soloValue = card.value?.minus(b.modelShift),
+            ata = card.ata,
+            alsa = card.alsa,
+        )
+    }
+    val bestPickLabel = when {
+        !showBestPick -> "#1 IN PACK"
+        confidence == null -> "BEST PICK"
+        confidence.level == ConfidenceLevel.TOSS_UP -> "TOSS-UP · ±${"%.1f".format(confidence.gap)} PTS"
+        else -> "BEST PICK · +${"%.1f".format(confidence.gap)} PTS"
+    }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .appHeroCard(radius = AppTheme.radii.xl)
+            .padding(horizontal = 14.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
-            items(state.packCards, key = { "${it.grpId}#${it.rank}" }) {
-                PackRow(
-                    it,
-                    state.packCards.size,
-                    showBestPick = !hasUnratedCards(state.packCards) && state.picksPerChoice == 1,
+            // Top Pill Bar: Best Pick Pill + Tier Pill (with Breakdown Popover) + Official MTG Mana Symbols
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(7.dp),
+            ) {
+                Box(
+                    Modifier
+                        .clip(RoundedCornerShape(AppTheme.radii.pill))
+                        .background(
+                            if (confidence?.level == ConfidenceLevel.TOSS_UP) AppTheme.colors.warning
+                            else AppTheme.colors.accent,
+                        )
+                        .padding(horizontal = 8.dp, vertical = 2.dp),
+                ) {
+                    Text(
+                        bestPickLabel,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Black,
+                        color = AppTheme.colors.textOnAccent,
+                    )
+                }
+
+                val tierBadgeContent: @Composable () -> Unit = {
+                    Row(
+                        modifier = Modifier
+                            .appBadge(
+                                tierColor,
+                                fillAlpha = 0.20f,
+                                borderAlpha = 0.48f,
+                                shape = RoundedCornerShape(AppTheme.radii.xs),
+                            )
+                            .padding(horizontal = 6.dp, vertical = 2.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    ) {
+                        Text(
+                            "Tier ${letterGrade(card.value)}",
+                            style = AppTheme.typography.monoMicro.copy(fontWeight = FontWeight.Bold),
+                            color = tierColor,
+                        )
+                        if (card.value != null) {
+                            Text(
+                                "· ${card.value.roundToInt()}",
+                                style = AppTheme.typography.monoMicro,
+                                color = AppTheme.colors.textPrimary,
+                            )
+                        }
+                    }
+                }
+                if (card.breakdown != null) {
+                    ScoreBreakdownTrigger(card.breakdown, modelExplain) { tierBadgeContent() }
+                } else {
+                    tierBadgeContent()
+                }
+
+                // Official MTG Mana Symbols
+                PipRow(card.color.ifEmpty { "C" }.toList(), size = 16.dp)
+            }
+
+            // Hero Card Name
+            CardPreview(card.imageUrl, description = card.name) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    if (bombConsistent) {
+                        Text(
+                            "★",
+                            color = AppTheme.colors.warning,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                        )
+                    }
+                    Text(
+                        card.name,
+                        fontSize = 17.sp,
+                        lineHeight = 21.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = AppTheme.colors.textPrimary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+            }
+
+            // Reasons & Confidence Context
+            val shownReasons = if (bombConsistent) card.reasons else card.reasons.filter { it != "Bomb" }
+            if (shownReasons.isNotEmpty()) {
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(5.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    for (reason in shownReasons.take(5)) {
+                        ReasonChip(reason)
+                    }
+                }
+            }
+            if (confidence != null && confidence.level != ConfidenceLevel.CLEAR) {
+                Text(
+                    if (confidence.level == ConfidenceLevel.TOSS_UP) {
+                        "Top ${confidence.contenders} are nearly tied — trust your read."
+                    } else {
+                        "Only a slight edge to the top pick."
+                    },
+                    style = AppTheme.typography.micro,
+                    color = AppTheme.colors.textSecondary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
+        }
+
+        Spacer(Modifier.width(12.dp))
+
+        // Right GIH Win Rate Spotlight Column
+        Column(
+            horizontalAlignment = Alignment.End,
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
+            Text(
+                text = if (card.gihWr != null) "${card.gihWr.asPct()}%" else "—",
+                fontFamily = AppTheme.typography.monoValue.fontFamily,
+                fontSize = 20.sp,
+                lineHeight = 22.sp,
+                fontWeight = FontWeight.Black,
+                color = if (card.gihWr != null) AppTheme.colors.accent else AppTheme.colors.textMuted,
+            )
+            Text(
+                text = "GIH Win%",
+                style = AppTheme.typography.micro,
+                color = AppTheme.colors.textSecondary,
+            )
+            if (card.alsa != null) {
+                Text(
+                    text = "ALSA ${card.alsa.as1dp()}",
+                    style = AppTheme.typography.monoMicro,
+                    color = AppTheme.colors.textMuted,
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun PackBentoCard(
+    card: PackCardUi,
+    packSize: Int,
+    highlight: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    val bombConsistent = card.isBomb && isBombTier(card.value)
+    val tierColor = valueTierColor(card.value)
+    val modelExplain = card.breakdown?.takeIf { it.modelShift != 0.0 && card.modelRank != null }?.let { b ->
+        ModelExplain(
+            rank = card.modelRank!!,
+            packSize = packSize,
+            soloValue = card.value?.minus(b.modelShift),
+            ata = card.ata,
+            alsa = card.alsa,
+        )
+    }
+
+    Row(
+        modifier = modifier
+            .alpha(if (card.guideConstrained) 0.52f else 1f)
+            .appCard(selected = highlight, radius = AppTheme.radii.xl)
+            .padding(horizontal = 11.dp, vertical = 9.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            // Rank + Official MTG Mana Symbols + Card Title
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                Text(
+                    if (card.value == null) "—" else "#${card.rank}",
+                    style = AppTheme.typography.monoSmall.copy(fontWeight = FontWeight.Bold),
+                    color = if (highlight) AppTheme.colors.accent else AppTheme.colors.textSecondary,
+                )
+                PipRow(card.color.ifEmpty { "C" }.toList(), size = 14.dp)
+                CardPreview(card.imageUrl, description = card.name, modifier = Modifier.weight(1f, fill = false)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    ) {
+                        if (bombConsistent) {
+                            Text("★", color = AppTheme.colors.warning, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        }
+                        Text(
+                            card.name,
+                            style = AppTheme.typography.cardTitle,
+                            color = AppTheme.colors.textPrimary,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                }
+            }
+
+            // Reason Chips
+            val shownReasons = if (bombConsistent) card.reasons else card.reasons.filter { it != "Bomb" }
+            if (shownReasons.isNotEmpty()) {
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalArrangement = Arrangement.spacedBy(3.dp),
+                ) {
+                    for (reason in shownReasons.take(3)) {
+                        ReasonChip(reason)
+                    }
+                }
+            } else {
+                Text(
+                    valueTierLabel(card.value),
+                    style = AppTheme.typography.micro,
+                    color = AppTheme.colors.textMuted,
+                )
+            }
+        }
+
+        Spacer(Modifier.width(8.dp))
+
+        // Right Column: Tier Grade (with ScoreBreakdownTrigger) + GIH%
+        Column(
+            horizontalAlignment = Alignment.End,
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
+            val gradePill: @Composable () -> Unit = {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(3.dp),
+                ) {
+                    Text(
+                        letterGrade(card.value),
+                        style = AppTheme.typography.monoValue.copy(fontWeight = FontWeight.ExtraBold),
+                        color = tierColor,
+                    )
+                    if (card.value != null) {
+                        Text(
+                            "(${card.value.roundToInt()})",
+                            style = AppTheme.typography.monoMicro,
+                            color = AppTheme.colors.textMuted,
+                        )
+                    }
+                }
+            }
+            if (card.breakdown != null) {
+                ScoreBreakdownTrigger(card.breakdown, modelExplain) { gradePill() }
+            } else {
+                gradePill()
+            }
+            Text(
+                text = if (card.gihWr != null) "${card.gihWr.asPct()}%" else "—",
+                style = AppTheme.typography.monoSmall,
+                color = if (card.gihWr != null) AppTheme.colors.textSecondary else AppTheme.colors.textMuted,
+            )
         }
     }
 }
@@ -191,17 +631,14 @@ private fun SetGuideStarter(state: DraftUiState, onOpenGuide: () -> Unit) {
         state.guideLoading -> "Preparing themes, color pairs, and top cards…"
         else -> "Draft fundamentals"
     }
-    val shape = RoundedCornerShape(AppTheme.radii.sm)
     Row(
         Modifier
             .fillMaxWidth()
-            .clip(shape)
-            .background(AppTheme.colors.surfaceSelected)
-            .border(1.dp, AppTheme.colors.borderAccent, shape)
+            .appCard(selected = true, radius = AppTheme.radii.xl)
             .semantics { role = Role.Button }
             .focusable()
             .clickable(role = Role.Button, onClick = onOpenGuide)
-            .padding(horizontal = 10.dp, vertical = 6.dp),
+            .padding(horizontal = 12.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(Modifier.weight(1f)) {
@@ -232,13 +669,10 @@ private fun SetGuideStarter(state: DraftUiState, onOpenGuide: () -> Unit) {
 @Composable
 private fun SynergyCoverage(researched: List<String>, grounded: List<String>, modelSets: List<String> = emptyList()) {
     var expandedTier by remember { mutableStateOf<String?>(null) }
-    val shape = RoundedCornerShape(AppTheme.radii.lg)
     Column(
         Modifier
             .fillMaxWidth()
-            .clip(shape)
-            .background(AppTheme.colors.surface)
-            .border(1.dp, AppTheme.colors.borderSubtle, shape),
+            .appTable(radius = AppTheme.radii.xl),
     ) {
         CoverageRow(
             "Deep synergy", researched, "Full archetype + combo synergy on these sets.",
@@ -328,121 +762,5 @@ private fun DemoSetButton(set: String, recommended: Boolean, onClick: () -> Unit
             style = AppTheme.typography.monoValue.copy(fontWeight = FontWeight.Bold),
             color = if (recommended) AppTheme.colors.textOnAccent else AppTheme.colors.textPrimary,
         )
-    }
-}
-
-@Composable
-private fun ConfidenceBanner(cards: List<PackCardUi>) {
-    val confidence = packConfidence(cards) ?: return
-    if (confidence.level == ConfidenceLevel.CLEAR) return
-    val tossUp = confidence.level == ConfidenceLevel.TOSS_UP
-    val accent = if (tossUp) AppTheme.colors.warning else AppTheme.colors.accentSecondary
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .padding(bottom = 6.dp)
-            .appBadge(accent, fillAlpha = 0.11f, borderAlpha = 0.28f, shape = RoundedCornerShape(AppTheme.radii.sm))
-            .padding(horizontal = 9.dp, vertical = 5.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Box(
-            Modifier
-                .clip(RoundedCornerShape(AppTheme.radii.xs))
-                .background(accent)
-                .padding(horizontal = 6.dp, vertical = 1.dp),
-        ) {
-            Text(
-                if (tossUp) "Toss-up" else "Lean",
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Bold,
-                color = AppTheme.colors.textOnAccent,
-            )
-        }
-        Spacer(Modifier.width(8.dp))
-        Text(
-            if (tossUp) "Top ${confidence.contenders} are nearly tied — trust your read." else "Only a slight edge to the top pick.",
-            style = AppTheme.typography.caption,
-            color = AppTheme.colors.textPrimary,
-        )
-    }
-}
-
-@Composable
-private fun PackRow(card: PackCardUi, packSize: Int, showBestPick: Boolean) {
-    val top = card.recommendedPair || (showBestPick && card.rank == 1 && card.value != null)
-    val bombConsistent = card.isBomb && isBombTier(card.value)
-
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .appRow(highlighted = top, paddingValues = PaddingValues(horizontal = 10.dp, vertical = 6.dp)),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(
-            if (card.value == null) "—" else "${card.rank}",
-            style = AppTheme.typography.monoSmall,
-            color = if (top) AppTheme.colors.accent else AppTheme.colors.textMuted,
-            modifier = Modifier.width(20.dp),
-        )
-        if (card.breakdown != null) {
-            val model = card.breakdown.takeIf { it.modelShift != 0.0 && card.modelRank != null }?.let { b ->
-                ModelExplain(
-                    rank = card.modelRank!!,
-                    packSize = packSize,
-                    soloValue = card.value?.minus(b.modelShift),
-                    ata = card.ata,
-                    alsa = card.alsa,
-                )
-            }
-            ScoreBreakdownTrigger(card.breakdown, model) { GradeBadge(card.value) }
-        } else {
-            GradeBadge(card.value)
-        }
-        Spacer(Modifier.width(10.dp))
-        Column(Modifier.weight(1f)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                if (bombConsistent) {
-                    Text("★ ", fontSize = 12.sp, color = AppTheme.colors.warning)
-                }
-                CardPreview(card.imageUrl, description = card.name) {
-                    Text(
-                        card.name,
-                        style = AppTheme.typography.rowTitle.copy(
-                            fontWeight = if (top) FontWeight.SemiBold else FontWeight.Medium,
-                        ),
-                        color = AppTheme.colors.textPrimary,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
-            }
-            val shownReasons = if (bombConsistent) card.reasons else card.reasons.filter { it != "Bomb" }
-            if (shownReasons.isNotEmpty()) {
-                Text(
-                    shownReasons.joinToString(" · "),
-                    style = AppTheme.typography.caption,
-                    color = AppTheme.colors.textSecondary,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
-        }
-        Spacer(Modifier.width(8.dp))
-        if (card.color.isNotEmpty()) {
-            PipRow(card.color.toList())
-            Spacer(Modifier.width(10.dp))
-        }
-        Column(horizontalAlignment = Alignment.End, modifier = Modifier.width(42.dp)) {
-            Text(
-                card.gihWr.asPct(),
-                style = AppTheme.typography.monoValue,
-                color = AppTheme.colors.textPrimary,
-            )
-            Text(
-                "GIH",
-                style = AppTheme.typography.monoMicro,
-                color = AppTheme.colors.textMuted,
-            )
-        }
     }
 }

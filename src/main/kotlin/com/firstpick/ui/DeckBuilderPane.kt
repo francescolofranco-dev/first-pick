@@ -3,6 +3,7 @@ package com.firstpick.ui
 import androidx.compose.foundation.LocalScrollbarStyle
 import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
@@ -36,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.selected
@@ -130,26 +132,8 @@ internal fun DeckBuilderPane(
                         )
                     }
                 }
-                Spacer(Modifier.height(12.dp))
-                Column(
-                    Modifier
-                        .fillMaxWidth()
-                        .appPanel(padding = 10.dp, radius = AppTheme.radii.md),
-                    verticalArrangement = Arrangement.spacedBy(2.dp),
-                ) {
-                    Text(
-                        "${sel.title} (${sel.colors}) · $spellCount spells · ${sel.landLine}",
-                        style = AppTheme.typography.body.copy(fontWeight = FontWeight.SemiBold),
-                        color = AppTheme.colors.textPrimary,
-                    )
-                    Text(
-                        (listOf(sel.identityLine) + sel.identityReasons.take(2) + sel.powerReasons.take(2)).joinToString(" · "),
-                        style = AppTheme.typography.caption,
-                        color = AppTheme.colors.textSecondary,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
+                Spacer(Modifier.height(10.dp))
+                DeckBentoSummaryCard(sel, spellCount)
                 Spacer(Modifier.height(10.dp))
                 DeckListHeader()
                 Spacer(Modifier.height(4.dp))
@@ -181,36 +165,7 @@ internal fun DeckSoFarPane(deck: DeckOptionUi, cuts: List<DeckSpellUi>) {
                     color = AppTheme.colors.textSecondary,
                 )
                 Spacer(Modifier.height(10.dp))
-                Column(
-                    Modifier
-                        .fillMaxWidth()
-                        .appPanel(padding = 12.dp, radius = AppTheme.radii.md),
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        PipRow(deck.colors.toList())
-                        Spacer(Modifier.width(7.dp))
-                        Text(
-                            deck.title,
-                            style = AppTheme.typography.cardTitle,
-                            color = AppTheme.colors.textPrimary,
-                        )
-                        Spacer(Modifier.width(10.dp))
-                        DeckPowerSummary(deck)
-                    }
-                    Text(
-                        "$spellCount/23 spells · ${deck.creatures} creatures · ${deck.removal} removal",
-                        style = AppTheme.typography.body,
-                        color = AppTheme.colors.textSecondary,
-                    )
-                    Text(
-                        (listOf(deck.identityLine) + deck.powerReasons.take(2)).joinToString(" · "),
-                        style = AppTheme.typography.caption,
-                        color = AppTheme.colors.textMuted,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
+                DeckBentoSummaryCard(deck, spellCount, targetSpells = 23)
                 Spacer(Modifier.height(10.dp))
                 DeckListHeader()
                 Spacer(Modifier.height(4.dp))
@@ -226,6 +181,58 @@ internal fun DeckSoFarPane(deck: DeckOptionUi, cuts: List<DeckSpellUi>) {
             item { SectionLabel("Not making the cut yet") }
             items(cuts) { DeckSpellRow(it, muted = true) }
         }
+    }
+}
+
+@Composable
+private fun DeckBentoSummaryCard(
+    deck: DeckOptionUi,
+    spellCount: Int,
+    targetSpells: Int? = null,
+) {
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .appHeroCard(radius = AppTheme.radii.xl)
+            .padding(horizontal = 14.dp, vertical = 10.dp),
+        verticalArrangement = Arrangement.spacedBy(5.dp),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(7.dp),
+            ) {
+                PipRow(deck.colors.toList(), size = 16.dp)
+                Text(
+                    deck.title,
+                    style = AppTheme.typography.cardTitle.copy(fontSize = 14.sp, fontWeight = FontWeight.Bold),
+                    color = AppTheme.colors.textPrimary,
+                )
+                DeckPowerSummary(deck)
+            }
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                val spellsLabel = if (targetSpells != null) "$spellCount/$targetSpells spells" else "$spellCount spells"
+                Text(
+                    "$spellsLabel · ${deck.creatures} creatures · ${deck.removal} removal",
+                    style = AppTheme.typography.monoSmall,
+                    color = AppTheme.colors.textSecondary,
+                )
+            }
+        }
+        Text(
+            (listOf(deck.identityLine) + deck.identityReasons.take(2) + deck.powerReasons.take(2)).joinToString(" · "),
+            style = AppTheme.typography.caption,
+            color = AppTheme.colors.textSecondary,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+        )
     }
 }
 
@@ -275,14 +282,14 @@ private fun DeckListHeader() {
             "TYPE / ROLE",
             style = AppTheme.typography.sectionHeader,
             color = AppTheme.colors.textMuted,
-            modifier = Modifier.width(136.dp),
+            modifier = Modifier.width(142.dp),
         )
         Text(
             "GIH%",
             style = AppTheme.typography.sectionHeader,
             color = AppTheme.colors.textMuted,
             textAlign = TextAlign.End,
-            modifier = Modifier.width(44.dp),
+            modifier = Modifier.width(48.dp),
         )
     }
 }
@@ -306,19 +313,33 @@ private fun DeckSpellRow(s: DeckSpellUi, muted: Boolean = false) {
             .appRow(paddingValues = PaddingValues(horizontal = 10.dp, vertical = 5.dp)),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        ManaCost(
-            s.manaCost,
-            isLand = s.isLand,
-            modifier = Modifier.width(DeckManaCostWidth).padding(end = 6.dp),
-        )
+        val landColors = if (s.isLand && s.manaCost.isNullOrBlank()) {
+            basicLandSymbol(s.name)?.let(::listOf) ?: s.color.toList().filter { it in "WUBRG" }
+        } else {
+            emptyList()
+        }
+        if (landColors.isNotEmpty()) {
+            Box(
+                modifier = Modifier.width(DeckManaCostWidth).padding(end = 6.dp),
+                contentAlignment = Alignment.CenterStart,
+            ) {
+                PipRow(landColors, size = 15.dp)
+            }
+        } else {
+            ManaCost(
+                s.manaCost,
+                isLand = s.isLand,
+                modifier = Modifier.width(DeckManaCostWidth).padding(end = 6.dp),
+            )
+        }
         Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
             if (s.count > 1) {
                 Box(
                     Modifier
                         .appBadge(
                             AppTheme.colors.accent,
-                            fillAlpha = 0.14f,
-                            borderAlpha = 0.34f,
+                            fillAlpha = 0.16f,
+                            borderAlpha = 0.38f,
                             shape = RoundedCornerShape(AppTheme.radii.xs),
                         )
                         .padding(horizontal = 5.dp, vertical = 1.dp),
@@ -342,7 +363,7 @@ private fun DeckSpellRow(s: DeckSpellUi, muted: Boolean = false) {
             }
         }
         Row(
-            Modifier.width(136.dp),
+            Modifier.width(142.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
@@ -359,14 +380,18 @@ private fun DeckSpellRow(s: DeckSpellUi, muted: Boolean = false) {
                 RoleChip(it)
             }
         }
-        Text(
-            s.gihWr.asPct(),
-            style = AppTheme.typography.monoSmall,
-            color = AppTheme.colors.textPrimary,
-            textAlign = TextAlign.End,
-            modifier = Modifier.width(44.dp),
-        )
+        WinRateMeter(s.gihWr)
     }
+}
+
+private fun basicLandSymbol(name: String): Char? = when (name) {
+    "Plains" -> 'W'
+    "Island" -> 'U'
+    "Swamp" -> 'B'
+    "Mountain" -> 'R'
+    "Forest" -> 'G'
+    "Wastes" -> 'C'
+    else -> null
 }
 
 @Composable
@@ -395,9 +420,9 @@ private fun RoleChip(role: String) {
 @Composable
 private fun roleColor(role: String): Color = when (role) {
     "Removal" -> AppTheme.colors.danger
-    "Fixing" -> AppTheme.colors.accent
+    "Fixing" -> AppTheme.colors.positive
     "Finisher" -> AppTheme.colors.warning
-    else -> AppTheme.colors.accentSecondary
+    else -> AppTheme.colors.accent
 }
 
 @Composable
@@ -409,10 +434,11 @@ private fun OptionCard(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
+    val powerFraction = (opt.power / 100f).coerceIn(0.12f, 1f)
     Column(
         modifier
             .width(204.dp)
-            .appCard(selected = previewed, active = active, radius = AppTheme.radii.lg)
+            .appCard(selected = previewed, active = active, radius = AppTheme.radii.xl)
             .semantics {
                 selected = previewed
                 stateDescription = buildString {
@@ -425,9 +451,10 @@ private fun OptionCard(
             .padding(11.dp),
         verticalArrangement = Arrangement.spacedBy(5.dp),
     ) {
-        Box(
-            modifier = Modifier.height(13.dp),
-            contentAlignment = Alignment.CenterStart,
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             when {
                 active -> Text(
@@ -446,9 +473,10 @@ private fun OptionCard(
                     color = AppTheme.colors.textMuted,
                 )
             }
+            DeckPowerSummary(opt)
         }
         Row(verticalAlignment = Alignment.CenterVertically) {
-            PipRow(opt.colors.toList())
+            PipRow(opt.colors.toList(), size = 15.dp)
             Spacer(Modifier.width(6.dp))
             Text(
                 opt.title,
@@ -458,7 +486,32 @@ private fun OptionCard(
                 overflow = TextOverflow.Ellipsis,
             )
         }
-        DeckPowerSummary(opt)
+        // Raycast Coral-to-Amber Power Progress Bar
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .height(4.dp)
+                .clip(RoundedCornerShape(99.dp))
+                .background(AppTheme.colors.background),
+        ) {
+            Box(
+                Modifier
+                    .fillMaxHeight()
+                    .fillMaxWidth(powerFraction)
+                    .clip(RoundedCornerShape(99.dp))
+                    .background(
+                        if (previewed || recommended) {
+                            Brush.horizontalGradient(
+                                listOf(AppTheme.colors.accent, AppTheme.colors.accentSecondary),
+                            )
+                        } else {
+                            Brush.horizontalGradient(
+                                listOf(AppTheme.colors.textMuted, AppTheme.colors.textSecondary),
+                            )
+                        },
+                    ),
+            )
+        }
         Text(
             opt.identityLine,
             style = AppTheme.typography.caption,
@@ -486,11 +539,11 @@ private fun DeckPowerSummary(deck: DeckOptionUi) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         deck.displayTier?.let {
             TierBadge(it)
-            Spacer(Modifier.width(7.dp))
+            Spacer(Modifier.width(6.dp))
         }
         Text(
             deck.powerLabel,
-            style = AppTheme.typography.monoValue.copy(fontWeight = FontWeight.SemiBold),
+            style = AppTheme.typography.monoSmall.copy(fontWeight = FontWeight.Bold),
             color = AppTheme.colors.accent,
         )
     }
@@ -501,12 +554,12 @@ private fun TierBadge(tier: String) {
     Box(
         Modifier
             .clip(RoundedCornerShape(AppTheme.radii.xs))
-            .background(AppTheme.colors.warning)
-            .padding(horizontal = 6.dp, vertical = 1.dp),
+            .background(AppTheme.colors.accentSecondary)
+            .padding(horizontal = 5.dp, vertical = 1.dp),
     ) {
         Text(
             tier,
-            fontSize = 11.sp,
+            fontSize = 10.sp,
             fontWeight = FontWeight.Bold,
             color = AppTheme.colors.textOnAccent,
         )

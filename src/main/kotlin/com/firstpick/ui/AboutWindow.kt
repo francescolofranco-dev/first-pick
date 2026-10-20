@@ -234,7 +234,7 @@ private fun FirstPickAppMark(modifier: Modifier = Modifier) {
         Canvas(Modifier.fillMaxSize()) {
             rotate(-11f, pivot = Offset(size.width * 0.39f, size.height * 0.54f)) {
                 drawRoundRect(
-                    color = Color(0xFF355F57),
+                    color = Color(0xFFB45309),
                     topLeft = Offset(size.width * 0.21f, size.height * 0.29f),
                     size = Size(size.width * 0.35f, size.height * 0.55f),
                     cornerRadius = CornerRadius(size.width * 0.055f),
@@ -242,7 +242,7 @@ private fun FirstPickAppMark(modifier: Modifier = Modifier) {
             }
             rotate(11f, pivot = Offset(size.width * 0.61f, size.height * 0.54f)) {
                 drawRoundRect(
-                    color = Color(0xFF4B8C7F),
+                    color = AppTheme.colors.accentSecondary,
                     topLeft = Offset(size.width * 0.44f, size.height * 0.29f),
                     size = Size(size.width * 0.35f, size.height * 0.55f),
                     cornerRadius = CornerRadius(size.width * 0.055f),
