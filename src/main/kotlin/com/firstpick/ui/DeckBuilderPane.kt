@@ -95,48 +95,28 @@ internal fun DeckBuilderPane(
                 )
                 Spacer(Modifier.height(8.dp))
                 BoxWithConstraints(Modifier.fillMaxWidth()) {
-                    if (maxWidth >= 600.dp) {
-                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            var globalIndex = 0
-                            for (rowOptions in options.chunked(3)) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min),
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                ) {
-                                    for (opt in rowOptions) {
-                                        val index = globalIndex++
-                                        OptionCard(
-                                            opt = opt,
-                                            recommended = index == 0,
-                                            previewed = opt.deckBuildKey == resolvedPreviewKey,
-                                            active = guidanceEnabled && opt.deckBuildKey == committedKey,
-                                            modifier = Modifier.weight(1f).fillMaxHeight(),
-                                            onClick = {
-                                                previewKey = opt.deckBuildKey
-                                                onUseDeck(opt)
-                                            },
-                                        )
-                                    }
+                    val columnsPerRow = if (maxWidth >= 640.dp && options.none { it.title.length > 28 }) 3 else 2
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        var globalIndex = 0
+                        for (rowOptions in options.chunked(columnsPerRow)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                for (opt in rowOptions) {
+                                    val index = globalIndex++
+                                    OptionCard(
+                                        opt = opt,
+                                        recommended = index == 0,
+                                        previewed = opt.deckBuildKey == resolvedPreviewKey,
+                                        active = guidanceEnabled && opt.deckBuildKey == committedKey,
+                                        modifier = Modifier.weight(1f).fillMaxHeight(),
+                                        onClick = {
+                                            previewKey = opt.deckBuildKey
+                                            onUseDeck(opt)
+                                        },
+                                    )
                                 }
-                            }
-                        }
-                    } else {
-                        FlowRow(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                        ) {
-                            options.forEachIndexed { index, opt ->
-                                OptionCard(
-                                    opt = opt,
-                                    recommended = index == 0,
-                                    previewed = opt.deckBuildKey == resolvedPreviewKey,
-                                    active = guidanceEnabled && opt.deckBuildKey == committedKey,
-                                    modifier = Modifier.width(214.dp).fillMaxRowHeight(),
-                                    onClick = {
-                                        previewKey = opt.deckBuildKey
-                                        onUseDeck(opt)
-                                    },
-                                )
                             }
                         }
                     }
@@ -250,10 +230,11 @@ private fun DeckBentoSummaryCard(
             }
         }
 
-        Row(
+        FlowRow(
             modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+            itemVerticalAlignment = Alignment.CenterVertically,
         ) {
             // Left: Archetype Plan Badge + Build Outlook Badge
             Row(
@@ -322,9 +303,10 @@ private fun DeckBentoSummaryCard(
             }
 
             // Right: Composition Stat Pills
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
+            FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                itemVerticalAlignment = Alignment.CenterVertically,
             ) {
                 DeckStatPill(spellsLabel)
                 DeckStatPill("${deck.creatures} creatures")
@@ -630,17 +612,22 @@ private fun OptionCard(
             Spacer(Modifier.width(6.dp))
             DeckPowerSummary(opt)
         }
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            PipRow(opt.colors.toList(), size = 15.dp)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.Top,
+        ) {
+            Box(Modifier.padding(top = 1.dp)) {
+                PipRow(opt.colors.toList(), size = 15.dp)
+            }
             Spacer(Modifier.width(6.dp))
             Text(
                 opt.title,
-                style = AppTheme.typography.cardTitle,
+                style = AppTheme.typography.cardTitle.copy(fontSize = 12.sp, lineHeight = 16.sp),
                 color = AppTheme.colors.textPrimary,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
+                softWrap = true,
             )
         }
+        Spacer(Modifier.weight(1f))
         // Raycast Coral-to-Amber Power Progress Bar
         Box(
             Modifier
