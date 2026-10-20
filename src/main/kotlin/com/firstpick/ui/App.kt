@@ -62,7 +62,6 @@ fun App(
     committedDeck: DeckOptionUi? = null,
     onUseDeck: (DeckOptionUi) -> Unit = {},
     onStopGuidance: () -> Unit = {},
-    onSelectFormat: (String) -> Unit = {},
     onSelectPickCount: (Int) -> Unit = {},
     onSimulate: (String) -> Unit = {},
     onStopSim: () -> Unit = {},
@@ -86,7 +85,7 @@ fun App(
                         overlayHealth,
                         isOverlayOpen || committedDeck != null,
                         onToggleOverlay,
-                        onSelectFormat,
+                        onSelectPickCount,
                         onStopSim,
                         onTogglePause,
                         onRetryRatings,
@@ -125,19 +124,6 @@ fun App(
                         }
                     }
 
-                    if (currentScreen == AppScreen.DRAFT_POOL) {
-                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                            Text("Picks", fontSize = 12.sp)
-                            listOf(0 to "Auto", 1 to "One", 2 to "Two").forEach { (count, label) ->
-                                androidx.compose.material3.FilterChip(
-                                    selected = state.pickCountOverride == count,
-                                    onClick = { onSelectPickCount(count) },
-                                    label = { Text(label) },
-                                )
-                            }
-                            Text(if (state.picksPerChoice == 2) "Pick Two" else "Pick One", fontSize = 12.sp)
-                        }
-                    }
                     Spacer(Modifier.height(10.dp))
                     val showSidebar = currentScreen == AppScreen.DRAFT_POOL &&
                         (state.poolSize > 0 || state.packCards.isNotEmpty())
@@ -222,7 +208,7 @@ private fun Header(
     overlayHealth: OverlayHealth,
     overlayRelevant: Boolean,
     onToggleOverlay: () -> Unit,
-    onSelectFormat: (String) -> Unit,
+    onSelectPickCount: (Int) -> Unit,
     onStopSim: () -> Unit,
     onTogglePause: () -> Unit,
     onRetryRatings: () -> Unit,
@@ -294,7 +280,7 @@ private fun Header(
                     Text("New draft", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
             }
-            FormatSelector(state.ratingsFormatChoice, onSelectFormat)
+            PickCountSelector(state.pickCountOverride, state.picksPerChoice, onSelectPickCount)
             if (state.phase != DraftPhase.COMPLETE) {
                 FilledTonalButton(
                     onClick = onToggleOverlay,
@@ -434,16 +420,16 @@ private fun OverlayHealthStatus(health: OverlayHealth) {
 }
 
 @Composable
-private fun FormatSelector(current: String, onSelect: (String) -> Unit) {
+private fun PickCountSelector(current: Int, detected: Int, onSelect: (Int) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
     Box {
         OutlinedButton(
             onClick = { expanded = true },
             contentPadding = HeaderButtonPadding,
-            modifier = Modifier.semantics { stateDescription = RatingsFormat.label(current) },
+            modifier = Modifier.semantics { stateDescription = if (current == 0) "Auto · ${DraftPickMode.label(detected)}" else DraftPickMode.label(current) },
         ) {
             Text(
-                text = "Data: ${RatingsFormat.label(current)}",
+                text = "Draft picks: ${DraftPickMode.label(current)}",
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface,
@@ -452,9 +438,9 @@ private fun FormatSelector(current: String, onSelect: (String) -> Unit) {
             Text("▾", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            RatingsFormat.choices.forEach { choice ->
+            DraftPickMode.choices.forEach { choice ->
                 DropdownMenuItem(
-                    text = { Text(RatingsFormat.label(choice), fontSize = 12.sp) },
+                    text = { Text(DraftPickMode.label(choice), fontSize = 12.sp) },
                     onClick = {
                         onSelect(choice)
                         expanded = false

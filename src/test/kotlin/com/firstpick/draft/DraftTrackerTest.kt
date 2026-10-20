@@ -9,6 +9,20 @@ import kotlin.test.assertTrue
 class DraftTrackerTest {
 
     @Test
+    fun confirmedTraditionalJoinSuppressesUnnamedPacketsUntilASupportedDraftAppears() {
+        val tracker = DraftTracker()
+        tracker.onLine(snapshotLine(0, 0, listOf(1, 2, 3), emptyList()))
+        val join = """<== Event.Join {"EventName":"TraditionalDraft_FRA_20260929"}"""
+        assertEquals(false, tracker.onLine(join))
+        assertEquals(DraftPhase.IDLE, tracker.state.value.phase)
+        assertEquals(false, tracker.onLine("""DraftNotify {"PackCards":[4,5,6],"SelfPack":1,"SelfPick":1}"""))
+        assertEquals(false, tracker.onLine("""EventPlayerDraftMakePick {"GrpIds":[4],"Pack":1,"Pick":1}"""))
+        assertTrue(tracker.state.value.pool.isEmpty())
+        assertTrue(tracker.onLine(snapshotLine(0, 0, listOf(7, 8), emptyList())))
+        assertEquals(DraftPhase.DRAFTING, tracker.state.value.phase)
+    }
+
+    @Test
     fun sealedCoursesCannotStartOrReplaceADraft() {
         val tracker = DraftTracker()
         val initial = tracker.state.value

@@ -1,6 +1,6 @@
 # Pick Two and contextual draft advice
 
-FirstPick detects Pick Two from `PickTwoDraft` event names, `NumCardsToPick: 2` pack notifications and snapshots, or a two-card pick from a pack with more than two cards remaining. A final single card does not switch it back. A new event/course resets detection. The Draft pool tab offers Auto, One and Two; the manual choice lasts until changed or New draft. It is independent of the ratings dataset selector. Choosing Two before a development demo starts also runs the four-seat Pick Two simulator.
+FirstPick detects Pick Two from `PickTwoDraft` event names, `NumCardsToPick: 2` pack notifications and snapshots, or a two-card pick from a pack with more than two cards remaining. A final single card does not switch it back. A new event/course resets detection. The header Draft picks dropdown offers Auto, One and Two; the manual choice lasts until changed or New draft. All supported drafts use Premier ratings and matching learned models. Choosing Two before a development demo starts also runs the four-seat Pick Two simulator.
 
 The [official format description](https://magic.wizards.com/en/news/announcements/introducing-pick-two-draft) specifies four players, two cards per pass, three boosters, and left/right/left passing. Live tracking follows actual pack contents and completion messages rather than assuming a pod size or a fixed number of selections. The seeded simulator uses four seats and 15-card test packs: eight choices per pack, with one card at the end, for 45 cards total. This is a test fixture, not a claim that every Arena booster has 15 draftable cards.
 
@@ -8,7 +8,7 @@ The [official format description](https://magic.wizards.com/en/news/announcement
 
 The normal card ranking, learned model and mana guardrails remain the foundation. All pairs of nonbasic pack entries are compared. For each pair, the heuristic evaluates each card after adding its partner to the pool; changes in supported synergy, unmet roles and duplicate saturation provide the pair adjustment. The adjustment averages both orders and is capped at three score points in either direction. The cap is an engineering heuristic, not a measured win-rate improvement. Two feasible cards exclude constrained alternatives. Copies are separate physical entries.
 
-The suggested pair is highlighted in the list and Arena overlay; individual grades keep their original meaning. With no recorded synergy the engine still uses card quality and pool needs. Missing metadata does not become invented synergy. Single-pick confidence margins, ALSA wheel penalties and ATA lateness signals are not used in Pick Two: ordinary draft timing data does not establish their validity here. Progress uses drafted card count. Ratings/model selection stays explicit; FirstPick does not claim to have a separately calibrated Pick Two dataset.
+The suggested pair is highlighted in the list and Arena overlay; individual grades keep their original meaning. With no recorded synergy the engine still uses card quality and pool needs. Missing metadata does not become invented synergy. Single-pick confidence margins, ALSA wheel penalties and ATA lateness signals are not used in Pick Two: ordinary draft timing data does not establish their validity here. Progress uses drafted card count. Ratings and learned models consistently use Premier data; FirstPick does not claim to have a separately calibrated Pick Two dataset.
 
 ## Jim Davis research
 
@@ -33,3 +33,9 @@ The first five card selections emphasize quality, with a maximum three-point bon
 After five selections, color pressure and deck-fit scoring begin when repeated pool evidence supports a base color or pair. Lane detection still requires at least two supporting cards per color and a margin over competing pairs; five scattered picks do not establish a pair. Mono-color pools keep a second color open. Both the first-five checkpoint and the close-choice preference implement the user's requested heuristic; no specific video timestamp or verified five-pick quotation is claimed. Pick Two measures this opening in cards drafted, matching its existing progress calculation, and retains its separate bounded pair adjustment.
 
 Release validation for 1.9.1: all 501 tests passed. The production replay visibly retained the strongest heuristic opening option ahead of a much weaker model-preferred card. Normal Arena-log tracking was restored after verification.
+
+## Simplified draft support (2.0.0)
+
+The data-source selector and separate pick-mode chips are replaced by one header dropdown: Draft picks — Auto, One, Two. Premier ratings and learned models are used for every supported draft, including Quick and Pick Two. Legacy ratings overrides in saved settings are ignored. Alternative ratings datasets are rejected before cache/network access. Traditional Draft recognition and data loading are removed; a confirmed unsupported event join suppresses subsequent unnamed draft packets until a supported named draft appears. Traditional can be designed again in the future alongside actual best-of-three and sideboard advice.
+
+Release validation for 2.0.0: all 498 regression tests passed, including non-Premier dataset rejection and Traditional log transitions. The production app was rebuilt, restarted, and visibly checked; the header menu contains only Auto, One, and Two.

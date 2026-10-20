@@ -17,7 +17,6 @@ data class OverlaySettings(
     val gridColGap: Float = 0.150f,
     val gridRowGap: Float = 0.275f,
     val isLocked: Boolean = false,
-    val ratingsFormatOverride: String? = null,
     val clickThrough: Boolean = true,
 ) {
     companion object {

@@ -14,6 +14,7 @@ import com.firstpick.cards.ArchetypeRepository
 import com.firstpick.cards.CardMeta
 import com.firstpick.cards.CardMetaRepository
 import com.firstpick.cards.CardRepository
+import com.firstpick.cards.DraftRatingsFormats
 import com.firstpick.cards.StandardSets
 import com.firstpick.cards.SynergyRepository
 import com.firstpick.cards.SynergyTierLevel
@@ -68,10 +69,6 @@ class DraftViewModel(
     private var simJob: Job? = null
     @Volatile private var simulating = false
     private val simPaused = MutableStateFlow(false)
-
-    @Volatile
-    private var formatChoice: String =
-        runCatching { OverlaySettings.load().ratingsFormatOverride }.getOrNull() ?: RatingsFormat.PREMIER
 
     fun start() {
         watcherJob = scope.launch(Dispatchers.IO) { tracker.consume(watcher.lines(fromStart = true)) }
@@ -145,17 +142,6 @@ class DraftViewModel(
         scope.launch { publish() }
     }
 
-    fun setFormatChoice(choice: String) {
-        if (choice == formatChoice) return
-        formatChoice = choice
-        runCatching { OverlaySettings.save(OverlaySettings.load().copy(ratingsFormatOverride = choice)) }
-        scope.launch {
-            mutex.withLock { requestedKey = null }
-            tracker.state.value.setCode?.let { ensureLoaded(it) }
-            publish()
-        }
-    }
-
     /** Force a new 17Lands request for the active set, even if this key was already attempted. */
     fun retryRatings() {
         scope.launch {
@@ -173,7 +159,7 @@ class DraftViewModel(
 
     private suspend fun ensureLoaded(set: String, forceRefresh: Boolean = false) {
         ratingsLoadMutex.withLock {
-            val format = RatingsFormat.resolve(formatChoice, tracker.state.value.format)
+            val format = DraftRatingsFormats.DEFAULT
             val key = "${set.uppercase()}_$format"
             val proceed = mutex.withLock {
                 if (!forceRefresh && key == requestedKey) {
@@ -221,7 +207,7 @@ class DraftViewModel(
 
     private suspend fun ensureLanePair(state: DraftState) {
         val set = state.setCode ?: return
-        val format = RatingsFormat.resolve(formatChoice, state.format)
+        val format = DraftRatingsFormats.DEFAULT
         val dataKey = "${set.uppercase()}_$format"
         if (!repo.isLoadedFor(set, format)) return
         val pool = state.pool.map(repo::resolve)
@@ -241,7 +227,7 @@ class DraftViewModel(
     private fun buildUi(state: DraftState): DraftUiState {
         val override = pickCountOverride
         val picksPerChoice = override.takeIf { it != 0 } ?: state.picksPerChoice
-        val format = RatingsFormat.resolve(formatChoice, state.format)
+        val format = DraftRatingsFormats.DEFAULT
         val dataKey = state.setCode?.let { "${it.uppercase()}_$format" }
         val loaded = state.setCode?.let { repo.isLoadedFor(it, format) } == true
         val ratingsInfo = repo.ratingsInfo?.takeIf { loaded }
@@ -421,7 +407,6 @@ class DraftViewModel(
             } else null,
             deckSoFar = liveProjection?.toUi(),
             deckSoFarCuts = cutsOf(pool, liveProjection),
-            ratingsFormatChoice = formatChoice,
             simulating = simulating,
             simPaused = simPaused.value,
             synergyTier = state.setCode?.let {

@@ -36,7 +36,7 @@ class DraftViewModelTest {
     @Test
     fun automaticPairAdviceAndManualOverrideReachTheUi() = runBlocking {
         val cache = createTempDirectory("fp-vm-picktwo")
-        for (format in listOf("PremierDraft", "QuickDraft", "TradDraft")) {
+        for (format in listOf("PremierDraft")) {
             Files.writeString(cache.resolve("ratings3_DSK_$format.json"), """{"data":[
                 {"name":"Test A","mtga_id":1,"color":"U","ever_drawn_win_rate":0.58,"ever_drawn_game_count":1000},
                 {"name":"Test B","mtga_id":2,"color":"U","ever_drawn_win_rate":0.57,"ever_drawn_game_count":1000},
@@ -72,7 +72,7 @@ class DraftViewModelTest {
     @Test
     fun draftedCardsCarryThePrintedCostIntoTheUi() = runBlocking {
         val cache = createTempDirectory("fp-vm-mana")
-        for (format in listOf("PremierDraft", "QuickDraft", "TradDraft")) {
+        for (format in listOf("PremierDraft")) {
             Files.writeString(cache.resolve("ratings3_DSK_$format.json"), """{"data":[
                 {"name":"Test Creature","mtga_id":92174,"color":"U","types":["Creature"],"ever_drawn_win_rate":0.58,"ever_drawn_game_count":1000}
             ]}""")
@@ -193,7 +193,7 @@ class DraftViewModelTest {
                 {"name":"Ordinary Enchantment","mtga_id":102496,"types":["Enchantment"]}
             ]
         }""".trimIndent()
-        for (f in listOf("PremierDraft", "QuickDraft", "TradDraft")) {
+        for (f in listOf("PremierDraft")) {
             Files.writeString(cache.resolve("ratings3_SOS_$f.json"), ratings)
             Files.writeString(cache.resolve("colorratings_SOS_$f.json"), "[]")
         }
@@ -248,7 +248,7 @@ class DraftViewModelTest {
             StubHttpAction.Offline,
             StubHttpAction.Response(200, response),
         )
-        for (format in listOf("PremierDraft", "QuickDraft", "TradDraft")) {
+        for (format in listOf("PremierDraft")) {
             Files.writeString(cache.resolve("colorratings_SOS_$format.json"), "[]")
         }
         Files.writeString(cache.resolve("scryfall8_SOS.json"), "[]")
@@ -298,7 +298,7 @@ class DraftViewModelTest {
         val ratings = ids.mapIndexed { index, id ->
             """{"name":"Rated $index","mtga_id":$id,"ever_drawn_win_rate":${0.60 - index * 0.005},"ever_drawn_game_count":1000}"""
         }.joinToString(prefix = "{\"data\":[", postfix = "]}")
-        for (format in listOf("PremierDraft", "QuickDraft", "TradDraft")) {
+        for (format in listOf("PremierDraft")) {
             Files.writeString(cache.resolve("ratings3_DSK_$format.json"), ratings)
             Files.writeString(cache.resolve("colorratings_DSK_$format.json"), "[]")
         }

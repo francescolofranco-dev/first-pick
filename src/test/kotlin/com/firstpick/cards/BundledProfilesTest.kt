@@ -180,7 +180,7 @@ class BundledProfilesTest {
             val repository = SynergyRepository(cache)
             repository.load("fra")
             assertEquals("FRA", repository.loadedSet)
-            for (format in listOf("PremierDraft", "QuickDraft", "TradDraft")) {
+            for (format in listOf("PremierDraft")) {
                 val guide = SetDraftGuideBuilder.build("FRA", format, emptyList(), repository.index)
                 assertEquals("Reality Fracture", guide.setName)
                 assertEquals(10, guide.archetypes.size)

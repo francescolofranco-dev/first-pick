@@ -27,6 +27,14 @@ class EventParser(
         name.isNotBlank() && DraftFormat.fromEventName(name) == DraftFormat.UNKNOWN
     }
 
+    /** A confirmed unsupported join ends draft tracking; later unnamed packets belong to it. */
+    fun isUnsupportedDraftJoin(line: String): Boolean {
+        if (!LogMatch.contains(line, "EventJoin") || "==>" in line) return false
+        val name = parseEventJoined(line)?.eventName ?: return false
+        val normalized = LogMatch.normalize(name)
+        return "TRADITIONAL" in normalized || "TRADDRAFT" in normalized || "SEALED" in normalized
+    }
+
     private fun parseDraftEvent(line: String): DraftEvent? {
         if ('{' !in line) return null
         // A submission request may fail; only server course snapshots confirm a save.
@@ -93,7 +101,6 @@ class EventParser(
             runCatching { json.parseToJsonElement(it) as? JsonObject }.getOrNull()
         } ?: outer
         val name = obj.findString("InternalEventName") ?: obj.findString("EventName") ?: return null
-        if (DraftFormat.fromEventName(name) == DraftFormat.UNKNOWN) return null
         return DraftEvent.EventJoined(name, obj.findString("CourseId"))
     }
 

@@ -38,9 +38,9 @@ class DraftStateTest {
     }
 
     @Test
-    fun multiPickFinalConfirmationStillCompletesTraditionalDraft() {
+    fun multiPickFinalConfirmationCompletesPremierDraft() {
         val before = draftingState(
-            format = DraftFormat.TRADITIONAL,
+            format = DraftFormat.PREMIER,
             packCards = listOf(900, 901),
         )
 
@@ -78,7 +78,6 @@ class DraftStateTest {
         setCode = "SOS",
         eventName = when (format) {
             DraftFormat.QUICK -> "QuickDraftEmblem_SOS_20260611"
-            DraftFormat.TRADITIONAL -> "TraditionalDraft_SOS_20260611"
             else -> "PremierDraft_SOS_20260611"
         },
         pack = 3,

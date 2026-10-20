@@ -170,7 +170,6 @@ data class DraftUiState(
     val deckSoFar: DeckOptionUi? = null,
 
     val deckSoFarCuts: List<DeckSpellUi> = emptyList(),
-    val ratingsFormatChoice: String = RatingsFormat.PREMIER,
     val simulating: Boolean = false,
     val simPaused: Boolean = false,
     val synergyTier: String? = null,
@@ -192,38 +191,17 @@ data class DraftUiState(
 val DraftFormat.label: String
     get() = when (this) {
         DraftFormat.PREMIER -> "Premier Draft"
-        DraftFormat.TRADITIONAL -> "Traditional Draft"
         DraftFormat.QUICK -> "Quick Draft"
         DraftFormat.CUBE -> "Cube Draft"
         DraftFormat.UNKNOWN -> "Draft"
     }
 
-object RatingsFormat {
-    const val PREMIER = "PREMIER"
-    const val QUICK = "QUICK"
-    const val TRAD = "TRAD"
-    const val AUTO = "AUTO"
-
-    val choices = listOf(PREMIER, AUTO, QUICK, TRAD)
-
-    fun label(choice: String): String = when (choice) {
-        PREMIER -> "Premier (default)"
-        QUICK -> "Quick Draft"
-        TRAD -> "Traditional"
-        AUTO -> "Auto · match draft"
-        else -> "Premier (default)"
-    }
-
-    fun resolve(choice: String, detected: DraftFormat): String {
-        return when (choice) {
-            QUICK -> "QuickDraft"
-            TRAD -> "TradDraft"
-            AUTO -> when (detected) {
-                DraftFormat.QUICK -> "QuickDraft"
-                DraftFormat.TRADITIONAL -> "TradDraft"
-                else -> "PremierDraft"
-            }
-            else -> "PremierDraft"
-        }
+/** Pick cardinality is independent of the fixed Premier ratings dataset. */
+object DraftPickMode {
+    val choices = listOf(0, 1, 2)
+    fun label(choice: Int): String = when (choice) {
+        1 -> "One"
+        2 -> "Two"
+        else -> "Auto"
     }
 }

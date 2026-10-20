@@ -16,13 +16,13 @@ import kotlin.test.assertTrue
 class SeventeenLandsClientTest {
 
     @Test
-    fun unsupportedSealedDataIsRejectedBeforeCacheOrNetworkAccess() = runBlocking {
+    fun nonPremierDataIsRejectedBeforeCacheOrNetworkAccess() = runBlocking {
         val cache = createTempDirectory("fp-draft-only")
         Files.writeString(cache.resolve("ratings3_FRA_Sealed.json"), """{"data":[]}""")
         val http = ScriptedHttpClient()
         val catalogHttp = ScriptedHttpClient()
         val client = SeventeenLandsClient(cacheDir = cache, http = http)
-        for (format in listOf("Sealed", "TraditionalSealed")) {
+        for (format in listOf("Sealed", "TraditionalSealed", "QuickDraft", "TradDraft")) {
             assertFailsWith<IllegalArgumentException> { client.fetchWithMetadata("FRA", format) }
             assertFailsWith<IllegalArgumentException> { client.colorRatings("FRA", format) }
         }
@@ -31,7 +31,7 @@ class SeventeenLandsClientTest {
         assertFalse(repo.isLoaded)
         assertEquals(0, http.requestCount)
         assertEquals(0, catalogHttp.requestCount)
-        assertEquals(setOf("PremierDraft", "QuickDraft", "TradDraft"), DraftRatingsFormats.supported)
+        assertEquals(setOf("PremierDraft"), DraftRatingsFormats.supported)
     }
 
     @Test

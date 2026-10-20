@@ -53,9 +53,10 @@ data class RatingsFetchResult(
 )
 
 object DraftRatingsFormats {
-    val supported: Set<String> = setOf("PremierDraft", "QuickDraft", "TradDraft")
+    const val DEFAULT = "PremierDraft"
+    val supported: Set<String> = setOf(DEFAULT)
     fun requireSupported(format: String) {
-        require(format in supported) { "Unsupported ratings format: $format. Only Draft formats are supported." }
+        require(format in supported) { "Unsupported ratings format: $format. Only PremierDraft ratings are supported." }
     }
 }
 

@@ -76,7 +76,17 @@ class EventParserTest {
         assertEquals(DraftFormat.QUICK, DraftFormat.fromEventName("QuickDraftEmblem_SOS_20260611"))
         assertEquals(DraftFormat.PREMIER, DraftFormat.fromEventName("PremierDraft_HOB_20260811"))
         assertEquals(DraftFormat.PREMIER, DraftFormat.fromEventName("PremierDraft_OTJ_20240416"))
-        assertEquals(DraftFormat.TRADITIONAL, DraftFormat.fromEventName("TradDraft_DSK_20240924"))
+        assertEquals(DraftFormat.UNKNOWN, DraftFormat.fromEventName("TradDraft_DSK_20240924"))
+    }
+
+    @Test
+    fun traditionalEventsAreUnsupportedAcrossLogShapes() {
+        for (name in listOf("TradDraft_DSK_20240924", "TraditionalDraft_FRA_20260929", "Y26_FRA_Traditional_Draft_20261017")) {
+            assertEquals(DraftFormat.UNKNOWN, DraftFormat.fromEventName(name))
+            assertNull(setCodeFromEventName(name))
+            assertNull(parser.parse("""{"EventName":"$name","PackCards":[1,2],"SelfPack":1,"SelfPick":1}"""))
+            assertNull(parser.parse("""{"InternalEventName":"$name","CurrentModule":"DeckSelect","CardPool":[1,2]}"""))
+        }
     }
 
     @Test
@@ -93,7 +103,6 @@ class EventParserTest {
     fun recognizesRealityFractureDraftEvents() {
         val formats = mapOf(
             "PremierDraft_FRA_20260929" to DraftFormat.PREMIER,
-            "TraditionalDraft_FRA_20260929" to DraftFormat.TRADITIONAL,
             "PickTwoDraft_FRA_20260929" to DraftFormat.PREMIER,
             "ContenderDraft_FRA_20261013" to DraftFormat.PREMIER,
             "QuickDraft_FRA_20261008" to DraftFormat.QUICK,
@@ -111,7 +120,6 @@ class EventParserTest {
             "Bot" to DraftFormat.QUICK,
             "Quick" to DraftFormat.QUICK,
             "Premier" to DraftFormat.PREMIER,
-            "Traditional" to DraftFormat.TRADITIONAL,
         )) {
             val event = "Y26_FRA_${kind}_Draft_20261017"
             assertEquals("FRA", setCodeFromEventName(event), event)
@@ -187,9 +195,7 @@ class EventParserTest {
 
         val tradLine = "some log prefix {\"InternalEventName\":\"TradDraft_DSK_20240924\"}"
         val ev2 = parser.parse(tradLine)
-        assertNotNull(ev2)
-        assertTrue(ev2 is DraftEvent.EventJoined)
-        assertEquals("TradDraft_DSK_20240924", ev2.eventName)
+        assertNull(ev2)
     }
 
     @Test

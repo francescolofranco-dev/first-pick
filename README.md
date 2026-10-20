@@ -43,16 +43,14 @@ open colors, your mana curve, and your pool — all updating as you pick.
   <img src="docs/screenshots/card-preview.png" width="320" alt="Card-image preview on hover" />
 </picture>
 
-**Pick your data source.** Score from Premier, Quick, or Traditional 17Lands data — or
-*Auto* to match the format you're drafting.
-
-<picture>
-  <img src="docs/screenshots/data-source.png" width="260" alt="17Lands data source selector" />
-</picture>
+**Draft picks.** Use the header dropdown to detect the number of picks automatically,
+or select One or Two manually. Premier 17Lands data and matching learned models
+are used consistently for Premier, Quick and Pick Two drafts. Traditional Draft
+and Sealed are unsupported.
 
 **Draft guides.** Open the Guide tab at any time for the current set's
 mechanics, color-pair themes, signposts, enablers, payoffs, and per-color top commons
-and non-commons. The card lists use the selected 17Lands format; the strategy text is
+and non-commons. The card lists use Premier 17Lands data; the strategy text is
 bundled for reliable offline access, and mechanics, archetypes, combos, and general
 principles each link directly to the supporting expert, official, or observed-data
 source.

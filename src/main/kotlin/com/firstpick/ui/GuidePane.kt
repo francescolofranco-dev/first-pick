@@ -494,7 +494,5 @@ internal fun guideColorName(color: Char): String = when (color) {
 
 internal fun guideFormatLabel(format: String): String = when (format) {
     "PremierDraft" -> "Premier"
-    "QuickDraft" -> "Quick"
-    "TradDraft" -> "Traditional"
     else -> format
 }

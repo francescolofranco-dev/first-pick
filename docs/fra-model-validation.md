@@ -116,8 +116,8 @@ which contains no outcome-training drafts.
 
 The existing repository discovers the bundled model automatically for FRA
 Premier Draft. Guide and mana guardrails still constrain model promotions.
-Traditional Draft and Quick Draft keep their existing format-specific
-ratings and heuristic behavior; no FRA model is claimed for those formats.
+As of 2.0.0, Quick drafts use the same Premier ratings and bundled model.
+Traditional Draft support and alternative ratings datasets have been removed.
 FRA remains eligible for the weekly public-data retraining selection.
 
 Regression coverage verifies bundled discovery, the 295-card vocabulary, real

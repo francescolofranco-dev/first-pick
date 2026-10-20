@@ -2,7 +2,6 @@ package com.firstpick.model
 
 enum class DraftFormat {
     PREMIER,
-    TRADITIONAL,
     QUICK,
     CUBE,
     UNKNOWN;
@@ -11,8 +10,7 @@ enum class DraftFormat {
         fun fromEventName(eventName: String): DraftFormat {
             val n = eventName.lowercase().replace("_", "")
             return when {
-                "sealed" in n -> UNKNOWN
-                "traddraft" in n || "traditionaldraft" in n -> TRADITIONAL
+                "sealed" in n || "traditional" in n || "traddraft" in n -> UNKNOWN
                 "premierdraft" in n || "premiumdraft" in n -> PREMIER
                 "quickdraft" in n || "botdraft" in n -> QUICK
                 "cube" in n -> CUBE
@@ -26,7 +24,7 @@ enum class DraftFormat {
 private val SET_CODE_RE = Regex("_([A-Za-z0-9]{2,5})(?:_\\d{6,8}(?:_|$)|$)")
 
 private val PREFIXED_DRAFT_SET_RE = Regex(
-    "^Y\\d{2}_([A-Za-z0-9]{2,5})_(?:Bot|Premier|Traditional|Quick)_Draft(?:_|$)",
+    "^Y\\d{2}_([A-Za-z0-9]{2,5})_(?:Bot|Premier|Quick)_Draft(?:_|$)",
     RegexOption.IGNORE_CASE,
 )
 

@@ -97,7 +97,6 @@ fun main() {
                     if (state.phase == DraftPhase.COMPLETE) committedDeck = it
                 },
                 onStopGuidance = { committedDeck = null },
-                onSelectFormat = { viewModel.setFormatChoice(it) },
                 onSelectPickCount = viewModel::setPickCountOverride,
                 onSimulate = { viewModel.startSimulation(it) },
                 onStopSim = { viewModel.stopSimulation() },
