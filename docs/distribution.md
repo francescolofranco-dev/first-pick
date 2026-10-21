@@ -5,10 +5,12 @@ files (no Gatekeeper warning and no `xattr` workaround) and can also ship via a
 Homebrew cask. The build config and CI read credentials from the environment, so
 nothing secret lives in the repository.
 
-The release workflow deliberately fails closed: a `v*` tag cannot publish unless
-all signing and notarization secrets are configured. A manually dispatched workflow
-may omit the secrets, but its output is named `*-unsigned.dmg`, retained only as a
-short-lived Actions artifact, and never published to GitHub Releases.
+Releases are automatic: every push to `main` that changes `VERSION` (or a pushed
+`v*` tag) publishes a GitHub Release `v<VERSION>` with one `.dmg` per architecture.
+If all signing and notarization secrets are configured the dmgs are signed and
+notarized; if none are, they are published as `*-unsigned.dmg` with Gatekeeper
+instructions in the release notes. A partial secret set fails the build. A version
+whose release already has dmgs is skipped. Manual runs only produce artifacts.
 
 This document is the runbook for turning it on.
 
@@ -53,10 +55,7 @@ This document is the runbook for turning it on.
 
 ## Cutting a release
 
-```bash
-git tag v1.0.0      # macOS requires the bundle major ≥ 1, so start at 1.0.0
-git push origin v1.0.0
-```
+Bump `VERSION` and push to `main`. (Pushing `vX.Y.Z` matching `VERSION` also works.)
 
 `release.yml` then runs two architecture jobs on Apple Silicon macOS runners. Each
 job imports the certificate and runs the `notarizeDmg` Gradle task with the version

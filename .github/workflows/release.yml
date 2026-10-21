@@ -1,20 +1,69 @@
 name: Release
 
-# Tag builds fail closed unless all Apple signing and notarization credentials are
-# configured. Manual runs may omit them to produce clearly labelled, unpublished
-# unsigned artifacts for packaging tests.
+# A push to main that changes VERSION (or a pushed v* tag) publishes a GitHub
+# Release for v<VERSION> with a dmg per architecture. When every Apple signing and
+# notarization secret is configured the dmgs are signed and notarized; with none
+# configured they are published as clearly labelled *-unsigned.dmg files. A partial
+# secret set is always an error. Manual runs only produce short-lived artifacts.
 
 on:
   push:
+    branches: [ main ]
+    paths: [ VERSION ]
     tags: [ 'v*' ]
   workflow_dispatch:
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
 
 permissions:
   contents: read
 
 jobs:
+  plan:
+    name: Decide release
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.plan.outputs.version }}
+      publish: ${{ steps.plan.outputs.publish }}
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - name: Resolve version and check for an existing release
+        id: plan
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then
+            version="${GITHUB_REF_NAME#v}"
+          else
+            version="$(tr -d '[:space:]' < VERSION)"
+          fi
+          if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Versions must use MAJOR.MINOR.PATCH (got '$version')." >&2
+            exit 1
+          fi
+          if [[ "$GITHUB_REF_TYPE" == "tag" && "$version" != "$(tr -d '[:space:]' < VERSION)" ]]; then
+            echo "Tag v$version does not match VERSION at that commit." >&2
+            exit 1
+          fi
+          publish=false
+          if [[ "$GITHUB_EVENT_NAME" == "push" ]]; then
+            publish=true
+            if gh release view "v$version" --repo "$GITHUB_REPOSITORY" --json assets \
+                 --jq '[.assets[].name | select(endswith(".dmg"))] | length' 2>/dev/null | grep -qv '^0$'; then
+              echo "::notice::Release v$version already has dmgs; nothing to publish."
+              publish=false
+            fi
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "publish=$publish" >> "$GITHUB_OUTPUT"
+
   build:
     name: Build dmg (${{ matrix.arch }})
+    needs: plan
+    if: needs.plan.outputs.publish == 'true' || github.event_name == 'workflow_dispatch'
     strategy:
       fail-fast: false
       matrix:
@@ -59,18 +108,12 @@ jobs:
           configured=false
           if [[ "$present" -eq "${#values[@]}" ]]; then configured=true; fi
 
-          if [[ "$GITHUB_REF_TYPE" == "tag" && "$GITHUB_REF_NAME" == v* && "$configured" != true ]]; then
-            echo "Tagged releases require signing and notarization credentials." >&2
-            echo "Configure every secret documented in docs/distribution.md, then rerun the tag workflow." >&2
-            exit 1
-          fi
-
           echo "configured=$configured" >> "$GITHUB_OUTPUT"
           if [[ "$configured" == true ]]; then
             echo "label=signed-notarized" >> "$GITHUB_OUTPUT"
           else
-            echo "label=unsigned-test-build" >> "$GITHUB_OUTPUT"
-            echo "::warning::Building an unsigned manual-test artifact; it will not be published as a release."
+            echo "label=unsigned" >> "$GITHUB_OUTPUT"
+            echo "::warning::No Apple credentials configured; building an unsigned dmg."
           fi
 
       - name: Install Rosetta (x86_64 cross-build only)
@@ -90,17 +133,7 @@ jobs:
       - name: Derive version
         id: ver
         shell: bash
-        run: |
-          if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then
-            version="${GITHUB_REF_NAME#v}"
-            if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-              echo "Release tags must use vMAJOR.MINOR.PATCH (for example, v1.2.3)." >&2
-              exit 1
-            fi
-          else
-            version="$(cat VERSION)" # manual non-tag run: packaging test only
-          fi
-          echo "version=$version" >> "$GITHUB_OUTPUT"
+        run: echo "version=${{ needs.plan.outputs.version }}" >> "$GITHUB_OUTPUT"
 
       - name: Import Developer ID certificate
         if: steps.signing.outputs.configured == 'true'
@@ -143,7 +176,7 @@ jobs:
           -PcomposeJdk="$JAVA_HOME"
           --stacktrace
 
-      - name: Build unsigned manual-test dmg
+      - name: Build unsigned dmg
         if: steps.signing.outputs.configured != 'true'
         run: >-
           ./gradlew packageDmg
@@ -189,39 +222,52 @@ jobs:
           security delete-keychain "$RUNNER_TEMP/firstpick-signing.keychain-db" || true
 
   release:
-    name: Publish signed GitHub Release
-    needs: build
+    name: Publish GitHub Release
+    needs: [ plan, build ]
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    # Manual workflow runs are artifact-only. A tag cannot reach this job unless
-    # every matrix build completed signing, notarization, and staple validation.
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    # Manual workflow runs are artifact-only. Both architectures must build (and,
+    # when credentials exist, pass notarization and staple validation) first.
+    if: needs.plan.outputs.publish == 'true'
     steps:
-      - name: Download signed dmg artifacts
+      - name: Download dmg artifacts
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           path: dist
-          pattern: dmg-*-signed-notarized
+          pattern: dmg-*
           merge-multiple: true
 
       - name: Verify release artifact set and checksums
+        id: verify
         shell: bash
         run: |
-          if find dist -name '*-unsigned.dmg' -print -quit | grep -q .; then
-            echo "Refusing to publish an unsigned dmg." >&2
-            exit 1
-          fi
-          if [[ "$(find dist -maxdepth 1 -name '*.dmg' | wc -l | tr -d ' ')" -ne 2 ]]; then
-            echo "Expected one signed dmg for each architecture." >&2
+          signed="$(find dist -maxdepth 1 -name '*.dmg' ! -name '*-unsigned.dmg' | wc -l | tr -d ' ')"
+          unsigned="$(find dist -maxdepth 1 -name '*-unsigned.dmg' | wc -l | tr -d ' ')"
+          if [[ "$((signed + unsigned))" -ne 2 || ( "$signed" -ne 0 && "$unsigned" -ne 0 ) ]]; then
+            echo "Expected one dmg per architecture, all signed or all unsigned." >&2
             find dist -maxdepth 1 -type f -print >&2
             exit 1
           fi
           (cd dist && sha256sum --check ./*.sha256)
+          if [[ "$unsigned" -ne 0 ]]; then
+            {
+              echo 'notes<<EOF'
+              echo '> [!NOTE]'
+              echo '> These dmgs are not notarized by Apple. After dragging FirstPick to Applications, allow it once via **System Settings → Privacy & Security → Open Anyway**, or run:'
+              echo '> `xattr -dr com.apple.quarantine "/Applications/FirstPick.app"`'
+              echo 'EOF'
+            } >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
         with:
+          tag_name: v${{ needs.plan.outputs.version }}
+          target_commitish: ${{ github.sha }}
+          name: ${{ needs.plan.outputs.version }}
+          body: ${{ steps.verify.outputs.notes }}
           files: dist/*
           generate_release_notes: true
+          make_latest: true
           fail_on_unmatched_files: true
