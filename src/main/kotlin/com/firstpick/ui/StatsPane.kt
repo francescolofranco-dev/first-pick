@@ -91,7 +91,7 @@ private fun OverviewStats(courses: List<CourseRecord>, matches: List<MatchRecord
     val limited = courses.filter { isDraftEvent(it.event) }
     val withResults = limited.filter { it.wins != null && it.losses != null && (it.wins + it.losses) > 0 }
     val results = withResults.courseResults()
-    val trophies = withResults.count { it.complete && (it.wins ?: 0) >= if (eventType(it.event) == "Traditional Draft") 3 else 7 }
+    val trophies = withResults.count { it.isTrophy() }
     LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         item {
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -103,6 +103,10 @@ private fun OverviewStats(courses: List<CourseRecord>, matches: List<MatchRecord
         }
         item {
             Text("Draft results cover ${withResults.size} events with recorded results. Saved drafts without results are excluded. Counts may be partial if an event’s final result was not logged. Date filters select events by first observation and show their full recorded totals.",
+                style = AppTheme.typography.caption, color = AppTheme.colors.textSecondary)
+        }
+        if (withResults.any { it.sourceUrl != null }) item {
+            Text("Includes recovered Untapped.gg event totals. Individual match coverage may be smaller; imported match dates use the draft date when the exact time is unavailable.",
                 style = AppTheme.typography.caption, color = AppTheme.colors.textSecondary)
         }
         item {
@@ -200,10 +204,10 @@ private fun MatchStats(matches: List<MatchRecord>) {
                     color = when (match.outcome) { "Win" -> AppTheme.colors.positive; "Loss" -> AppTheme.colors.danger; else -> AppTheme.colors.textSecondary })
                 Column(Modifier.weight(1f)) {
                     Text(eventType(match.event) + (setOfEvent(match.event)?.let { " · $it" } ?: ""), color = AppTheme.colors.textPrimary, fontSize = 12.sp)
-                    Text(match.event, color = AppTheme.colors.textMuted, fontSize = 10.sp)
+                    Text(if (match.sourceUrl != null) "Untapped.gg · recovered" else match.event, color = AppTheme.colors.textMuted, fontSize = 10.sp)
                 }
                 Column(horizontalAlignment = Alignment.End) {
-                    Text(date(match.at), color = AppTheme.colors.textSecondary, fontSize = 10.sp)
+                    Text(if (match.draftDateOnly) "Draft " + match.at.take(10) else date(match.at), color = AppTheme.colors.textSecondary, fontSize = 10.sp)
                     Text(when (match.onPlay) { true -> "On the play"; false -> "On the draw"; null -> "Starting player unavailable" },
                         color = AppTheme.colors.textMuted, fontSize = 10.sp)
                 }

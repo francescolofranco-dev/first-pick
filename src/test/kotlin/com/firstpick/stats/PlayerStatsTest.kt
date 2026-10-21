@@ -11,6 +11,53 @@ import java.time.Instant
 import kotlin.test.*
 
 class PlayerStatsTest {
+    @Test fun recoveredResultsPersistAndReplayWithoutDuplicatingOrLosingProvenance() = runBlocking {
+        val dir = Files.createTempDirectory("fp-recovered")
+        val db = PlayerDatabase(dir.resolve("stats.db"))
+        val file = dir.resolve("recovery.json")
+        val at = "2026-09-22T00:00:00Z"
+        val source = "https://mtga.untapped.gg/profile/test/deck/draft"
+        val course = CourseRecord("untapped:draft", at, "PickTwoDraft_HOB", 4, 1, true,
+            colors = "BG", sourceUrl = source, historyId = "saved-draft")
+        val match = MatchRecord("untapped:replay", at, course.event, course.id, "Win", false,
+            sourceUrl = "https://mtga.untapped.gg/replay/replay", draftDateOnly = true)
+        Files.writeString(file, db.json.encodeToString(RecoveredDraftResults(listOf(course), listOf(match))))
+        val repo = PlayerStatsRepository(db)
+        repo.importRecoveredResults(file); repo.importRecoveredResults(file)
+        repo.importLogs(emptyList())
+        Files.delete(file)
+        val restored = PlayerStatsRepository(PlayerDatabase(db.path)).state.value
+        assertEquals(listOf(course), restored.courses)
+        assertEquals(listOf(match), restored.matches)
+        assertEquals(ResultSummary(4, 1), restored.courses.courseResults())
+        assertTrue(restored.courses.single().isTrophy())
+    }
+
+    @Test fun recoveredImportValidatesAllRowsBeforeWriting() {
+        val dir = Files.createTempDirectory("fp-invalid-recovery")
+        val db = PlayerDatabase(dir.resolve("stats.db"))
+        val file = dir.resolve("recovery.json")
+        val course = CourseRecord("untapped:a", "2026-09-22T00:00:00Z", "PickTwoDraft_HOB", 1, 2,
+            sourceUrl = "https://mtga.untapped.gg/profile/test/deck/a")
+        val wrong = MatchRecord("untapped:bad", course.at, course.event, "missing", "Win",
+            sourceUrl = "https://mtga.untapped.gg/replay/bad")
+        Files.writeString(file, db.json.encodeToString(RecoveredDraftResults(listOf(course), listOf(wrong))))
+        assertFailsWith<IllegalArgumentException> { PlayerStatsRepository(db).importRecoveredResults(file) }
+        assertTrue(db.read("course").isEmpty())
+        assertTrue(db.read("match").isEmpty())
+    }
+
+    @Test fun trophyTargetsFollowDraftTypeAndRequireCompletion() {
+        fun course(event: String, wins: Int, complete: Boolean = true) =
+            CourseRecord("a", "2026-09-22T00:00:00Z", event, wins, 0, complete)
+        assertTrue(course("PickTwoDraft_HOB", 4).isTrophy())
+        assertFalse(course("PickTwoDraft_HOB", 3).isTrophy())
+        assertFalse(course("PickTwoDraft_HOB", 4, false).isTrophy())
+        assertTrue(course("TraditionalDraft_HOB", 3).isTrophy())
+        assertFalse(course("QuickDraft_HOB", 4).isTrophy())
+        assertTrue(course("PremierDraft_HOB", 7).isTrophy())
+    }
+
     @Test fun draftScopeExcludesOtherModesFromPreviouslySavedRecords() {
         val db = PlayerDatabase(Files.createTempDirectory("fp-draft-scope").resolve("stats.db"))
         val at = "2026-10-21T10:00:00Z"

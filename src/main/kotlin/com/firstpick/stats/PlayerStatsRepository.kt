@@ -79,7 +79,8 @@ class PlayerStatsRepository(private val database: PlayerDatabase, private val dr
                     draftComplete = old?.draftComplete == true || record.draftComplete,
                     pool = if (record.pool.size >= (old?.pool?.size ?: 0)) record.pool else old!!.pool,
                     deck = record.deck.ifEmpty { old?.deck.orEmpty() },
-                    colors = deckColors(record.deck.ifEmpty { old?.deck.orEmpty() }) ?: old?.colors)
+                    colors = deckColors(record.deck.ifEmpty { old?.deck.orEmpty() }) ?: record.colors ?: old?.colors,
+                    sourceUrl = record.sourceUrl ?: old?.sourceUrl, historyId = record.historyId ?: old?.historyId)
             }
             is MatchRecord -> record.copy(onPlay = record.onPlay ?: matches[record.id]?.onPlay)
             is RankRecord -> ranks[record.id]?.let { if (it.at <= record.at) it else record } ?: record
@@ -105,6 +106,40 @@ class PlayerStatsRepository(private val database: PlayerDatabase, private val dr
             is RankRecord -> ranks[updated.id] = updated
         }
         return true
+    }
+
+    /** Explicitly recovered source records survive log rotation and repeated startup imports. */
+    @Synchronized
+    fun importRecoveredResults(path: Path = AppPaths.appSupport.resolve("recovered-draft-results.json")) {
+        if (!Files.exists(path)) return
+        val recovered = json.decodeFromString<RecoveredDraftResults>(Files.readString(path))
+        // Validate the entire file before writing. Never infer wins from a pool or a date.
+        require(recovered.courses.map { it.id }.distinct().size == recovered.courses.size)
+        val byId = recovered.courses.associateBy { it.id }
+        for (course in recovered.courses) {
+            require(isDraftEvent(course.event) && course.id.startsWith("untapped:"))
+            require(course.wins != null && course.wins >= 0 && course.losses != null && course.losses >= 0)
+            require(course.sourceUrl?.startsWith("https://mtga.untapped.gg/profile/") == true)
+            Instant.parse(course.at)
+            // An existing Arena course must be reconciled explicitly, rather than counted twice.
+            require(courses.values.none { it.id != course.id &&
+                ((course.historyId != null && it.historyId == course.historyId) ||
+                 (course.pool.isNotEmpty() && it.pool.sorted() == course.pool.sorted())) })
+        }
+        require(recovered.matches.map { it.id }.distinct().size == recovered.matches.size)
+        for (match in recovered.matches) {
+            val course = requireNotNull(byId[match.courseId])
+            require(match.event == course.event && match.outcome in listOf("Win", "Loss", "Draw"))
+            require(match.id.startsWith("untapped:") && match.sourceUrl?.startsWith("https://mtga.untapped.gg/replay/") == true)
+            Instant.parse(match.at)
+        }
+        for (course in recovered.courses) {
+            val rows = recovered.matches.filter { it.courseId == course.id }
+            require(rows.count { it.outcome == "Win" } <= course.wins!! && rows.count { it.outcome == "Loss" } <= course.losses!!)
+        }
+        recovered.courses.forEach { merge(it) }
+        recovered.matches.forEach { merge(it) }
+        _state.value = snapshot()
     }
 
     /** Replay each session with its own context. Stable Arena IDs prevent duplicate results. */

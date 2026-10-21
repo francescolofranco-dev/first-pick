@@ -142,6 +142,8 @@ class DraftViewModel(
             publish()
         }
         watcherJob = scope.launch(Dispatchers.IO) {
+            runCatching { statsRepository?.importRecoveredResults() }
+                .onFailure { Log.warn(TAG, "Recovered statistics import failed", it) }
             runCatching { statsRepository?.importLogs(history = draftHistory) }
                 .onFailure { if (it is kotlinx.coroutines.CancellationException) throw it; Log.warn(TAG, "Statistics import failed", it) }
             tracker.consume(liveLines(fromStart = true))

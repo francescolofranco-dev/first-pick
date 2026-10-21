@@ -33,7 +33,7 @@ already saved by earlier app versions. New unrelated records are not persisted.
   its aggregate season win/loss totals are not shown as draft results. Constructed
   rank is not displayed. Draft results come only from Draft events and matches.
 - Trophies require an observed completed event with seven wins (three for
-  Traditional Draft). An absent trophy record does not mean every old event failed.
+  Traditional Draft, four for Pick Two Draft). An absent trophy record does not mean every old event failed.
 
 Only structured draft/performance fields are persisted. Authentication packets,
 chat, and opponent names are not stored. No records are uploaded.
@@ -46,3 +46,12 @@ those caches are older than live-advice refresh limits. Optional archetype data
 is loaded only from disk during review, so its refresh cannot block the saved
 pool or deck builds. The History set filter includes counts for each selection.
 Stats lists saved draft types even when their historical results are unavailable.
+
+Verified historical Untapped draft results can be recovered into the local file
+`~/Library/Application Support/FirstPick/recovered-draft-results.json`. Startup
+validates its structured course and match rows before merging them into SQLite.
+Stable source IDs make repeated imports idempotent. Source URLs and exact pool
+links (when available) remain on the records; personal recovery data is not part
+of the repository. Event totals and individual replay coverage can differ.
+Imported matches with no exact timestamp display their known draft date explicitly.
+This is a local recovery import, not automatic synchronization with Untapped.

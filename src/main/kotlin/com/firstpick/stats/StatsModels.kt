@@ -10,13 +10,14 @@ data class CourseRecord(
     val wins: Int? = null, val losses: Int? = null, val complete: Boolean = false,
     val pool: List<Int> = emptyList(), val deck: Map<Int, Int> = emptyMap(),
     val colors: String? = null, val draftComplete: Boolean = false,
+    val sourceUrl: String? = null, val historyId: String? = null,
 ) : ActivityRecord
 
 @Serializable
 data class MatchRecord(
     override val id: String, override val at: String, val event: String,
     val courseId: String? = null, val outcome: String, val onPlay: Boolean? = null,
-    val games: Int = 1,
+    val games: Int = 1, val sourceUrl: String? = null, val draftDateOnly: Boolean = false,
 ) : ActivityRecord
 
 @Serializable
@@ -70,3 +71,15 @@ data class ResultSummary(val wins: Int = 0, val losses: Int = 0, val draws: Int 
 
 internal fun List<MatchRecord>.results() = ResultSummary(count { it.outcome == "Win" }, count { it.outcome == "Loss" }, count { it.outcome == "Draw" })
 internal fun List<CourseRecord>.courseResults() = ResultSummary(sumOf { it.wins ?: 0 }, sumOf { it.losses ?: 0 })
+
+/** Terminal win target depends on the draft event, including Pick Two's four-win track. */
+internal fun CourseRecord.isTrophy(): Boolean = complete && (wins ?: 0) >= when (eventType(event)) {
+    "Traditional Draft" -> 3
+    "Pick Two Draft" -> 4
+    else -> 7
+}
+
+@Serializable
+internal data class RecoveredDraftResults(
+    val courses: List<CourseRecord> = emptyList(), val matches: List<MatchRecord> = emptyList(),
+)
