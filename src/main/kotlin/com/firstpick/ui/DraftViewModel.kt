@@ -34,6 +34,8 @@ import com.firstpick.guide.LimitedPolicy
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -54,6 +56,7 @@ class DraftViewModel(
     private val pickNetRepo: PickNetRepository = PickNetRepository(),
     private val advisor: AdvisorEngine = AdvisorEngine(),
     private val simulator: DraftSimulator = DraftSimulator(),
+    private val draftHistory: com.firstpick.draft.DraftHistory? = null,
     private val references: com.firstpick.guide.SetReferenceRepository = com.firstpick.guide.SetReferenceRepository(),
 ) {
     private val _ui = MutableStateFlow(DraftUiState())
@@ -95,7 +98,27 @@ class DraftViewModel(
         }
     }
 
+    val history = draftHistory?.history ?: MutableStateFlow(emptyList<com.firstpick.draft.DraftHistoryEntry>()).asStateFlow()
+
+    suspend fun reviewDraft(state: DraftState): DraftUiState {
+        // Separate repositories keep history browsing from changing live advice or overlays.
+        val review = DraftViewModel(scope)
+        val set = state.setCode ?: return DraftUiState(dataError = "This draft has no set information")
+        runCatching { review.repo.load(set, DraftRatingsFormats.DEFAULT) }
+            .onFailure { review.currentError = review.dataErrorMessage(it, set) }
+        runCatching { review.metaRepo.load(set, review.repo.cardNames) }
+        runCatching { review.archetypeRepo.loadStrengths(set, DraftRatingsFormats.DEFAULT) }
+        runCatching { review.synergyRepo.load(set) }
+        review.ensureLanePair(state)
+        currentCoroutineContext().ensureActive()
+        return review.buildUi(state).copy(dataError = review.currentError)
+    }
+
     fun start() {
+        tracker.onCompleted = { state ->
+            if (!simulating) runCatching { draftHistory?.record(state) }
+                .onFailure { Log.warn(TAG, "Could not save draft history", it) }
+        }
         scope.launch(Dispatchers.IO) {
             val sets = references.sets()
             mutex.withLock { setReferences = sets }

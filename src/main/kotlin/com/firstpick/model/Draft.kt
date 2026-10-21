@@ -33,6 +33,7 @@ fun setCodeFromEventName(eventName: String): String? =
         ?.groupValues?.get(1)?.uppercase()
 
 /** Exact saved main deck; it is not a claim about unsaved builder edits. */
+@kotlinx.serialization.Serializable
 data class SavedDeck(val mainDeck: Map<Int, Int>, val sideboard: Map<Int, Int>)
 
 sealed interface DraftEvent {
@@ -76,6 +77,7 @@ fun isPickTwoEvent(name: String): Boolean =
 
 enum class DraftPhase { IDLE, DRAFTING, COMPLETE }
 
+@kotlinx.serialization.Serializable
 data class DraftState(
     val phase: DraftPhase = DraftPhase.IDLE,
     val format: DraftFormat = DraftFormat.UNKNOWN,

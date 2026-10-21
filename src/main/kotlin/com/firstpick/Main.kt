@@ -45,7 +45,7 @@ fun main() {
     val logPath = System.getenv("FIRSTPICK_LOG")?.let(Path::of) ?: AppPaths.defaultPlayerLog
 
     val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-    val viewModel = DraftViewModel(appScope, logPath = logPath)
+    val viewModel = DraftViewModel(appScope, logPath = logPath, draftHistory = com.firstpick.draft.DraftHistory())
     viewModel.start()
 
     application {
@@ -58,6 +58,7 @@ fun main() {
         }
 
         val state by viewModel.ui.collectAsState()
+        val history by viewModel.history.collectAsState()
         var isAboutOpen by remember { mutableStateOf(false) }
         var isOverlayOpen by remember { mutableStateOf(false) }
         var draftOverlayHealth by remember {
@@ -92,6 +93,8 @@ fun main() {
             }
             App(
                 state = state,
+                history = history,
+                onReviewDraft = viewModel::reviewDraft,
                 isOverlayOpen = isOverlayOpen,
                 overlayHealth = activeOverlayHealth,
                 onToggleOverlay = { isOverlayOpen = !isOverlayOpen },

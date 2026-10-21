@@ -15,6 +15,8 @@ class DraftTracker(
     private val _state = MutableStateFlow(DraftState())
     val state: StateFlow<DraftState> = _state.asStateFlow()
 
+    var onCompleted: (DraftState) -> Unit = {}
+
     private var ignoringUnsupportedDraft = false
 
     fun onLine(line: String): Boolean {
@@ -33,6 +35,7 @@ class DraftTracker(
         if (namedDraft) ignoringUnsupportedDraft = false
         if (ignoringUnsupportedDraft) return false
         _state.update { it.reduce(event) }
+        if (_state.value.phase == com.firstpick.model.DraftPhase.COMPLETE) onCompleted(_state.value)
         return true
     }
 

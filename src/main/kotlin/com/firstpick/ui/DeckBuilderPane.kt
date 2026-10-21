@@ -365,7 +365,7 @@ private fun DeckStatPill(text: String) {
 
 // Keep the controls and cards in one scroll area so a short window cannot squeeze the list out.
 @Composable
-private fun ScrollableDeckPane(content: LazyListScope.() -> Unit) {
+internal fun ScrollableDeckPane(content: LazyListScope.() -> Unit) {
     val scrollState = rememberLazyListState()
     val scrolledPastHeader = scrollState.firstVisibleItemIndex > 0
     Box(Modifier.fillMaxSize()) {
@@ -440,7 +440,7 @@ private fun SectionLabel(text: String) {
 }
 
 @Composable
-private fun DeckSpellRow(s: DeckSpellUi, muted: Boolean = false) {
+internal fun DeckSpellRow(s: DeckSpellUi, muted: Boolean = false) {
     Row(
         Modifier
             .fillMaxWidth()

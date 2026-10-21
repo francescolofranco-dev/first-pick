@@ -48,7 +48,7 @@ import com.firstpick.overlay.OverlayHealthState
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
-enum class AppScreen { DRAFT_POOL, DECK_BUILDER, GUIDES }
+enum class AppScreen { DRAFT_POOL, DECK_BUILDER, GUIDES, HISTORY }
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -66,9 +66,17 @@ fun App(
     onLoadReferenceSet: (String) -> Unit = {},
     onRetryRatings: () -> Unit = {},
     onNewDraft: () -> Unit = {},
+    history: List<com.firstpick.draft.DraftHistoryEntry> = emptyList(),
+    onReviewDraft: suspend (com.firstpick.model.DraftState) -> DraftUiState = { DraftUiState() },
 ) {
-    var currentScreen by remember(state.phase) {
+    var currentScreen by remember {
         mutableStateOf(if (state.phase == DraftPhase.COMPLETE) AppScreen.DECK_BUILDER else AppScreen.DRAFT_POOL)
+    }
+
+    androidx.compose.runtime.LaunchedEffect(state.phase) {
+        if (currentScreen != AppScreen.HISTORY && currentScreen != AppScreen.GUIDES) {
+            currentScreen = if (state.phase == DraftPhase.COMPLETE) AppScreen.DECK_BUILDER else AppScreen.DRAFT_POOL
+        }
     }
 
     val deckTabEnabled = state.deckOptions.isNotEmpty() || state.deckSoFar != null
@@ -130,6 +138,7 @@ fun App(
                             ) {
                                 Box(Modifier.weight(1f).fillMaxHeight()) {
                                     when (currentScreen) {
+                                        AppScreen.HISTORY -> DraftHistoryPane(history, onReviewDraft)
                                         AppScreen.GUIDES -> GuidePane(state, onLoadReferenceSet)
                                         AppScreen.DECK_BUILDER -> when {
                                             state.deckOptions.isNotEmpty() -> DeckBuilderPane(
@@ -249,6 +258,11 @@ private fun FloatingCommandHeader(
             selected = currentScreen == AppScreen.DECK_BUILDER,
             enabled = deckTabEnabled,
             onClick = { onSelectScreen(AppScreen.DECK_BUILDER) },
+        ),
+        SegmentedTabItem(
+            label = "History",
+            selected = currentScreen == AppScreen.HISTORY,
+            onClick = { onSelectScreen(AppScreen.HISTORY) },
         ),
         SegmentedTabItem(
             label = "Guides",
