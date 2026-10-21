@@ -36,6 +36,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -56,6 +57,7 @@ class DraftViewModel(
     private val pickNetRepo: PickNetRepository = PickNetRepository(),
     private val advisor: AdvisorEngine = AdvisorEngine(),
     private val simulator: DraftSimulator = DraftSimulator(),
+    private val statsRepository: com.firstpick.stats.PlayerStatsRepository? = null,
     private val draftHistory: com.firstpick.draft.DraftHistory? = null,
     private val references: com.firstpick.guide.SetReferenceRepository = com.firstpick.guide.SetReferenceRepository(),
 ) {
@@ -98,6 +100,13 @@ class DraftViewModel(
         }
     }
 
+    val stats = statsRepository?.state ?: MutableStateFlow(com.firstpick.stats.PlayerStats()).asStateFlow()
+
+    private fun liveLines(fromStart: Boolean) = watcher.lines(fromStart).onEach { line ->
+        runCatching { statsRepository?.onLine(line) }
+            .onFailure { Log.warn(TAG, "Could not save activity statistics", it) }
+    }
+
     val history = draftHistory?.history ?: MutableStateFlow(emptyList<com.firstpick.draft.DraftHistoryEntry>()).asStateFlow()
 
     suspend fun reviewDraft(state: DraftState): DraftUiState {
@@ -124,7 +133,11 @@ class DraftViewModel(
             mutex.withLock { setReferences = sets }
             publish()
         }
-        watcherJob = scope.launch(Dispatchers.IO) { tracker.consume(watcher.lines(fromStart = true)) }
+        watcherJob = scope.launch(Dispatchers.IO) {
+            runCatching { statsRepository?.importLogs(history = draftHistory) }
+                .onFailure { if (it is kotlinx.coroutines.CancellationException) throw it; Log.warn(TAG, "Statistics import failed", it) }
+            tracker.consume(liveLines(fromStart = true))
+        }
         scope.launch {
             tracker.state.collect { state ->
                 runCatching {
@@ -168,7 +181,7 @@ class DraftViewModel(
         simPaused.value = false
         currentError = null
         tracker.reset()
-        watcherJob = scope.launch(Dispatchers.IO) { tracker.consume(watcher.lines(fromStart = false)) }
+        watcherJob = scope.launch(Dispatchers.IO) { tracker.consume(liveLines(fromStart = false)) }
         scope.launch { publish() }
     }
 
@@ -183,7 +196,7 @@ class DraftViewModel(
             tracker.reset(keepEventContext = true)
             currentError = null
             publish()
-            tracker.consume(watcher.lines(fromStart = false))
+            tracker.consume(liveLines(fromStart = false))
         }
     }
 

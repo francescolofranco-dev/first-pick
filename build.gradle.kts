@@ -32,6 +32,7 @@ dependencies {
     implementation(libs.kotlinx.coroutines.swing)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.jna)
+    implementation("org.xerial:sqlite-jdbc:3.51.2.0")
 
     testImplementation(kotlin("test-junit"))
     testImplementation(libs.kotlinx.coroutines.test)
@@ -52,7 +53,7 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Dmg)
             packageName = "FirstPick"
-            modules("java.instrument", "java.net.http", "jdk.unsupported")
+            modules("java.instrument", "java.net.http", "java.sql", "jdk.unsupported")
             packageVersion = firstPickPackageVersion
 
             macOS {

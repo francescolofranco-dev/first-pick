@@ -27,6 +27,7 @@ and needs, then proposes 2–3 finished decks when the draft ends.
 - **Dashboard** — likely colors, archetypes, open-color signals, curve, and pool.
 - **On-card overlay** — grades drawn directly on Arena's cards, at any window size.
 - **Set guides** — color-pair themes and key commons/uncommons per set, with cited sources.
+- **Personal stats** — local SQLite storage for drafts, event results, match history, play/draw performance, deck colors, and Limited/Constructed rank progression. Recover available records from older Arena logs automatically.
 - **Draft history** — completed drafts saved locally; reopen deck builds and the full drafted pool, including drafts recovered from the current Arena log.
 - **Deck builder** — 2–3 ranked builds with manabase, then red/green guidance in Arena's deck builder.
 
