@@ -20,6 +20,7 @@ internal class DeckFrameReader(
     private val helper: File? = NativeHelpers.extract("/native/macos/deck-reader", "deck-reader"),
     private val timeoutMs: Long = 8_000,
 ) : AutoCloseable {
+    private var lastSlowReadLoggedMs = Long.MIN_VALUE
     private var process: Process? = null
     private var input: BufferedWriter? = null
     private var output: BufferedReader? = null
@@ -30,6 +31,7 @@ internal class DeckFrameReader(
     @Synchronized
     fun read(names: List<String>, windowWidth: Int = 0, windowHeight: Int = 0): DeckReaderFrame? {
         val binary = helper ?: return null
+        val startedNs = System.nanoTime()
         val imageFile = File.createTempFile("firstpick-deck", ".bmp")
         return try {
             if (process?.isAlive != true) {
@@ -58,6 +60,12 @@ internal class DeckFrameReader(
             val text = VisionOcrPayloadParser.parse(raw) ?: return null
             val image = ImageIO.read(imageFile) ?: return null
             if (image.width != text.pixelWidth || image.height != text.pixelHeight) return null
+            val nowMs = System.nanoTime() / 1_000_000L
+            val elapsedMs = (System.nanoTime() - startedNs) / 1_000_000L
+            if (elapsedMs > 900 && (lastSlowReadLoggedMs == Long.MIN_VALUE || nowMs - lastSlowReadLoggedMs >= 10_000)) {
+                Log.info("DeckReader", "slow frame: ${elapsedMs}ms; observations=${text.observations.size}")
+                lastSlowReadLoggedMs = nowMs
+            }
             DeckReaderFrame(image, text)
         } catch (error: Exception) {
             Log.debug("DeckReader", "native reader unavailable: ${error.javaClass.simpleName}")

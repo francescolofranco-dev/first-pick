@@ -217,6 +217,29 @@ class DeckBuilderScreenInterpreterTest {
     }
 
     @Test
+    fun readsPoolCopiesWhenAConfirmedBuilderHasNoReadableRows() {
+        val observed = DeckBuilderScreenInterpreter.interpret(frame(
+            text("39/40 Cards", 0.82, 0.13),
+            text("Done", 0.86, 0.91),
+            text("Stock Up", 0.025, 0.270, width = 0.09),
+        ))
+        assertNotNull(observed)
+        assertTrue(observed.deckRows.isEmpty())
+        assertEquals(listOf("Stock Up"), observed.poolCardTitles.map { it.cardName })
+        assertEquals(39, observed.deckSize)
+    }
+
+    @Test
+    fun emptyBuilderIsAnExactZeroRatherThanAnUnreadableShell() {
+        val observed = DeckBuilderScreenInterpreter.interpret(frame(
+            text("0/40 Cards", 0.82, 0.13), text("Done", 0.86, 0.91),
+        ))
+        assertNotNull(observed)
+        assertEquals(0, observed.deckSize)
+        assertTrue(observed.deckRows.isEmpty())
+    }
+
+    @Test
     fun rejectsInvalidInputGeometry() {
         val invalid = ScreenTextFrame(
             2560,

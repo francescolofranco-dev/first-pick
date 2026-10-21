@@ -193,3 +193,33 @@ release gates or claim parity with Untapped.
 - [Arena event parser](../src/main/kotlin/com/firstpick/log/EventParser.kt)
 - [Saved-deck UI state](../src/main/kotlin/com/firstpick/ui/DraftViewModel.kt)
 - [Overlay inputs](../src/main/kotlin/com/firstpick/Main.kt)
+
+## First implementation: 2.3.2
+
+The first release addresses transaction reconciliation and capture consistency:
+
+- Unexplained row/total deltas are retried against the last trusted state. If the
+  surfaces catch up, off-screen counts survive. If identical unexplained evidence
+  persists for 600 ms, hidden counts are invalidated and must be reacquired.
+  Conflicting instructions are withheld while settling.
+- Text and diamond pixels now come from one capture. A pool title is also checked
+  against its surrounding copy-indicator region before being returned.
+- A confirmed builder can supply pool evidence with no readable deck rows, and
+  an empty builder can establish zero counts.
+- Slow reads expire highlight positions while retaining verification progress in
+  the checking label. Rate-limited slow-frame diagnostics report elapsed time and
+  observation count without storing images or card/account data.
+- Presentation state is scoped to the draft session, including when two sessions
+  happen to contain the same pool.
+
+Focus-loss and prolonged unreadability still require fresh verification. Saved
+snapshots are not used as proof of unsaved state. Those safeguards remain until
+more complete edit chronology is available. These changes do not claim comparative
+parity, recorded-corpus accuracy, or a measured p95 latency improvement.
+
+Validation for this implementation: all 510 tests passed with no skipped tests;
+`buildProduction` and `runProduction` succeeded. The installed app visibly reports
+v2.3.2. Arena was open in the supported builder, but the native window locator
+reported `frontmost:false` during the automation check and guidance remained
+inactive. Live edit latency/flicker improvement is therefore not claimed; it
+still needs a foreground Arena interaction run.

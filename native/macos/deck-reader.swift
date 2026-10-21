@@ -244,8 +244,16 @@ private func readFrame(path: String, words: [String], windowWidth: Int, windowHe
     observations = observations.filter { observation in
         guard let x = observation["x"] as? Double, let y = observation["y"] as? Double,
               let w = observation["w"] as? Double, let h = observation["h"] as? Double else { return false }
-        let rect = CGRect(x: x * Double(image.width), y: y * Double(image.height),
-                          width: w * Double(image.width), height: h * Double(image.height)).integral
+        // A pool title alone can stay still while its copy diamonds animate.
+        // Validate the complete card header, including the diamond run.
+        let isPoolTitle = x + w / 2 < 0.775 && y > 0.20
+        let scale = min(1.0, (2560.0 / 1496.0) / (Double(image.width) / Double(image.height)))
+        let top = isPoolTitle ? max(0, y - 0.055) : y
+        let rect = CGRect(x: max(0, x - (isPoolTitle ? 0.009 * scale : 0)) * Double(image.width),
+                          y: top * Double(image.height),
+                          width: (isPoolTitle ? max(w, 0.145 * scale) : w) * Double(image.width),
+                          height: (h + y - top) * Double(image.height)).integral
+            .intersection(CGRect(x: 0, y: 0, width: image.width, height: image.height))
         guard let before = image.cropping(to: rect), let after = latest.cropping(to: rect),
               let oldPixels = pixels(before), let newPixels = pixels(after) else { return false }
         if (observation["text"] as? String)?.lowercased() == "done" {
@@ -253,7 +261,8 @@ private func readFrame(path: String, words: [String], windowWidth: Int, windowHe
         }
         return sameContent(oldPixels, newPixels)
     }
-    try writePixels(latest, to: path)
+    // Text and copy pixels must describe the same capture, never two moments.
+    try writePixels(image, to: path)
     return ["schema": 1, "ok": true, "width": image.width, "height": image.height,
             "observations": observations, "regionsScanned": scanned,
             "captureMs": Int(capturedAt.timeIntervalSince(start) * 1000),
