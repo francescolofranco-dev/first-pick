@@ -86,3 +86,32 @@ source. Two timely base-colored draw/filter spells close that gap through
 partial selection credit while both early base-color requirements stay met.
 Removing those spells rejects the splash. This tests the completed build, not
 only the source-report helper.
+
+## Three-color alternatives in v2.3.2
+
+The completed FRA Pick Two regression exposed two candidate-generation gaps:
+non-haymaker third-color upgrades were never evaluated, and a weak fallback
+was forced into the second suggestion slot. The builder now selects cards
+jointly across three colors as well as evaluating strict bomb splashes.
+Three-color alternatives require a complete spell suite, a material quality
+upgrade over the corresponding clean build when one exists, and actual fixing.
+
+These alternatives may trade base-color consistency for card quality. Each base
+color must retain at least seven sources, with at most six combined sources
+short of the original targets; the original on-curve requirements
+remain in the mana report and their shortfalls still reduce the power score.
+The third color must meet its source requirement. When more than four cards
+need it, the requirement uses their printed timing rather than the splash delay.
+Candidates with heavy third-color costs are also compared against a version
+that cuts those costs. The UI names the three-color identity and explains the
+mana tradeoff. Strict bomb splashes retain their existing full-source checks.
+
+Every alternative must finish within 12 power points of the top build. Thin
+fallbacks appear only when no normal build exists, and identical color identities
+share one suggestion slot. The frozen 42-card pool checks Temur with Mind
+Meanderer and both relevant dual lands, while preserving Chandra and Kiora;
+removing the lands or weakening the green cards removes the alternative.
+
+Validation for this version: all 504 tests pass. The separate seeds 0–99 audit
+checks 900 pools and 1,834 suggested builds (1,210 complete), with zero selection
+findings under the checks above.

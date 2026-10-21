@@ -1,8 +1,8 @@
 # Deck-building overlay reliability investigation
 
 Investigated on 2026-10-21 against repository revision `997bfb2` (FirstPick 2.3.1).
-This is an investigation and implementation proposal; no app behavior changes are
-included. Local logs were inspected read-only. No raw account data, identifiers,
+The original investigation proposed changes without modifying app behavior.
+The implementation follow-up is recorded below. Local logs were inspected read-only. No raw account data, identifiers,
 log excerpts, or screenshots are included here.
 
 ## Conclusion
@@ -194,7 +194,7 @@ release gates or claim parity with Untapped.
 - [Saved-deck UI state](../src/main/kotlin/com/firstpick/ui/DraftViewModel.kt)
 - [Overlay inputs](../src/main/kotlin/com/firstpick/Main.kt)
 
-## First implementation: 2.3.2
+## First implementation: 2.3.3
 
 The first release addresses transaction reconciliation and capture consistency:
 
@@ -217,9 +217,13 @@ snapshots are not used as proof of unsaved state. Those safeguards remain until
 more complete edit chronology is available. These changes do not claim comparative
 parity, recorded-corpus accuracy, or a measured p95 latency improvement.
 
-Validation for this implementation: all 510 tests passed with no skipped tests;
+Validation for this implementation: all 512 tests passed with no skipped tests;
 `buildProduction` and `runProduction` succeeded. The installed app visibly reports
-v2.3.2. Arena was open in the supported builder, but the native window locator
+v2.3.3. Arena was open in the supported builder, but the native window locator
 reported `frontmost:false` during the automation check and guidance remained
 inactive. Live edit latency/flicker improvement is therefore not claimed; it
 still needs a foreground Arena interaction run.
+
+The final version is 2.3.3 because the concurrently completed three-color deck
+changes on main already used 2.3.2. The combined application passed the full production checks and was rebuilt,
+installed, and visibly verified as v2.3.3 before integration.

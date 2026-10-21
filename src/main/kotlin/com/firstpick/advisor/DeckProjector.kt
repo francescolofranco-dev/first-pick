@@ -11,7 +11,6 @@ import com.firstpick.guide.LimitedDeckPolicies
 
 
 object DeckProjector {
-    private const val MIN_DECK_OPTIONS = 2
     private const val CREATURE_BIAS = 0.015
 
 
@@ -121,18 +120,29 @@ object DeckProjector {
                             upgrade = true, requiredSplash = color),
                     ).filter { it.splash == color }
                 }
-                listOfNotNull(clean) + splashes
+                val threeColor = if (lenient) emptyList() else "WUBRG".filterNot { it in pair }.flatMap { color ->
+                    // Jointly select the deck, rather than only appending bombs
+                    // to a frozen two-color list. Also try cutting heavy third-color costs.
+                    listOf(1, Int.MAX_VALUE).mapNotNull { pipLimit ->
+                        buildForPair(pair, spells, lands, metrics, meta, archetypeRating,
+                            strengthFor(pair, pairStrength), minSpells, synergy, policy,
+                            requiredSplash = color, threeColor = true, thirdColorPipLimit = pipLimit)
+                    }.filter { option ->
+                        val baseline = clean ?: return@filter true
+                        option.spells.sumOf { DeckAnalysis.cardQuality(it.rating, archetypeRating(it.name, pair), metrics) } >=
+                            baseline.spells.sumOf { DeckAnalysis.cardQuality(it.rating, archetypeRating(it.name, pair), metrics) } + policy.splashUpgradeMargin
+                    }
+                }
+                listOfNotNull(clean) + splashes + threeColor
             }
 
         val ranked = pass(policy.minimumBuildableSpells).sortedByDescending { it.powerScore }
-            .distinctBy { it.basePair to it.splash }
-        // A complete but substantially weaker build should not occupy the third slot.
+            .distinctBy { it.colors }
+        // Every alternative must be competitive; never force a weak second deck.
         val main = ranked.filterIndexed { index, option ->
-            index < 2 || option.powerScore >= ranked.first().powerScore - 12.0
+            index == 0 || option.powerScore >= ranked.first().powerScore - 12.0
         }
-        // Lenient builds may fill the slate to two choices, but must never pad it to three.
-        val optionCount = minOf(maxOptions, maxOf(MIN_DECK_OPTIONS, main.size))
-        if (main.size >= optionCount) return main.take(optionCount)
+        if (main.isNotEmpty()) return main.take(maxOptions)
 
         // A nearly buildable fallback must beat a much thinner pile, while
         // similarly incomplete choices can still be ordered by actual power.
@@ -140,9 +150,10 @@ object DeckProjector {
         val fill = pass(0, lenient = true).sortedWith(
             compareByDescending<DeckOption> { it.spells.size >= nearBuildable }.thenByDescending { it.powerScore },
         )
-        return (main + fill)
-            .distinctBy { it.basePair to it.splash }
-            .take(optionCount)
+        return fill.filter { it.spells.size >= minOf(nearBuildable, fill.firstOrNull()?.spells?.size ?: 0) }
+            .filter { it.powerScore >= (fill.firstOrNull()?.powerScore ?: 0.0) - 12.0 }
+            .distinctBy { it.colors }
+            .take(maxOptions)
     }
 
     private fun strengthFor(pair: String, pairStrength: Map<String, Double>): Double? = pairStrength[pair]
@@ -162,6 +173,8 @@ object DeckProjector {
         upgrade: Boolean = false,
         allowSplash: Boolean = true,
         requiredSplash: Char? = null,
+        threeColor: Boolean = false,
+        thirdColorPipLimit: Int = Int.MAX_VALUE,
     ): DeckOption? {
         val pairSet = pair.toSet()
         fun onColor(card: RankedCard): Boolean {
@@ -209,13 +222,24 @@ object DeckProjector {
             return ManaSources.estimate(chosen, pair, splashColor, selectedLands, meta, policy, landCount)
         }
 
-        val eligible = spells.filter(::onColor)
+        val eligible = spells.filter { card ->
+            if (onColor(card)) return@filter true
+            if (!threeColor || requiredSplash == null) return@filter false
+            val m = meta(card.name) ?: return@filter false
+            val pips = m.coloredPips[requiredSplash] ?: if (requiredSplash in m.heavyPipColors) 2 else 1
+            requiredSplash in singleColorSplashOptions(card, pairSet, m) && pips <= thirdColorPipLimit
+        }
         val curvePolicy = adaptiveCurvePolicy(policy, pair, synergy)
         val base = selectSpells(eligible, metrics, meta, ::cardScore, ::rawScore, curvePolicy).toMutableList()
 
         var splashedSpells = emptyList<RankedCard>()
         var selectedSplashColor: Char? = null
-        if (upgrade) {
+        if (threeColor) {
+            selectedSplashColor = requiredSplash
+            splashedSpells = base.filterNot(::onColor)
+            if (splashedSpells.isEmpty() || base.size < policy.spellSlots) return null
+            base.removeAll(splashedSpells.toSet())
+        } else if (upgrade) {
             // Upgrade variants only exist for a complete base; short bases are
             // handled by the normal top-up pass below.
             if (base.size < policy.spellSlots) return null
@@ -258,9 +282,22 @@ object DeckProjector {
         val removal = metas.count { it?.isRemoval == true }
         val landFixers = onColorLands.count { meta(it.name)?.isFixing == true }
         val landCount = (policy.deckSize - chosen.size).coerceAtLeast(policy.landSlots)
-        val manaSources = ManaSources.estimate(chosen, pair, splashColor, onColorLands, meta, policy, landCount)
+        // A substantial third color needs its spells on curve, unlike a few late splash cards.
+        val manaPolicy = if (threeColor && splashedSpells.size > policy.maximumSplashCards)
+            policy.copy(splashCastingDelay = 0) else policy
+        val manaSources = ManaSources.estimate(chosen, pair, splashColor, onColorLands, meta, manaPolicy, landCount,
+            allowBaseShortfall = threeColor)
         // A splash is only real when it can be funded after both base colors.
-        if (splashColor != null && !manaSources.splashFeasible) return null
+        if (threeColor) {
+            // A compromise needs real fixing and a usable base. Unsupported
+            // piles must not slip through just because their cards are strong.
+            val sharedSources = onColorLands.sumOf { (meta(it.name)?.producedColors.orEmpty().count { c -> c in deckColors } - 1).coerceAtLeast(0) } +
+                manaSources.fixerSources.values.sum()
+            if (sharedSources < 2 || !manaSources.splashSupported ||
+                manaSources.baseShortfall > ManaSources.THREE_COLOR_MAXIMUM_BASE_SHORTFALL || pairSet.any {
+                    (manaSources.totalSources[it] ?: 0) < ManaSources.THREE_COLOR_MINIMUM_BASE_SOURCES
+                }) return null
+        } else if (splashColor != null && !manaSources.splashFeasible) return null
         val identity = DeckAnalysis.identity(chosen, pair, meta, synergy, landFixers)
         val power = DeckAnalysis.power(
             spells = chosen,
@@ -280,7 +317,7 @@ object DeckProjector {
             colors = "WUBRG".filter { it in deckColors },
             basePair = "WUBRG".filter { it in pairSet },
             splash = splashColor,
-            theme = synergy?.archetype(pair)?.name,
+            theme = if (threeColor) null else synergy?.archetype(pair)?.name,
             powerScore = power.score,
             tier = tierOf(power.score),
             type = identity.pace.label,
@@ -289,7 +326,10 @@ object DeckProjector {
             identityConfidence = identity.confidenceLabel,
             identityReasons = identity.reasons,
             powerConfidence = power.confidenceLabel,
-            powerReasons = (if (splashColor != null) listOf(
+            powerReasons = (if (threeColor) listOf(
+                "Three-color alternative: stronger cards at the cost of mana consistency",
+                "${manaSources.baseShortfall} base-color sources short of on-curve targets; $splashColor has ${manaSources.totalSources[splashColor] ?: 0}/${manaSources.requiredSources[splashColor] ?: 0} sources",
+            ) else if (splashColor != null) listOf(
                 "Splash justified by " + splashedSpells.mapNotNull { card -> HaymakerAssessment.reason(card, metrics, meta(card.name))?.let { "${card.name}: $it" } }.joinToString(),
                 "$splashColor sources: ${manaSources.totalSources[splashColor] ?: 0}" +
                     (manaSources.landcyclingSources[splashColor]?.takeIf { it > 0 }?.let { " ($it landcycling)" } ?: "") +
@@ -304,6 +344,7 @@ object DeckProjector {
             curve = curveOf(metas),
             manaSources = manaSources,
             hasObservedPower = power.hasObservedPower,
+            isThreeColor = threeColor,
         )
     }
 

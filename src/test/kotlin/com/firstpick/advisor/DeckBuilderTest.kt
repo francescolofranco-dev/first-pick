@@ -35,7 +35,7 @@ class DeckBuilderTest {
         val options = DeckBuilder.build(pool(), metrics, meta)
         assertTrue(options.isNotEmpty())
         assertEquals("WU", options.first().basePair)
-        assertTrue(options.first().powerScore > options.last().powerScore)
+        assertTrue(options.zipWithNext().all { (a, b) -> a.powerScore >= b.powerScore })
     }
 
     @Test
@@ -102,7 +102,7 @@ class DeckBuilderTest {
     fun doesNotInventAThirdBuildWithAnUnrepresentedBaseColor() {
         val options = DeckBuilder.build(pool(), metrics, meta)
 
-        assertEquals(2, options.size, "only two color identities have enough cards to be buildable")
+        assertEquals(1, options.size, "a strong complete deck must not be padded with thin alternatives")
         for (option in options) {
             assertTrue(option.basePair.all { baseColor ->
                 option.spells.any { baseColor in LaneDetector.colorsOf(it) }
@@ -122,7 +122,7 @@ class DeckBuilderTest {
     }
 
     @Test
-    fun neverOffersABalancedThreeColorDeck() {
+    fun neverOffersAnUnsupportedThreeColorDeck() {
         val pool = buildList {
             listOf("W", "U", "B").forEachIndexed { ci, col ->
                 repeat(12) { i -> add(card(ci * 100 + i, "$col$i", 0.60 - 0.005 * i, col)) }

@@ -93,8 +93,8 @@ class DeckProjectorTest {
             }
             return DeckProjector.projectAll(pool, metrics, metadata, basePair = "WU")
         }
-        assertTrue(build(false).none { it.splash == 'B' })
-        val supported = build(true).first { it.splash == 'B' }
+        assertTrue(build(false).none { it.splash == 'B' && !it.isThreeColor })
+        val supported = build(true).first { it.splash == 'B' && !it.isThreeColor }
         val mana = supported.manaSources!!
         assertEquals(0, mana.baseShortfall)
         assertEquals(3, mana.totalSources.getValue('B'))
