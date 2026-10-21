@@ -38,6 +38,7 @@ fun eventType(event: String): String {
     return when {
         "picktwo" in name.replace("_", "") -> "Pick Two Draft"
         "sealed" in name -> "Sealed"
+        "cube" in name -> "Cube Draft"
         "traditional" in name || "traddraft" in name -> if ("draft" in name) "Traditional Draft" else "Traditional Constructed"
         "quickdraft" in name || "bot_draft" in name || "botdraft" in name -> "Quick Draft"
         "draft" in name -> "Premier Draft"
@@ -47,7 +48,16 @@ fun eventType(event: String): String {
     }
 }
 
-internal fun isLimited(event: String): Boolean = event.lowercase().let { "draft" in it || "sealed" in it }
+internal fun isDraftEvent(event: String): Boolean = event.lowercase().let {
+    "sealed" !in it && ("draft" in it || "cube" in it)
+}
+
+/** Apply before filters and summaries, including records saved by older app versions. */
+internal fun PlayerStats.draftOnly(): PlayerStats = copy(
+    courses = courses.filter { isDraftEvent(it.event) },
+    matches = matches.filter { isDraftEvent(it.event) },
+    ranks = ranks.filter { it.ladder == "limited" },
+)
 
 internal fun setOfEvent(event: String): String? = com.firstpick.model.setCodeFromEventName(event)
     ?: Regex("(?:Draft|Sealed)_([A-Za-z0-9]{2,5})(?:_|$)", RegexOption.IGNORE_CASE)

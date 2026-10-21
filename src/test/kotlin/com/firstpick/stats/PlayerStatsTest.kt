@@ -11,6 +11,40 @@ import java.time.Instant
 import kotlin.test.*
 
 class PlayerStatsTest {
+    @Test fun draftScopeExcludesOtherModesFromPreviouslySavedRecords() {
+        val db = PlayerDatabase(Files.createTempDirectory("fp-draft-scope").resolve("stats.db"))
+        val at = "2026-10-21T10:00:00Z"
+        val events = listOf("PremierDraft_DSK", "QuickDraft_DSK", "PickTwoDraft_FRA", "TraditionalDraft_SOS",
+            "Y26_FRA_Bot_Draft_20261017", "Cube", "Sealed_DSK", "Traditional_Ladder", "Historic_Play", "MWM_Standard")
+        for ((index, event) in events.withIndex()) {
+            db.put("course", "c$index", at, db.json.encodeToString(CourseRecord("c$index", at, event, 2, 1)))
+            db.put("match", "m$index", at, db.json.encodeToString(MatchRecord("m$index", at, event, outcome = "Win")))
+        }
+        for (ladder in listOf("limited", "constructed")) {
+            db.put("rank", ladder, at, db.json.encodeToString(RankRecord(ladder, at, ladder, 94, "Gold", 2, 2, 1)))
+        }
+        val visible = PlayerStatsRepository(db).state.value
+        assertEquals("Cube Draft", eventType("Cube"))
+        assertEquals(events.take(6).toSet(), visible.courses.map { it.event }.toSet())
+        assertEquals(events.take(6).toSet(), visible.matches.map { it.event }.toSet())
+        assertEquals(ResultSummary(12, 6), visible.courses.courseResults())
+        assertEquals(ResultSummary(6, 0), visible.matches.results())
+        assertEquals(listOf("limited"), visible.ranks.map { it.ladder })
+        // Scope changes preserve older database records, while keeping them out of all UI summaries.
+        assertEquals(10, db.read("course").size)
+        assertEquals(10, db.read("match").size)
+    }
+
+    @Test fun newNormalGameplayAndConstructedRanksAreNotSaved() {
+        val db = PlayerDatabase(Files.createTempDirectory("fp-draft-live").resolve("stats.db"))
+        val repo = PlayerStatsRepository(db)
+        repo.onLine("""{"Courses":[{"CourseId":"play","InternalEventName":"Historic_Play","CurrentWins":8,"CurrentLosses":2},{"CourseId":"sealed","InternalEventName":"Sealed_DSK","CurrentWins":5,"CurrentLosses":3},{"CourseId":"draft","InternalEventName":"QuickDraft_DSK","CurrentWins":3,"CurrentLosses":1}]}""")
+        repo.onLine("""{"constructedSeasonOrdinal":94,"constructedClass":"Gold","constructedLevel":2,"constructedMatchesWon":12,"constructedMatchesLost":9}""")
+        assertEquals(listOf("QuickDraft_DSK"), repo.state.value.courses.map { it.event })
+        assertEquals(1, db.read("course").size)
+        assertTrue(db.read("rank").isEmpty())
+    }
+
     @Test fun legacyDraftHistoryMigratesWithoutChangingItsIdsDatesOrCards() {
         val dir = Files.createTempDirectory("fp-migrate")
         val file = dir.resolve("draft-history.json")

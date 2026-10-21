@@ -26,10 +26,12 @@ import java.util.Locale
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun StatsPane(stats: PlayerStats, history: List<DraftHistoryEntry>) {
+    val draftStats = remember(stats) { stats.draftOnly() }
+    val draftHistory = remember(history) { history.filter { isDraftEvent(it.state.eventName.orEmpty()) } }
     var section by remember { mutableStateOf("Overview") }
     var period by remember { mutableStateOf("All time") }
     var set by remember { mutableStateOf("All sets") }
-    var format by remember { mutableStateOf("All play types") }
+    var format by remember { mutableStateOf("All draft types") }
     val cutoff = when (period) {
         "Last 7 days" -> Instant.now().minus(Duration.ofDays(7))
         "Last 30 days" -> Instant.now().minus(Duration.ofDays(30))
@@ -38,16 +40,16 @@ internal fun StatsPane(stats: PlayerStats, history: List<DraftHistoryEntry>) {
     fun included(at: String, event: String): Boolean =
         runCatching { Instant.parse(at) >= cutoff }.getOrDefault(false) &&
             (set == "All sets" || setOfEvent(event) == set) &&
-            (format == "All play types" || eventType(event) == format)
-    val courses = stats.courses.filter { included(it.at, it.event) }
-    val matches = stats.matches.filter { included(it.at, it.event) }
-    val drafts = history.filter { included(it.completedAt, it.state.eventName.orEmpty()) }
-    val sets = (history.mapNotNull { it.state.setCode } + stats.courses.mapNotNull { setOfEvent(it.event) }).distinct().sorted()
-    val formats = (stats.courses.map { eventType(it.event) } + stats.matches.map { eventType(it.event) } +
-        history.map { eventType(it.state.eventName.orEmpty()) }).distinct().sorted()
+            (format == "All draft types" || eventType(event) == format)
+    val courses = draftStats.courses.filter { included(it.at, it.event) }
+    val matches = draftStats.matches.filter { included(it.at, it.event) }
+    val drafts = draftHistory.filter { included(it.completedAt, it.state.eventName.orEmpty()) }
+    val sets = (draftHistory.mapNotNull { it.state.setCode } + draftStats.courses.mapNotNull { setOfEvent(it.event) }).distinct().sorted()
+    val formats = (draftStats.courses.map { eventType(it.event) } + draftStats.matches.map { eventType(it.event) } +
+        draftHistory.map { eventType(it.state.eventName.orEmpty()) }).distinct().sorted()
     Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(9.dp)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            Text("Your stats", style = AppTheme.typography.paneTitle, color = AppTheme.colors.textPrimary)
+            Text("Draft stats", style = AppTheme.typography.paneTitle, color = AppTheme.colors.textPrimary)
             Text(if (stats.importing) "Recovering local records…" else "Saved on this Mac",
                 style = AppTheme.typography.caption, color = AppTheme.colors.textSecondary)
         }
@@ -59,13 +61,13 @@ internal fun StatsPane(stats: PlayerStats, history: List<DraftHistoryEntry>) {
             StatsFilter(period, listOf("All time", "Last 30 days", "Last 7 days")) { period = it }
             if (section != "Rank") {
                 StatsFilter(set, listOf("All sets") + sets) { set = it }
-                StatsFilter(format, listOf("All play types") + formats) { format = it }
+                StatsFilter(format, listOf("All draft types") + formats) { format = it }
             }
         }
         when (section) {
             "Overview" -> OverviewStats(courses, matches, drafts)
             "Matches" -> MatchStats(matches)
-            else -> RankStats(stats.ranks.filter { runCatching { Instant.parse(it.at) >= cutoff }.getOrDefault(false) })
+            else -> RankStats(draftStats.ranks.filter { runCatching { Instant.parse(it.at) >= cutoff }.getOrDefault(false) })
         }
     }
 }
@@ -86,7 +88,7 @@ private fun StatsFilter(value: String, choices: List<String>, onSelect: (String)
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun OverviewStats(courses: List<CourseRecord>, matches: List<MatchRecord>, drafts: List<DraftHistoryEntry>) {
-    val limited = courses.filter { isLimited(it.event) }
+    val limited = courses.filter { isDraftEvent(it.event) }
     val withResults = limited.filter { it.wins != null && it.losses != null && (it.wins + it.losses) > 0 }
     val results = withResults.courseResults()
     val trophies = withResults.count { it.complete && (it.wins ?: 0) >= if (eventType(it.event) == "Traditional Draft") 3 else 7 }
@@ -94,20 +96,20 @@ private fun OverviewStats(courses: List<CourseRecord>, matches: List<MatchRecord
         item {
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 StatsMetric("Drafts saved", drafts.size.toString())
-                StatsMetric("Limited record", if (withResults.isEmpty()) "—" else "${results.wins}–${results.losses}")
+                StatsMetric("Draft record", if (withResults.isEmpty()) "—" else "${results.wins}–${results.losses}")
                 StatsMetric("Win rate", rate(results.winRate))
                 StatsMetric("Recorded trophies", if (withResults.isEmpty()) "—" else trophies.toString())
             }
         }
         item {
-            Text("Limited results cover ${withResults.size} events with recorded results. Saved drafts without results are excluded. Counts may be partial if an event’s final result was not logged. Date filters select events by first observation and show their full recorded totals.",
+            Text("Draft results cover ${withResults.size} events with recorded results. Saved drafts without results are excluded. Counts may be partial if an event’s final result was not logged. Date filters select events by first observation and show their full recorded totals.",
                 style = AppTheme.typography.caption, color = AppTheme.colors.textSecondary)
         }
         item {
-            Panel("By set", trailing = "Limited event results") {
+            Panel("By set", trailing = "Draft event results") {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     val groups = (limited.mapNotNull { setOfEvent(it.event) } + drafts.mapNotNull { it.state.setCode }).distinct().sorted()
-                    if (groups.isEmpty()) StatsEmpty("No Limited records in this selection.")
+                    if (groups.isEmpty()) StatsEmpty("No draft records in this selection.")
                     for (code in groups) {
                         val rows = withResults.filter { setOfEvent(it.event) == code }
                         val count = drafts.count { it.state.setCode == code }
@@ -117,7 +119,7 @@ private fun OverviewStats(courses: List<CourseRecord>, matches: List<MatchRecord
             }
         }
         item {
-            Panel("By play type", trailing = "Event totals") {
+            Panel("By draft type", trailing = "Event totals") {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     val groups = courses.filter { it.wins != null && it.losses != null }.groupBy { eventType(it.event) }
                     if (groups.isEmpty()) StatsEmpty("No event results recorded yet.")
@@ -178,7 +180,7 @@ private fun MatchStats(matches: List<MatchRecord>) {
     val summary = matches.results()
     LazyColumn(verticalArrangement = Arrangement.spacedBy(9.dp)) {
         item {
-            Panel("Match record", trailing = "${matches.size} confirmed matches") {
+            Panel("Draft match record", trailing = "${matches.size} confirmed matches") {
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     StatsResultRow("Overall", summary)
                     Text("Each match is counted once, including best-of-three. Draws are shown separately and excluded from win rate.",
@@ -208,21 +210,15 @@ private fun MatchStats(matches: List<MatchRecord>) {
 
 @Composable
 private fun RankStats(ranks: List<RankRecord>) {
-    var ladder by remember { mutableStateOf("limited") }
-    val rows = ranks.filter { it.ladder == ladder }
+    val rows = ranks.filter { it.ladder == "limited" }
     val latest = rows.firstOrNull()
     LazyColumn(verticalArrangement = Arrangement.spacedBy(9.dp)) {
         item {
-            AppSegmentedTabs(listOf("limited", "constructed").map { name ->
-                SegmentedTabItem(name.replaceFirstChar { it.uppercase() }, selected = ladder == name, onClick = { ladder = name })
-            }, modifier = Modifier.fillMaxWidth(), fillWidth = true)
-        }
-        item {
-            Panel("Latest observed rank", trailing = latest?.let { "Season ${it.season}" }) {
+            Panel("Limited rank", trailing = latest?.let { "Season ${it.season}" }) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(latest?.label ?: "Rank unavailable", fontSize = 25.sp, fontWeight = FontWeight.SemiBold, color = AppTheme.colors.textPrimary)
-                    if (latest != null) StatsResultRow("Season record", ResultSummary(latest.wins, latest.losses, latest.draws), "Observed ${date(latest.at)}")
-                    Text("Account-wide rank snapshots from Arena. These season totals are separate from imported event and match results.",
+                    if (latest != null) Text("Observed ${date(latest.at)}", style = AppTheme.typography.caption, color = AppTheme.colors.textSecondary)
+                    Text("Arena’s Limited ladder is shared by Draft and Sealed. Draft-only results are shown in Overview and Matches.",
                         style = AppTheme.typography.caption, color = AppTheme.colors.textSecondary)
                 }
             }
@@ -232,7 +228,7 @@ private fun RankStats(ranks: List<RankRecord>) {
             Row(Modifier.fillMaxWidth().padding(horizontal = 6.dp, vertical = 5.dp), horizontalArrangement = Arrangement.SpaceBetween) {
                 Column {
                     Text(rank.label, color = AppTheme.colors.textPrimary, fontSize = 12.sp)
-                    Text("Season ${rank.season} · ${rank.wins}–${rank.losses}", color = AppTheme.colors.textMuted, fontSize = 10.sp)
+                    Text("Season ${rank.season}", color = AppTheme.colors.textMuted, fontSize = 10.sp)
                 }
                 Text(date(rank.at), color = AppTheme.colors.textSecondary, fontSize = 11.sp)
             }

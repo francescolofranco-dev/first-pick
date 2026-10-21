@@ -50,7 +50,7 @@ class PlayerStatsRepository(private val database: PlayerDatabase, private val dr
     private fun snapshot(importing: Boolean = false, error: String? = null) = PlayerStats(
         courses.values.sortedByDescending { it.at }, matches.values.sortedByDescending { it.at },
         ranks.values.sortedByDescending { it.at }, importing, error,
-    )
+    ).draftOnly()
 
     @Synchronized
     fun onLine(line: String) {
@@ -63,6 +63,12 @@ class PlayerStatsRepository(private val database: PlayerDatabase, private val dr
     }
 
     private fun merge(record: ActivityRecord): Boolean {
+        val relevant = when (record) {
+            is CourseRecord -> isDraftEvent(record.event)
+            is MatchRecord -> isDraftEvent(record.event)
+            is RankRecord -> record.ladder == "limited"
+        }
+        if (!relevant) return false
         val updated: ActivityRecord = when (record) {
             is CourseRecord -> {
                 val old = courses[record.id]

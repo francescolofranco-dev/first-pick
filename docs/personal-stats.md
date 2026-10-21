@@ -12,7 +12,10 @@ live log watcher. Stable Arena course IDs and match IDs prevent duplicate totals
 when a session is replayed. There is no expiry or automatic deletion.
 
 The Stats tab provides Overview, Matches, and Rank sections. Set, play type, and
-date filters apply to Overview and Matches; Rank has date and ladder filters.
+date filters apply to Overview and Matches; Rank has a date filter. Only Draft
+events and their matches contribute to statistics or filter choices. Constructed,
+normal Play, Midweek Magic, and Sealed events are excluded, including records
+already saved by earlier app versions. New unrelated records are not persisted.
 
 - Event totals use the largest observed cumulative win/loss counters per course.
   Counts can be incomplete when later results were never logged. Date filters
@@ -26,8 +29,9 @@ date filters apply to Overview and Matches; Rank has date and ladder filters.
   starting players are excluded from those two groups.
 - Color breakdowns use an observed saved deck and locally cached card colors,
   rather than treating all colors in a drafted pool as the played deck.
-- Rank snapshots are account-wide Limited/Constructed season records. Rank-season
-  totals, course totals, and match totals are presented separately, never added.
+- Rank shows only Arena’s Limited ladder. This ladder is shared with Sealed, so
+  its aggregate season win/loss totals are not shown as draft results. Constructed
+  rank is not displayed. Draft results come only from Draft events and matches.
 - Trophies require an observed completed event with seven wins (three for
   Traditional Draft). An absent trophy record does not mean every old event failed.
 
