@@ -79,6 +79,36 @@ class PackCardTitleMatcherTest {
         assertEquals(partial, PackCardTitleMatcher.applyAnchors(partial, mapOf(0 to 3)))
     }
 
+    @Test
+    fun screenshotPermutationCannotAttachOtherCardsRatingsToVisibleTitles() {
+        val names = listOf("Ajani's Anguish", "Arni, Humble Scribe", "Terminal Criticism",
+            "Arni, Renowned Champion", "Edgar, Ancient Bloodlord", "Unflinching Hortimancer",
+            "Surveillance Phantasm", "Void Extrapolator", "Blazing Crescendo", "Heartstring Puller",
+            "Tethermage's Advantage", "Ferocity of the Hunt", "Afterthought Sentry", "Formidable Commons")
+        val wrongArt = listOf(12, 7, 4, 0, 2, 5, 11, 1, 6, 9, 10, 8, 3, 13)
+            .mapIndexed { rect, card -> rect to card }.toMap()
+        val rects = names.indices.map { index ->
+            CardDetector.CardRect(index, index % 5 * 200, index / 5 * 300, 180, 270)
+        }
+        val frame = ScreenTextFrame(1000, 900, names.mapIndexed { index, name ->
+            ScreenTextObservation(name, 0.99, NormalizedRect(
+                (index % 5 * 200 + 10) / 1000.0, (index / 5 * 300 + 10) / 900.0, 0.15, 0.018,
+            ))
+        })
+        val titleMatches = PackCardTitleMatcher.anchors(frame, rects, names)
+        assertEquals(names.indices.associateWith { it }, titleMatches)
+        assertEquals(titleMatches, PackCardTitleMatcher.verifiedAssignment(wrongArt, titleMatches, names))
+    }
+
+    @Test
+    fun unreadableTitlesDoNotInheritRatingsFromAForcedArtPermutation() {
+        val art = mapOf(0 to 2, 1 to 0, 2 to 1)
+        assertEquals(mapOf(1 to 1), PackCardTitleMatcher.verifiedAssignment(
+            art, mapOf(1 to 1), listOf("Ajani's Anguish", "Surveillance Phantasm", "Afterthought Sentry"),
+        ))
+        assertEquals(emptyMap(), PackCardTitleMatcher.verifiedAssignment(art, emptyMap(), listOf("A", "B", "C")))
+    }
+
     private fun observation(
         text: String,
         confidence: Double,
