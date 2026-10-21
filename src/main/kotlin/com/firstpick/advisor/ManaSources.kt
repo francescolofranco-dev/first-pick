@@ -32,7 +32,6 @@ data class ManaSourceReport(
 /** Allocates the actual 17 land slots to base colors before considering a splash. */
 object ManaSources {
     internal const val THREE_COLOR_MINIMUM_BASE_SOURCES = 7
-    internal const val THREE_COLOR_MAXIMUM_BASE_SHORTFALL = 6
     private val COLORS = "WUBRG"
     private data class SourceNeeds(val required: Map<Char, Int>, val castingTurn: Map<Char, Int>)
 
@@ -45,6 +44,7 @@ object ManaSources {
         policy: DeckConstructionPolicy,
         landSlots: Int = policy.landSlots,
         allowBaseShortfall: Boolean = false,
+        baseAllocationTarget: Int = THREE_COLOR_MINIMUM_BASE_SOURCES,
     ): ManaSourceReport {
         val baseColors = basePair.filter { it in COLORS }.toSet()
         val deckColors = baseColors + setOfNotNull(splashColor)
@@ -95,7 +95,7 @@ object ManaSources {
             sources(color) + (selection[color] ?: 0.0) >= (requirements[color] ?: 0)
         // Three-color alternatives accept slower base spells. Keep the original
         // targets in the report so power scoring still charges for that risk.
-        fun allocationTarget(color: Char): Int = if (allowBaseShortfall) minOf(THREE_COLOR_MINIMUM_BASE_SOURCES, requirements[color] ?: 0)
+        fun allocationTarget(color: Char): Int = if (allowBaseShortfall) minOf(baseAllocationTarget, requirements[color] ?: 0)
             else requirements[color] ?: 0
 
         // Meet both allocation targets first, balancing the base colors.

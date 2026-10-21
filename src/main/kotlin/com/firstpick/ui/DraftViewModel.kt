@@ -485,6 +485,7 @@ class DraftViewModel(
             lands = nonbasicLands.toDeckSpells(),
             hasObservedPower = hasObservedPower,
             isThreeColor = isThreeColor,
+            manaPlanLabel = threeColorPlan?.label,
         )
     }
 

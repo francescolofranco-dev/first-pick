@@ -6,6 +6,11 @@ import com.firstpick.cards.RankedCard
 import com.firstpick.cards.SetMetrics
 import com.firstpick.cards.SynergyIndex
 
+enum class ThreeColorPlan(val label: String, val minimumBaseSources: Int, val maximumShortfall: Int) {
+    CONSERVATIVE("Small splash", 7, 6),
+    BOLD("Three colors · Higher risk", 6, 8),
+}
+
 data class DeckOption(
     val colors: String,
     val basePair: String,
@@ -29,6 +34,7 @@ data class DeckOption(
     val manaSources: ManaSourceReport? = null,
     val hasObservedPower: Boolean = true,
     val isThreeColor: Boolean = false,
+    val threeColorPlan: ThreeColorPlan? = null,
 )
 
 

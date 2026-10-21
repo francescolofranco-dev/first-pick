@@ -123,10 +123,15 @@ object DeckProjector {
                 val threeColor = if (lenient) emptyList() else "WUBRG".filterNot { it in pair }.flatMap { color ->
                     // Jointly select the deck, rather than only appending bombs
                     // to a frozen two-color list. Also try cutting heavy third-color costs.
-                    listOf(1, Int.MAX_VALUE).mapNotNull { pipLimit ->
-                        buildForPair(pair, spells, lands, metrics, meta, archetypeRating,
-                            strengthFor(pair, pairStrength), minSpells, synergy, policy,
-                            requiredSplash = color, threeColor = true, thirdColorPipLimit = pipLimit)
+                    listOf(1, Int.MAX_VALUE).flatMap { pipLimit ->
+                        val plans = listOf(ThreeColorPlan.CONSERVATIVE to 0) +
+                            (2..policy.maximumSplashCards).map { ThreeColorPlan.BOLD to it }
+                        plans.mapNotNull { (plan, thirdColorCards) ->
+                            buildForPair(pair, spells, lands, metrics, meta, archetypeRating,
+                                strengthFor(pair, pairStrength), minSpells, synergy, policy,
+                                requiredSplash = color, threeColorPlan = plan, thirdColorPipLimit = pipLimit,
+                                requiredThirdColorCards = thirdColorCards)
+                        }
                     }.filter { option ->
                         val baseline = clean ?: return@filter true
                         option.spells.sumOf { DeckAnalysis.cardQuality(it.rating, archetypeRating(it.name, pair), metrics) } >=
@@ -137,12 +142,38 @@ object DeckProjector {
             }
 
         val ranked = pass(policy.minimumBuildableSpells).sortedByDescending { it.powerScore }
-            .distinctBy { it.colors }
+            .distinctBy(::deckContents)
+        fun thirdColorCards(option: DeckOption): Int = option.spells.count { card ->
+            val m = meta(card.name)
+            LaneDetector.uncastableColorOptions(castingColorsOf(card, m), option.basePair.toSet(),
+                m?.hybridColorGroups.orEmpty(), m?.exactPureColorsOrNull()).none { it.isEmpty() }
+        }
+        fun differentManaPlans(first: DeckOption, second: DeckOption): Boolean {
+            if (first.threeColorPlan == second.threeColorPlan) return false
+            val bold = listOf(first, second).firstOrNull { it.threeColorPlan == ThreeColorPlan.BOLD } ?: return false
+            val cautious = if (bold === first) second else first
+            return bold.deckWinRate > cautious.deckWinRate && thirdColorCards(bold) > thirdColorCards(cautious) &&
+                bold.manaSources!!.shortfalls.values.sum() > cautious.manaSources!!.shortfalls.values.sum()
+        }
         // Every alternative must be competitive; never force a weak second deck.
         val main = ranked.filterIndexed { index, option ->
             index == 0 || option.powerScore >= ranked.first().powerScore - 12.0
         }
-        if (main.isNotEmpty()) return main.take(maxOptions)
+        if (main.isNotEmpty()) {
+            // Different card lists in the same colors can offer a real mana/quality
+            // tradeoff. Keep up to two, without filling the slate with near copies.
+            val selected = mutableListOf<DeckOption>()
+            for (option in main) {
+                val sameColors = selected.filter { it.colors == option.colors }
+                if (sameColors.isEmpty() || (sameColors.size == 1 &&
+                        differentManaPlans(sameColors.single(), option) &&
+                        sameColors.single().spells.groupingBy { it.name }.eachCount() != option.spells.groupingBy { it.name }.eachCount())) {
+                    selected += option
+                }
+                if (selected.size >= maxOptions) break
+            }
+            return selected.take(maxOptions)
+        }
 
         // A nearly buildable fallback must beat a much thinner pile, while
         // similarly incomplete choices can still be ordered by actual power.
@@ -157,6 +188,9 @@ object DeckProjector {
     }
 
     private fun strengthFor(pair: String, pairStrength: Map<String, Double>): Double? = pairStrength[pair]
+
+    private fun deckContents(option: DeckOption) = Triple(option.colors,
+        option.spells.groupingBy { it.name }.eachCount(), option.nonbasicLands.groupingBy { it.name }.eachCount())
 
     private fun buildForPair(
         pair: String,
@@ -173,9 +207,11 @@ object DeckProjector {
         upgrade: Boolean = false,
         allowSplash: Boolean = true,
         requiredSplash: Char? = null,
-        threeColor: Boolean = false,
+        threeColorPlan: ThreeColorPlan? = null,
         thirdColorPipLimit: Int = Int.MAX_VALUE,
+        requiredThirdColorCards: Int = 0,
     ): DeckOption? {
+        val threeColor = threeColorPlan != null
         val pairSet = pair.toSet()
         fun onColor(card: RankedCard): Boolean {
             val cardMeta = meta(card.name)
@@ -230,7 +266,9 @@ object DeckProjector {
             requiredSplash in singleColorSplashOptions(card, pairSet, m) && pips <= thirdColorPipLimit
         }
         val curvePolicy = adaptiveCurvePolicy(policy, pair, synergy)
-        val base = selectSpells(eligible, metrics, meta, ::cardScore, ::rawScore, curvePolicy).toMutableList()
+        val requiredCards = eligible.filterNot(::onColor).sortedByDescending(::cardScore).take(requiredThirdColorCards)
+        if (requiredCards.size < requiredThirdColorCards) return null
+        val base = selectSpells(eligible, metrics, meta, ::cardScore, ::rawScore, curvePolicy, requiredCards).toMutableList()
 
         var splashedSpells = emptyList<RankedCard>()
         var selectedSplashColor: Char? = null
@@ -238,6 +276,7 @@ object DeckProjector {
             selectedSplashColor = requiredSplash
             splashedSpells = base.filterNot(::onColor)
             if (splashedSpells.isEmpty() || base.size < policy.spellSlots) return null
+            if (threeColorPlan == ThreeColorPlan.CONSERVATIVE && splashedSpells.size > policy.maximumSplashCards) return null
             base.removeAll(splashedSpells.toSet())
         } else if (upgrade) {
             // Upgrade variants only exist for a complete base; short bases are
@@ -286,16 +325,19 @@ object DeckProjector {
         val manaPolicy = if (threeColor && splashedSpells.size > policy.maximumSplashCards)
             policy.copy(splashCastingDelay = 0) else policy
         val manaSources = ManaSources.estimate(chosen, pair, splashColor, onColorLands, meta, manaPolicy, landCount,
-            allowBaseShortfall = threeColor)
+            allowBaseShortfall = threeColor, baseAllocationTarget = threeColorPlan?.minimumBaseSources ?: policy.minimumBaseSources)
         // A splash is only real when it can be funded after both base colors.
         if (threeColor) {
             // A compromise needs real fixing and a usable base. Unsupported
             // piles must not slip through just because their cards are strong.
             val sharedSources = onColorLands.sumOf { (meta(it.name)?.producedColors.orEmpty().count { c -> c in deckColors } - 1).coerceAtLeast(0) } +
                 manaSources.fixerSources.values.sum()
-            if (sharedSources < 2 || !manaSources.splashSupported ||
-                manaSources.baseShortfall > ManaSources.THREE_COLOR_MAXIMUM_BASE_SHORTFALL || pairSet.any {
-                    (manaSources.totalSources[it] ?: 0) < ManaSources.THREE_COLOR_MINIMUM_BASE_SOURCES
+            val plan = threeColorPlan!!
+            val thirdColorShortfall = if (plan == ThreeColorPlan.BOLD) 2 else 0
+            if (sharedSources < 2 || manaSources.splashShortfall > thirdColorShortfall ||
+                (manaSources.totalSources[splashColor] ?: 0) < policy.minimumSplashSources ||
+                manaSources.shortfalls.values.sum() > plan.maximumShortfall || pairSet.any {
+                    (manaSources.totalSources[it] ?: 0) < plan.minimumBaseSources
                 }) return null
         } else if (splashColor != null && !manaSources.splashFeasible) return null
         val identity = DeckAnalysis.identity(chosen, pair, meta, synergy, landFixers)
@@ -327,8 +369,9 @@ object DeckProjector {
             identityReasons = identity.reasons,
             powerConfidence = power.confidenceLabel,
             powerReasons = (if (threeColor) listOf(
-                "Three-color alternative: stronger cards at the cost of mana consistency",
-                "${manaSources.baseShortfall} base-color sources short of on-curve targets; $splashColor has ${manaSources.totalSources[splashColor] ?: 0}/${manaSources.requiredSources[splashColor] ?: 0} sources",
+                "${threeColorPlan!!.label}: ${splashedSpells.size} third-color cards; stronger cards at the cost of mana consistency",
+                "${manaSources.shortfalls.values.sum()} colored sources short of on-curve targets; " +
+                    manaSources.requiredSources.entries.joinToString { (color, required) -> "$color ${manaSources.totalSources[color] ?: 0}/$required" },
             ) else if (splashColor != null) listOf(
                 "Splash justified by " + splashedSpells.mapNotNull { card -> HaymakerAssessment.reason(card, metrics, meta(card.name))?.let { "${card.name}: $it" } }.joinToString(),
                 "$splashColor sources: ${manaSources.totalSources[splashColor] ?: 0}" +
@@ -345,6 +388,7 @@ object DeckProjector {
             manaSources = manaSources,
             hasObservedPower = power.hasObservedPower,
             isThreeColor = threeColor,
+            threeColorPlan = threeColorPlan,
         )
     }
 
@@ -502,6 +546,7 @@ object DeckProjector {
         cardScore: (RankedCard) -> Double,
         capScore: (RankedCard) -> Double = cardScore,
         policy: DeckConstructionPolicy,
+        requiredCards: List<RankedCard> = emptyList(),
     ): List<RankedCard> {
         // Limited allows repeated copies. Compare each copy on quality and role;
         // a name-based cap can discard better cards and leave a complete pool short.
@@ -516,9 +561,21 @@ object DeckProjector {
         val others = candidates.filterNot { it.isCreature }
 
         val chosen = LinkedHashSet<Candidate>()
+        val requiredCounts = requiredCards.groupingBy { it.name }.eachCount().toMutableMap()
+        for (candidate in candidates) {
+            val needed = requiredCounts[candidate.card.name] ?: 0
+            if (needed > 0) {
+                chosen.add(candidate)
+                requiredCounts[candidate.card.name] = needed - 1
+            }
+        }
         val byBucket = creatures.groupBy { curveBucket(it.cmc) }
         for ((bucket, target) in policy.creatureCurve) {
-            byBucket[bucket].orEmpty().take(target).forEach { chosen.add(it) }
+            // Committed third-color spells already occupy curve space, even
+            // when they supply interaction or card advantage rather than bodies.
+            val missing = (target - chosen.count { curveBucket(it.cmc) == bucket }).coerceAtLeast(0)
+            byBucket[bucket].orEmpty().filterNot { it in chosen }
+                .take(minOf(missing, (policy.spellSlots - chosen.size).coerceAtLeast(0))).forEach { chosen.add(it) }
         }
 
 
@@ -534,14 +591,15 @@ object DeckProjector {
         val otherQueue = ArrayDeque(others.filterNot { it in chosen })
         var creatureCount = chosen.count { it.isCreature }
         var otherCount = chosen.size - creatureCount
+        val requiredNonCreatures = requiredCards.count { meta(it.name)?.isCreature != true }
         while (chosen.size < policy.spellSlots && (creatureQueue.isNotEmpty() || otherQueue.isNotEmpty())) {
             val c = creatureQueue.firstOrNull()
             val o = otherQueue.firstOrNull()
             val pick = when {
                 c == null -> otherQueue.removeFirst().also { otherCount++ }
                 o == null -> creatureQueue.removeFirst()
-                otherCount >= policy.nonCreatureCap -> creatureQueue.removeFirst()
-                creatureCount < policy.creatureTarget && c.score >= o.score - CREATURE_BIAS -> creatureQueue.removeFirst()
+                otherCount >= policy.nonCreatureCap + requiredNonCreatures -> creatureQueue.removeFirst()
+                creatureCount < policy.creatureTarget - requiredNonCreatures && c.score >= o.score - CREATURE_BIAS -> creatureQueue.removeFirst()
                 c.score > o.score -> creatureQueue.removeFirst()
                 else -> otherQueue.removeFirst().also { otherCount++ }
             }

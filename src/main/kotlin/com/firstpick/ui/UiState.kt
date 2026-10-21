@@ -124,6 +124,7 @@ data class DeckOptionUi(
     val lands: List<DeckSpellUi> = emptyList(),
     val hasObservedPower: Boolean = true,
     val isThreeColor: Boolean = false,
+    val manaPlanLabel: String? = null,
 ) {
     val powerLabel: String
         get() = if (hasObservedPower) "Power $power" else "Power unavailable"
@@ -146,7 +147,8 @@ data class DeckOptionUi(
                 "BRG" -> "Jund"
                 else -> colors
             } else guildName(basePair).ifBlank { basePair } + (splash?.let { " · splash $it" } ?: "")
-            return theme?.let { "$base · $it" } ?: base
+            val named = theme?.let { "$base · $it" } ?: base
+            return manaPlanLabel?.let { "$named · $it" } ?: named
         }
 
     val identityLine: String

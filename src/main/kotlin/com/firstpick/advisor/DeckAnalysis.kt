@@ -211,11 +211,13 @@ object DeckAnalysis {
         }
 
         if (manaSources != null) {
-            if (manaSources.baseShortfall > 0 && policy.manaShortfallPenalty > 0.0) {
+            val manaShortfall = manaSources.baseShortfall + manaSources.splashShortfall
+            if (manaShortfall > 0 && policy.manaShortfallPenalty > 0.0) {
                 adjustments += Adjustment(
-                    -manaSources.baseShortfall * policy.manaShortfallPenalty,
+                    -manaShortfall * policy.manaShortfallPenalty,
                     "Reliable base-color mana",
-                    "${manaSources.baseShortfall} base-color sources short",
+                    if (manaSources.splashShortfall > 0) "$manaShortfall colored sources short"
+                    else "${manaSources.baseShortfall} base-color sources short",
                 )
             } else if (manaSources.allRequirementsMet && policy.reliableManaBonus > 0.0) {
                 adjustments += Adjustment(policy.reliableManaBonus, "Reliable colored sources")

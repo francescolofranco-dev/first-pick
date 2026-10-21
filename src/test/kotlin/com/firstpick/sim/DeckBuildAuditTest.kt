@@ -103,6 +103,18 @@ class DeckBuildAuditTest {
                     val options = DeckBuilder.build(pool, metrics, meta, synergy = synergy)
                     assertTrue(options.isNotEmpty(), "$set/$seed/$kind: no deck suggestions")
                     assertTrue(options.size <= 3, "$set/$seed/$kind: exceeded the requested option count")
+                    for ((colors, variants) in options.groupBy { it.colors }) {
+                        assertTrue(variants.size <= 2, "$set/$seed/$kind/$colors: redundant color variants")
+                        if (variants.size == 2) {
+                            val bold = variants.single { it.threeColorPlan == ThreeColorPlan.BOLD }
+                            val cautious = variants.single { it !== bold }
+                            assertTrue(bold.deckWinRate > cautious.deckWinRate, "$set/$seed/$kind/$colors: no quality tradeoff")
+                            assertTrue(bold.manaSources!!.shortfalls.values.sum() > cautious.manaSources!!.shortfalls.values.sum(),
+                                "$set/$seed/$kind/$colors: no mana-risk tradeoff")
+                            assertNotEquals(bold.spells.groupingBy { it.name }.eachCount(),
+                                cautious.spells.groupingBy { it.name }.eachCount(), "$set/$seed/$kind/$colors: identical spells")
+                        }
+                    }
                     assertEquals(options, DeckBuilder.build(pool, metrics, meta, synergy = synergy),
                         "$set/$seed/$kind: non-deterministic result")
                     if (options.size == 3) threeOptionPools++
@@ -128,9 +140,11 @@ class DeckBuildAuditTest {
                         }
                         if (option.isThreeColor) {
                             assertEquals(23, option.spells.size, "$label: incomplete three-color alternative")
-                            assertTrue(option.manaSources!!.splashSupported, "$label: unsupported third color")
-                            assertTrue(option.manaSources.baseShortfall <= 6, "$label: excessive base mana shortfall")
-                            assertTrue(option.manaSources.baseColors.all { option.manaSources.totalSources.getValue(it) >= 7 },
+                            val plan = option.threeColorPlan!!
+                            assertTrue(option.manaSources!!.splashShortfall <= if (plan == ThreeColorPlan.BOLD) 2 else 0,
+                                "$label: excessive third-color shortfall")
+                            assertTrue(option.manaSources.shortfalls.values.sum() <= plan.maximumShortfall, "$label: excessive mana shortfall")
+                            assertTrue(option.manaSources.baseColors.all { option.manaSources.totalSources.getValue(it) >= plan.minimumBaseSources },
                                 "$label: unusable base mana")
                             assertTrue(option.powerReasons.any { "mana consistency" in it }, "$label: missing tradeoff explanation")
                         } else if (option.splash != null) {

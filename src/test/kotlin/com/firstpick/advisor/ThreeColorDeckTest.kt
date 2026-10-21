@@ -22,23 +22,34 @@ class ThreeColorDeckTest {
                 val options = DeckBuilder.build(pool, metrics, meta,
                     archetypeRating = { name, pair -> pairRatings[pair]?.get(name).takeIf { pair in loadedPairs } }, synergy = synergy)
                 assertEquals("UR", options.first().colors)
-                val temur = options.single { it.colors == "URG" }
-                assertTrue(temur.isThreeColor)
-                assertEquals(23, temur.spells.size)
-                assertEquals(40, temur.spells.size + temur.landCount)
-                val names = temur.spells.map { it.name }
-                assertTrue("Mind Meanderer" in names)
-                assertTrue("Chandra, Torch of Defiance" in names)
-                assertTrue("Kiora of Fire and Ashes" in names)
-                assertTrue("Verdant Kraken" !in names, "GGG is too demanding for this mana base")
-                assertEquals(setOf("Transformative Commons", "Innovative Commons"), temur.nonbasicLands.map { it.name }.toSet())
-                assertTrue(temur.manaSources!!.splashSupported)
-                assertTrue(temur.manaSources.baseShortfall > 0, "the consistency tradeoff must remain visible")
-                assertTrue(temur.powerReasons.any { "sources short" in it })
-                assertTrue(options.none { it.colors == "BR" })
-                val available = pool.groupingBy { it.name }.eachCount()
-                for ((name, count) in (temur.spells + temur.nonbasicLands).groupingBy { it.name }.eachCount()) {
-                    assertTrue(count <= available.getValue(name), "invented copy of $name")
+                val temurOptions = options.filter { it.colors == "URG" }
+                assertEquals(setOf(ThreeColorPlan.CONSERVATIVE, ThreeColorPlan.BOLD), temurOptions.map { it.threeColorPlan }.toSet())
+                assertEquals(2, temurOptions.size)
+                val conservative = temurOptions.single { it.threeColorPlan == ThreeColorPlan.CONSERVATIVE }
+                val bold = temurOptions.single { it.threeColorPlan == ThreeColorPlan.BOLD }
+                assertTrue(bold.spells.count { 'G' in meta(it.name)?.coloredPips.orEmpty() } >
+                    conservative.spells.count { 'G' in meta(it.name)?.coloredPips.orEmpty() })
+                assertTrue(bold.manaSources!!.shortfalls.values.sum() > conservative.manaSources!!.shortfalls.values.sum())
+                assertTrue(bold.deckWinRate > conservative.deckWinRate)
+                assertEquals(options.size, options.map { it.spells.groupingBy { card -> card.name }.eachCount() }.distinct().size)
+                for (temur in temurOptions) {
+                    assertTrue(temur.isThreeColor)
+                    assertEquals(23, temur.spells.size)
+                    assertEquals(40, temur.spells.size + temur.landCount)
+                    val names = temur.spells.map { it.name }
+                    assertTrue("Mind Meanderer" in names)
+                    assertTrue("Chandra, Torch of Defiance" in names)
+                    assertTrue("Kiora of Fire and Ashes" in names)
+                    assertTrue("Verdant Kraken" !in names, "GGG is too demanding for this mana base")
+                    assertEquals(setOf("Transformative Commons", "Innovative Commons"), temur.nonbasicLands.map { it.name }.toSet())
+                    assertTrue(temur.manaSources!!.splashShortfall <= if (temur.threeColorPlan == ThreeColorPlan.BOLD) 2 else 0)
+                    assertTrue(temur.manaSources.baseShortfall > 0, "the consistency tradeoff must remain visible")
+                    assertTrue(temur.powerReasons.any { "sources short" in it })
+                    assertTrue(options.none { it.colors == "BR" })
+                    val available = pool.groupingBy { it.name }.eachCount()
+                    for ((name, count) in (temur.spells + temur.nonbasicLands).groupingBy { it.name }.eachCount()) {
+                        assertTrue(count <= available.getValue(name), "invented copy of $name")
+                    }
                 }
             }
             val unfixed = DeckBuilder.build(pool.filterNot { meta(it.name)?.isLand == true }, metrics, meta)

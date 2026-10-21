@@ -115,3 +115,30 @@ removing the lands or weakening the green cards removes the alternative.
 Validation for this version: all 504 tests pass. The separate seeds 0–99 audit
 checks 900 pools and 1,834 suggested builds (1,210 complete), with zero selection
 findings under the checks above.
+
+## Distinct mana plans in v2.3.4
+
+Color identity no longer collapses distinct card lists into a single suggestion.
+The slate can retain two builds in the same colors when they use different mana
+plans and different spell selections, while still requiring competitive power.
+Identical spell/land inventories are deduplicated across base-pair assignments.
+
+The small-splash plan preserves the v2.3.2 source limits. The bolder plan explores
+prefixes of the strongest available third-color cards and adjusts the remaining
+curve and creature slots around those commitments. It requires real fixing,
+at least six sources in each base color, and at least three actual third-color
+sources. It permits up to two missing third-color sources and eight missing
+sources overall. Missing sources in every color reduce power; the UI names the
+plan and reports each color's actual/required count.
+
+The frozen FRA pool now checks three suggestions: Izzet, Temur with a small
+splash, and a distinct bolder Temur build. The bolder build must have higher
+card-quality estimates and a larger source shortfall than the conservative one.
+Both must preserve the pool's cards and copies, and neither may manufacture
+mana support or admit the pool's unmanageable GGG finisher.
+
+Validation: all 512 tests pass after integration with the latest overlay fixes.
+Seeds 0–99 cover 900 pools and 2,029 suggested
+builds, including 1,499 complete builds, with zero selection findings. The audit
+also checks that every retained same-color pair has distinct spells, higher
+estimated card quality in its bold plan, and a larger mana shortfall.
