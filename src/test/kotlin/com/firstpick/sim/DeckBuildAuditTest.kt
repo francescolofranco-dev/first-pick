@@ -126,7 +126,14 @@ class DeckBuildAuditTest {
                                 m.hybridColorGroups, m.coloredPips.keys.takeIf { m.coloredPips.isNotEmpty() })
                                 .any { it.isEmpty() }, "$label: off-color ${card.name}")
                         }
-                        if (option.splash != null) {
+                        if (option.isThreeColor) {
+                            assertEquals(23, option.spells.size, "$label: incomplete three-color alternative")
+                            assertTrue(option.manaSources!!.splashSupported, "$label: unsupported third color")
+                            assertTrue(option.manaSources.baseShortfall <= 6, "$label: excessive base mana shortfall")
+                            assertTrue(option.manaSources.baseColors.all { option.manaSources.totalSources.getValue(it) >= 7 },
+                                "$label: unusable base mana")
+                            assertTrue(option.powerReasons.any { "mana consistency" in it }, "$label: missing tradeoff explanation")
+                        } else if (option.splash != null) {
                             assertTrue(option.manaSources!!.splashFeasible, "$label: unsupported splash")
                             assertTrue(option.spells.any { card ->
                                 option.splash in LaneDetector.colorsOf(card) &&

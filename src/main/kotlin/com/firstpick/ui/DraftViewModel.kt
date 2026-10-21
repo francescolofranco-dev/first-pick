@@ -484,6 +484,7 @@ class DraftViewModel(
             spells = spells.toDeckSpells(),
             lands = nonbasicLands.toDeckSpells(),
             hasObservedPower = hasObservedPower,
+            isThreeColor = isThreeColor,
         )
     }
 

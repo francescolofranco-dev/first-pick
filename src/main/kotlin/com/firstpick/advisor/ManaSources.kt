@@ -31,6 +31,8 @@ data class ManaSourceReport(
 
 /** Allocates the actual 17 land slots to base colors before considering a splash. */
 object ManaSources {
+    internal const val THREE_COLOR_MINIMUM_BASE_SOURCES = 7
+    internal const val THREE_COLOR_MAXIMUM_BASE_SHORTFALL = 6
     private val COLORS = "WUBRG"
     private data class SourceNeeds(val required: Map<Char, Int>, val castingTurn: Map<Char, Int>)
 
@@ -42,6 +44,7 @@ object ManaSources {
         meta: (String) -> CardMeta?,
         policy: DeckConstructionPolicy,
         landSlots: Int = policy.landSlots,
+        allowBaseShortfall: Boolean = false,
     ): ManaSourceReport {
         val baseColors = basePair.filter { it in COLORS }.toSet()
         val deckColors = baseColors + setOfNotNull(splashColor)
@@ -90,14 +93,17 @@ object ManaSources {
             (basics[color] ?: 0) + (nonbasic[color] ?: 0) + (fixers[color] ?: 0) + cyclingSources(color)
         fun splashMet(color: Char): Boolean = sources(color) >= policy.minimumSplashSources &&
             sources(color) + (selection[color] ?: 0.0) >= (requirements[color] ?: 0)
+        // Three-color alternatives accept slower base spells. Keep the original
+        // targets in the report so power scoring still charges for that risk.
+        fun allocationTarget(color: Char): Int = if (allowBaseShortfall) minOf(THREE_COLOR_MINIMUM_BASE_SOURCES, requirements[color] ?: 0)
+            else requirements[color] ?: 0
 
-        // A splash is never funded by making a base color unreliable. Meet both
-        // base targets first, balancing the two colors as basics are assigned.
+        // Meet both allocation targets first, balancing the base colors.
         while (basicsLeft > 0) {
             val color = baseColors
-                .filter { sources(it) < (requirements[it] ?: 0) }
+                .filter { sources(it) < allocationTarget(it) }
                 .maxWithOrNull(
-                    compareBy<Char> { ((requirements[it] ?: 0) - sources(it)).toDouble() / (requirements[it] ?: 1).coerceAtLeast(1) }
+                    compareBy<Char> { (allocationTarget(it) - sources(it)).toDouble() / allocationTarget(it).coerceAtLeast(1) }
                         .thenBy { -COLORS.indexOf(it) },
                 ) ?: break
             basics[color] = (basics[color] ?: 0) + 1

@@ -123,6 +123,7 @@ data class DeckOptionUi(
     val spells: List<DeckSpellUi>,
     val lands: List<DeckSpellUi> = emptyList(),
     val hasObservedPower: Boolean = true,
+    val isThreeColor: Boolean = false,
 ) {
     val powerLabel: String
         get() = if (hasObservedPower) "Power $power" else "Power unavailable"
@@ -132,7 +133,19 @@ data class DeckOptionUi(
 
     val title: String
         get() {
-            val base = guildName(basePair).ifBlank { basePair } + (splash?.let { " · splash $it" } ?: "")
+            val base = if (isThreeColor) when (colors) {
+                "WUB" -> "Esper"
+                "WUR" -> "Jeskai"
+                "WUG" -> "Bant"
+                "WBR" -> "Mardu"
+                "WBG" -> "Abzan"
+                "WRG" -> "Naya"
+                "UBR" -> "Grixis"
+                "UBG" -> "Sultai"
+                "URG" -> "Temur"
+                "BRG" -> "Jund"
+                else -> colors
+            } else guildName(basePair).ifBlank { basePair } + (splash?.let { " · splash $it" } ?: "")
             return theme?.let { "$base · $it" } ?: base
         }
 

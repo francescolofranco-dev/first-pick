@@ -22,3 +22,9 @@ behavior also has separate ManaSources regression tests.
 Ratings: [17Lands](https://www.17lands.com/), CC-BY-4.0.
 Card facts: [Scryfall](https://scryfall.com/).
 No fixture contains rules that privilege a named card or set.
+
+`FRA-temur-pool.json` freezes the completed 42-card Pick Two pool from
+2026-10-21, its set-wide ratings (for stable metrics), selected pair ratings,
+and pool metadata. One unrated basic ID has no matching rating and is excluded
+from spell selection. The regression checks both lane-only and fully loaded
+pair ratings, card conservation, the Temur alternative, and its mana tradeoff.

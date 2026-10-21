@@ -1,0 +1,5767 @@
+{
+  "pool": [
+    106469,
+    106233,
+    106261,
+    106467,
+    106379,
+    106416,
+    106512,
+    106320,
+    106409,
+    106420,
+    106411,
+    106280,
+    106325,
+    106534,
+    106489,
+    106353,
+    106320,
+    106520,
+    106492,
+    106320,
+    106284,
+    106438,
+    106416,
+    106525,
+    106525,
+    106417,
+    106373,
+    106289,
+    106376,
+    106263,
+    106309,
+    106331,
+    106376,
+    106257,
+    106273,
+    106325,
+    106459,
+    106495,
+    106483,
+    106427,
+    106488,
+    106486
+  ],
+  "ratings": [
+    {
+      "name": "Emrakul, the Exigent Doom",
+      "mtga_id": 106225,
+      "color": "",
+      "rarity": "mythic",
+      "types": [
+        "Legendary Creature - Eldrazi"
+      ],
+      "ever_drawn_game_count": 3702,
+      "ever_drawn_win_rate": 0.5199892,
+      "drawn_improvement_win_rate": 0.0033022300000000726
+    },
+    {
+      "name": "Academic Ascent",
+      "mtga_id": 106226,
+      "color": "W",
+      "rarity": "common",
+      "types": [
+        "Instant"
+      ],
+      "ever_drawn_game_count": 10277,
+      "ever_drawn_win_rate": 0.52544517,
+      "drawn_improvement_win_rate": -0.011244919999999992
+    },
+    {
+      "name": "Blossom-Blessed Angel",
+      "mtga_id": 106227,
+      "color": "W",
+      "rarity": "common",
+      "types": [
+        "Creature - Angel Cleric"
+      ],
+      "ever_drawn_game_count": 56441,
+      "ever_drawn_win_rate": 0.5597881,
+      "drawn_improvement_win_rate": 0.02490294999999998
+    },
+    {
+      "name": "Campus Crier",
+      "mtga_id": 106229,
+      "color": "W",
+      "rarity": "common",
+      "types": [
+        "Creature - Human Advisor"
+      ],
+      "ever_drawn_game_count": 68142,
+      "ever_drawn_win_rate": 0.55735083,
+      "drawn_improvement_win_rate": -0.0013385399999999992
+    },
+    {
+      "name": "Enlightened Confidant",
+      "mtga_id": 106230,
+      "color": "W",
+      "rarity": "mythic",
+      "types": [
+        "Creature - Kor Cleric"
+      ],
+      "ever_drawn_game_count": 5581,
+      "ever_drawn_win_rate": 0.57964522,
+      "drawn_improvement_win_rate": 0.04513057999999992
+    },
+    {
+      "name": "Fateshaper Aspirant",
+      "mtga_id": 106231,
+      "color": "W",
+      "rarity": "common",
+      "types": [
+        "Creature - Rhino Cleric"
+      ],
+      "ever_drawn_game_count": 21946,
+      "ever_drawn_win_rate": 0.51991251,
+      "drawn_improvement_win_rate": -0.0031603299999999335
+    },
+    {
+      "name": "Flickering Hound",
+      "mtga_id": 106232,
+      "color": "W",
+      "rarity": "rare",
+      "types": [
+        "Creature - Dog"
+      ],
+      "ever_drawn_game_count": 3879,
+      "ever_drawn_win_rate": 0.45346739,
+      "drawn_improvement_win_rate": -0.05175909000000001
+    },
+    {
+      "name": "Generous Revival",
+      "mtga_id": 106233,
+      "color": "W",
+      "rarity": "uncommon",
+      "types": [
+        "Sorcery"
+      ],
+      "ever_drawn_game_count": 25225,
+      "ever_drawn_win_rate": 0.5728444,
+      "drawn_improvement_win_rate": 0.035633899999999996
+    },
+    {
+      "name": "Germinate Recruits",
+      "mtga_id": 106234,
+      "color": "W",
+      "rarity": "rare",
+      "types": [
+        "Instant"
+      ],
+      "ever_drawn_game_count": 1426,
+      "ever_drawn_win_rate": 0.47755961,
+      "drawn_improvement_win_rate": -0.024001260000000024
+    },
+    {
+      "name": "Graft Surgeon",
+      "mtga_id": 106235,
+      "color": "W",
+      "rarity": "common",
+      "types": [
+        "Creature - Human Cleric"
+      ],
+      "ever_drawn_game_count": 17079,
+      "ever_drawn_win_rate": 0.515077,
+      "drawn_improvement_win_rate": -0.010292039999999947
+    },
+    {
+      "name": "Guiding Hydra",
+      "mtga_id": 106236,
+      "color": "W",
+      "rarity": "rare",
+      "types": [
+        "Creature - Hydra Horror"
+      ],
+      "ever_drawn_game_count": 14950,
+      "ever_drawn_win_rate": 0.57377926,
+      "drawn_improvement_win_rate": 0.047044890000000006
+    },
+    {
+      "name": "Hexhaven Battalion",
+      "mtga_id": 106237,
+      "color": "W",
+      "rarity": "common",
+      "types": [
+        "Sorcery"
+      ],
+      "ever_drawn_game_count": 91689,
+      "ever_drawn_win_rate": 0.57529257,
+      "drawn_improvement_win_rate": 0.033140610000000015
+    },
+    {
+      "name": "Kindred Judgment",
+      "mtga_id": 106238,
+      "color": "W",
+      "rarity": "rare",
+      "types": [
+        "Sorcery"
+      ],
+      "ever_drawn_game_count": 16290,
+      "ever_drawn_win_rate": 0.61436464,
+      "drawn_improvement_win_rate": 0.08105485000000001
+    },
+    {
+      "name": "Loyal Tutor",
+      "mtga_id": 106239,
+      "color": "W",
+      "rarity": "rare",
+      "types": [
+        "Instant"
+      ],
+      "ever_drawn_game_count": 314,
+      "ever_drawn_win_rate": null,
+      "drawn_improvement_win_rate": null
+    },
+    {
+      "name": "Memory Trap",
+      "mtga_id": 106240,
+      "color": "W",
+      "rarity": "common",
+      "types": [
+        "Enchantment"
+      ],
+      "ever_drawn_game_count": 79762,
+      "ever_drawn_win_rate": 0.55868709,
+      "drawn_improvement_win_rate": 0.020968560000000025
+    },
+    {
+      "name": "Predictive Preparations",
+      "mtga_id": 106241,
+      "color": "W",
+      "rarity": "common",
+      "types": [
+        "Sorcery"
+      ],
+      "ever_drawn_game_count": 10645,
+      "ever_drawn_win_rate": 0.4874589,
+      "drawn_improvement_win_rate": -0.03859602000000001
+    },
+    {
+      "name": "Prophesied End",
+      "mtga_id": 106242,
+      "color": "W",
+      "rarity": "uncommon",
+      "types": [
+        "Instant"
+      ],
+      "ever_drawn_game_count": 30415,
+      "ever_drawn_win_rate": 0.55229328,
+      "drawn_improvement_win_rate": 0.024581030000000004
+    },
+    {
+      "name": "Refute Destiny",
+      "mtga_id": 106243,
+      "color": "W",
+      "rarity": "uncommon",
+      "types": [
+        "Sorcery"
+      ],
+      "ever_drawn_game_count": 2587,
+      "ever_drawn_win_rate": 0.52957093,
+      "drawn_improvement_win_rate": 0.010608850000000003
+    },
+    {
+      "name": "Repurposed Enforcer",
+      "mtga_id": 106244,
+      "color": "W",
+      "rarity": "rare",
+      "types": [
+        "Creature - Human Soldier"
+      ],
+      "ever_drawn_game_count": 14721,
+      "ever_drawn_win_rate": 0.59961959,
+      "drawn_improvement_win_rate": 0.07103592000000003
+    },
+    {
+      "name": "Return to the Light Realms",
+      "mtga_id": 106245,
+      "color": "W",
+      "rarity": "mythic",
+      "types": [
+        "Sorcery"
+      ],
+      "ever_drawn_game_count": 1362,
+      "ever_drawn_win_rate": 0.49632893,
+      "drawn_improvement_win_rate": 0.002270139999999976
+    },
+    {
+      "name": "Shatterwing Pegasus",
+      "mtga_id": 106246,
+      "color": "W",
+      "rarity": "common",
+      "types": [
+        "Creature - Pegasus"
+      ],
+      "ever_drawn_game_count": 33509,
+      "ever_drawn_win_rate": 0.53579635,
+      "drawn_improvement_win_rate": -0.0043373899999999965
+    },
+    {
+      "name": "Surgical Precision",
+      "mtga_id": 106247,
+      "color": "W",
+      "rarity": "common",
+      "types": [
+        "Sorcery"
+      ],
+      "ever_drawn_game_count": 76787,
+      "ever_drawn_win_rate": 0.57341738,
+      "drawn_improvement_win_rate": 0.03546121999999996
+    },
+    {
+      "name": "Unflinching Hortimancer",
+      "mtga_id": 106248,
+      "color": "W",
+      "rarity": "common",
+      "types": [
+        "Creature - Human Cleric"
+      ],
+      "ever_drawn_game_count": 42865,
+      "ever_drawn_win_rate": 0.53810801,
+      "drawn_improvement_win_rate": 0.0032861499999999877
+    },
+    {
+      "name": "Your Fate Ends Here",
+      "mtga_id": 106249,
+      "color": "W",
+      "rarity": "uncommon",
+      "types": [
+        "Instant"
+      ],
+      "ever_drawn_game_count": 38121,
+      "ever_drawn_win_rate": 0.57181081,
+      "drawn_improvement_win_rate": 0.036439180000000015
+    },
+    {
+      "name": "Countersculpt",
+      "mtga_id": 106250,
+      "color": "U",
+      "rarity": "uncommon",
+      "types": [
+        "Instant"
+      ],
+      "ever_drawn_game_count": 59883,
+      "ever_drawn_win_rate": 0.59664679,
+      "drawn_improvement_win_rate": 0.05961565999999996
+    },
+    {
+      "name": "Cruel Calculations",
+      "mtga_id": 106251,
+      "color": "U",
+      "rarity": "rare",
+      "types": [
+        "Sorcery"
+      ],
+      "ever_drawn_game_count": 872,
+      "ever_drawn_win_rate": 0.49311927,
+      "drawn_improvement_win_rate": 0.0025908599999999726
+    },
+    {
+      "name": "Cryotheory Adept",
+      "mtga_id": 106252,
+      "color": "U",
+      "rarity": "common",
+      "types": [
+        "Creature - Human Wizard"
+      ],
+      "ever_drawn_game_count": 33431,
+      "ever_drawn_win_rate": 0.53193144,
+      "drawn_improvement_win_rate": -0.002816260000000015
+    },
+    {
+      "name": "Diviner of Victory",
+      "mtga_id": 106253,
+      "color": "U",
+      "rarity": "rare",
+      "types": [
+        "Creature - Dwarf Wizard"
+      ],
+      "ever_drawn_game_count": 17974,
+      "ever_drawn_win_rate": 0.59719595,
+      "drawn_improvement_win_rate": 0.061027900000000024
+    },
+    {
+      "name": "Divining Duelist",
+      "mtga_id": 106255,
+      "color": "U",
+      "rarity": "common",
+      "types": [
+        "Creature - Merfolk Wizard"
+      ],
+      "ever_drawn_game_count": 29414,
+      "ever_drawn_win_rate": 0.55286598,
+      "drawn_improvement_win_rate": 0.025453630000000005
+    },
+    {
+      "name": "Icy Reception",
+      "mtga_id": 106256,
+      "color": "U",
+      "rarity": "common",
+      "types": [
+        "Instant"
+      ],
+      "ever_drawn_game_count": 98600,
+      "ever_drawn_win_rate": 0.57735294,
+      "drawn_improvement_win_rate": 0.037712670000000004
+    },
+    {
+      "name": "Infinite Coursework",
+      "mtga_id": 106257,
+      "color": "U",
+      "rarity": "common",
+      "types": [
+        "Enchantment - Aura"
+      ],
+      "ever_drawn_game_count": 87913,
+      "ever_drawn_win_rate": 0.55924607,
+      "drawn_improvement_win_rate": 0.028312850000000056
+    },
+    {
+      "name": "Jace's Machinations",
+      "mtga_id": 106258,
+      "color": "U",
+      "rarity": "rare",
+      "types": [
+        "Instant"
+      ],
+      "ever_drawn_game_count": 16805,
+      "ever_drawn_win_rate": 0.57685213,
+      "drawn_improvement_win_rate": 0.050526700000000035
+    },
+    {
+      "name": "Mindseeker Oculus",
+      "mtga_id": 106259,
+      "color": "U",
+      "rarity": "common",
+      "types": [
+        "Creature - Homunculus"
+      ],
+      "ever_drawn_game_count": 133258,
+      "ever_drawn_win_rate": 0.59861322,
+      "drawn_improvement_win_rate": 0.059922219999999915
+    },
+    {
+      "name": "Perfected Theory",
+      "mtga_id": 106260,
+      "color": "U",
+      "rarity": "uncommon",
+      "types": [
+        "Instant"
+      ],
+      "ever_drawn_game_count": 7877,
+      "ever_drawn_win_rate": 0.51961407,
+      "drawn_improvement_win_rate": 0.017264500000000016
+    },
+    {
+      "name": "Plan for All Outcomes",
+      "mtga_id": 106261,
+      "color": "U",
+      "rarity": "uncommon",
+      "types": [
+        "Enchantment"
+      ],
+      "ever_drawn_game_count": 59681,
+      "ever_drawn_win_rate": 0.59132722,
+      "drawn_improvement_win_rate": 0.05276564000000006
+    },
+    {
+      "name": "Precise Redaction",
+      "mtga_id": 106262,
+      "color": "U",
+      "rarity": "uncommon",
+      "types": [
+        "Instant"
+      ],
+      "ever_drawn_game_count": 351,
+      "ever_drawn_win_rate": null,
+      "drawn_improvement_win_rate": null
+    },
+    {
+      "name": "Protege's Awakening",
+      "mtga_id": 106263,
+      "color": "U",
+      "rarity": "common",
+      "types": [
+        "Sorcery"
+      ],
+      "ever_drawn_game_count": 94407,
+      "ever_drawn_win_rate": 0.58553921,
+      "drawn_improvement_win_rate": 0.054801619999999995
+    },
+    {
+      "name": "Seasoned Cryomancer",
+      "mtga_id": 106264,
+      "color": "U",
+      "rarity": "mythic",
+      "types": [
+        "Creature - Human Wizard"
+      ],
+      "ever_drawn_game_count": 8696,
+      "ever_drawn_win_rate": 0.5899264,
+      "drawn_improvement_win_rate": 0.06293231999999993
+    },
+    {
+      "name": "Semester Foreseer",
+      "mtga_id": 106265,
+      "color": "U",
+      "rarity": "common",
+      "types": [
+        "Creature - Human Wizard"
+      ],
+      "ever_drawn_game_count": 52192,
+      "ever_drawn_win_rate": 0.53770693,
+      "drawn_improvement_win_rate": 0.009839460000000022
+    },
+    {
+      "name": "Sphinx of False Conclusions",
+      "mtga_id": 106267,
+      "color": "U",
+      "rarity": "rare",
+      "types": [
+        "Creature - Sphinx Illusion"
+      ],
+      "ever_drawn_game_count": 20293,
+      "ever_drawn_win_rate": 0.63810181,
+      "drawn_improvement_win_rate": 0.10495365000000001
+    },
+    {
+      "name": "Sphinx's Approach",
+      "mtga_id": 106268,
+      "color": "U",
+      "rarity": "common",
+      "types": [
+        "Instant"
+      ],
+      "ever_drawn_game_count": 36565,
+      "ever_drawn_win_rate": 0.56124709,
+      "drawn_improvement_win_rate": 0.0258536399999999
+    },
+    {
+      "name": "Surveillance Phantasm",
+      "mtga_id": 106269,
+      "color": "U",
+      "rarity": "common",
+      "types": [
+        "Creature - Bird Illusion"
+      ],
+      "ever_drawn_game_count": 107518,
+      "ever_drawn_win_rate": 0.57250879,
+      "drawn_improvement_win_rate": 0.02620232999999994
+    },
+    {
+      "name": "The Theorist, Jace Beleren",
+      "mtga_id": 106270,
+      "color": "U",
+      "rarity": "mythic",
+      "types": [
+        "Legendary Planeswalker - Jace"
+      ],
+      "ever_drawn_game_count": 9530,
+      "ever_drawn_win_rate": 0.68562434,
+      "drawn_improvement_win_rate": 0.17399907000000003
+    },
+    {
+      "name": "Theorist's Proxy",
+      "mtga_id": 106271,
+      "color": "U",
+      "rarity": "rare",
+      "types": [
+        "Creature - Illusion"
+      ],
+      "ever_drawn_game_count": 15970,
+      "ever_drawn_win_rate": 0.57031935,
+      "drawn_improvement_win_rate": 0.037314680000000044
+    },
+    {
+      "name": "Undulating Witness",
+      "mtga_id": 106272,
+      "color": "U",
+      "rarity": "common",
+      "types": [
+        "Creature - Serpent"
+      ],
+      "ever_drawn_game_count": 94381,
+      "ever_drawn_win_rate": 0.55803605,
+      "drawn_improvement_win_rate": 0.02105350000000006
+    },
+    {
+      "name": "Unsummon",
+      "mtga_id": 106273,
+      "color": "U",
+      "rarity": "common",
+      "types": [
+        "Instant"
+      ],
+      "ever_drawn_game_count": 96222,
+      "ever_drawn_win_rate": 0.57259255,
+      "drawn_improvement_win_rate": 0.03409017000000003
+    },
+    {
+      "name": "Variable Chaser",
+      "mtga_id": 106274,
+      "color": "U",
+      "rarity": "rare",
+      "types": [
+        "Creature - Human Wizard"
+      ],
+      "ever_drawn_game_count": 14752,
+      "ever_drawn_win_rate": 0.57483731,
+      "drawn_improvement_win_rate": 0.046287610000000035
+    },
+    {
+      "name": "Apex Witchstalker",
+      "mtga_id": 106276,
+      "color": "B",
+      "rarity": "common",
+      "types": [
+        "Creature - Wolf"
+      ],
+      "ever_drawn_game_count": 84353,
+      "ever_drawn_win_rate": 0.55445568,
+      "drawn_improvement_win_rate": 0.015185430000000055
+    },
+    {
+      "name": "Bloodline Recollector",
+      "mtga_id": 106277,
+      "color": "B",
+      "rarity": "mythic",
+      "types": [
+        "Creature - Vampire Warlock"
+      ],
+      "ever_drawn_game_count": 3383,
+      "ever_drawn_win_rate": 0.51847473,
+      "drawn_improvement_win_rate": -0.005666759999999993
+    },
+    {
+      "name": "Break Under Pressure",
+      "mtga_id": 106279,
+      "color": "B",
+      "rarity": "uncommon",
+      "types": [
+        "Instant"
+      ],
+      "ever_drawn_game_count": 50518,
+      "ever_drawn_win_rate": 0.59630231,
+      "drawn_improvement_win_rate": 0.06501029999999997
+    },
+    {
+      "name": "Cast Away Doubt",
+      "mtga_id": 106280,
+      "color": "B",
+      "rarity": "common",
+      "types": [
+        "Sorcery"
+      ],
+      "ever_drawn_game_count": 21773,
+      "ever_drawn_win_rate": 0.53111652,
+      "drawn_improvement_win_rate": 0.010516569999999947
+    },
+    {
+      "name": "Dark Matter Manipulator",
+      "mtga_id": 106281,
+      "color": "B",
+      "rarity": "rare",
+      "types": [
+        "Creature - Human Warlock"
+      ],
+      "ever_drawn_game_count": 11050,
+      "ever_drawn_win_rate": 0.57312217,
+      "drawn_improvement_win_rate": 0.033248859999999936
+    },
+    {
+      "name": "Darklight Phoenix",
+      "mtga_id": 106282,
+      "color": "B",
+      "rarity": "mythic",
+      "types": [
+        "Creature - Phoenix"
+      ],
+      "ever_drawn_game_count": 4084,
+      "ever_drawn_win_rate": 0.53746327,
+      "drawn_improvement_win_rate": 0.024904560000000076
+    },
+    {
+      "name": "Extended Absence",
+      "mtga_id": 106283,
+      "color": "B",
+      "rarity": "common",
+      "types": [
+        "Instant"
+      ],
+      "ever_drawn_game_count": 108595,
+      "ever_drawn_win_rate": 0.59320411,
+      "drawn_improvement_win_rate": 0.061727889999999896
+    },
+    {
+      "name": "Extrapolate the Impossible",
+      "mtga_id": 106284,
+      "color": "B",
+      "rarity": "rare",
+      "types": [
+        "Sorcery"
+      ],
+      "ever_drawn_game_count": 593,
+      "ever_drawn_win_rate": 0.47554806,
+      "drawn_improvement_win_rate": -0.020514929999999987
+    },
+    {
+      "name": "Last Gasp",
+      "mtga_id": 106285,
+      "color": "B",
+      "rarity": "common",
+      "types": [
+        "Instant"
+      ],
+      "ever_drawn_game_count": 90749,
+      "ever_drawn_win_rate": 0.56825971,
+      "drawn_improvement_win_rate": 0.03269493999999995
+    },
+    {
+      "name": "Lich's Relic",
+      "mtga_id": 106286,
+      "color": "B",
+      "rarity": "rare",
+      "types": [
+        "Artifact - Equipment"
+      ],
+      "ever_drawn_game_count": 18804,
+      "ever_drawn_win_rate": 0.62359073,
+      "drawn_improvement_win_rate": 0.09432704000000003
+    },
+    {
+      "name": "Multiply by Zero",
+      "mtga_id": 106287,
+      "color": "B",
+      "rarity": "uncommon",
+      "types": [
+        "Instant"
+      ],
+      "ever_drawn_game_count": 47232,
+      "ever_drawn_win_rate": 0.5890498,
+      "drawn_improvement_win_rate": 0.0586015299999999
+    },
+    {
+      "name": "Overwrite the Multiverse",
+      "mtga_id": 106288,
+      "color": "B",
+      "rarity": "mythic",
+      "types": [
+        "Sorcery"
+      ],
+      "ever_drawn_game_count": 9066,
+      "ever_drawn_win_rate": 0.65309949,
+      "drawn_improvement_win_rate": 0.13322049000000002
+    },
+    {
+      "name": "Rampart Hunter",
+      "mtga_id": 106289,
+      "color": "B",
+      "rarity": "common",
+      "types": [
+        "Creature - Horror"
+      ],
+      "ever_drawn_game_count": 5644,
+      "ever_drawn_win_rate": 0.4794472,
+      "drawn_improvement_win_rate": -0.01551642999999997
+    },
+    {
+      "name": "Rank Rat",
+      "mtga_id": 106290,
+      "color": "B",
+      "rarity": "common",
+      "types": [
+        "Creature - Zombie Rat"
+      ],
+      "ever_drawn_game_count": 60883,
+      "ever_drawn_win_rate": 0.55021927,
+      "drawn_improvement_win_rate": 0.016553580000000068
+    },
+    {
+      "name": "Rewrite Regrets",
+      "mtga_id": 106291,
+      "color": "B",
+      "rarity": "uncommon",
+      "types": [
+        "Sorcery"
+      ],
+      "ever_drawn_game_count": 46954,
+      "ever_drawn_win_rate": 0.59345317,
+      "drawn_improvement_win_rate": 0.06358187999999998
+    },
+    {
+      "name": "Rise of the Deathbringer",
+      "mtga_id": 106292,
+      "color": "B",
+      "rarity": "rare",
+      "types": [
+        "Instant"
+      ],
+      "ever_drawn_game_count": 13906,
+      "ever_drawn_win_rate": 0.55652236,
+      "drawn_improvement_win_rate": 0.03321271999999997
+    },
+    {
+      "name": "Sanctum Lurker",
+      "mtga_id": 106293,
+      "color": "B",
+      "rarity": "rare",
+      "types": [
+        "Creature - Horror"
+      ],
+      "ever_drawn_game_count": 17751,
+      "ever_drawn_win_rate": 0.61810602,
+      "drawn_improvement_win_rate": 0.09623702
+    },
+    {
+      "name": "Screeching Soulbreaker",
+      "mtga_id": 106294,
+      "color": "B",
+      "rarity": "common",
+      "types": [
+        "Creature - Siren Bard"
+      ],
+      "ever_drawn_game_count": 30679,
+      "ever_drawn_win_rate": 0.5361648,
+      "drawn_improvement_win_rate": 0.017185039999999985
+    },
+    {
+      "name": "Silence the Echo",
+      "mtga_id": 106295,
+      "color": "B",
+      "rarity": "common",
+      "types": [
+        "Sorcery"
+      ],
+      "ever_drawn_game_count": 53041,
+      "ever_drawn_win_rate": 0.52800664,
+      "drawn_improvement_win_rate": 0.008632459999999953
+    },
+    {
+      "name": "Solve for Disappointment",
+      "mtga_id": 106296,
+      "color": "B",
+      "rarity": "common",
+      "types": [
+        "Sorcery"
+      ],
+      "ever_drawn_game_count": 16713,
+      "ever_drawn_win_rate": 0.5275534,
+      "drawn_improvement_win_rate": 0.0149452699999999
+    },
+    {
+      "name": "Terminal Criticism",
+      "mtga_id": 106297,
+      "color": "B",
+      "rarity": "uncommon",
+      "types": [
+        "Instant"
+      ],
+      "ever_drawn_game_count": 1974,
+      "ever_drawn_win_rate": 0.5212766,
+      "drawn_improvement_win_rate": 0.03252772999999998
+    },
+    {
+      "name": "Theoretical Necromancer",
+      "mtga_id": 106298,
+      "color": "B",
+      "rarity": "common",
+      "types": [
+        "Creature - Vampire Warlock"
+      ],
+      "ever_drawn_game_count": 62808,
+      "ever_drawn_win_rate": 0.55349637,
+      "drawn_improvement_win_rate": 0.0002715500000000093
+    },
+    {
+      "name": "Void Extrapolator",
+      "mtga_id": 106299,
+      "color": "B",
+      "rarity": "common",
+      "types": [
+        "Creature - Aetherborn Warlock"
+      ],
+      "ever_drawn_game_count": 47402,
+      "ever_drawn_win_rate": 0.55491329,
+      "drawn_improvement_win_rate": 0.010586410000000046
+    },
+    {
+      "name": "Vraska's Final Mercy",
+      "mtga_id": 106301,
+      "color": "B",
+      "rarity": "rare",
+      "types": [
+        "Sorcery"
+      ],
+      "ever_drawn_game_count": 11449,
+      "ever_drawn_win_rate": 0.54554983,
+      "drawn_improvement_win_rate": 0.02079812999999997
+    },
+    {
+      "name": "Ajani's Anguish",
+      "mtga_id": 106302,
+      "color": "R",
+      "rarity": "rare",
+      "types": [
+        "Enchantment"
+      ],
+      "ever_drawn_game_count": 13910,
+      "ever_drawn_win_rate": 0.56218548,
+      "drawn_improvement_win_rate": 0.031548299999999974
+    },
+    {
+      "name": "Artifist Acumen",
+      "mtga_id": 106303,
+      "color": "R",
+      "rarity": "common",
+      "types": [
+        "Sorcery"
+      ],
+      "ever_drawn_game_count": 6308,
+      "ever_drawn_win_rate": 0.49159797,
+      "drawn_improvement_win_rate": -0.026632829999999996
+    },
+    {
+      "name": "Awaken the Inferno",
+      "mtga_id": 106304,
+      "color": "R",
+      "rarity": "common",
+      "types": [
+        "Sorcery"
+      ],
+      "ever_drawn_game_count": 79980,
+      "ever_drawn_win_rate": 0.55908977,
+      "drawn_improvement_win_rate": 0.016620250000000003
+    },
+    {
+      "name": "Blazing Crescendo",
+      "mtga_id": 106305,
+      "color": "R",
+      "rarity": "common",
+      "types": [
+        "Instant"
+      ],
+      "ever_drawn_game_count": 10928,
+      "ever_drawn_win_rate": 0.51601391,
+      "drawn_improvement_win_rate": -0.003695980000000043
+    },
+    {
+      "name": "Chandra's Emberling",
+      "mtga_id": 106306,
+      "color": "R",
+      "rarity": "common",
+      "types": [
+        "Creature - Gremlin Elemental"
+      ],
+      "ever_drawn_game_count": 21607,
+      "ever_drawn_win_rate": 0.519415,
+      "drawn_improvement_win_rate": -0.0024927500000000435
+    },
+    {
+      "name": "Command the Stage",
+      "mtga_id": 106307,
+      "color": "R",
+      "rarity": "uncommon",
+      "types": [
+        "Sorcery"
+      ],
+      "ever_drawn_game_count": 11616,
+      "ever_drawn_win_rate": 0.49939738,
+      "drawn_improvement_win_rate": -0.02205241999999996
+    },
+    {
+      "name": "Craterclaw Colossus",
+      "mtga_id": 106308,
+      "color": "R",
+      "rarity": "mythic",
+      "types": [
+        "Artifact Creature - Beast Construct"
+      ],
+      "ever_drawn_game_count": 3979,
+      "ever_drawn_win_rate": 0.56697663,
+      "drawn_improvement_win_rate": 0.05827569999999993
+    },
+    {
+      "name": "Curse-Marred Demon",
+      "mtga_id": 106309,
+      "color": "R",
+      "rarity": "rare",
+      "types": [
+        "Creature - Demon"
+      ],
+      "ever_drawn_game_count": 12514,
+      "ever_drawn_win_rate": 0.56304938,
+      "drawn_improvement_win_rate": 0.028672710000000046
+    },
+    {
+      "name": "Draconic Visitor",
+      "mtga_id": 106310,
+      "color": "R",
+      "rarity": "rare",
+      "types": [
+        "Creature - Dragon"
+      ],
+      "ever_drawn_game_count": 10383,
+      "ever_drawn_win_rate": 0.53221612,
+      "drawn_improvement_win_rate": 0.022471469999999938
+    },
+    {
+      "name": "Eardrum Rattler",
+      "mtga_id": 106311,
+      "color": "R",
+      "rarity": "common",
+      "types": [
+        "Creature - Human Bard"
+      ],
+      "ever_drawn_game_count": 10996,
+      "ever_drawn_win_rate": 0.49226992,
+      "drawn_improvement_win_rate": -0.045962129999999934
+    },
+    {
+      "name": "Essence Burn",
+      "mtga_id": 106312,
+      "color": "R",
+      "rarity": "uncommon",
+      "types": [
+        "Instant"
+      ],
+      "ever_drawn_game_count": 1009,
+      "ever_drawn_win_rate": 0.48562934,
+      "drawn_improvement_win_rate": 0.001992980000000033
+    },
+    {
+      "name": "Face Yourself",
+      "mtga_id": 106313,
+      "color": "R",
+      "rarity": "rare",
+      "types": [
+        "Sorcery"
+      ],
+      "ever_drawn_game_count": 9241,
+      "ever_drawn_win_rate": 0.55113083,
+      "drawn_improvement_win_rate": 0.034069989999999994
+    },
+    {
+      "name": "Fulminous Forte",
+      "mtga_id": 106314,
+      "color": "R",
+      "rarity": "uncommon",
+      "types": [
+        "Instant"
+      ],
+      "ever_drawn_game_count": 40393,
+      "ever_drawn_win_rate": 0.56735078,
+      "drawn_improvement_win_rate": 0.030757780000000068
+    },
+    {
+      "name": "Hallway Heckler",
+      "mtga_id": 106315,
+      "color": "R",
+      "rarity": "common",
+      "types": [
+        "Creature - Elemental Sorcerer"
+      ],
+      "ever_drawn_game_count": 25843,
+      "ever_drawn_win_rate": 0.5230043,
+      "drawn_improvement_win_rate": -0.010090189999999999
+    },
+    {
+      "name": "Heartstring Puller",
+      "mtga_id": 106317,
+      "color": "R",
+      "rarity": "common",
+      "types": [
+        "Creature - Elf Sorcerer"
+      ],
+      "ever_drawn_game_count": 50986,
+      "ever_drawn_win_rate": 0.54616954,
+      "drawn_improvement_win_rate": 0.006407499999999899
+    },
+    {
+      "name": "Identity Echo",
+      "mtga_id": 106318,
+      "color": "R",
+      "rarity": "rare",
+      "types": [
+        "Enchantment"
+      ],
+      "ever_drawn_game_count": 393,
+      "ever_drawn_win_rate": null,
+      "drawn_improvement_win_rate": null
+    },
+    {
+      "name": "Master of Barbs",
+      "mtga_id": 106319,
+      "color": "R",
+      "rarity": "rare",
+      "types": [
+        "Creature - Lizard Bard"
+      ],
+      "ever_drawn_game_count": 7987,
+      "ever_drawn_win_rate": 0.53286591,
+      "drawn_improvement_win_rate": 0.005591480000000093
+    },
+    {
+      "name": "No Admittance",
+      "mtga_id": 106320,
+      "color": "R",
+      "rarity": "common",
+      "types": [
+        "Sorcery"
+      ],
+      "ever_drawn_game_count": 83958,
+      "ever_drawn_win_rate": 0.56704543,
+      "drawn_improvement_win_rate": 0.02721546999999991
+    },
+    {
+      "name": "Pompous Battlemage",
+      "mtga_id": 106321,
+      "color": "R",
+      "rarity": "rare",
+      "types": [
+        "Creature - Goblin Sorcerer"
+      ],
+      "ever_drawn_game_count": 7061,
+      "ever_drawn_win_rate": 0.53505169,
+      "drawn_improvement_win_rate": 0.00876558999999999
+    },
+    {
+      "name": "Pyre Rhymer",
+      "mtga_id": 106323,
+      "color": "R",
+      "rarity": "rare",
+      "types": [
+        "Creature - Elemental Sorcerer"
+      ],
+      "ever_drawn_game_count": 6789,
+      "ever_drawn_win_rate": 0.50611283,
+      "drawn_improvement_win_rate": -0.01955170000000006
+    },
+    {
+      "name": "Skilled Battlecarver",
+      "mtga_id": 106325,
+      "color": "R",
+      "rarity": "common",
+      "types": [
+        "Creature - Human Warrior"
+      ],
+      "ever_drawn_game_count": 43662,
+      "ever_drawn_win_rate": 0.53002611,
+      "drawn_improvement_win_rate": -0.006045619999999974
+    },
+    {
+      "name": "Stingcaster Mage",
+      "mtga_id": 106326,
+      "color": "R",
+      "rarity": "mythic",
+      "types": [
+        "Creature - Human Wizard"
+      ],
+      "ever_drawn_game_count": 5693,
+      "ever_drawn_win_rate": 0.56578254,
+      "drawn_improvement_win_rate": 0.02526971999999994
+    },
+    {
+      "name": "Tether Technician",
+      "mtga_id": 106327,
+      "color": "R",
+      "rarity": "common",
+      "types": [
+        "Creature - Minotaur Artificer"
+      ],
+      "ever_drawn_game_count": 17438,
+      "ever_drawn_win_rate": 0.5260351,
+      "drawn_improvement_win_rate": 0.00488581999999993
+    },
+    {
+      "name": "Violent Echoes",
+      "mtga_id": 106328,
+      "color": "R",
+      "rarity": "uncommon",
+      "types": [
+        "Instant"
+      ],
+      "ever_drawn_game_count": 42720,
+      "ever_drawn_win_rate": 0.59356273,
+      "drawn_improvement_win_rate": 0.052918760000000065
+    },
+    {
+      "name": "Wrath of the Bloodmane",
+      "mtga_id": 106329,
+      "color": "R",
+      "rarity": "common",
+      "types": [
+        "Instant"
+      ],
+      "ever_drawn_game_count": 78822,
+      "ever_drawn_win_rate": 0.55795336,
+      "drawn_improvement_win_rate": 0.017560350000000002
+    },
+    {
+      "name": "Arcane Amphisbaena",
+      "mtga_id": 106330,
+      "color": "G",
+      "rarity": "common",
+      "types": [
+        "Creature - Snake"
+      ],
+      "ever_drawn_game_count": 80271,
+      "ever_drawn_win_rate": 0.55733702,
+      "drawn_improvement_win_rate": 0.01723447999999994
+    },
+    {
+      "name": "Bestial Incursion",
+      "mtga_id": 106331,
+      "color": "G",
+      "rarity": "common",
+      "types": [
+        "Sorcery"
+      ],
+      "ever_drawn_game_count": 76556,
+      "ever_drawn_win_rate": 0.56271226,
+      "drawn_improvement_win_rate": 0.021404690000000004
+    },
+    {
+      "name": "Budding Insurgent",
+      "mtga_id": 106332,
+      "color": "G",
+      "rarity": "common",
+      "types": [
+        "Creature - Dryad Scout"
+      ],
+      "ever_drawn_game_count": 18480,
+      "ever_drawn_win_rate": 0.50752165,
+      "drawn_improvement_win_rate": -0.0175770999999999
+    },
+    {
+      "name": "Carnivorous Cultivator",
+      "mtga_id": 106333,
+      "color": "G",
+      "rarity": "rare",
+      "types": [
+        "Creature - Elf Warlock"
+      ],
+      "ever_drawn_game_count": 15150,
+      "ever_drawn_win_rate": 0.5890429,
+      "drawn_improvement_win_rate": 0.05683033000000004
+    },
+    {
+      "name": "Compel Brutality",
+      "mtga_id": 106335,
+      "color": "G",
+      "rarity": "common",
+      "types": [
+        "Instant"
+      ],
+      "ever_drawn_game_count": 73212,
+      "ever_drawn_win_rate": 0.54691854,
+      "drawn_improvement_win_rate": 0.012585529999999956
+    },
+    {
+      "name": "Flourishing Grapple",
+      "mtga_id": 106336,
+      "color": "G",
+      "rarity": "uncommon",
+      "types": [
+        "Instant"
+      ],
+      "ever_drawn_game_count": 805,
+      "ever_drawn_win_rate": 0.44223602,
+      "drawn_improvement_win_rate": -0.03245356999999999
+    },
+    {
+      "name": "Gardenize",
+      "mtga_id": 106337,
+      "color": "G",
+      "rarity": "rare",
+      "types": [
+        "Enchantment"
+      ],
+      "ever_drawn_game_count": 398,
+      "ever_drawn_win_rate": null,
+      "drawn_improvement_win_rate": null
+    },
+    {
+      "name": "Greenhouse Propagator",
+      "mtga_id": 106338,
+      "color": "G",
+      "rarity": "common",
+      "types": [
+        "Creature - Cat Druid"
+      ],
+      "ever_drawn_game_count": 57298,
+      "ever_drawn_win_rate": 0.54429474,
+      "drawn_improvement_win_rate": 0.013072659999999958
+    },
+    {
+      "name": "Heartwood Crafter",
+      "mtga_id": 106339,
+      "color": "G",
+      "rarity": "uncommon",
+      "types": [
+        "Creature - Elf Artificer"
+      ],
+      "ever_drawn_game_count": 35990,
+      "ever_drawn_win_rate": 0.5676299,
+      "drawn_improvement_win_rate": 0.026499669999999975
+    },
+    {
+      "name": "Hexhaven Invigorator",
+      "mtga_id": 106341,
+      "color": "G",
+      "rarity": "mythic",
+      "types": [
+        "Creature - Chimera Horror"
+      ],
+      "ever_drawn_game_count": 3028,
+      "ever_drawn_win_rate": 0.54425363,
+      "drawn_improvement_win_rate": 0.03270507
+    },
+    {
+      "name": "Hungering Puppetbeast",
+      "mtga_id": 106342,
+      "color": "G",
+      "rarity": "rare",
+      "types": [
+        "Artifact Creature - Beast Construct"
+      ],
+      "ever_drawn_game_count": 16166,
+      "ever_drawn_win_rate": 0.6169739,
+      "drawn_improvement_win_rate": 0.08863458000000002
+    },
+    {
+      "name": "Hunter's Axe",
+      "mtga_id": 106343,
+      "color": "G",
+      "rarity": "uncommon",
+      "types": [
+        "Artifact - Equipment"
+      ],
+      "ever_drawn_game_count": 7159,
+      "ever_drawn_win_rate": 0.51306048,
+      "drawn_improvement_win_rate": -0.005493179999999986
+    },
+    {
+      "name": "Inspired Tethermage",
+      "mtga_id": 106344,
+      "color": "G",
+      "rarity": "common",
+      "types": [
+        "Creature - Elf Warrior"
+      ],
+      "ever_drawn_game_count": 35695,
+      "ever_drawn_win_rate": 0.51603866,
+      "drawn_improvement_win_rate": -0.01068247
+    },
+    {
+      "name": "Omnipresence",
+      "mtga_id": 106345,
+      "color": "G",
+      "rarity": "mythic",
+      "types": [
+        "Enchantment"
+      ],
+      "ever_drawn_game_count": 31,
+      "ever_drawn_win_rate": null,
+      "drawn_improvement_win_rate": null
+    },
+    {
+      "name": "Puppet Crafting",
+      "mtga_id": 106346,
+      "color": "G",
+      "rarity": "rare",
+      "types": [
+        "Enchantment - Aura"
+      ],
+      "ever_drawn_game_count": 2573,
+      "ever_drawn_win_rate": 0.51185387,
+      "drawn_improvement_win_rate": -0.001104129999999981
+    },
+    {
+      "name": "Restore with Empathy",
+      "mtga_id": 106347,
+      "color": "G",
+      "rarity": "uncommon",
+      "types": [
+        "Instant"
+      ],
+      "ever_drawn_game_count": 23182,
+      "ever_drawn_win_rate": 0.54891726,
+      "drawn_improvement_win_rate": 0.021107949999999986
+    },
+    {
+      "name": "Simulacrum Shaper",
+      "mtga_id": 106348,
+      "color": "G",
+      "rarity": "rare",
+      "types": [
+        "Creature - Elf Druid"
+      ],
+      "ever_drawn_game_count": 14962,
+      "ever_drawn_win_rate": 0.59864991,
+      "drawn_improvement_win_rate": 0.06601086
+    },
+    {
+      "name": "Something Worth Saving",
+      "mtga_id": 106349,
+      "color": "G",
+      "rarity": "common",
+      "types": [
+        "Instant"
+      ],
+      "ever_drawn_game_count": 50952,
+      "ever_drawn_win_rate": 0.57012482,
+      "drawn_improvement_win_rate": 0.021120469999999947
+    },
+    {
+      "name": "Sureshot Sower",
+      "mtga_id": 106350,
+      "color": "G",
+      "rarity": "common",
+      "types": [
+        "Creature - Human Archer"
+      ],
+      "ever_drawn_game_count": 45012,
+      "ever_drawn_win_rate": 0.53385764,
+      "drawn_improvement_win_rate": -0.009546810000000017
+    },
+    {
+      "name": "Tarmogoyf",
+      "mtga_id": 106351,
+      "color": "G",
+      "rarity": "mythic",
+      "types": [
+        "Creature - Lhurgoyf"
+      ],
+      "ever_drawn_game_count": 5205,
+      "ever_drawn_win_rate": 0.56580211,
+      "drawn_improvement_win_rate": 0.04902579000000007
+    },
+    {
+      "name": "Tethermage's Advantage",
+      "mtga_id": 106352,
+      "color": "G",
+      "rarity": "common",
+      "types": [
+        "Instant"
+      ],
+      "ever_drawn_game_count": 5410,
+      "ever_drawn_win_rate": 0.50887246,
+      "drawn_improvement_win_rate": -0.012525730000000013
+    },
+    {
+      "name": "Verdant Kraken",
+      "mtga_id": 106353,
+      "color": "G",
+      "rarity": "rare",
+      "types": [
+        "Creature - Plant Kraken"
+      ],
+      "ever_drawn_game_count": 14378,
+      "ever_drawn_win_rate": 0.5792878,
+      "drawn_improvement_win_rate": 0.06007700000000005
+    },
+    {
+      "name": "Vinelasher Adept",
+      "mtga_id": 106354,
+      "color": "G",
+      "rarity": "common",
+      "types": [
+        "Creature - Rhino Soldier"
+      ],
+      "ever_drawn_game_count": 72901,
+      "ever_drawn_win_rate": 0.55613778,
+      "drawn_improvement_win_rate": 0.016568570000000005
+    },
+    {
+      "name": "Wrecking Gecko",
+      "mtga_id": 106355,
+      "color": "G",
+      "rarity": "common",
+      "types": [
+        "Artifact Creature - Lizard Construct"
+      ],
+      "ever_drawn_game_count": 35819,
+      "ever_drawn_win_rate": 0.54605098,
+      "drawn_improvement_win_rate": 0.02025502999999995
+    },
+    {
+      "name": "Aerid Konstrari",
+      "mtga_id": 106356,
+      "color": "RG",
+      "rarity": "mythic",
+      "types": [
+        "Legendary Creature - Elder Sphinx"
+      ],
+      "ever_drawn_game_count": 7492,
+      "ever_drawn_win_rate": 0.64361986,
+      "drawn_improvement_win_rate": 0.13128087
+    },
+    {
+      "name": "Avatar of Burgeoning Echoes",
+      "mtga_id": 106357,
+      "color": "UG",
+      "rarity": "mythic",
+      "types": [
+        "Creature - Avatar"
+      ],
+      "ever_drawn_game_count": 6834,
+      "ever_drawn_win_rate": 0.60096576,
+      "drawn_improvement_win_rate": 0.08692370999999999
+    },
+    {
+      "name": "Blessed Ghoul",
+      "mtga_id": 106358,
+      "color": "WB",
+      "rarity": "common",
+      "types": [
+        "Creature - Zombie Cleric"
+      ],
+      "ever_drawn_game_count": 33148,
+      "ever_drawn_win_rate": 0.54132979,
+      "drawn_improvement_win_rate": 0.010780520000000071
+    },
+    {
+      "name": "Bloombrute",
+      "mtga_id": 106359,
+      "color": "WG",
+      "rarity": "uncommon",
+      "types": [
+        "Creature - Plant Elemental"
+      ],
+      "ever_drawn_game_count": 27506,
+      "ever_drawn_win_rate": 0.57387479,
+      "drawn_improvement_win_rate": 0.048064429999999936
+    },
+    {
+      "name": "Charge the Sanctum",
+      "mtga_id": 106360,
+      "color": "WR",
+      "rarity": "common",
+      "types": [
+        "Instant"
+      ],
+      "ever_drawn_game_count": 7761,
+      "ever_drawn_win_rate": 0.5054761,
+      "drawn_improvement_win_rate": -0.008859819999999963
+    },
+    {
+      "name": "Clash of Elements",
+      "mtga_id": 106361,
+      "color": "UR",
+      "rarity": "uncommon",
+      "types": [
+        "Instant"
+      ],
+      "ever_drawn_game_count": 36372,
+      "ever_drawn_win_rate": 0.58421313,
+      "drawn_improvement_win_rate": 0.04790839000000002
+    },
+    {
+      "name": "Craftwork Crusher",
+      "mtga_id": 106362,
+      "color": "RG",
+      "rarity": "uncommon",
+      "types": [
+        "Artifact Creature - Boar Construct"
+      ],
+      "ever_drawn_game_count": 41939,
+      "ever_drawn_win_rate": 0.62104485,
+      "drawn_improvement_win_rate": 0.08966728999999996
+    },
+    {
+      "name": "Denzilore Fatehold",
+      "mtga_id": 106363,
+      "color": "WU",
+      "rarity": "mythic",
+      "types": [
+        "Legendary Creature - Elder Sphinx"
+      ],
+      "ever_drawn_game_count": 8693,
+      "ever_drawn_win_rate": 0.61440239,
+      "drawn_improvement_win_rate": 0.08979724999999994
+    },
+    {
+      "name": "Desperate Futurescribe",
+      "mtga_id": 106364,
+      "color": "WU",
+      "rarity": "uncommon",
+      "types": [
+        "Creature - Kor Scout"
+      ],
+      "ever_drawn_game_count": 39487,
+      "ever_drawn_win_rate": 0.57720262,
+      "drawn_improvement_win_rate": 0.04654155000000004
+    },
+    {
+      "name": "Emergency Phytomedic",
+      "mtga_id": 106365,
+      "color": "WG",
+      "rarity": "common",
+      "types": [
+        "Creature - Dryad Cleric"
+      ],
+      "ever_drawn_game_count": 39845,
+      "ever_drawn_win_rate": 0.54167399,
+      "drawn_improvement_win_rate": 0.01317027000000004
+    },
+    {
+      "name": "Entrust the Spark",
+      "mtga_id": 106367,
+      "color": "UG",
+      "rarity": "rare",
+      "types": [
+        "Sorcery"
+      ],
+      "ever_drawn_game_count": 216,
+      "ever_drawn_win_rate": null,
+      "drawn_improvement_win_rate": null
+    },
+    {
+      "name": "Fatehold Charm",
+      "mtga_id": 106368,
+      "color": "WU",
+      "rarity": "uncommon",
+      "types": [
+        "Instant"
+      ],
+      "ever_drawn_game_count": 34770,
+      "ever_drawn_win_rate": 0.57891861,
+      "drawn_improvement_win_rate": 0.030292410000000047
+    },
+    {
+      "name": "Fatehold Chronologist",
+      "mtga_id": 106369,
+      "color": "WU",
+      "rarity": "common",
+      "types": [
+        "Creature - Bird Wizard"
+      ],
+      "ever_drawn_game_count": 95924,
+      "ever_drawn_win_rate": 0.56356074,
+      "drawn_improvement_win_rate": 0.022443760000000035
+    },
+    {
+      "name": "Ferocity of the Hunt",
+      "mtga_id": 106371,
+      "color": "BG",
+      "rarity": "common",
+      "types": [
+        "Enchantment - Aura"
+      ],
+      "ever_drawn_game_count": 29792,
+      "ever_drawn_win_rate": 0.52839689,
+      "drawn_improvement_win_rate": 0.006451960000000034
+    },
+    {
+      "name": "Frostbite Pyromental",
+      "mtga_id": 106372,
+      "color": "UR",
+      "rarity": "rare",
+      "types": [
+        "Creature - Elemental"
+      ],
+      "ever_drawn_game_count": 3803,
+      "ever_drawn_win_rate": 0.50460163,
+      "drawn_improvement_win_rate": -0.005269199999999974
+    },
+    {
+      "name": "Grim Repriser",
+      "mtga_id": 106373,
+      "color": "BR",
+      "rarity": "uncommon",
+      "types": [
+        "Creature - Zombie Bard"
+      ],
+      "ever_drawn_game_count": 15582,
+      "ever_drawn_win_rate": 0.53234501,
+      "drawn_improvement_win_rate": -0.011348350000000007
+    },
+    {
+      "name": "Ingris Stingerquill",
+      "mtga_id": 106374,
+      "color": "BR",
+      "rarity": "mythic",
+      "types": [
+        "Legendary Creature - Elder Sphinx"
+      ],
+      "ever_drawn_game_count": 4899,
+      "ever_drawn_win_rate": 0.57113697,
+      "drawn_improvement_win_rate": 0.053567179999999937
+    },
+    {
+      "name": "Konstrari Charm",
+      "mtga_id": 106375,
+      "color": "RG",
+      "rarity": "uncommon",
+      "types": [
+        "Instant"
+      ],
+      "ever_drawn_game_count": 16016,
+      "ever_drawn_win_rate": 0.55825425,
+      "drawn_improvement_win_rate": 0.019924009999999992
+    },
+    {
+      "name": "Konstrari Improviser",
+      "mtga_id": 106376,
+      "color": "RG",
+      "rarity": "common",
+      "types": [
+        "Creature - Human Artificer"
+      ],
+      "ever_drawn_game_count": 66459,
+      "ever_drawn_win_rate": 0.53958079,
+      "drawn_improvement_win_rate": -0.0029795699999999314
+    },
+    {
+      "name": "Kwia Vigorbloom",
+      "mtga_id": 106378,
+      "color": "WG",
+      "rarity": "mythic",
+      "types": [
+        "Legendary Creature - Elder Sphinx"
+      ],
+      "ever_drawn_game_count": 6804,
+      "ever_drawn_win_rate": 0.62213404,
+      "drawn_improvement_win_rate": 0.1154656300000001
+    },
+    {
+      "name": "Mind Meanderer",
+      "mtga_id": 106379,
+      "color": "UG",
+      "rarity": "uncommon",
+      "types": [
+        "Creature - Bird Fish Illusion"
+      ],
+      "ever_drawn_game_count": 38648,
+      "ever_drawn_win_rate": 0.57338025,
+      "drawn_improvement_win_rate": 0.055637620000000054
+    },
+    {
+      "name": "Null Summoner",
+      "mtga_id": 106380,
+      "color": "UB",
+      "rarity": "rare",
+      "types": [
+        "Creature - Human Warlock"
+      ],
+      "ever_drawn_game_count": 20442,
+      "ever_drawn_win_rate": 0.62723804,
+      "drawn_improvement_win_rate": 0.10473931000000003
+    },
+    {
+      "name": "Paradox Shaper",
+      "mtga_id": 106381,
+      "color": "UB",
+      "rarity": "uncommon",
+      "types": [
+        "Creature - Octopus Wizard"
+      ],
+      "ever_drawn_game_count": 37069,
+      "ever_drawn_win_rate": 0.54913809,
+      "drawn_improvement_win_rate": 0.010538500000000006
+    },
+    {
+      "name": "Primal Witchstalker",
+      "mtga_id": 106383,
+      "color": "BG",
+      "rarity": "uncommon",
+      "types": [
+        "Creature - Wolf"
+      ],
+      "ever_drawn_game_count": 36099,
+      "ever_drawn_win_rate": 0.59073659,
+      "drawn_improvement_win_rate": 0.045555800000000035
+    },
+    {
+      "name": "Proctor of Potential",
+      "mtga_id": 106384,
+      "color": "WU",
+      "rarity": "rare",
+      "types": [
+        "Creature - Human Cleric"
+      ],
+      "ever_drawn_game_count": 13700,
+      "ever_drawn_win_rate": 0.60240876,
+      "drawn_improvement_win_rate": 0.06333886999999994
+    },
+    {
+      "name": "Prudent Fateseer",
+      "mtga_id": 106385,
+      "color": "WU",
+      "rarity": "uncommon",
+      "types": [
+        "Creature - Dwarf Wizard"
+      ],
+      "ever_drawn_game_count": 39788,
+      "ever_drawn_win_rate": 0.55682618,
+      "drawn_improvement_win_rate": 0.022631459999999937
+    },
+    {
+      "name": "Recursive Recruitment",
+      "mtga_id": 106387,
+      "color": "UB",
+      "rarity": "uncommon",
+      "types": [
+        "Sorcery"
+      ],
+      "ever_drawn_game_count": 58074,
+      "ever_drawn_win_rate": 0.6072597,
+      "drawn_improvement_win_rate": 0.061087769999999986
+    },
+    {
+      "name": "Solarium Sentry",
+      "mtga_id": 106388,
+      "color": "WG",
+      "rarity": "rare",
+      "types": [
+        "Creature - Cat Soldier"
+      ],
+      "ever_drawn_game_count": 7672,
+      "ever_drawn_win_rate": 0.56100104,
+      "drawn_improvement_win_rate": 0.041272869999999906
+    },
+    {
+      "name": "Solitary Cell",
+      "mtga_id": 106389,
+      "color": "WR",
+      "rarity": "rare",
+      "types": [
+        "Artifact"
+      ],
+      "ever_drawn_game_count": 4143,
+      "ever_drawn_win_rate": 0.50470673,
+      "drawn_improvement_win_rate": 0.005541450000000003
+    },
+    {
+      "name": "Stingerquill Charm",
+      "mtga_id": 106390,
+      "color": "BR",
+      "rarity": "uncommon",
+      "types": [
+        "Instant"
+      ],
+      "ever_drawn_game_count": 22060,
+      "ever_drawn_win_rate": 0.55267452,
+      "drawn_improvement_win_rate": 0.020626449999999963
+    },
+    {
+      "name": "Stingerquill Voxmancer",
+      "mtga_id": 106391,
+      "color": "BR",
+      "rarity": "uncommon",
+      "types": [
+        "Creature - Goblin Sorcerer"
+      ],
+      "ever_drawn_game_count": 21992,
+      "ever_drawn_win_rate": 0.54206075,
+      "drawn_improvement_win_rate": 0.018261419999999973
+    },
+    {
+      "name": "Stinging Vitriol",
+      "mtga_id": 106393,
+      "color": "BR",
+      "rarity": "rare",
+      "types": [
+        "Sorcery"
+      ],
+      "ever_drawn_game_count": 5837,
+      "ever_drawn_win_rate": 0.53349323,
+      "drawn_improvement_win_rate": 0.016269709999999993
+    },
+    {
+      "name": "Tam's Resistance",
+      "mtga_id": 106394,
+      "color": "UG",
+      "rarity": "common",
+      "types": [
+        "Sorcery"
+      ],
+      "ever_drawn_game_count": 59691,
+      "ever_drawn_win_rate": 0.56095559,
+      "drawn_improvement_win_rate": 0.031829059999999965
+    },
+    {
+      "name": "Tenured Tethermage",
+      "mtga_id": 106395,
+      "color": "RG",
+      "rarity": "rare",
+      "types": [
+        "Creature - Human Artificer"
+      ],
+      "ever_drawn_game_count": 12614,
+      "ever_drawn_win_rate": 0.58720469,
+      "drawn_improvement_win_rate": 0.06161611999999994
+    },
+    {
+      "name": "Theorix Charm",
+      "mtga_id": 106396,
+      "color": "UB",
+      "rarity": "uncommon",
+      "types": [
+        "Instant"
+      ],
+      "ever_drawn_game_count": 37811,
+      "ever_drawn_win_rate": 0.56964904,
+      "drawn_improvement_win_rate": 0.036691740000000084
+    },
+    {
+      "name": "Theorix Metamage",
+      "mtga_id": 106397,
+      "color": "UB",
+      "rarity": "common",
+      "types": [
+        "Creature - Shade Wizard"
+      ],
+      "ever_drawn_game_count": 51158,
+      "ever_drawn_win_rate": 0.54216349,
+      "drawn_improvement_win_rate": 0.010869970000000007
+    },
+    {
+      "name": "Twinned Vision",
+      "mtga_id": 106399,
+      "color": "UR",
+      "rarity": "common",
+      "types": [
+        "Instant"
+      ],
+      "ever_drawn_game_count": 95987,
+      "ever_drawn_win_rate": 0.57934929,
+      "drawn_improvement_win_rate": 0.02509123000000002
+    },
+    {
+      "name": "Twisted Fates",
+      "mtga_id": 106400,
+      "color": "WB",
+      "rarity": "uncommon",
+      "types": [
+        "Sorcery"
+      ],
+      "ever_drawn_game_count": 29242,
+      "ever_drawn_win_rate": 0.56962588,
+      "drawn_improvement_win_rate": 0.04465536000000003
+    },
+    {
+      "name": "Uldaros Theorix",
+      "mtga_id": 106401,
+      "color": "UB",
+      "rarity": "mythic",
+      "types": [
+        "Legendary Creature - Elder Sphinx"
+      ],
+      "ever_drawn_game_count": 9940,
+      "ever_drawn_win_rate": 0.69144869,
+      "drawn_improvement_win_rate": 0.19096632000000002
+    },
+    {
+      "name": "Vigorbloom Charm",
+      "mtga_id": 106402,
+      "color": "WG",
+      "rarity": "uncommon",
+      "types": [
+        "Instant"
+      ],
+      "ever_drawn_game_count": 24029,
+      "ever_drawn_win_rate": 0.56540014,
+      "drawn_improvement_win_rate": 0.03525007000000002
+    },
+    {
+      "name": "Vigorbloom Vanguard",
+      "mtga_id": 106403,
+      "color": "WG",
+      "rarity": "uncommon",
+      "types": [
+        "Creature - Troll Druid"
+      ],
+      "ever_drawn_game_count": 32083,
+      "ever_drawn_win_rate": 0.56247857,
+      "drawn_improvement_win_rate": 0.027256130000000045
+    },
+    {
+      "name": "Vindictive Triumph",
+      "mtga_id": 106405,
+      "color": "WB",
+      "rarity": "rare",
+      "types": [
+        "Instant"
+      ],
+      "ever_drawn_game_count": 6883,
+      "ever_drawn_win_rate": 0.543513,
+      "drawn_improvement_win_rate": 0.02782353999999998
+    },
+    {
+      "name": "Warrior's Blades",
+      "mtga_id": 106406,
+      "color": "WR",
+      "rarity": "uncommon",
+      "types": [
+        "Artifact - Equipment"
+      ],
+      "ever_drawn_game_count": 22680,
+      "ever_drawn_win_rate": 0.54748677,
+      "drawn_improvement_win_rate": 0.03557231000000005
+    },
+    {
+      "name": "Whiplash Wordsmith",
+      "mtga_id": 106407,
+      "color": "BR",
+      "rarity": "common",
+      "types": [
+        "Creature - Vampire Sorcerer"
+      ],
+      "ever_drawn_game_count": 16219,
+      "ever_drawn_win_rate": 0.49528331,
+      "drawn_improvement_win_rate": -0.02388594999999999
+    },
+    {
+      "name": "Woodwork Prodigy",
+      "mtga_id": 106409,
+      "color": "RG",
+      "rarity": "uncommon",
+      "types": [
+        "Creature - Cat Druid"
+      ],
+      "ever_drawn_game_count": 26911,
+      "ever_drawn_win_rate": 0.52328044,
+      "drawn_improvement_win_rate": -0.004423330000000059
+    },
+    {
+      "name": "Afterthought Sentry",
+      "mtga_id": 106411,
+      "color": "",
+      "rarity": "common",
+      "types": [
+        "Artifact Creature - Gargoyle"
+      ],
+      "ever_drawn_game_count": 15824,
+      "ever_drawn_win_rate": 0.5286274,
+      "drawn_improvement_win_rate": -0.015420710000000004
+    },
+    {
+      "name": "Archive Arbiter",
+      "mtga_id": 106412,
+      "color": "",
+      "rarity": "uncommon",
+      "types": [
+        "Artifact Creature - Sphinx"
+      ],
+      "ever_drawn_game_count": 27447,
+      "ever_drawn_win_rate": 0.55871316,
+      "drawn_improvement_win_rate": 0.02820383000000004
+    },
+    {
+      "name": "Codie, Ravenous Codex",
+      "mtga_id": 106413,
+      "color": "",
+      "rarity": "rare",
+      "types": [
+        "Legendary Artifact Creature - Book Construct"
+      ],
+      "ever_drawn_game_count": 949,
+      "ever_drawn_win_rate": 0.46891465,
+      "drawn_improvement_win_rate": -0.03396600999999999
+    },
+    {
+      "name": "The Echoverse Fulcrum",
+      "mtga_id": 106414,
+      "color": "",
+      "rarity": "mythic",
+      "types": [
+        "Legendary Artifact"
+      ],
+      "ever_drawn_game_count": 7786,
+      "ever_drawn_win_rate": 0.582841,
+      "drawn_improvement_win_rate": 0.05204070000000005
+    },
+    {
+      "name": "Eye of Jace",
+      "mtga_id": 106415,
+      "color": "",
+      "rarity": "uncommon",
+      "types": [
+        "Artifact"
+      ],
+      "ever_drawn_game_count": 7766,
+      "ever_drawn_win_rate": 0.4992274,
+      "drawn_improvement_win_rate": -0.005362760000000022
+    },
+    {
+      "name": "Keeper of the Quiet Hour",
+      "mtga_id": 106416,
+      "color": "",
+      "rarity": "common",
+      "types": [
+        "Artifact Creature - Chimera"
+      ],
+      "ever_drawn_game_count": 64297,
+      "ever_drawn_win_rate": 0.56161252,
+      "drawn_improvement_win_rate": 0.013265229999999906
+    },
+    {
+      "name": "Living Library",
+      "mtga_id": 106417,
+      "color": "",
+      "rarity": "common",
+      "types": [
+        "Artifact Creature - Book Illusion"
+      ],
+      "ever_drawn_game_count": 9123,
+      "ever_drawn_win_rate": 0.52954072,
+      "drawn_improvement_win_rate": -0.001954200000000017
+    },
+    {
+      "name": "Medic's Kitesail",
+      "mtga_id": 106418,
+      "color": "",
+      "rarity": "common",
+      "types": [
+        "Artifact - Equipment"
+      ],
+      "ever_drawn_game_count": 24108,
+      "ever_drawn_win_rate": 0.54235109,
+      "drawn_improvement_win_rate": 0.01794587000000003
+    },
+    {
+      "name": "Murmuring Volume",
+      "mtga_id": 106419,
+      "color": "",
+      "rarity": "common",
+      "types": [
+        "Artifact - Book"
+      ],
+      "ever_drawn_game_count": 63776,
+      "ever_drawn_win_rate": 0.56441295,
+      "drawn_improvement_win_rate": 0.024746070000000064
+    },
+    {
+      "name": "Dedicated Commons",
+      "mtga_id": 106420,
+      "color": "",
+      "rarity": "common",
+      "types": [
+        "Land"
+      ],
+      "ever_drawn_game_count": 24407,
+      "ever_drawn_win_rate": 0.52898759,
+      "drawn_improvement_win_rate": 0.0018885199999999491
+    },
+    {
+      "name": "Deserted Beach",
+      "mtga_id": 106421,
+      "color": "",
+      "rarity": "rare",
+      "types": [
+        "Land"
+      ],
+      "ever_drawn_game_count": 9951,
+      "ever_drawn_win_rate": 0.5536127,
+      "drawn_improvement_win_rate": 0.009942609999999963
+    },
+    {
+      "name": "Fatehold Annex",
+      "mtga_id": 106422,
+      "color": "",
+      "rarity": "common",
+      "types": [
+        "Land"
+      ],
+      "ever_drawn_game_count": 38852,
+      "ever_drawn_win_rate": 0.55536395,
+      "drawn_improvement_win_rate": 0.010477070000000088
+    },
+    {
+      "name": "Formidable Commons",
+      "mtga_id": 106423,
+      "color": "",
+      "rarity": "common",
+      "types": [
+        "Land"
+      ],
+      "ever_drawn_game_count": 41900,
+      "ever_drawn_win_rate": 0.55551313,
+      "drawn_improvement_win_rate": 0.007068689999999989
+    },
+    {
+      "name": "Hall of Echoes",
+      "mtga_id": 106424,
+      "color": "",
+      "rarity": "rare",
+      "types": [
+        "Land"
+      ],
+      "ever_drawn_game_count": 6138,
+      "ever_drawn_win_rate": 0.53128055,
+      "drawn_improvement_win_rate": 0.002316549999999973
+    },
+    {
+      "name": "Haunted Ridge",
+      "mtga_id": 106425,
+      "color": "",
+      "rarity": "rare",
+      "types": [
+        "Land"
+      ],
+      "ever_drawn_game_count": 8830,
+      "ever_drawn_win_rate": 0.55016988,
+      "drawn_improvement_win_rate": 0.0025967099999999466
+    },
+    {
+      "name": "Hexhaven Dueling Arena",
+      "mtga_id": 106426,
+      "color": "",
+      "rarity": "uncommon",
+      "types": [
+        "Land"
+      ],
+      "ever_drawn_game_count": 4021,
+      "ever_drawn_win_rate": 0.49738871,
+      "drawn_improvement_win_rate": -0.025291119999999945
+    },
+    {
+      "name": "Innovative Commons",
+      "mtga_id": 106427,
+      "color": "",
+      "rarity": "common",
+      "types": [
+        "Land"
+      ],
+      "ever_drawn_game_count": 38610,
+      "ever_drawn_win_rate": 0.55990676,
+      "drawn_improvement_win_rate": 0.018586409999999942
+    },
+    {
+      "name": "Konstrari Annex",
+      "mtga_id": 106428,
+      "color": "",
+      "rarity": "common",
+      "types": [
+        "Land"
+      ],
+      "ever_drawn_game_count": 36555,
+      "ever_drawn_win_rate": 0.5443031,
+      "drawn_improvement_win_rate": -0.007774089999999956
+    },
+    {
+      "name": "Meticulous Commons",
+      "mtga_id": 106429,
+      "color": "",
+      "rarity": "common",
+      "types": [
+        "Land"
+      ],
+      "ever_drawn_game_count": 30549,
+      "ever_drawn_win_rate": 0.5442404,
+      "drawn_improvement_win_rate": 0.006506640000000008
+    },
+    {
+      "name": "Overgrown Farmland",
+      "mtga_id": 106430,
+      "color": "",
+      "rarity": "rare",
+      "types": [
+        "Land"
+      ],
+      "ever_drawn_game_count": 7605,
+      "ever_drawn_win_rate": 0.53057199,
+      "drawn_improvement_win_rate": -0.0017393100000000494
+    },
+    {
+      "name": "Rockfall Vale",
+      "mtga_id": 106431,
+      "color": "",
+      "rarity": "rare",
+      "types": [
+        "Land"
+      ],
+      "ever_drawn_game_count": 9531,
+      "ever_drawn_win_rate": 0.55177841,
+      "drawn_improvement_win_rate": 0.011640410000000045
+    },
+    {
+      "name": "Roiling Canopy",
+      "mtga_id": 106432,
+      "color": "",
+      "rarity": "rare",
+      "types": [
+        "Land"
+      ],
+      "ever_drawn_game_count": 2017,
+      "ever_drawn_win_rate": 0.49181953,
+      "drawn_improvement_win_rate": -0.007003079999999995
+    },
+    {
+      "name": "Room of Refuge",
+      "mtga_id": 106433,
+      "color": "",
+      "rarity": "common",
+      "types": [
+        "Land"
+      ],
+      "ever_drawn_game_count": 101746,
+      "ever_drawn_win_rate": 0.55739783,
+      "drawn_improvement_win_rate": 0.006557739999999979
+    },
+    {
+      "name": "Shipwreck Marsh",
+      "mtga_id": 106434,
+      "color": "",
+      "rarity": "rare",
+      "types": [
+        "Land"
+      ],
+      "ever_drawn_game_count": 13821,
+      "ever_drawn_win_rate": 0.57846755,
+      "drawn_improvement_win_rate": 0.030447680000000088
+    },
+    {
+      "name": "Stingerquill Annex",
+      "mtga_id": 106435,
+      "color": "",
+      "rarity": "common",
+      "types": [
+        "Land"
+      ],
+      "ever_drawn_game_count": 32391,
+      "ever_drawn_win_rate": 0.53999568,
+      "drawn_improvement_win_rate": -0.009750160000000063
+    },
+    {
+      "name": "Theorist's Sanctum",
+      "mtga_id": 106436,
+      "color": "",
+      "rarity": "rare",
+      "types": [
+        "Land - Island"
+      ],
+      "ever_drawn_game_count": 18686,
+      "ever_drawn_win_rate": 0.57604624,
+      "drawn_improvement_win_rate": 0.04075309000000005
+    },
+    {
+      "name": "Theorix Annex",
+      "mtga_id": 106437,
+      "color": "",
+      "rarity": "common",
+      "types": [
+        "Land"
+      ],
+      "ever_drawn_game_count": 52691,
+      "ever_drawn_win_rate": 0.56466949,
+      "drawn_improvement_win_rate": 0.015882249999999987
+    },
+    {
+      "name": "Transformative Commons",
+      "mtga_id": 106438,
+      "color": "",
+      "rarity": "common",
+      "types": [
+        "Land"
+      ],
+      "ever_drawn_game_count": 39938,
+      "ever_drawn_win_rate": 0.55981772,
+      "drawn_improvement_win_rate": 0.019946130000000006
+    },
+    {
+      "name": "Vigorbloom Annex",
+      "mtga_id": 106439,
+      "color": "",
+      "rarity": "common",
+      "types": [
+        "Land"
+      ],
+      "ever_drawn_game_count": 28541,
+      "ever_drawn_win_rate": 0.53134088,
+      "drawn_improvement_win_rate": -0.006372770000000028
+    },
+    {
+      "name": "Ajani Resolute",
+      "mtga_id": 106440,
+      "color": "W",
+      "rarity": "mythic",
+      "types": [
+        "Legendary Planeswalker - Ajani"
+      ],
+      "ever_drawn_game_count": 3820,
+      "ever_drawn_win_rate": 0.52984293,
+      "drawn_improvement_win_rate": -0.0008695999999999149
+    },
+    {
+      "name": "Danitha, Sword of Hope",
+      "mtga_id": 106441,
+      "color": "W",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Creature - Human Knight"
+      ],
+      "ever_drawn_game_count": 11277,
+      "ever_drawn_win_rate": 0.51866631,
+      "drawn_improvement_win_rate": -0.010578010000000027
+    },
+    {
+      "name": "Ghalta the Immovable",
+      "mtga_id": 106442,
+      "color": "W",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Creature - Elder Dinosaur"
+      ],
+      "ever_drawn_game_count": 6997,
+      "ever_drawn_win_rate": 0.52165214,
+      "drawn_improvement_win_rate": 0.026069420000000065
+    },
+    {
+      "name": "Gideon's Memorial",
+      "mtga_id": 106443,
+      "color": "W",
+      "rarity": "rare",
+      "types": [
+        "Legendary Artifact"
+      ],
+      "ever_drawn_game_count": 7058,
+      "ever_drawn_win_rate": 0.50708416,
+      "drawn_improvement_win_rate": -0.020387049999999962
+    },
+    {
+      "name": "Koth of the Homestead",
+      "mtga_id": 106444,
+      "color": "W",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Creature - Human Citizen"
+      ],
+      "ever_drawn_game_count": 23086,
+      "ever_drawn_win_rate": 0.54115048,
+      "drawn_improvement_win_rate": 0.014371009999999962
+    },
+    {
+      "name": "Liliana the Faultless",
+      "mtga_id": 106445,
+      "color": "W",
+      "rarity": "rare",
+      "types": [
+        "Legendary Creature - Human Cleric"
+      ],
+      "ever_drawn_game_count": 10039,
+      "ever_drawn_win_rate": 0.57904174,
+      "drawn_improvement_win_rate": 0.04755098999999996
+    },
+    {
+      "name": "Lyra, Archangel of Dawn",
+      "mtga_id": 106446,
+      "color": "W",
+      "rarity": "rare",
+      "types": [
+        "Legendary Creature - Angel Knight"
+      ],
+      "ever_drawn_game_count": 11982,
+      "ever_drawn_win_rate": 0.58696378,
+      "drawn_improvement_win_rate": 0.05013926000000002
+    },
+    {
+      "name": "Rescue Girl, First Responder",
+      "mtga_id": 106447,
+      "color": "W",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Creature - Human Cleric"
+      ],
+      "ever_drawn_game_count": 26206,
+      "ever_drawn_win_rate": 0.52495612,
+      "drawn_improvement_win_rate": -0.0017940899999999704
+    },
+    {
+      "name": "Saheeli, Consul of Oversight",
+      "mtga_id": 106448,
+      "color": "W",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Creature - Human Advisor"
+      ],
+      "ever_drawn_game_count": 26592,
+      "ever_drawn_win_rate": 0.55336191,
+      "drawn_improvement_win_rate": 0.015959649999999992
+    },
+    {
+      "name": "Teyo, Lightshield Expert",
+      "mtga_id": 106449,
+      "color": "W",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Creature - Human Cleric"
+      ],
+      "ever_drawn_game_count": 28196,
+      "ever_drawn_win_rate": 0.5645127,
+      "drawn_improvement_win_rate": 0.027953180000000022
+    },
+    {
+      "name": "Thalia, the Survivor",
+      "mtga_id": 106450,
+      "color": "W",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Creature - Human Soldier"
+      ],
+      "ever_drawn_game_count": 20899,
+      "ever_drawn_win_rate": 0.54629408,
+      "drawn_improvement_win_rate": 0.024847010000000003
+    },
+    {
+      "name": "Tomik, Orzhov Lawmage",
+      "mtga_id": 106451,
+      "color": "W",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Creature - Human Advisor"
+      ],
+      "ever_drawn_game_count": 25236,
+      "ever_drawn_win_rate": 0.54002219,
+      "drawn_improvement_win_rate": -0.004206370000000015
+    },
+    {
+      "name": "Way of the Healer",
+      "mtga_id": 106452,
+      "color": "W",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Enchantment"
+      ],
+      "ever_drawn_game_count": 39552,
+      "ever_drawn_win_rate": 0.57309365,
+      "drawn_improvement_win_rate": 0.03963727000000006
+    },
+    {
+      "name": "Way of the Mentor",
+      "mtga_id": 106453,
+      "color": "W",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Enchantment"
+      ],
+      "ever_drawn_game_count": 10508,
+      "ever_drawn_win_rate": 0.50352113,
+      "drawn_improvement_win_rate": -0.007486619999999999
+    },
+    {
+      "name": "Yoshimaru, Beloved Companion",
+      "mtga_id": 106454,
+      "color": "W",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Creature - Dog"
+      ],
+      "ever_drawn_game_count": 15151,
+      "ever_drawn_win_rate": 0.49600686,
+      "drawn_improvement_win_rate": -0.034738290000000005
+    },
+    {
+      "name": "Yuriko, Blade of the Mighty",
+      "mtga_id": 106455,
+      "color": "W",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Creature - Human Samurai"
+      ],
+      "ever_drawn_game_count": 12736,
+      "ever_drawn_win_rate": 0.52967965,
+      "drawn_improvement_win_rate": 0.01776409999999995
+    },
+    {
+      "name": "Arni, Humble Scribe",
+      "mtga_id": 106456,
+      "color": "U",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Creature - Human Wizard"
+      ],
+      "ever_drawn_game_count": 31112,
+      "ever_drawn_win_rate": 0.54390589,
+      "drawn_improvement_win_rate": 0.013567430000000047
+    },
+    {
+      "name": "Chandra, Chill of Compliance",
+      "mtga_id": 106457,
+      "color": "U",
+      "rarity": "mythic",
+      "types": [
+        "Legendary Planeswalker - Chandra"
+      ],
+      "ever_drawn_game_count": 8693,
+      "ever_drawn_win_rate": 0.59012999,
+      "drawn_improvement_win_rate": 0.058766980000000024
+    },
+    {
+      "name": "Fblthp, Impossibly Lost",
+      "mtga_id": 106458,
+      "color": "U",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Creature - Homunculus"
+      ],
+      "ever_drawn_game_count": 60100,
+      "ever_drawn_win_rate": 0.59703827,
+      "drawn_improvement_win_rate": 0.06952747000000004
+    },
+    {
+      "name": "Geist of Saint Thalia",
+      "mtga_id": 106459,
+      "color": "U",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Creature - Spirit Cleric"
+      ],
+      "ever_drawn_game_count": 38498,
+      "ever_drawn_win_rate": 0.56943218,
+      "drawn_improvement_win_rate": 0.035818949999999905
+    },
+    {
+      "name": "Hapatra, the Desert Frost",
+      "mtga_id": 106460,
+      "color": "U",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Creature - Human Wizard"
+      ],
+      "ever_drawn_game_count": 19407,
+      "ever_drawn_win_rate": 0.53207606,
+      "drawn_improvement_win_rate": 0.014239409999999952
+    },
+    {
+      "name": "Jace, Reality Sculptor",
+      "mtga_id": 106461,
+      "color": "U",
+      "rarity": "rare",
+      "types": [
+        "Legendary Planeswalker - Jace"
+      ],
+      "ever_drawn_game_count": 15503,
+      "ever_drawn_win_rate": 0.57969425,
+      "drawn_improvement_win_rate": 0.058388029999999924
+    },
+    {
+      "name": "Lyra, Tolarian Archangel",
+      "mtga_id": 106462,
+      "color": "U",
+      "rarity": "rare",
+      "types": [
+        "Legendary Creature - Angel Wizard"
+      ],
+      "ever_drawn_game_count": 20189,
+      "ever_drawn_win_rate": 0.60859874,
+      "drawn_improvement_win_rate": 0.08431841000000007
+    },
+    {
+      "name": "Proft, Consulting Detective",
+      "mtga_id": 106463,
+      "color": "U",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Creature - Human Detective"
+      ],
+      "ever_drawn_game_count": 48539,
+      "ever_drawn_win_rate": 0.57384783,
+      "drawn_improvement_win_rate": 0.0344681
+    },
+    {
+      "name": "Ruric Thar, Biomagus",
+      "mtga_id": 106464,
+      "color": "U",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Creature - Ogre Crab Wizard"
+      ],
+      "ever_drawn_game_count": 34960,
+      "ever_drawn_win_rate": 0.55737986,
+      "drawn_improvement_win_rate": 0.04269762999999993
+    },
+    {
+      "name": "Samut, Tyrant of Naktamun",
+      "mtga_id": 106465,
+      "color": "U",
+      "rarity": "rare",
+      "types": [
+        "Legendary Creature - Human Wizard"
+      ],
+      "ever_drawn_game_count": 2683,
+      "ever_drawn_win_rate": 0.48005963,
+      "drawn_improvement_win_rate": -0.03764092000000002
+    },
+    {
+      "name": "Tetsuko Umezawa, Fugitive",
+      "mtga_id": 106466,
+      "color": "U",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Creature - Human Rogue"
+      ],
+      "ever_drawn_game_count": 26835,
+      "ever_drawn_win_rate": 0.54622694,
+      "drawn_improvement_win_rate": 0.017030240000000085
+    },
+    {
+      "name": "Traxos, Academy Guardian",
+      "mtga_id": 106467,
+      "color": "U",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Artifact Creature - Dragon Construct"
+      ],
+      "ever_drawn_game_count": 35005,
+      "ever_drawn_win_rate": 0.5566919,
+      "drawn_improvement_win_rate": 0.02659897
+    },
+    {
+      "name": "Way of the Cryomancer",
+      "mtga_id": 106468,
+      "color": "U",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Enchantment"
+      ],
+      "ever_drawn_game_count": 19906,
+      "ever_drawn_win_rate": 0.5296393,
+      "drawn_improvement_win_rate": 0.005074800000000046
+    },
+    {
+      "name": "Way of the Mind Sculptor",
+      "mtga_id": 106469,
+      "color": "U",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Enchantment"
+      ],
+      "ever_drawn_game_count": 49625,
+      "ever_drawn_win_rate": 0.57865995,
+      "drawn_improvement_win_rate": 0.050747630000000044
+    },
+    {
+      "name": "Yargle, Goliath of Otaria",
+      "mtga_id": 106470,
+      "color": "U",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Creature - Frog Spirit"
+      ],
+      "ever_drawn_game_count": 1478,
+      "ever_drawn_win_rate": 0.46955345,
+      "drawn_improvement_win_rate": -0.01594093000000002
+    },
+    {
+      "name": "Yuriko, Hope from the Shadows",
+      "mtga_id": 106471,
+      "color": "U",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Creature - Human Ninja"
+      ],
+      "ever_drawn_game_count": 17053,
+      "ever_drawn_win_rate": 0.53521375,
+      "drawn_improvement_win_rate": 0.019585400000000086
+    },
+    {
+      "name": "Danitha, Spear of Agony",
+      "mtga_id": 106472,
+      "color": "B",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Creature - Human Knight"
+      ],
+      "ever_drawn_game_count": 16448,
+      "ever_drawn_win_rate": 0.50656615,
+      "drawn_improvement_win_rate": -0.0021778099999999467
+    },
+    {
+      "name": "Gallia, Tragic Host",
+      "mtga_id": 106473,
+      "color": "B",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Creature - Zombie Satyr"
+      ],
+      "ever_drawn_game_count": 33188,
+      "ever_drawn_win_rate": 0.55215741,
+      "drawn_improvement_win_rate": 0.0050727600000000095
+    },
+    {
+      "name": "Garruk, Veiled Butcher",
+      "mtga_id": 106474,
+      "color": "B",
+      "rarity": "mythic",
+      "types": [
+        "Legendary Planeswalker - Garruk"
+      ],
+      "ever_drawn_game_count": 8940,
+      "ever_drawn_win_rate": 0.65850112,
+      "drawn_improvement_win_rate": 0.13002683000000004
+    },
+    {
+      "name": "Gideon the Oathless",
+      "mtga_id": 106475,
+      "color": "B",
+      "rarity": "rare",
+      "types": [
+        "Legendary Creature - Human Mercenary"
+      ],
+      "ever_drawn_game_count": 15399,
+      "ever_drawn_win_rate": 0.59231119,
+      "drawn_improvement_win_rate": 0.06384175000000003
+    },
+    {
+      "name": "Liliana the Repentant",
+      "mtga_id": 106476,
+      "color": "B",
+      "rarity": "rare",
+      "types": [
+        "Legendary Creature - Human Warlock"
+      ],
+      "ever_drawn_game_count": 14753,
+      "ever_drawn_win_rate": 0.56151291,
+      "drawn_improvement_win_rate": 0.014860949999999984
+    },
+    {
+      "name": "Loot, the Anomaly",
+      "mtga_id": 106477,
+      "color": "B",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Creature - Beast Horror"
+      ],
+      "ever_drawn_game_count": 3586,
+      "ever_drawn_win_rate": 0.47936419,
+      "drawn_improvement_win_rate": -0.02957890000000002
+    },
+    {
+      "name": "Mabel, Bitter Recluse",
+      "mtga_id": 106478,
+      "color": "B",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Creature - Mouse Warlock"
+      ],
+      "ever_drawn_game_count": 23252,
+      "ever_drawn_win_rate": 0.53737313,
+      "drawn_improvement_win_rate": -0.0005788700000000091
+    },
+    {
+      "name": "Massacre Girl, Most Wanted",
+      "mtga_id": 106479,
+      "color": "B",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Creature - Human Assassin"
+      ],
+      "ever_drawn_game_count": 15939,
+      "ever_drawn_win_rate": 0.49971767,
+      "drawn_improvement_win_rate": -0.0038353199999999754
+    },
+    {
+      "name": "Proft, Sinister Mastermind",
+      "mtga_id": 106480,
+      "color": "B",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Creature - Human Rogue"
+      ],
+      "ever_drawn_game_count": 28213,
+      "ever_drawn_win_rate": 0.54503243,
+      "drawn_improvement_win_rate": 0.017458790000000057
+    },
+    {
+      "name": "Teyo, Diamondblade Mage",
+      "mtga_id": 106481,
+      "color": "B",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Creature - Human Warlock"
+      ],
+      "ever_drawn_game_count": 11803,
+      "ever_drawn_win_rate": 0.50817589,
+      "drawn_improvement_win_rate": -0.00258266000000007
+    },
+    {
+      "name": "Tinybones, Pocket Nuisance",
+      "mtga_id": 106482,
+      "color": "B",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Creature - Skeleton Rogue"
+      ],
+      "ever_drawn_game_count": 25778,
+      "ever_drawn_win_rate": 0.55368919,
+      "drawn_improvement_win_rate": 0.031762670000000104
+    },
+    {
+      "name": "Way of the Deathbringer",
+      "mtga_id": 106483,
+      "color": "B",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Enchantment"
+      ],
+      "ever_drawn_game_count": 11960,
+      "ever_drawn_win_rate": 0.51454849,
+      "drawn_improvement_win_rate": 0.004699290000000023
+    },
+    {
+      "name": "Way of the Necromancer",
+      "mtga_id": 106484,
+      "color": "B",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Enchantment"
+      ],
+      "ever_drawn_game_count": 2946,
+      "ever_drawn_win_rate": 0.43720299,
+      "drawn_improvement_win_rate": -0.04180120999999998
+    },
+    {
+      "name": "Winter, Tormented Loner",
+      "mtga_id": 106485,
+      "color": "B",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Creature - Human Warlock"
+      ],
+      "ever_drawn_game_count": 23334,
+      "ever_drawn_win_rate": 0.53741322,
+      "drawn_improvement_win_rate": 0.007756300000000049
+    },
+    {
+      "name": "Yargle, Glutton of Urborg",
+      "mtga_id": 106486,
+      "color": "B",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Creature - Frog Spirit"
+      ],
+      "ever_drawn_game_count": 632,
+      "ever_drawn_win_rate": 0.4556962,
+      "drawn_improvement_win_rate": -0.00054651
+    },
+    {
+      "name": "Ajani Unrelenting",
+      "mtga_id": 106487,
+      "color": "R",
+      "rarity": "mythic",
+      "types": [
+        "Legendary Planeswalker - Ajani"
+      ],
+      "ever_drawn_game_count": 9818,
+      "ever_drawn_win_rate": 0.7316154,
+      "drawn_improvement_win_rate": 0.20255768000000007
+    },
+    {
+      "name": "Arni, Renowned Champion",
+      "mtga_id": 106488,
+      "color": "R",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Creature - Human Berserker"
+      ],
+      "ever_drawn_game_count": 4407,
+      "ever_drawn_win_rate": 0.46244611,
+      "drawn_improvement_win_rate": -0.03400778999999998
+    },
+    {
+      "name": "Chandra, Torch of Defiance",
+      "mtga_id": 106489,
+      "color": "R",
+      "rarity": "mythic",
+      "types": [
+        "Legendary Planeswalker - Chandra"
+      ],
+      "ever_drawn_game_count": 7281,
+      "ever_drawn_win_rate": 0.60142838,
+      "drawn_improvement_win_rate": 0.07339788999999997
+    },
+    {
+      "name": "Gallia, the Merrymaker",
+      "mtga_id": 106490,
+      "color": "R",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Creature - Satyr"
+      ],
+      "ever_drawn_game_count": 15260,
+      "ever_drawn_win_rate": 0.50635649,
+      "drawn_improvement_win_rate": -0.02902585999999996
+    },
+    {
+      "name": "Jiang Yanggu, Alone",
+      "mtga_id": 106491,
+      "color": "R",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Creature - Human Berserker"
+      ],
+      "ever_drawn_game_count": 14249,
+      "ever_drawn_win_rate": 0.52979156,
+      "drawn_improvement_win_rate": 0.0105263000000001
+    },
+    {
+      "name": "Kiora of Fire and Ashes",
+      "mtga_id": 106492,
+      "color": "R",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Creature - Merfolk Noble"
+      ],
+      "ever_drawn_game_count": 47023,
+      "ever_drawn_win_rate": 0.61201965,
+      "drawn_improvement_win_rate": 0.08123161000000001
+    },
+    {
+      "name": "Koth, the Geomancer",
+      "mtga_id": 106493,
+      "color": "R",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Creature - Human Warrior"
+      ],
+      "ever_drawn_game_count": 18619,
+      "ever_drawn_win_rate": 0.51673022,
+      "drawn_improvement_win_rate": -0.014302069999999945
+    },
+    {
+      "name": "Marwyn, the Clearcutter",
+      "mtga_id": 106494,
+      "color": "R",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Creature - Elf Warrior"
+      ],
+      "ever_drawn_game_count": 21783,
+      "ever_drawn_win_rate": 0.55217371,
+      "drawn_improvement_win_rate": 0.01142633000000004
+    },
+    {
+      "name": "Pia, Determined Rebuilder",
+      "mtga_id": 106495,
+      "color": "R",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Creature - Human Artificer"
+      ],
+      "ever_drawn_game_count": 33603,
+      "ever_drawn_win_rate": 0.56274737,
+      "drawn_improvement_win_rate": 0.02697602999999993
+    },
+    {
+      "name": "Samut, Hazoret's Champion",
+      "mtga_id": 106496,
+      "color": "R",
+      "rarity": "rare",
+      "types": [
+        "Legendary Creature - Human Warrior Cleric"
+      ],
+      "ever_drawn_game_count": 9709,
+      "ever_drawn_win_rate": 0.5629828,
+      "drawn_improvement_win_rate": 0.03290227000000001
+    },
+    {
+      "name": "Tetsuko Umezawa, Pursuer",
+      "mtga_id": 106497,
+      "color": "R",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Creature - Human Mercenary"
+      ],
+      "ever_drawn_game_count": 15961,
+      "ever_drawn_win_rate": 0.52221039,
+      "drawn_improvement_win_rate": 0.0055964700000000756
+    },
+    {
+      "name": "Tomik, Izzet Sparkmage",
+      "mtga_id": 106498,
+      "color": "R",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Creature - Human Wizard"
+      ],
+      "ever_drawn_game_count": 19028,
+      "ever_drawn_win_rate": 0.5134013,
+      "drawn_improvement_win_rate": -0.01175870000000001
+    },
+    {
+      "name": "Way of the Pyromancer",
+      "mtga_id": 106499,
+      "color": "R",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Enchantment"
+      ],
+      "ever_drawn_game_count": 22597,
+      "ever_drawn_win_rate": 0.516573,
+      "drawn_improvement_win_rate": -0.0047449700000000705
+    },
+    {
+      "name": "Way of the Warlord",
+      "mtga_id": 106500,
+      "color": "R",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Enchantment"
+      ],
+      "ever_drawn_game_count": 22663,
+      "ever_drawn_win_rate": 0.53417465,
+      "drawn_improvement_win_rate": 0.005639689999999975
+    },
+    {
+      "name": "Winter, Team Player",
+      "mtga_id": 106501,
+      "color": "R",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Creature - Human Warrior"
+      ],
+      "ever_drawn_game_count": 6829,
+      "ever_drawn_win_rate": 0.48001171,
+      "drawn_improvement_win_rate": -0.03842502999999997
+    },
+    {
+      "name": "Edgar, Moonlit Sovereign",
+      "mtga_id": 106502,
+      "color": "G",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Creature - Werewolf Noble"
+      ],
+      "ever_drawn_game_count": 15164,
+      "ever_drawn_win_rate": 0.49802163,
+      "drawn_improvement_win_rate": -0.020442639999999956
+    },
+    {
+      "name": "Fblthp, Knows the Way",
+      "mtga_id": 106503,
+      "color": "G",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Creature - Homunculus Scout"
+      ],
+      "ever_drawn_game_count": 41055,
+      "ever_drawn_win_rate": 0.57644623,
+      "drawn_improvement_win_rate": 0.044059179999999976
+    },
+    {
+      "name": "Garruk, Curse Breaker",
+      "mtga_id": 106504,
+      "color": "G",
+      "rarity": "mythic",
+      "types": [
+        "Legendary Planeswalker - Garruk"
+      ],
+      "ever_drawn_game_count": 8211,
+      "ever_drawn_win_rate": 0.6553404,
+      "drawn_improvement_win_rate": 0.12858233000000008
+    },
+    {
+      "name": "Ghalta the Unstoppable",
+      "mtga_id": 106505,
+      "color": "G",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Creature - Elder Dinosaur"
+      ],
+      "ever_drawn_game_count": 21086,
+      "ever_drawn_win_rate": 0.53291283,
+      "drawn_improvement_win_rate": 0.019525479999999984
+    },
+    {
+      "name": "Jiang Yanggu, Never Alone",
+      "mtga_id": 106506,
+      "color": "G",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Creature - Human Druid"
+      ],
+      "ever_drawn_game_count": 31303,
+      "ever_drawn_win_rate": 0.55425998,
+      "drawn_improvement_win_rate": 0.02646181000000003
+    },
+    {
+      "name": "Loot, the Nexus",
+      "mtga_id": 106507,
+      "color": "G",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Creature - Beast Noble"
+      ],
+      "ever_drawn_game_count": 22781,
+      "ever_drawn_win_rate": 0.52469163,
+      "drawn_improvement_win_rate": -0.0005441999999999947
+    },
+    {
+      "name": "Marwyn, the Preserver",
+      "mtga_id": 106508,
+      "color": "G",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Creature - Elf Druid"
+      ],
+      "ever_drawn_game_count": 27447,
+      "ever_drawn_win_rate": 0.54191715,
+      "drawn_improvement_win_rate": 0.0008897999999999406
+    },
+    {
+      "name": "Pia, Aether Ascetic",
+      "mtga_id": 106509,
+      "color": "G",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Creature - Human Druid"
+      ],
+      "ever_drawn_game_count": 7367,
+      "ever_drawn_win_rate": 0.4981675,
+      "drawn_improvement_win_rate": -0.007582270000000002
+    },
+    {
+      "name": "Ruric Thar, Magecrusher",
+      "mtga_id": 106510,
+      "color": "G",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Creature - Ogre Warrior"
+      ],
+      "ever_drawn_game_count": 26183,
+      "ever_drawn_win_rate": 0.54378795,
+      "drawn_improvement_win_rate": 0.02231424999999998
+    },
+    {
+      "name": "Titanbones, Towering Heart",
+      "mtga_id": 106511,
+      "color": "G",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Creature - Skeleton Druid"
+      ],
+      "ever_drawn_game_count": 16942,
+      "ever_drawn_win_rate": 0.51936017,
+      "drawn_improvement_win_rate": 2.9970000000045793e-05
+    },
+    {
+      "name": "Way of the Paradox",
+      "mtga_id": 106512,
+      "color": "G",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Enchantment"
+      ],
+      "ever_drawn_game_count": 26150,
+      "ever_drawn_win_rate": 0.56493308,
+      "drawn_improvement_win_rate": 0.04089655999999997
+    },
+    {
+      "name": "Way of the Wildspeaker",
+      "mtga_id": 106513,
+      "color": "G",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Enchantment"
+      ],
+      "ever_drawn_game_count": 31833,
+      "ever_drawn_win_rate": 0.54638268,
+      "drawn_improvement_win_rate": 0.02549935999999997
+    },
+    {
+      "name": "Yoshimaru, Scrappy Stray",
+      "mtga_id": 106514,
+      "color": "G",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Creature - Dog"
+      ],
+      "ever_drawn_game_count": 27568,
+      "ever_drawn_win_rate": 0.53979251,
+      "drawn_improvement_win_rate": 0.01454825999999998
+    },
+    {
+      "name": "Edgar, Ancient Bloodlord",
+      "mtga_id": 106515,
+      "color": "WB",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Creature - Vampire Noble"
+      ],
+      "ever_drawn_game_count": 9923,
+      "ever_drawn_win_rate": 0.52877154,
+      "drawn_improvement_win_rate": 0.00502996
+    },
+    {
+      "name": "Hapatra, the Desert Fang",
+      "mtga_id": 106516,
+      "color": "BG",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Creature - Human Cleric"
+      ],
+      "ever_drawn_game_count": 44494,
+      "ever_drawn_win_rate": 0.59194498,
+      "drawn_improvement_win_rate": 0.053986659999999964
+    },
+    {
+      "name": "Karn, Gilded Guardian",
+      "mtga_id": 106517,
+      "color": "WUBRG",
+      "rarity": "rare",
+      "types": [
+        "Legendary Artifact Creature - Golem"
+      ],
+      "ever_drawn_game_count": 1238,
+      "ever_drawn_win_rate": 0.52746365,
+      "drawn_improvement_win_rate": 0.022222560000000002
+    },
+    {
+      "name": "Kiora of Salt and Sand",
+      "mtga_id": 106518,
+      "color": "UG",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Creature - Merfolk Noble"
+      ],
+      "ever_drawn_game_count": 13756,
+      "ever_drawn_win_rate": 0.53692934,
+      "drawn_improvement_win_rate": 0.02862784000000007
+    },
+    {
+      "name": "Mabel, Valley Hero",
+      "mtga_id": 106519,
+      "color": "WR",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Creature - Mouse Soldier"
+      ],
+      "ever_drawn_game_count": 12533,
+      "ever_drawn_win_rate": 0.50817841,
+      "drawn_improvement_win_rate": -0.003984870000000029
+    },
+    {
+      "name": "Saheeli, Jewel of Avishkar",
+      "mtga_id": 106520,
+      "color": "UR",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Creature - Human Artificer"
+      ],
+      "ever_drawn_game_count": 36052,
+      "ever_drawn_win_rate": 0.56826251,
+      "drawn_improvement_win_rate": 0.042088500000000084
+    },
+    {
+      "name": "Tam, the Possibility",
+      "mtga_id": 106521,
+      "color": "UG",
+      "rarity": "rare",
+      "types": [
+        "Legendary Creature - Gorgon Wizard"
+      ],
+      "ever_drawn_game_count": 178,
+      "ever_drawn_win_rate": null,
+      "drawn_improvement_win_rate": null
+    },
+    {
+      "name": "Vraska, Soul of Stone",
+      "mtga_id": 106522,
+      "color": "WUR",
+      "rarity": "rare",
+      "types": [
+        "Legendary Creature - Gorgon Wizard"
+      ],
+      "ever_drawn_game_count": 5386,
+      "ever_drawn_win_rate": 0.53434831,
+      "drawn_improvement_win_rate": 0.04384713000000007
+    },
+    {
+      "name": "Vraska, the Cutting Glare",
+      "mtga_id": 106523,
+      "color": "BG",
+      "rarity": "rare",
+      "types": [
+        "Legendary Creature - Gorgon Assassin"
+      ],
+      "ever_drawn_game_count": 16848,
+      "ever_drawn_win_rate": 0.625,
+      "drawn_improvement_win_rate": 0.08807838999999995
+    },
+    {
+      "name": "Karn, Argent Defender",
+      "mtga_id": 106524,
+      "color": "",
+      "rarity": "rare",
+      "types": [
+        "Legendary Artifact Creature - Golem"
+      ],
+      "ever_drawn_game_count": 1044,
+      "ever_drawn_win_rate": 0.49425287,
+      "drawn_improvement_win_rate": -0.008988619999999947
+    },
+    {
+      "name": "Traxos, Scourge Eternal",
+      "mtga_id": 106525,
+      "color": "",
+      "rarity": "uncommon",
+      "types": [
+        "Legendary Artifact Creature - Dragon Construct"
+      ],
+      "ever_drawn_game_count": 11331,
+      "ever_drawn_win_rate": 0.51707705,
+      "drawn_improvement_win_rate": -0.016510570000000002
+    },
+    {
+      "name": "Eye of Ugin",
+      "mtga_id": 106566,
+      "color": "",
+      "rarity": "mythic",
+      "types": [
+        "Legendary Land"
+      ],
+      "ever_drawn_game_count": 7,
+      "ever_drawn_win_rate": null,
+      "drawn_improvement_win_rate": null
+    },
+    {
+      "name": "Austere Command",
+      "mtga_id": 106567,
+      "color": "W",
+      "rarity": "rare",
+      "types": [
+        "Sorcery"
+      ],
+      "ever_drawn_game_count": 1478,
+      "ever_drawn_win_rate": 0.61569689,
+      "drawn_improvement_win_rate": 0.08143293000000007
+    },
+    {
+      "name": "Flesh Duplicate",
+      "mtga_id": 106568,
+      "color": "U",
+      "rarity": "rare",
+      "types": [
+        "Creature - Shapeshifter Rebel"
+      ],
+      "ever_drawn_game_count": 988,
+      "ever_drawn_win_rate": 0.56174089,
+      "drawn_improvement_win_rate": 0.048787520000000084
+    },
+    {
+      "name": "Consign to Memory",
+      "mtga_id": 106569,
+      "color": "U",
+      "rarity": "uncommon",
+      "types": [
+        "Instant"
+      ],
+      "ever_drawn_game_count": 32,
+      "ever_drawn_win_rate": null,
+      "drawn_improvement_win_rate": null
+    },
+    {
+      "name": "Sublime Epiphany",
+      "mtga_id": 106570,
+      "color": "U",
+      "rarity": "rare",
+      "types": [
+        "Instant"
+      ],
+      "ever_drawn_game_count": 2276,
+      "ever_drawn_win_rate": 0.66959578,
+      "drawn_improvement_win_rate": 0.14021167
+    },
+    {
+      "name": "Consider",
+      "mtga_id": 106571,
+      "color": "U",
+      "rarity": "common",
+      "types": [
+        "Instant"
+      ],
+      "ever_drawn_game_count": 1382,
+      "ever_drawn_win_rate": 0.5658466,
+      "drawn_improvement_win_rate": 0.007951860000000033
+    },
+    {
+      "name": "Necrodominance",
+      "mtga_id": 106572,
+      "color": "B",
+      "rarity": "mythic",
+      "types": [
+        "Legendary Enchantment"
+      ],
+      "ever_drawn_game_count": 121,
+      "ever_drawn_win_rate": null,
+      "drawn_improvement_win_rate": null
+    },
+    {
+      "name": "Mind Twist",
+      "mtga_id": 106573,
+      "color": "B",
+      "rarity": "rare",
+      "types": [
+        "Sorcery"
+      ],
+      "ever_drawn_game_count": 1842,
+      "ever_drawn_win_rate": 0.6465798,
+      "drawn_improvement_win_rate": 0.12802310000000006
+    },
+    {
+      "name": "Splinter Twin",
+      "mtga_id": 106574,
+      "color": "R",
+      "rarity": "rare",
+      "types": [
+        "Enchantment - Aura"
+      ],
+      "ever_drawn_game_count": 1331,
+      "ever_drawn_win_rate": 0.63110443,
+      "drawn_improvement_win_rate": 0.11173684000000006
+    },
+    {
+      "name": "Root Maze",
+      "mtga_id": 106575,
+      "color": "G",
+      "rarity": "mythic",
+      "types": [
+        "Enchantment"
+      ],
+      "ever_drawn_game_count": 10,
+      "ever_drawn_win_rate": null,
+      "drawn_improvement_win_rate": null
+    }
+  ],
+  "metadata": [
+    {
+      "name": "Generous Revival",
+      "cmc": 3,
+      "creature": false,
+      "land": false,
+      "removal": false,
+      "fixing": false,
+      "finisher": false,
+      "evasion": false,
+      "draw": false,
+      "coloredPips": "W",
+      "manaCost": "{2}{W}",
+      "impactKnown": true,
+      "manaAccessKnown": true
+    },
+    {
+      "name": "Infinite Coursework",
+      "cmc": 3,
+      "creature": false,
+      "land": false,
+      "removal": true,
+      "fixing": false,
+      "finisher": false,
+      "evasion": false,
+      "draw": false,
+      "coloredPips": "U",
+      "manaCost": "{2}{U}",
+      "impactKnown": true,
+      "manaAccessKnown": true
+    },
+    {
+      "name": "Plan for All Outcomes",
+      "cmc": 4,
+      "creature": false,
+      "land": false,
+      "removal": true,
+      "fixing": false,
+      "finisher": false,
+      "evasion": false,
+      "draw": true,
+      "coloredPips": "U",
+      "manaCost": "{3}{U}",
+      "repeatableAdvantage": true,
+      "impactKnown": true,
+      "manaAccessKnown": true
+    },
+    {
+      "name": "Protege's Awakening",
+      "cmc": 4,
+      "creature": false,
+      "land": false,
+      "removal": false,
+      "fixing": false,
+      "finisher": false,
+      "evasion": false,
+      "draw": true,
+      "coloredPips": "U",
+      "manaCost": "{3}{U}",
+      "impactKnown": true,
+      "selectionCardsSeen": 1,
+      "manaAccessKnown": true
+    },
+    {
+      "name": "Unsummon",
+      "cmc": 1,
+      "creature": false,
+      "land": false,
+      "removal": true,
+      "fixing": false,
+      "finisher": false,
+      "evasion": false,
+      "draw": false,
+      "coloredPips": "U",
+      "manaCost": "{U}",
+      "impactKnown": true,
+      "manaAccessKnown": true
+    },
+    {
+      "name": "Cast Away Doubt",
+      "cmc": 3,
+      "creature": false,
+      "land": false,
+      "removal": false,
+      "fixing": false,
+      "finisher": false,
+      "evasion": false,
+      "draw": true,
+      "coloredPips": "B",
+      "manaCost": "{2}{B}",
+      "impactKnown": true,
+      "selectionCardsSeen": 2,
+      "manaAccessKnown": true
+    },
+    {
+      "name": "Extrapolate the Impossible",
+      "cmc": 2,
+      "creature": false,
+      "land": false,
+      "removal": false,
+      "fixing": false,
+      "finisher": false,
+      "evasion": false,
+      "draw": false,
+      "coloredPips": "B",
+      "manaCost": "{1}{B}",
+      "impactKnown": true,
+      "manaAccessKnown": true
+    },
+    {
+      "name": "Rampart Hunter",
+      "cmc": 4,
+      "creature": true,
+      "land": false,
+      "removal": false,
+      "fixing": false,
+      "finisher": false,
+      "evasion": false,
+      "draw": false,
+      "coloredPips": "B",
+      "manaCost": "{3}{B}",
+      "impactKnown": true,
+      "manaAccessKnown": true
+    },
+    {
+      "name": "Curse-Marred Demon",
+      "cmc": 4,
+      "creature": true,
+      "land": false,
+      "removal": false,
+      "fixing": false,
+      "finisher": true,
+      "evasion": true,
+      "draw": false,
+      "heavyPips": "R",
+      "coloredPips": "RR",
+      "manaCost": "{2}{R}{R}",
+      "impactKnown": true,
+      "manaAccessKnown": true
+    },
+    {
+      "name": "No Admittance",
+      "cmc": 2,
+      "creature": false,
+      "land": false,
+      "removal": true,
+      "fixing": false,
+      "finisher": false,
+      "evasion": false,
+      "draw": true,
+      "coloredPips": "R",
+      "manaCost": "{1}{R}",
+      "impactKnown": true,
+      "manaAccessKnown": true
+    },
+    {
+      "name": "Skilled Battlecarver",
+      "cmc": 2,
+      "creature": true,
+      "land": false,
+      "removal": false,
+      "fixing": false,
+      "finisher": false,
+      "evasion": false,
+      "draw": false,
+      "coloredPips": "R",
+      "manaCost": "{1}{R}",
+      "impactKnown": true,
+      "manaAccessKnown": true
+    },
+    {
+      "name": "Bestial Incursion",
+      "cmc": 4,
+      "creature": false,
+      "land": false,
+      "removal": false,
+      "fixing": false,
+      "finisher": false,
+      "evasion": false,
+      "draw": false,
+      "coloredPips": "G",
+      "manaCost": "{3}{G}",
+      "impactKnown": true,
+      "manaAccessKnown": true
+    },
+    {
+      "name": "Verdant Kraken",
+      "cmc": 7,
+      "creature": true,
+      "land": false,
+      "removal": false,
+      "fixing": false,
+      "finisher": true,
+      "evasion": false,
+      "draw": false,
+      "produced": "G",
+      "heavyPips": "G",
+      "coloredPips": "GGG",
+      "manaCost": "{4}{G}{G}{G}",
+      "impactKnown": true,
+      "manaAccessKnown": true
+    },
+    {
+      "name": "Grim Repriser",
+      "cmc": 2,
+      "creature": true,
+      "land": false,
+      "removal": false,
+      "fixing": false,
+      "finisher": false,
+      "evasion": false,
+      "draw": false,
+      "coloredPips": "BR",
+      "manaCost": "{B}{R}",
+      "impactKnown": true,
+      "manaAccessKnown": true
+    },
+    {
+      "name": "Konstrari Improviser",
+      "cmc": 2,
+      "creature": true,
+      "land": false,
+      "removal": false,
+      "fixing": true,
+      "finisher": false,
+      "evasion": false,
+      "draw": false,
+      "hybridGroups": [
+        "RG"
+      ],
+      "produced": "RG",
+      "hybridPips": [
+        "RG"
+      ],
+      "fixingRequiresAdditionalSpell": true,
+      "manaCost": "{1}{R/G}",
+      "impactKnown": true,
+      "manaAccessKnown": true
+    },
+    {
+      "name": "Mind Meanderer",
+      "cmc": 6,
+      "creature": true,
+      "land": false,
+      "removal": true,
+      "fixing": false,
+      "finisher": true,
+      "evasion": true,
+      "draw": false,
+      "heavyPips": "U",
+      "coloredPips": "UUG",
+      "manaCost": "{3}{G}{U}{U}",
+      "impactKnown": true,
+      "manaAccessKnown": true
+    },
+    {
+      "name": "Woodwork Prodigy",
+      "cmc": 3,
+      "creature": true,
+      "land": false,
+      "removal": false,
+      "fixing": true,
+      "finisher": false,
+      "evasion": false,
+      "draw": false,
+      "hybridGroups": [
+        "RG"
+      ],
+      "produced": "RG",
+      "hybridPips": [
+        "RG"
+      ],
+      "fixingRequiresAdditionalSpell": true,
+      "manaCost": "{2}{R/G}",
+      "impactKnown": true,
+      "manaAccessKnown": true
+    },
+    {
+      "name": "Afterthought Sentry",
+      "cmc": 2,
+      "creature": true,
+      "land": false,
+      "removal": false,
+      "fixing": false,
+      "finisher": false,
+      "evasion": true,
+      "draw": false,
+      "manaCost": "{2}",
+      "impactKnown": true,
+      "manaAccessKnown": true
+    },
+    {
+      "name": "Keeper of the Quiet Hour",
+      "cmc": 3,
+      "creature": true,
+      "land": false,
+      "removal": false,
+      "fixing": false,
+      "finisher": false,
+      "evasion": false,
+      "draw": true,
+      "manaCost": "{3}",
+      "impactKnown": true,
+      "manaAccessKnown": true
+    },
+    {
+      "name": "Living Library",
+      "cmc": 2,
+      "creature": true,
+      "land": false,
+      "removal": true,
+      "fixing": false,
+      "finisher": false,
+      "evasion": false,
+      "draw": false,
+      "manaCost": "{2}",
+      "impactKnown": true,
+      "manaAccessKnown": true
+    },
+    {
+      "name": "Dedicated Commons",
+      "cmc": 0,
+      "creature": false,
+      "land": true,
+      "removal": false,
+      "fixing": true,
+      "finisher": false,
+      "evasion": false,
+      "draw": false,
+      "produced": "WR",
+      "manaCost": "",
+      "impactKnown": true,
+      "manaAccessKnown": true
+    },
+    {
+      "name": "Innovative Commons",
+      "cmc": 0,
+      "creature": false,
+      "land": true,
+      "removal": false,
+      "fixing": true,
+      "finisher": false,
+      "evasion": false,
+      "draw": false,
+      "produced": "UR",
+      "manaCost": "",
+      "impactKnown": true,
+      "manaAccessKnown": true
+    },
+    {
+      "name": "Transformative Commons",
+      "cmc": 0,
+      "creature": false,
+      "land": true,
+      "removal": false,
+      "fixing": true,
+      "finisher": false,
+      "evasion": false,
+      "draw": false,
+      "produced": "UG",
+      "manaCost": "",
+      "impactKnown": true,
+      "manaAccessKnown": true
+    },
+    {
+      "name": "Geist of Saint Thalia",
+      "cmc": 2,
+      "creature": true,
+      "land": false,
+      "removal": false,
+      "fixing": false,
+      "finisher": false,
+      "evasion": true,
+      "draw": false,
+      "coloredPips": "U",
+      "manaCost": "{1}{U}",
+      "impactKnown": true,
+      "manaAccessKnown": true
+    },
+    {
+      "name": "Traxos, Academy Guardian",
+      "cmc": 4,
+      "creature": true,
+      "land": false,
+      "removal": false,
+      "fixing": false,
+      "finisher": false,
+      "evasion": true,
+      "draw": false,
+      "coloredPips": "U",
+      "manaCost": "{3}{U}",
+      "impactKnown": true,
+      "manaAccessKnown": true
+    },
+    {
+      "name": "Way of the Mind Sculptor",
+      "cmc": 5,
+      "creature": false,
+      "land": false,
+      "removal": false,
+      "fixing": false,
+      "finisher": false,
+      "evasion": false,
+      "draw": true,
+      "coloredPips": "U",
+      "manaCost": "{4}{U}",
+      "repeatableAdvantage": true,
+      "impactKnown": true,
+      "manaAccessKnown": true
+    },
+    {
+      "name": "Way of the Deathbringer",
+      "cmc": 3,
+      "creature": false,
+      "land": false,
+      "removal": false,
+      "fixing": false,
+      "finisher": false,
+      "evasion": false,
+      "draw": true,
+      "coloredPips": "B",
+      "manaCost": "{2}{B}",
+      "impactKnown": true,
+      "manaAccessKnown": true
+    },
+    {
+      "name": "Yargle, Glutton of Urborg",
+      "cmc": 5,
+      "creature": true,
+      "land": false,
+      "removal": false,
+      "fixing": false,
+      "finisher": true,
+      "evasion": false,
+      "draw": false,
+      "coloredPips": "B",
+      "manaCost": "{4}{B}",
+      "impactKnown": true,
+      "manaAccessKnown": true
+    },
+    {
+      "name": "Arni, Renowned Champion",
+      "cmc": 4,
+      "creature": true,
+      "land": false,
+      "removal": false,
+      "fixing": false,
+      "finisher": false,
+      "evasion": false,
+      "draw": false,
+      "coloredPips": "R",
+      "manaCost": "{3}{R}",
+      "impactKnown": true,
+      "manaAccessKnown": true
+    },
+    {
+      "name": "Chandra, Torch of Defiance",
+      "cmc": 4,
+      "creature": false,
+      "land": false,
+      "removal": true,
+      "fixing": false,
+      "finisher": false,
+      "evasion": false,
+      "draw": false,
+      "produced": "R",
+      "heavyPips": "R",
+      "coloredPips": "RR",
+      "manaCost": "{2}{R}{R}",
+      "planeswalker": true,
+      "impactKnown": true,
+      "manaAccessKnown": true
+    },
+    {
+      "name": "Kiora of Fire and Ashes",
+      "cmc": 6,
+      "creature": true,
+      "land": false,
+      "removal": false,
+      "fixing": false,
+      "finisher": false,
+      "evasion": true,
+      "draw": false,
+      "heavyPips": "R",
+      "coloredPips": "RR",
+      "manaCost": "{4}{R}{R}",
+      "impactKnown": true,
+      "manaAccessKnown": true
+    },
+    {
+      "name": "Pia, Determined Rebuilder",
+      "cmc": 3,
+      "creature": true,
+      "land": false,
+      "removal": false,
+      "fixing": false,
+      "finisher": false,
+      "evasion": true,
+      "draw": false,
+      "coloredPips": "R",
+      "manaCost": "{2}{R}",
+      "impactKnown": true,
+      "manaAccessKnown": true
+    },
+    {
+      "name": "Way of the Paradox",
+      "cmc": 3,
+      "creature": false,
+      "land": false,
+      "removal": false,
+      "fixing": false,
+      "finisher": false,
+      "evasion": false,
+      "draw": true,
+      "coloredPips": "G",
+      "manaCost": "{2}{G}",
+      "impactKnown": true,
+      "manaAccessKnown": true
+    },
+    {
+      "name": "Saheeli, Jewel of Avishkar",
+      "cmc": 4,
+      "creature": true,
+      "land": false,
+      "removal": false,
+      "fixing": false,
+      "finisher": false,
+      "evasion": true,
+      "draw": false,
+      "coloredPips": "UR",
+      "manaCost": "{2}{U}{R}",
+      "impactKnown": true,
+      "manaAccessKnown": true
+    },
+    {
+      "name": "Traxos, Scourge Eternal",
+      "cmc": 4,
+      "creature": true,
+      "land": false,
+      "removal": false,
+      "fixing": false,
+      "finisher": true,
+      "evasion": false,
+      "draw": false,
+      "manaCost": "{4}",
+      "impactKnown": true,
+      "manaAccessKnown": true
+    }
+  ],
+  "pairRatings": {
+    "UR": [
+      {
+        "name": "Generous Revival",
+        "mtga_id": 106233,
+        "color": "W",
+        "rarity": "uncommon",
+        "types": [
+          "Sorcery"
+        ],
+        "ever_drawn_game_count": 76,
+        "ever_drawn_win_rate": null,
+        "drawn_improvement_win_rate": null
+      },
+      {
+        "name": "Infinite Coursework",
+        "mtga_id": 106257,
+        "color": "U",
+        "rarity": "common",
+        "types": [
+          "Enchantment - Aura"
+        ],
+        "ever_drawn_game_count": 13068,
+        "ever_drawn_win_rate": 0.5557086,
+        "drawn_improvement_win_rate": 0.012507299999999999
+      },
+      {
+        "name": "Plan for All Outcomes",
+        "mtga_id": 106261,
+        "color": "U",
+        "rarity": "uncommon",
+        "types": [
+          "Enchantment"
+        ],
+        "ever_drawn_game_count": 8890,
+        "ever_drawn_win_rate": 0.5935883,
+        "drawn_improvement_win_rate": 0.044723999999999986
+      },
+      {
+        "name": "Protege's Awakening",
+        "mtga_id": 106263,
+        "color": "U",
+        "rarity": "common",
+        "types": [
+          "Sorcery"
+        ],
+        "ever_drawn_game_count": 13279,
+        "ever_drawn_win_rate": 0.58242338,
+        "drawn_improvement_win_rate": 0.04073126000000005
+      },
+      {
+        "name": "Unsummon",
+        "mtga_id": 106273,
+        "color": "U",
+        "rarity": "common",
+        "types": [
+          "Instant"
+        ],
+        "ever_drawn_game_count": 17386,
+        "ever_drawn_win_rate": 0.5688485,
+        "drawn_improvement_win_rate": 0.023064540000000022
+      },
+      {
+        "name": "Cast Away Doubt",
+        "mtga_id": 106280,
+        "color": "B",
+        "rarity": "common",
+        "types": [
+          "Sorcery"
+        ],
+        "ever_drawn_game_count": 48,
+        "ever_drawn_win_rate": null,
+        "drawn_improvement_win_rate": null
+      },
+      {
+        "name": "Extrapolate the Impossible",
+        "mtga_id": 106284,
+        "color": "B",
+        "rarity": "rare",
+        "types": [
+          "Sorcery"
+        ],
+        "ever_drawn_game_count": 0,
+        "ever_drawn_win_rate": null,
+        "drawn_improvement_win_rate": null
+      },
+      {
+        "name": "Rampart Hunter",
+        "mtga_id": 106289,
+        "color": "B",
+        "rarity": "common",
+        "types": [
+          "Creature - Horror"
+        ],
+        "ever_drawn_game_count": 8,
+        "ever_drawn_win_rate": null,
+        "drawn_improvement_win_rate": null
+      },
+      {
+        "name": "Curse-Marred Demon",
+        "mtga_id": 106309,
+        "color": "R",
+        "rarity": "rare",
+        "types": [
+          "Creature - Demon"
+        ],
+        "ever_drawn_game_count": 2856,
+        "ever_drawn_win_rate": 0.57177871,
+        "drawn_improvement_win_rate": 0.036414180000000074
+      },
+      {
+        "name": "No Admittance",
+        "mtga_id": 106320,
+        "color": "R",
+        "rarity": "common",
+        "types": [
+          "Sorcery"
+        ],
+        "ever_drawn_game_count": 20489,
+        "ever_drawn_win_rate": 0.58982869,
+        "drawn_improvement_win_rate": 0.04522345999999999
+      },
+      {
+        "name": "Skilled Battlecarver",
+        "mtga_id": 106325,
+        "color": "R",
+        "rarity": "common",
+        "types": [
+          "Creature - Human Warrior"
+        ],
+        "ever_drawn_game_count": 9119,
+        "ever_drawn_win_rate": 0.53679131,
+        "drawn_improvement_win_rate": 0.002756890000000012
+      },
+      {
+        "name": "Bestial Incursion",
+        "mtga_id": 106331,
+        "color": "G",
+        "rarity": "common",
+        "types": [
+          "Sorcery"
+        ],
+        "ever_drawn_game_count": 253,
+        "ever_drawn_win_rate": null,
+        "drawn_improvement_win_rate": null
+      },
+      {
+        "name": "Verdant Kraken",
+        "mtga_id": 106353,
+        "color": "G",
+        "rarity": "rare",
+        "types": [
+          "Creature - Plant Kraken"
+        ],
+        "ever_drawn_game_count": 35,
+        "ever_drawn_win_rate": null,
+        "drawn_improvement_win_rate": null
+      },
+      {
+        "name": "Grim Repriser",
+        "mtga_id": 106373,
+        "color": "BR",
+        "rarity": "uncommon",
+        "types": [
+          "Creature - Zombie Bard"
+        ],
+        "ever_drawn_game_count": 63,
+        "ever_drawn_win_rate": null,
+        "drawn_improvement_win_rate": null
+      },
+      {
+        "name": "Konstrari Improviser",
+        "mtga_id": 106376,
+        "color": "RG",
+        "rarity": "common",
+        "types": [
+          "Creature - Human Artificer"
+        ],
+        "ever_drawn_game_count": 5386,
+        "ever_drawn_win_rate": 0.5493873,
+        "drawn_improvement_win_rate": 0.0025365700000000713
+      },
+      {
+        "name": "Mind Meanderer",
+        "mtga_id": 106379,
+        "color": "UG",
+        "rarity": "uncommon",
+        "types": [
+          "Creature - Bird Fish Illusion"
+        ],
+        "ever_drawn_game_count": 1868,
+        "ever_drawn_win_rate": 0.55942184,
+        "drawn_improvement_win_rate": 0.027629929999999914
+      },
+      {
+        "name": "Woodwork Prodigy",
+        "mtga_id": 106409,
+        "color": "RG",
+        "rarity": "uncommon",
+        "types": [
+          "Creature - Cat Druid"
+        ],
+        "ever_drawn_game_count": 2129,
+        "ever_drawn_win_rate": 0.53781118,
+        "drawn_improvement_win_rate": 0.0027737200000000906
+      },
+      {
+        "name": "Afterthought Sentry",
+        "mtga_id": 106411,
+        "color": "",
+        "rarity": "common",
+        "types": [
+          "Artifact Creature - Gargoyle"
+        ],
+        "ever_drawn_game_count": 1729,
+        "ever_drawn_win_rate": 0.54713707,
+        "drawn_improvement_win_rate": 0.005447089999999988
+      },
+      {
+        "name": "Keeper of the Quiet Hour",
+        "mtga_id": 106416,
+        "color": "",
+        "rarity": "common",
+        "types": [
+          "Artifact Creature - Chimera"
+        ],
+        "ever_drawn_game_count": 5829,
+        "ever_drawn_win_rate": 0.5733402,
+        "drawn_improvement_win_rate": 0.013332809999999973
+      },
+      {
+        "name": "Living Library",
+        "mtga_id": 106417,
+        "color": "",
+        "rarity": "common",
+        "types": [
+          "Artifact Creature - Book Illusion"
+        ],
+        "ever_drawn_game_count": 886,
+        "ever_drawn_win_rate": 0.53950339,
+        "drawn_improvement_win_rate": -0.010832179999999969
+      },
+      {
+        "name": "Dedicated Commons",
+        "mtga_id": 106420,
+        "color": "",
+        "rarity": "common",
+        "types": [
+          "Land"
+        ],
+        "ever_drawn_game_count": 2173,
+        "ever_drawn_win_rate": 0.52922227,
+        "drawn_improvement_win_rate": 0.005718000000000001
+      },
+      {
+        "name": "Innovative Commons",
+        "mtga_id": 106427,
+        "color": "",
+        "rarity": "common",
+        "types": [
+          "Land"
+        ],
+        "ever_drawn_game_count": 13377,
+        "ever_drawn_win_rate": 0.56447634,
+        "drawn_improvement_win_rate": 0.011697770000000052
+      },
+      {
+        "name": "Transformative Commons",
+        "mtga_id": 106438,
+        "color": "",
+        "rarity": "common",
+        "types": [
+          "Land"
+        ],
+        "ever_drawn_game_count": 1568,
+        "ever_drawn_win_rate": 0.55548469,
+        "drawn_improvement_win_rate": 0.019189319999999954
+      },
+      {
+        "name": "Geist of Saint Thalia",
+        "mtga_id": 106459,
+        "color": "U",
+        "rarity": "uncommon",
+        "types": [
+          "Legendary Creature - Spirit Cleric"
+        ],
+        "ever_drawn_game_count": 8413,
+        "ever_drawn_win_rate": 0.57304172,
+        "drawn_improvement_win_rate": 0.027091479999999946
+      },
+      {
+        "name": "Traxos, Academy Guardian",
+        "mtga_id": 106467,
+        "color": "U",
+        "rarity": "uncommon",
+        "types": [
+          "Legendary Artifact Creature - Dragon Construct"
+        ],
+        "ever_drawn_game_count": 7838,
+        "ever_drawn_win_rate": 0.5551161,
+        "drawn_improvement_win_rate": 0.002343969999999973
+      },
+      {
+        "name": "Way of the Mind Sculptor",
+        "mtga_id": 106469,
+        "color": "U",
+        "rarity": "uncommon",
+        "types": [
+          "Legendary Enchantment"
+        ],
+        "ever_drawn_game_count": 6525,
+        "ever_drawn_win_rate": 0.57409962,
+        "drawn_improvement_win_rate": 0.028588200000000064
+      },
+      {
+        "name": "Way of the Deathbringer",
+        "mtga_id": 106483,
+        "color": "B",
+        "rarity": "uncommon",
+        "types": [
+          "Legendary Enchantment"
+        ],
+        "ever_drawn_game_count": 34,
+        "ever_drawn_win_rate": null,
+        "drawn_improvement_win_rate": null
+      },
+      {
+        "name": "Yargle, Glutton of Urborg",
+        "mtga_id": 106486,
+        "color": "B",
+        "rarity": "uncommon",
+        "types": [
+          "Legendary Creature - Frog Spirit"
+        ],
+        "ever_drawn_game_count": 2,
+        "ever_drawn_win_rate": null,
+        "drawn_improvement_win_rate": null
+      },
+      {
+        "name": "Arni, Renowned Champion",
+        "mtga_id": 106488,
+        "color": "R",
+        "rarity": "uncommon",
+        "types": [
+          "Legendary Creature - Human Berserker"
+        ],
+        "ever_drawn_game_count": 399,
+        "ever_drawn_win_rate": null,
+        "drawn_improvement_win_rate": null
+      },
+      {
+        "name": "Chandra, Torch of Defiance",
+        "mtga_id": 106489,
+        "color": "R",
+        "rarity": "mythic",
+        "types": [
+          "Legendary Planeswalker - Chandra"
+        ],
+        "ever_drawn_game_count": 1695,
+        "ever_drawn_win_rate": 0.620059,
+        "drawn_improvement_win_rate": 0.10624685
+      },
+      {
+        "name": "Kiora of Fire and Ashes",
+        "mtga_id": 106492,
+        "color": "R",
+        "rarity": "uncommon",
+        "types": [
+          "Legendary Creature - Merfolk Noble"
+        ],
+        "ever_drawn_game_count": 10188,
+        "ever_drawn_win_rate": 0.63113467,
+        "drawn_improvement_win_rate": 0.09501705000000005
+      },
+      {
+        "name": "Pia, Determined Rebuilder",
+        "mtga_id": 106495,
+        "color": "R",
+        "rarity": "uncommon",
+        "types": [
+          "Legendary Creature - Human Artificer"
+        ],
+        "ever_drawn_game_count": 8012,
+        "ever_drawn_win_rate": 0.57089366,
+        "drawn_improvement_win_rate": 0.03536353999999997
+      },
+      {
+        "name": "Way of the Paradox",
+        "mtga_id": 106512,
+        "color": "G",
+        "rarity": "uncommon",
+        "types": [
+          "Legendary Enchantment"
+        ],
+        "ever_drawn_game_count": 100,
+        "ever_drawn_win_rate": null,
+        "drawn_improvement_win_rate": null
+      },
+      {
+        "name": "Saheeli, Jewel of Avishkar",
+        "mtga_id": 106520,
+        "color": "UR",
+        "rarity": "uncommon",
+        "types": [
+          "Legendary Creature - Human Artificer"
+        ],
+        "ever_drawn_game_count": 17483,
+        "ever_drawn_win_rate": 0.57879083,
+        "drawn_improvement_win_rate": 0.036698539999999946
+      },
+      {
+        "name": "Traxos, Scourge Eternal",
+        "mtga_id": 106525,
+        "color": "",
+        "rarity": "uncommon",
+        "types": [
+          "Legendary Artifact Creature - Dragon Construct"
+        ],
+        "ever_drawn_game_count": 659,
+        "ever_drawn_win_rate": 0.49468892,
+        "drawn_improvement_win_rate": -0.046096580000000054
+      }
+    ],
+    "BR": [
+      {
+        "name": "Generous Revival",
+        "mtga_id": 106233,
+        "color": "W",
+        "rarity": "uncommon",
+        "types": [
+          "Sorcery"
+        ],
+        "ever_drawn_game_count": 44,
+        "ever_drawn_win_rate": null,
+        "drawn_improvement_win_rate": null
+      },
+      {
+        "name": "Infinite Coursework",
+        "mtga_id": 106257,
+        "color": "U",
+        "rarity": "common",
+        "types": [
+          "Enchantment - Aura"
+        ],
+        "ever_drawn_game_count": 56,
+        "ever_drawn_win_rate": null,
+        "drawn_improvement_win_rate": null
+      },
+      {
+        "name": "Plan for All Outcomes",
+        "mtga_id": 106261,
+        "color": "U",
+        "rarity": "uncommon",
+        "types": [
+          "Enchantment"
+        ],
+        "ever_drawn_game_count": 105,
+        "ever_drawn_win_rate": null,
+        "drawn_improvement_win_rate": null
+      },
+      {
+        "name": "Protege's Awakening",
+        "mtga_id": 106263,
+        "color": "U",
+        "rarity": "common",
+        "types": [
+          "Sorcery"
+        ],
+        "ever_drawn_game_count": 114,
+        "ever_drawn_win_rate": null,
+        "drawn_improvement_win_rate": null
+      },
+      {
+        "name": "Unsummon",
+        "mtga_id": 106273,
+        "color": "U",
+        "rarity": "common",
+        "types": [
+          "Instant"
+        ],
+        "ever_drawn_game_count": 36,
+        "ever_drawn_win_rate": null,
+        "drawn_improvement_win_rate": null
+      },
+      {
+        "name": "Cast Away Doubt",
+        "mtga_id": 106280,
+        "color": "B",
+        "rarity": "common",
+        "types": [
+          "Sorcery"
+        ],
+        "ever_drawn_game_count": 7332,
+        "ever_drawn_win_rate": 0.53546099,
+        "drawn_improvement_win_rate": -0.005598879999999973
+      },
+      {
+        "name": "Extrapolate the Impossible",
+        "mtga_id": 106284,
+        "color": "B",
+        "rarity": "rare",
+        "types": [
+          "Sorcery"
+        ],
+        "ever_drawn_game_count": 51,
+        "ever_drawn_win_rate": null,
+        "drawn_improvement_win_rate": null
+      },
+      {
+        "name": "Rampart Hunter",
+        "mtga_id": 106289,
+        "color": "B",
+        "rarity": "common",
+        "types": [
+          "Creature - Horror"
+        ],
+        "ever_drawn_game_count": 1328,
+        "ever_drawn_win_rate": 0.48042169,
+        "drawn_improvement_win_rate": -0.028497510000000004
+      },
+      {
+        "name": "Curse-Marred Demon",
+        "mtga_id": 106309,
+        "color": "R",
+        "rarity": "rare",
+        "types": [
+          "Creature - Demon"
+        ],
+        "ever_drawn_game_count": 2291,
+        "ever_drawn_win_rate": 0.56045395,
+        "drawn_improvement_win_rate": 0.020735089999999956
+      },
+      {
+        "name": "No Admittance",
+        "mtga_id": 106320,
+        "color": "R",
+        "rarity": "common",
+        "types": [
+          "Sorcery"
+        ],
+        "ever_drawn_game_count": 12532,
+        "ever_drawn_win_rate": 0.55082988,
+        "drawn_improvement_win_rate": 0.008105110000000026
+      },
+      {
+        "name": "Skilled Battlecarver",
+        "mtga_id": 106325,
+        "color": "R",
+        "rarity": "common",
+        "types": [
+          "Creature - Human Warrior"
+        ],
+        "ever_drawn_game_count": 11198,
+        "ever_drawn_win_rate": 0.53920343,
+        "drawn_improvement_win_rate": -0.010014829999999919
+      },
+      {
+        "name": "Bestial Incursion",
+        "mtga_id": 106331,
+        "color": "G",
+        "rarity": "common",
+        "types": [
+          "Sorcery"
+        ],
+        "ever_drawn_game_count": 82,
+        "ever_drawn_win_rate": null,
+        "drawn_improvement_win_rate": null
+      },
+      {
+        "name": "Verdant Kraken",
+        "mtga_id": 106353,
+        "color": "G",
+        "rarity": "rare",
+        "types": [
+          "Creature - Plant Kraken"
+        ],
+        "ever_drawn_game_count": 10,
+        "ever_drawn_win_rate": null,
+        "drawn_improvement_win_rate": null
+      },
+      {
+        "name": "Grim Repriser",
+        "mtga_id": 106373,
+        "color": "BR",
+        "rarity": "uncommon",
+        "types": [
+          "Creature - Zombie Bard"
+        ],
+        "ever_drawn_game_count": 13513,
+        "ever_drawn_win_rate": 0.54103456,
+        "drawn_improvement_win_rate": -0.008598279999999958
+      },
+      {
+        "name": "Konstrari Improviser",
+        "mtga_id": 106376,
+        "color": "RG",
+        "rarity": "common",
+        "types": [
+          "Creature - Human Artificer"
+        ],
+        "ever_drawn_game_count": 3218,
+        "ever_drawn_win_rate": 0.52113114,
+        "drawn_improvement_win_rate": -0.025063210000000002
+      },
+      {
+        "name": "Mind Meanderer",
+        "mtga_id": 106379,
+        "color": "UG",
+        "rarity": "uncommon",
+        "types": [
+          "Creature - Bird Fish Illusion"
+        ],
+        "ever_drawn_game_count": 3,
+        "ever_drawn_win_rate": null,
+        "drawn_improvement_win_rate": null
+      },
+      {
+        "name": "Woodwork Prodigy",
+        "mtga_id": 106409,
+        "color": "RG",
+        "rarity": "uncommon",
+        "types": [
+          "Creature - Cat Druid"
+        ],
+        "ever_drawn_game_count": 1309,
+        "ever_drawn_win_rate": 0.51107716,
+        "drawn_improvement_win_rate": -0.011832349999999936
+      },
+      {
+        "name": "Afterthought Sentry",
+        "mtga_id": 106411,
+        "color": "",
+        "rarity": "common",
+        "types": [
+          "Artifact Creature - Gargoyle"
+        ],
+        "ever_drawn_game_count": 1310,
+        "ever_drawn_win_rate": 0.5259542,
+        "drawn_improvement_win_rate": -0.03358902999999991
+      },
+      {
+        "name": "Keeper of the Quiet Hour",
+        "mtga_id": 106416,
+        "color": "",
+        "rarity": "common",
+        "types": [
+          "Artifact Creature - Chimera"
+        ],
+        "ever_drawn_game_count": 1667,
+        "ever_drawn_win_rate": 0.5194961,
+        "drawn_improvement_win_rate": -0.030503900000000028
+      },
+      {
+        "name": "Living Library",
+        "mtga_id": 106417,
+        "color": "",
+        "rarity": "common",
+        "types": [
+          "Artifact Creature - Book Illusion"
+        ],
+        "ever_drawn_game_count": 164,
+        "ever_drawn_win_rate": null,
+        "drawn_improvement_win_rate": null
+      },
+      {
+        "name": "Dedicated Commons",
+        "mtga_id": 106420,
+        "color": "",
+        "rarity": "common",
+        "types": [
+          "Land"
+        ],
+        "ever_drawn_game_count": 605,
+        "ever_drawn_win_rate": 0.5107438,
+        "drawn_improvement_win_rate": 0.04717595999999996
+      },
+      {
+        "name": "Innovative Commons",
+        "mtga_id": 106427,
+        "color": "",
+        "rarity": "common",
+        "types": [
+          "Land"
+        ],
+        "ever_drawn_game_count": 1259,
+        "ever_drawn_win_rate": 0.51945989,
+        "drawn_improvement_win_rate": -0.02986084
+      },
+      {
+        "name": "Transformative Commons",
+        "mtga_id": 106438,
+        "color": "",
+        "rarity": "common",
+        "types": [
+          "Land"
+        ],
+        "ever_drawn_game_count": 67,
+        "ever_drawn_win_rate": null,
+        "drawn_improvement_win_rate": null
+      },
+      {
+        "name": "Geist of Saint Thalia",
+        "mtga_id": 106459,
+        "color": "U",
+        "rarity": "uncommon",
+        "types": [
+          "Legendary Creature - Spirit Cleric"
+        ],
+        "ever_drawn_game_count": 29,
+        "ever_drawn_win_rate": null,
+        "drawn_improvement_win_rate": null
+      },
+      {
+        "name": "Traxos, Academy Guardian",
+        "mtga_id": 106467,
+        "color": "U",
+        "rarity": "uncommon",
+        "types": [
+          "Legendary Artifact Creature - Dragon Construct"
+        ],
+        "ever_drawn_game_count": 20,
+        "ever_drawn_win_rate": null,
+        "drawn_improvement_win_rate": null
+      },
+      {
+        "name": "Way of the Mind Sculptor",
+        "mtga_id": 106469,
+        "color": "U",
+        "rarity": "uncommon",
+        "types": [
+          "Legendary Enchantment"
+        ],
+        "ever_drawn_game_count": 92,
+        "ever_drawn_win_rate": null,
+        "drawn_improvement_win_rate": null
+      },
+      {
+        "name": "Way of the Deathbringer",
+        "mtga_id": 106483,
+        "color": "B",
+        "rarity": "uncommon",
+        "types": [
+          "Legendary Enchantment"
+        ],
+        "ever_drawn_game_count": 1795,
+        "ever_drawn_win_rate": 0.49303621,
+        "drawn_improvement_win_rate": -0.027495190000000003
+      },
+      {
+        "name": "Yargle, Glutton of Urborg",
+        "mtga_id": 106486,
+        "color": "B",
+        "rarity": "uncommon",
+        "types": [
+          "Legendary Creature - Frog Spirit"
+        ],
+        "ever_drawn_game_count": 127,
+        "ever_drawn_win_rate": null,
+        "drawn_improvement_win_rate": null
+      },
+      {
+        "name": "Arni, Renowned Champion",
+        "mtga_id": 106488,
+        "color": "R",
+        "rarity": "uncommon",
+        "types": [
+          "Legendary Creature - Human Berserker"
+        ],
+        "ever_drawn_game_count": 735,
+        "ever_drawn_win_rate": 0.46802721,
+        "drawn_improvement_win_rate": -0.02230160999999997
+      },
+      {
+        "name": "Chandra, Torch of Defiance",
+        "mtga_id": 106489,
+        "color": "R",
+        "rarity": "mythic",
+        "types": [
+          "Legendary Planeswalker - Chandra"
+        ],
+        "ever_drawn_game_count": 958,
+        "ever_drawn_win_rate": 0.60438413,
+        "drawn_improvement_win_rate": 0.05633853
+      },
+      {
+        "name": "Kiora of Fire and Ashes",
+        "mtga_id": 106492,
+        "color": "R",
+        "rarity": "uncommon",
+        "types": [
+          "Legendary Creature - Merfolk Noble"
+        ],
+        "ever_drawn_game_count": 5456,
+        "ever_drawn_win_rate": 0.58449413,
+        "drawn_improvement_win_rate": 0.0426342999999999
+      },
+      {
+        "name": "Pia, Determined Rebuilder",
+        "mtga_id": 106495,
+        "color": "R",
+        "rarity": "uncommon",
+        "types": [
+          "Legendary Creature - Human Artificer"
+        ],
+        "ever_drawn_game_count": 5216,
+        "ever_drawn_win_rate": 0.55521472,
+        "drawn_improvement_win_rate": 0.013460040000000006
+      },
+      {
+        "name": "Way of the Paradox",
+        "mtga_id": 106512,
+        "color": "G",
+        "rarity": "uncommon",
+        "types": [
+          "Legendary Enchantment"
+        ],
+        "ever_drawn_game_count": 15,
+        "ever_drawn_win_rate": null,
+        "drawn_improvement_win_rate": null
+      },
+      {
+        "name": "Saheeli, Jewel of Avishkar",
+        "mtga_id": 106520,
+        "color": "UR",
+        "rarity": "uncommon",
+        "types": [
+          "Legendary Creature - Human Artificer"
+        ],
+        "ever_drawn_game_count": 930,
+        "ever_drawn_win_rate": 0.54946237,
+        "drawn_improvement_win_rate": 0.005645829999999963
+      },
+      {
+        "name": "Traxos, Scourge Eternal",
+        "mtga_id": 106525,
+        "color": "",
+        "rarity": "uncommon",
+        "types": [
+          "Legendary Artifact Creature - Dragon Construct"
+        ],
+        "ever_drawn_game_count": 943,
+        "ever_drawn_win_rate": 0.48674443,
+        "drawn_improvement_win_rate": -0.06178830000000002
+      }
+    ],
+    "RG": [
+      {
+        "name": "Generous Revival",
+        "mtga_id": 106233,
+        "color": "W",
+        "rarity": "uncommon",
+        "types": [
+          "Sorcery"
+        ],
+        "ever_drawn_game_count": 58,
+        "ever_drawn_win_rate": null,
+        "drawn_improvement_win_rate": null
+      },
+      {
+        "name": "Infinite Coursework",
+        "mtga_id": 106257,
+        "color": "U",
+        "rarity": "common",
+        "types": [
+          "Enchantment - Aura"
+        ],
+        "ever_drawn_game_count": 169,
+        "ever_drawn_win_rate": null,
+        "drawn_improvement_win_rate": null
+      },
+      {
+        "name": "Plan for All Outcomes",
+        "mtga_id": 106261,
+        "color": "U",
+        "rarity": "uncommon",
+        "types": [
+          "Enchantment"
+        ],
+        "ever_drawn_game_count": 322,
+        "ever_drawn_win_rate": null,
+        "drawn_improvement_win_rate": null
+      },
+      {
+        "name": "Protege's Awakening",
+        "mtga_id": 106263,
+        "color": "U",
+        "rarity": "common",
+        "types": [
+          "Sorcery"
+        ],
+        "ever_drawn_game_count": 431,
+        "ever_drawn_win_rate": null,
+        "drawn_improvement_win_rate": null
+      },
+      {
+        "name": "Unsummon",
+        "mtga_id": 106273,
+        "color": "U",
+        "rarity": "common",
+        "types": [
+          "Instant"
+        ],
+        "ever_drawn_game_count": 132,
+        "ever_drawn_win_rate": null,
+        "drawn_improvement_win_rate": null
+      },
+      {
+        "name": "Cast Away Doubt",
+        "mtga_id": 106280,
+        "color": "B",
+        "rarity": "common",
+        "types": [
+          "Sorcery"
+        ],
+        "ever_drawn_game_count": 38,
+        "ever_drawn_win_rate": null,
+        "drawn_improvement_win_rate": null
+      },
+      {
+        "name": "Extrapolate the Impossible",
+        "mtga_id": 106284,
+        "color": "B",
+        "rarity": "rare",
+        "types": [
+          "Sorcery"
+        ],
+        "ever_drawn_game_count": 2,
+        "ever_drawn_win_rate": null,
+        "drawn_improvement_win_rate": null
+      },
+      {
+        "name": "Rampart Hunter",
+        "mtga_id": 106289,
+        "color": "B",
+        "rarity": "common",
+        "types": [
+          "Creature - Horror"
+        ],
+        "ever_drawn_game_count": 5,
+        "ever_drawn_win_rate": null,
+        "drawn_improvement_win_rate": null
+      },
+      {
+        "name": "Curse-Marred Demon",
+        "mtga_id": 106309,
+        "color": "R",
+        "rarity": "rare",
+        "types": [
+          "Creature - Demon"
+        ],
+        "ever_drawn_game_count": 3187,
+        "ever_drawn_win_rate": 0.57326639,
+        "drawn_improvement_win_rate": 0.013739579999999973
+      },
+      {
+        "name": "No Admittance",
+        "mtga_id": 106320,
+        "color": "R",
+        "rarity": "common",
+        "types": [
+          "Sorcery"
+        ],
+        "ever_drawn_game_count": 20262,
+        "ever_drawn_win_rate": 0.56539335,
+        "drawn_improvement_win_rate": 0.01317250999999997
+      },
+      {
+        "name": "Skilled Battlecarver",
+        "mtga_id": 106325,
+        "color": "R",
+        "rarity": "common",
+        "types": [
+          "Creature - Human Warrior"
+        ],
+        "ever_drawn_game_count": 10315,
+        "ever_drawn_win_rate": 0.53213766,
+        "drawn_improvement_win_rate": -0.013221290000000052
+      },
+      {
+        "name": "Bestial Incursion",
+        "mtga_id": 106331,
+        "color": "G",
+        "rarity": "common",
+        "types": [
+          "Sorcery"
+        ],
+        "ever_drawn_game_count": 19476,
+        "ever_drawn_win_rate": 0.56649209,
+        "drawn_improvement_win_rate": 0.016067959999999992
+      },
+      {
+        "name": "Verdant Kraken",
+        "mtga_id": 106353,
+        "color": "G",
+        "rarity": "rare",
+        "types": [
+          "Creature - Plant Kraken"
+        ],
+        "ever_drawn_game_count": 3489,
+        "ever_drawn_win_rate": 0.58440814,
+        "drawn_improvement_win_rate": 0.047793489999999994
+      },
+      {
+        "name": "Grim Repriser",
+        "mtga_id": 106373,
+        "color": "BR",
+        "rarity": "uncommon",
+        "types": [
+          "Creature - Zombie Bard"
+        ],
+        "ever_drawn_game_count": 19,
+        "ever_drawn_win_rate": null,
+        "drawn_improvement_win_rate": null
+      },
+      {
+        "name": "Konstrari Improviser",
+        "mtga_id": 106376,
+        "color": "RG",
+        "rarity": "common",
+        "types": [
+          "Creature - Human Artificer"
+        ],
+        "ever_drawn_game_count": 22768,
+        "ever_drawn_win_rate": 0.55274947,
+        "drawn_improvement_win_rate": -0.007305980000000045
+      },
+      {
+        "name": "Mind Meanderer",
+        "mtga_id": 106379,
+        "color": "UG",
+        "rarity": "uncommon",
+        "types": [
+          "Creature - Bird Fish Illusion"
+        ],
+        "ever_drawn_game_count": 450,
+        "ever_drawn_win_rate": null,
+        "drawn_improvement_win_rate": null
+      },
+      {
+        "name": "Woodwork Prodigy",
+        "mtga_id": 106409,
+        "color": "RG",
+        "rarity": "uncommon",
+        "types": [
+          "Creature - Cat Druid"
+        ],
+        "ever_drawn_game_count": 9932,
+        "ever_drawn_win_rate": 0.52658075,
+        "drawn_improvement_win_rate": -0.020744029999999913
+      },
+      {
+        "name": "Afterthought Sentry",
+        "mtga_id": 106411,
+        "color": "",
+        "rarity": "common",
+        "types": [
+          "Artifact Creature - Gargoyle"
+        ],
+        "ever_drawn_game_count": 1839,
+        "ever_drawn_win_rate": 0.54866775,
+        "drawn_improvement_win_rate": -0.02058154999999995
+      },
+      {
+        "name": "Keeper of the Quiet Hour",
+        "mtga_id": 106416,
+        "color": "",
+        "rarity": "common",
+        "types": [
+          "Artifact Creature - Chimera"
+        ],
+        "ever_drawn_game_count": 5661,
+        "ever_drawn_win_rate": 0.55767532,
+        "drawn_improvement_win_rate": -0.017342130000000067
+      },
+      {
+        "name": "Living Library",
+        "mtga_id": 106417,
+        "color": "",
+        "rarity": "common",
+        "types": [
+          "Artifact Creature - Book Illusion"
+        ],
+        "ever_drawn_game_count": 1274,
+        "ever_drawn_win_rate": 0.54395604,
+        "drawn_improvement_win_rate": -0.004284599999999972
+      },
+      {
+        "name": "Dedicated Commons",
+        "mtga_id": 106420,
+        "color": "",
+        "rarity": "common",
+        "types": [
+          "Land"
+        ],
+        "ever_drawn_game_count": 1806,
+        "ever_drawn_win_rate": 0.51605759,
+        "drawn_improvement_win_rate": -0.01515313000000007
+      },
+      {
+        "name": "Innovative Commons",
+        "mtga_id": 106427,
+        "color": "",
+        "rarity": "common",
+        "types": [
+          "Land"
+        ],
+        "ever_drawn_game_count": 1691,
+        "ever_drawn_win_rate": 0.53222945,
+        "drawn_improvement_win_rate": -0.022428340000000047
+      },
+      {
+        "name": "Transformative Commons",
+        "mtga_id": 106438,
+        "color": "",
+        "rarity": "common",
+        "types": [
+          "Land"
+        ],
+        "ever_drawn_game_count": 1771,
+        "ever_drawn_win_rate": 0.54093732,
+        "drawn_improvement_win_rate": -0.00359429
+      },
+      {
+        "name": "Geist of Saint Thalia",
+        "mtga_id": 106459,
+        "color": "U",
+        "rarity": "uncommon",
+        "types": [
+          "Legendary Creature - Spirit Cleric"
+        ],
+        "ever_drawn_game_count": 9,
+        "ever_drawn_win_rate": null,
+        "drawn_improvement_win_rate": null
+      },
+      {
+        "name": "Traxos, Academy Guardian",
+        "mtga_id": 106467,
+        "color": "U",
+        "rarity": "uncommon",
+        "types": [
+          "Legendary Artifact Creature - Dragon Construct"
+        ],
+        "ever_drawn_game_count": 26,
+        "ever_drawn_win_rate": null,
+        "drawn_improvement_win_rate": null
+      },
+      {
+        "name": "Way of the Mind Sculptor",
+        "mtga_id": 106469,
+        "color": "U",
+        "rarity": "uncommon",
+        "types": [
+          "Legendary Enchantment"
+        ],
+        "ever_drawn_game_count": 511,
+        "ever_drawn_win_rate": 0.53620352,
+        "drawn_improvement_win_rate": null
+      },
+      {
+        "name": "Way of the Deathbringer",
+        "mtga_id": 106483,
+        "color": "B",
+        "rarity": "uncommon",
+        "types": [
+          "Legendary Enchantment"
+        ],
+        "ever_drawn_game_count": 39,
+        "ever_drawn_win_rate": null,
+        "drawn_improvement_win_rate": null
+      },
+      {
+        "name": "Yargle, Glutton of Urborg",
+        "mtga_id": 106486,
+        "color": "B",
+        "rarity": "uncommon",
+        "types": [
+          "Legendary Creature - Frog Spirit"
+        ],
+        "ever_drawn_game_count": 5,
+        "ever_drawn_win_rate": null,
+        "drawn_improvement_win_rate": null
+      },
+      {
+        "name": "Arni, Renowned Champion",
+        "mtga_id": 106488,
+        "color": "R",
+        "rarity": "uncommon",
+        "types": [
+          "Legendary Creature - Human Berserker"
+        ],
+        "ever_drawn_game_count": 1909,
+        "ever_drawn_win_rate": 0.46987952,
+        "drawn_improvement_win_rate": -0.04511867000000003
+      },
+      {
+        "name": "Chandra, Torch of Defiance",
+        "mtga_id": 106489,
+        "color": "R",
+        "rarity": "mythic",
+        "types": [
+          "Legendary Planeswalker - Chandra"
+        ],
+        "ever_drawn_game_count": 1455,
+        "ever_drawn_win_rate": 0.6137457,
+        "drawn_improvement_win_rate": 0.060993409999999915
+      },
+      {
+        "name": "Kiora of Fire and Ashes",
+        "mtga_id": 106492,
+        "color": "R",
+        "rarity": "uncommon",
+        "types": [
+          "Legendary Creature - Merfolk Noble"
+        ],
+        "ever_drawn_game_count": 10633,
+        "ever_drawn_win_rate": 0.63679112,
+        "drawn_improvement_win_rate": 0.09581844000000006
+      },
+      {
+        "name": "Pia, Determined Rebuilder",
+        "mtga_id": 106495,
+        "color": "R",
+        "rarity": "uncommon",
+        "types": [
+          "Legendary Creature - Human Artificer"
+        ],
+        "ever_drawn_game_count": 8987,
+        "ever_drawn_win_rate": 0.57338378,
+        "drawn_improvement_win_rate": 0.02230255999999997
+      },
+      {
+        "name": "Way of the Paradox",
+        "mtga_id": 106512,
+        "color": "G",
+        "rarity": "uncommon",
+        "types": [
+          "Legendary Enchantment"
+        ],
+        "ever_drawn_game_count": 4879,
+        "ever_drawn_win_rate": 0.55154745,
+        "drawn_improvement_win_rate": 0.0024677000000000726
+      },
+      {
+        "name": "Saheeli, Jewel of Avishkar",
+        "mtga_id": 106520,
+        "color": "UR",
+        "rarity": "uncommon",
+        "types": [
+          "Legendary Creature - Human Artificer"
+        ],
+        "ever_drawn_game_count": 846,
+        "ever_drawn_win_rate": 0.52836879,
+        "drawn_improvement_win_rate": -0.015592559999999978
+      },
+      {
+        "name": "Traxos, Scourge Eternal",
+        "mtga_id": 106525,
+        "color": "",
+        "rarity": "uncommon",
+        "types": [
+          "Legendary Artifact Creature - Dragon Construct"
+        ],
+        "ever_drawn_game_count": 1997,
+        "ever_drawn_win_rate": 0.50425638,
+        "drawn_improvement_win_rate": -0.0501666300000001
+      }
+    ],
+    "UG": [
+      {
+        "name": "Generous Revival",
+        "mtga_id": 106233,
+        "color": "W",
+        "rarity": "uncommon",
+        "types": [
+          "Sorcery"
+        ],
+        "ever_drawn_game_count": 93,
+        "ever_drawn_win_rate": null,
+        "drawn_improvement_win_rate": null
+      },
+      {
+        "name": "Infinite Coursework",
+        "mtga_id": 106257,
+        "color": "U",
+        "rarity": "common",
+        "types": [
+          "Enchantment - Aura"
+        ],
+        "ever_drawn_game_count": 8819,
+        "ever_drawn_win_rate": 0.55051593,
+        "drawn_improvement_win_rate": 0.04820084000000002
+      },
+      {
+        "name": "Plan for All Outcomes",
+        "mtga_id": 106261,
+        "color": "U",
+        "rarity": "uncommon",
+        "types": [
+          "Enchantment"
+        ],
+        "ever_drawn_game_count": 5350,
+        "ever_drawn_win_rate": 0.57065421,
+        "drawn_improvement_win_rate": 0.07317840000000003
+      },
+      {
+        "name": "Protege's Awakening",
+        "mtga_id": 106263,
+        "color": "U",
+        "rarity": "common",
+        "types": [
+          "Sorcery"
+        ],
+        "ever_drawn_game_count": 8676,
+        "ever_drawn_win_rate": 0.55520977,
+        "drawn_improvement_win_rate": 0.04818763000000004
+      },
+      {
+        "name": "Unsummon",
+        "mtga_id": 106273,
+        "color": "U",
+        "rarity": "common",
+        "types": [
+          "Instant"
+        ],
+        "ever_drawn_game_count": 8396,
+        "ever_drawn_win_rate": 0.56026679,
+        "drawn_improvement_win_rate": 0.04472242000000004
+      },
+      {
+        "name": "Cast Away Doubt",
+        "mtga_id": 106280,
+        "color": "B",
+        "rarity": "common",
+        "types": [
+          "Sorcery"
+        ],
+        "ever_drawn_game_count": 17,
+        "ever_drawn_win_rate": null,
+        "drawn_improvement_win_rate": null
+      },
+      {
+        "name": "Extrapolate the Impossible",
+        "mtga_id": 106284,
+        "color": "B",
+        "rarity": "rare",
+        "types": [
+          "Sorcery"
+        ],
+        "ever_drawn_game_count": 0,
+        "ever_drawn_win_rate": null,
+        "drawn_improvement_win_rate": null
+      },
+      {
+        "name": "Rampart Hunter",
+        "mtga_id": 106289,
+        "color": "B",
+        "rarity": "common",
+        "types": [
+          "Creature - Horror"
+        ],
+        "ever_drawn_game_count": 0,
+        "ever_drawn_win_rate": null,
+        "drawn_improvement_win_rate": null
+      },
+      {
+        "name": "Curse-Marred Demon",
+        "mtga_id": 106309,
+        "color": "R",
+        "rarity": "rare",
+        "types": [
+          "Creature - Demon"
+        ],
+        "ever_drawn_game_count": 31,
+        "ever_drawn_win_rate": null,
+        "drawn_improvement_win_rate": null
+      },
+      {
+        "name": "No Admittance",
+        "mtga_id": 106320,
+        "color": "R",
+        "rarity": "common",
+        "types": [
+          "Sorcery"
+        ],
+        "ever_drawn_game_count": 574,
+        "ever_drawn_win_rate": 0.58362369,
+        "drawn_improvement_win_rate": 0.04195702000000001
+      },
+      {
+        "name": "Skilled Battlecarver",
+        "mtga_id": 106325,
+        "color": "R",
+        "rarity": "common",
+        "types": [
+          "Creature - Human Warrior"
+        ],
+        "ever_drawn_game_count": 4,
+        "ever_drawn_win_rate": null,
+        "drawn_improvement_win_rate": null
+      },
+      {
+        "name": "Bestial Incursion",
+        "mtga_id": 106331,
+        "color": "G",
+        "rarity": "common",
+        "types": [
+          "Sorcery"
+        ],
+        "ever_drawn_game_count": 8377,
+        "ever_drawn_win_rate": 0.55365883,
+        "drawn_improvement_win_rate": 0.04229648000000008
+      },
+      {
+        "name": "Verdant Kraken",
+        "mtga_id": 106353,
+        "color": "G",
+        "rarity": "rare",
+        "types": [
+          "Creature - Plant Kraken"
+        ],
+        "ever_drawn_game_count": 1946,
+        "ever_drawn_win_rate": 0.57810894,
+        "drawn_improvement_win_rate": 0.08067012000000001
+      },
+      {
+        "name": "Grim Repriser",
+        "mtga_id": 106373,
+        "color": "BR",
+        "rarity": "uncommon",
+        "types": [
+          "Creature - Zombie Bard"
+        ],
+        "ever_drawn_game_count": 0,
+        "ever_drawn_win_rate": null,
+        "drawn_improvement_win_rate": null
+      },
+      {
+        "name": "Konstrari Improviser",
+        "mtga_id": 106376,
+        "color": "RG",
+        "rarity": "common",
+        "types": [
+          "Creature - Human Artificer"
+        ],
+        "ever_drawn_game_count": 4129,
+        "ever_drawn_win_rate": 0.52458222,
+        "drawn_improvement_win_rate": 0.007210280000000013
+      },
+      {
+        "name": "Mind Meanderer",
+        "mtga_id": 106379,
+        "color": "UG",
+        "rarity": "uncommon",
+        "types": [
+          "Creature - Bird Fish Illusion"
+        ],
+        "ever_drawn_game_count": 11034,
+        "ever_drawn_win_rate": 0.56933116,
+        "drawn_improvement_win_rate": 0.07051970999999996
+      },
+      {
+        "name": "Woodwork Prodigy",
+        "mtga_id": 106409,
+        "color": "RG",
+        "rarity": "uncommon",
+        "types": [
+          "Creature - Cat Druid"
+        ],
+        "ever_drawn_game_count": 1575,
+        "ever_drawn_win_rate": 0.50603175,
+        "drawn_improvement_win_rate": -0.006970609999999988
+      },
+      {
+        "name": "Afterthought Sentry",
+        "mtga_id": 106411,
+        "color": "",
+        "rarity": "common",
+        "types": [
+          "Artifact Creature - Gargoyle"
+        ],
+        "ever_drawn_game_count": 535,
+        "ever_drawn_win_rate": 0.47476636,
+        "drawn_improvement_win_rate": 0.01716919
+      },
+      {
+        "name": "Keeper of the Quiet Hour",
+        "mtga_id": 106416,
+        "color": "",
+        "rarity": "common",
+        "types": [
+          "Artifact Creature - Chimera"
+        ],
+        "ever_drawn_game_count": 3853,
+        "ever_drawn_win_rate": 0.54451077,
+        "drawn_improvement_win_rate": 0.04530274000000001
+      },
+      {
+        "name": "Living Library",
+        "mtga_id": 106417,
+        "color": "",
+        "rarity": "common",
+        "types": [
+          "Artifact Creature - Book Illusion"
+        ],
+        "ever_drawn_game_count": 623,
+        "ever_drawn_win_rate": 0.50401284,
+        "drawn_improvement_win_rate": -0.024628729999999988
+      },
+      {
+        "name": "Dedicated Commons",
+        "mtga_id": 106420,
+        "color": "",
+        "rarity": "common",
+        "types": [
+          "Land"
+        ],
+        "ever_drawn_game_count": 156,
+        "ever_drawn_win_rate": null,
+        "drawn_improvement_win_rate": null
+      },
+      {
+        "name": "Innovative Commons",
+        "mtga_id": 106427,
+        "color": "",
+        "rarity": "common",
+        "types": [
+          "Land"
+        ],
+        "ever_drawn_game_count": 1878,
+        "ever_drawn_win_rate": 0.57028754,
+        "drawn_improvement_win_rate": 0.04095993000000009
+      },
+      {
+        "name": "Transformative Commons",
+        "mtga_id": 106438,
+        "color": "",
+        "rarity": "common",
+        "types": [
+          "Land"
+        ],
+        "ever_drawn_game_count": 7447,
+        "ever_drawn_win_rate": 0.55055727,
+        "drawn_improvement_win_rate": 0.036776719999999985
+      },
+      {
+        "name": "Geist of Saint Thalia",
+        "mtga_id": 106459,
+        "color": "U",
+        "rarity": "uncommon",
+        "types": [
+          "Legendary Creature - Spirit Cleric"
+        ],
+        "ever_drawn_game_count": 2475,
+        "ever_drawn_win_rate": 0.54505051,
+        "drawn_improvement_win_rate": 0.054612260000000024
+      },
+      {
+        "name": "Traxos, Academy Guardian",
+        "mtga_id": 106467,
+        "color": "U",
+        "rarity": "uncommon",
+        "types": [
+          "Legendary Artifact Creature - Dragon Construct"
+        ],
+        "ever_drawn_game_count": 2182,
+        "ever_drawn_win_rate": 0.54903758,
+        "drawn_improvement_win_rate": 0.051483760000000045
+      },
+      {
+        "name": "Way of the Mind Sculptor",
+        "mtga_id": 106469,
+        "color": "U",
+        "rarity": "uncommon",
+        "types": [
+          "Legendary Enchantment"
+        ],
+        "ever_drawn_game_count": 4682,
+        "ever_drawn_win_rate": 0.57368646,
+        "drawn_improvement_win_rate": 0.07859300000000002
+      },
+      {
+        "name": "Way of the Deathbringer",
+        "mtga_id": 106483,
+        "color": "B",
+        "rarity": "uncommon",
+        "types": [
+          "Legendary Enchantment"
+        ],
+        "ever_drawn_game_count": 66,
+        "ever_drawn_win_rate": null,
+        "drawn_improvement_win_rate": null
+      },
+      {
+        "name": "Yargle, Glutton of Urborg",
+        "mtga_id": 106486,
+        "color": "B",
+        "rarity": "uncommon",
+        "types": [
+          "Legendary Creature - Frog Spirit"
+        ],
+        "ever_drawn_game_count": 0,
+        "ever_drawn_win_rate": null,
+        "drawn_improvement_win_rate": null
+      },
+      {
+        "name": "Arni, Renowned Champion",
+        "mtga_id": 106488,
+        "color": "R",
+        "rarity": "uncommon",
+        "types": [
+          "Legendary Creature - Human Berserker"
+        ],
+        "ever_drawn_game_count": 4,
+        "ever_drawn_win_rate": null,
+        "drawn_improvement_win_rate": null
+      },
+      {
+        "name": "Chandra, Torch of Defiance",
+        "mtga_id": 106489,
+        "color": "R",
+        "rarity": "mythic",
+        "types": [
+          "Legendary Planeswalker - Chandra"
+        ],
+        "ever_drawn_game_count": 84,
+        "ever_drawn_win_rate": null,
+        "drawn_improvement_win_rate": null
+      },
+      {
+        "name": "Kiora of Fire and Ashes",
+        "mtga_id": 106492,
+        "color": "R",
+        "rarity": "uncommon",
+        "types": [
+          "Legendary Creature - Merfolk Noble"
+        ],
+        "ever_drawn_game_count": 659,
+        "ever_drawn_win_rate": 0.60242792,
+        "drawn_improvement_win_rate": 0.13106949
+      },
+      {
+        "name": "Pia, Determined Rebuilder",
+        "mtga_id": 106495,
+        "color": "R",
+        "rarity": "uncommon",
+        "types": [
+          "Legendary Creature - Human Artificer"
+        ],
+        "ever_drawn_game_count": 77,
+        "ever_drawn_win_rate": null,
+        "drawn_improvement_win_rate": null
+      },
+      {
+        "name": "Way of the Paradox",
+        "mtga_id": 106512,
+        "color": "G",
+        "rarity": "uncommon",
+        "types": [
+          "Legendary Enchantment"
+        ],
+        "ever_drawn_game_count": 3808,
+        "ever_drawn_win_rate": 0.57720588,
+        "drawn_improvement_win_rate": 0.07635311999999994
+      },
+      {
+        "name": "Saheeli, Jewel of Avishkar",
+        "mtga_id": 106520,
+        "color": "UR",
+        "rarity": "uncommon",
+        "types": [
+          "Legendary Creature - Human Artificer"
+        ],
+        "ever_drawn_game_count": 675,
+        "ever_drawn_win_rate": 0.51259259,
+        "drawn_improvement_win_rate": 0.047231140000000005
+      },
+      {
+        "name": "Traxos, Scourge Eternal",
+        "mtga_id": 106525,
+        "color": "",
+        "rarity": "uncommon",
+        "types": [
+          "Legendary Artifact Creature - Dragon Construct"
+        ],
+        "ever_drawn_game_count": 488,
+        "ever_drawn_win_rate": null,
+        "drawn_improvement_win_rate": null
+      }
+    ]
+  }
+}

@@ -17,6 +17,8 @@ class DeckPowerPresentationTest {
         assertEquals("Power 60", rated.powerLabel)
         assertEquals("B", rated.displayTier)
 
+        assertEquals("Temur", rated.copy(colors = "URG", basePair = "UR", splash = 'G', isThreeColor = true).title)
+
         val catalog = rated.copy(hasObservedPower = false)
         assertEquals("Power unavailable", catalog.powerLabel)
         assertNull(catalog.displayTier)

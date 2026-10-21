@@ -28,6 +28,7 @@ data class DeckOption(
     val curve: List<Pair<String, Int>>,
     val manaSources: ManaSourceReport? = null,
     val hasObservedPower: Boolean = true,
+    val isThreeColor: Boolean = false,
 )
 
 
