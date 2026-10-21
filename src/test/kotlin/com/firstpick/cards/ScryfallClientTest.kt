@@ -15,6 +15,19 @@ class ScryfallClientTest {
         .bufferedReader().use { it.readText() }
 
     @Test
+    fun historicalMetadataUsesSavedCardsEvenWhenOldOrMissingNewerFields() = runBlocking {
+        val cache = createTempDirectory("fp-history-meta")
+        val file = cache.resolve("scryfall8_HOB.json")
+        Files.writeString(file, legacyMetadata)
+        Files.setLastModifiedTime(file, java.nio.file.attribute.FileTime.from(java.time.Instant.EPOCH))
+        val http = ScriptedHttpClient()
+        val meta = ScryfallClient(cacheDir = cache, http = http, preferCache = true).setMeta("HOB")
+        assertTrue(meta.getValue("test creature").isCreature)
+        assertEquals(0, http.requestCount)
+        assertEquals(legacyMetadata, Files.readString(file))
+    }
+
+    @Test
     fun preparationUsesCreatureCurveAndPipsButRetainsTheSpellsRoles() = runBlocking {
         val cache = createTempDirectory("fp-fra-meta")
         // Version 7 treated the combined creature/spell cost as the casting requirement.

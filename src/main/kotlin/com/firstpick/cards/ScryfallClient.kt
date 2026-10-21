@@ -26,6 +26,7 @@ class ScryfallClient(
     private val http: HttpClient = HttpClient.newBuilder()
         .connectTimeout(Duration.ofSeconds(15))
         .build(),
+    private val preferCache: Boolean = false,
 ) {
     private val json = Json { ignoreUnknownKeys = true; isLenient = true }
 
@@ -80,7 +81,7 @@ class ScryfallClient(
             runCatching { json.decodeFromString(ListSerializer(Card.serializer()), Files.readString(cache)) }
                 .getOrDefault(emptyList())
         } else emptyList()
-        val cards = if (!forceRefresh && cached.isNotEmpty() && isFresh(cache)) cached else {
+        val cards = if (!forceRefresh && cached.isNotEmpty() && (preferCache || isFresh(cache))) cached else {
             val fetched = searchCards("${limitedSetQuery(set)} unique:cards")
             if (!fetched.isNullOrEmpty()) {
                 Files.writeString(cache, json.encodeToString(ListSerializer(Card.serializer()), fetched))
@@ -138,7 +139,7 @@ class ScryfallClient(
         val cached = if (Files.exists(cache)) {
             runCatching { json.decodeFromString(LIST_SERIALIZER, Files.readString(cache)) }.getOrDefault(emptyList())
         } else emptyList()
-        val dtos: List<MetaDto> = if (isFresh(cache) && cached.all { it.manaCost != null && it.impactKnown && it.manaAccessKnown }) {
+        val dtos: List<MetaDto> = if (cached.isNotEmpty() && (preferCache || (isFresh(cache) && cached.all { it.manaCost != null && it.impactKnown && it.manaAccessKnown }))) {
             cached
         } else {
             val built = build(set, names)

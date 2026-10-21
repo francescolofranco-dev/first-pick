@@ -40,3 +40,9 @@ chat, and opponent names are not stored. No records are uploaded.
 
 SQLite writes are transactional, use WAL journaling, and have a busy timeout.
 Future schema versions are rejected instead of being opened as a fresh database.
+
+Historical drafts open using saved card ratings, catalogs, and metadata even when
+those caches are older than live-advice refresh limits. Optional archetype data
+is loaded only from disk during review, so its refresh cannot block the saved
+pool or deck builds. The History set filter includes counts for each selection.
+Stats lists saved draft types even when their historical results are unavailable.

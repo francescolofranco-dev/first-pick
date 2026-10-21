@@ -111,16 +111,24 @@ class DraftViewModel(
 
     suspend fun reviewDraft(state: DraftState): DraftUiState {
         // Separate repositories keep history browsing from changing live advice or overlays.
-        val review = DraftViewModel(scope)
+        val savedCards = com.firstpick.cards.ScryfallClient(preferCache = true)
+        return DraftViewModel(scope,
+            repo = CardRepository(SeventeenLandsClient(preferCache = true), catalogClient = savedCards),
+            metaRepo = CardMetaRepository(savedCards),
+            archetypeRepo = ArchetypeRepository(SeventeenLandsClient(cacheOnly = true)),
+        ).loadArchivedDraft(state)
+    }
+
+    internal suspend fun loadArchivedDraft(state: DraftState): DraftUiState {
         val set = state.setCode ?: return DraftUiState(dataError = "This draft has no set information")
-        runCatching { review.repo.load(set, DraftRatingsFormats.DEFAULT) }
-            .onFailure { review.currentError = review.dataErrorMessage(it, set) }
-        runCatching { review.metaRepo.load(set, review.repo.cardNames) }
-        runCatching { review.archetypeRepo.loadStrengths(set, DraftRatingsFormats.DEFAULT) }
-        runCatching { review.synergyRepo.load(set) }
-        review.ensureLanePair(state)
+        runCatching { repo.load(set, DraftRatingsFormats.DEFAULT) }
+            .onFailure { currentError = dataErrorMessage(it, set) }
+        runCatching { metaRepo.load(set, repo.cardNames) }
+        runCatching { archetypeRepo.loadStrengths(set, DraftRatingsFormats.DEFAULT) }
+        runCatching { synergyRepo.load(set) }
+        ensureLanePair(state)
         currentCoroutineContext().ensureActive()
-        return review.buildUi(state).copy(dataError = review.currentError)
+        return buildUi(state).copy(dataError = currentError)
     }
 
     fun start() {

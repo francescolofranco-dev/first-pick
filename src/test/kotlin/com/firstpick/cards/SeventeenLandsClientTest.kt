@@ -16,6 +16,24 @@ import kotlin.test.assertTrue
 class SeventeenLandsClientTest {
 
     @Test
+    fun archivedRatingsUseOldSavedDataWithoutWaitingForNetwork() = runBlocking {
+        val cache = createTempDirectory("fp-history-ratings")
+        val file = cache.resolve("ratings3_HOB_PremierDraft.json")
+        Files.writeString(file, """{"data":[{"name":"Saved Hobbit","mtga_id":103467,"color":"U","ever_drawn_win_rate":0.58,"ever_drawn_game_count":1000}]}""")
+        Files.setLastModifiedTime(file, FileTime.from(Instant.now().minus(Duration.ofDays(90))))
+        val http = ScriptedHttpClient()
+        val saved = SeventeenLandsClient(cacheDir = cache, http = http, preferCache = true)
+            .fetchWithMetadata("HOB", "PremierDraft")
+        assertEquals("Saved Hobbit", saved.ratings.single().name)
+        assertEquals(RatingsDataSource.STALE_CACHE, saved.metadata.source)
+        assertEquals(0, http.requestCount)
+        val optional = SeventeenLandsClient(cacheDir = cache, http = http, cacheOnly = true)
+        assertTrue(optional.colorRatings("HOB", "PremierDraft").isEmpty())
+        assertFailsWith<DataUnavailableException> { optional.fetch("HOB", "PremierDraft", "WU") }
+        assertEquals(0, http.requestCount)
+    }
+
+    @Test
     fun nonPremierDataIsRejectedBeforeCacheOrNetworkAccess() = runBlocking {
         val cache = createTempDirectory("fp-draft-only")
         Files.writeString(cache.resolve("ratings3_FRA_Sealed.json"), """{"data":[]}""")

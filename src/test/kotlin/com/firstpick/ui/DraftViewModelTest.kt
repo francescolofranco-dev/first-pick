@@ -34,6 +34,34 @@ import kotlin.test.assertTrue
 class DraftViewModelTest {
 
     @Test
+    fun archivedHobbitPoolAndBuildsLoadOfflineFromSavedData() = runBlocking {
+        val cache = createTempDirectory("fp-history-hob")
+        val ratings = cache.resolve("ratings3_HOB_PremierDraft.json")
+        Files.writeString(ratings, """{"data":[{"name":"Test Hobbit","mtga_id":103467,"color":"U","types":["Creature"],"ever_drawn_win_rate":0.58,"ever_drawn_game_count":1000},{"name":"White Hobbit","mtga_id":103468,"color":"W","types":["Creature"],"ever_drawn_win_rate":0.57,"ever_drawn_game_count":1000}]}""")
+        Files.setLastModifiedTime(ratings, java.nio.file.attribute.FileTime.from(java.time.Instant.EPOCH))
+        val http = ScriptedHttpClient()
+        val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+        try {
+            val vm = DraftViewModel(scope,
+                repo = CardRepository(SeventeenLandsClient(cacheDir = cache, http = http, preferCache = true)),
+                metaRepo = CardMetaRepository().apply { index(listOf(CardMeta("Test Hobbit", 2, true, false), CardMeta("White Hobbit", 3, true, false)), "HOB") },
+                archetypeRepo = ArchetypeRepository(SeventeenLandsClient(cacheDir = cache, http = http, cacheOnly = true)),
+            )
+            val archived = com.firstpick.model.DraftState(
+                phase = com.firstpick.model.DraftPhase.COMPLETE, setCode = "HOB", eventName = "PickTwoDraft_HOB",
+                pool = List(21) { 103467 } + List(21) { 103468 }, poolOrderKnown = false,
+            )
+            val result = withTimeout(5_000) { vm.loadArchivedDraft(archived) }
+            assertEquals("HOB", result.setCode)
+            assertEquals(42, result.draftPool.sumOf { it.count })
+            assertEquals(setOf("Test Hobbit", "White Hobbit"), result.draftPool.map { it.name }.toSet())
+            assertTrue(result.deckOptions.isNotEmpty())
+            assertEquals(0, http.requestCount)
+            assertEquals(com.firstpick.model.DraftPhase.IDLE, vm.ui.value.phase)
+        } finally { scope.cancel() }
+    }
+
+    @Test
     fun automaticPairAdviceAndManualOverrideReachTheUi() = runBlocking {
         val cache = createTempDirectory("fp-vm-picktwo")
         for (format in listOf("PremierDraft")) {

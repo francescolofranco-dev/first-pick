@@ -121,9 +121,13 @@ private fun OverviewStats(courses: List<CourseRecord>, matches: List<MatchRecord
         item {
             Panel("By draft type", trailing = "Event totals") {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    val groups = courses.filter { it.wins != null && it.losses != null }.groupBy { eventType(it.event) }
-                    if (groups.isEmpty()) StatsEmpty("No event results recorded yet.")
-                    for ((name, rows) in groups.toSortedMap()) StatsResultRow(name, rows.courseResults(), "${rows.size} events")
+                    val groups = (courses.map { eventType(it.event) } + drafts.map { eventType(it.state.eventName.orEmpty()) }).distinct().sorted()
+                    if (groups.isEmpty()) StatsEmpty("No drafts in this selection.")
+                    for (name in groups) {
+                        val rows = withResults.filter { eventType(it.event) == name }
+                        val count = drafts.count { eventType(it.state.eventName.orEmpty()) == name }
+                        StatsResultRow(name, rows.courseResults(), "$count drafts · ${rows.size} events with results")
+                    }
                 }
             }
         }

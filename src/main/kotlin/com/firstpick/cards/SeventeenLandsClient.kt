@@ -66,6 +66,8 @@ class SeventeenLandsClient(
     private val http: HttpClient = HttpClient.newBuilder()
         .connectTimeout(Duration.ofSeconds(15))
         .build(),
+    private val preferCache: Boolean = false,
+    private val cacheOnly: Boolean = false,
 ) {
     private val json = Json { ignoreUnknownKeys = true; isLenient = true }
 
@@ -132,13 +134,14 @@ class SeventeenLandsClient(
     ): CachedBody {
         Files.createDirectories(cacheDir)
         val cache = cacheDir.resolve(cacheName)
-        if (!forceRefresh && isFresh(cache)) {
+        if (!forceRefresh && Files.exists(cache) && (preferCache || cacheOnly || isFresh(cache))) {
             return CachedBody(
                 body = Files.readString(cache),
-                source = RatingsDataSource.FRESH_CACHE,
+                source = if (isFresh(cache)) RatingsDataSource.FRESH_CACHE else RatingsDataSource.STALE_CACHE,
                 lastUpdated = cacheLastUpdated(cache),
             )
         }
+        if (cacheOnly) throw DataUnavailableException(FetchFailure.NOT_FOUND)
         return when (val r = httpGet(url())) {
             is HttpResult.Ok -> {
                 Files.writeString(cache, r.body)

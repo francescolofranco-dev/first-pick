@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Text
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -21,6 +23,9 @@ internal fun DraftHistoryPane(
     history: List<DraftHistoryEntry>,
     onReviewDraft: suspend (DraftState) -> DraftUiState,
 ) {
+    var selectedSet by remember { mutableStateOf("All sets") }
+    var setMenuOpen by remember { mutableStateOf(false) }
+    val visibleHistory = history.filter { selectedSet == "All sets" || it.state.setCode == selectedSet }
     var selectedId by remember { mutableStateOf<String?>(null) }
     val selected = history.firstOrNull { it.id == selectedId }
     var showPool by remember(selectedId) { mutableStateOf(false) }
@@ -39,12 +44,20 @@ internal fun DraftHistoryPane(
             Text("Draft history", style = AppTheme.typography.paneTitle, color = AppTheme.colors.textPrimary)
             Text("Completed drafts are saved on this Mac. Select one to review its builds and drafted cards.",
                 style = AppTheme.typography.caption, color = AppTheme.colors.textSecondary)
+            Box {
+                AppButton(onClick = { setMenuOpen = true }) { Text("$selectedSet ▾ · ${visibleHistory.size} drafts") }
+                DropdownMenu(setMenuOpen, onDismissRequest = { setMenuOpen = false }) {
+                    for (code in listOf("All sets") + history.mapNotNull { it.state.setCode }.distinct().sorted()) {
+                        DropdownMenuItem(text = { Text(code) }, onClick = { selectedSet = code; setMenuOpen = false })
+                    }
+                }
+            }
             if (history.isEmpty()) {
                 Text("No completed drafts yet. Drafts found in Arena’s current log will appear here too.",
                     color = AppTheme.colors.textSecondary)
             }
             LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                items(history, key = { it.id }) { entry ->
+                items(visibleHistory, key = { it.id }) { entry ->
                     AppButton(onClick = { selectedId = entry.id }, modifier = Modifier.fillMaxWidth()) {
                         Column(Modifier.fillMaxWidth().padding(4.dp)) {
                             Text("${entry.state.setCode ?: "Unknown set"} · ${if (entry.state.picksPerChoice == 2) "Pick Two Draft" else entry.state.format.label}",
