@@ -40,22 +40,6 @@ internal object PackCardTitleMatcher {
         return unambiguousCards.associate { it.rectIndex to it.cardIndex }
     }
 
-    /** A complete art permutation is not evidence that each card was identified. */
-    fun verifiedAssignment(
-        assignment: Map<Int, Int>,
-        anchors: Map<Int, Int>,
-        cardNames: List<String>,
-    ): Map<Int, Int> {
-        val verified = anchors.filterValues { it in cardNames.indices }.toMutableMap()
-        // Legacy unnamed callers have no title to corroborate. Do not let their
-        // art assignments steal a slot or identity already verified by OCR.
-        for ((rect, card) in assignment) {
-            if (card !in cardNames.indices || cardNames[card].isNotBlank()) continue
-            if (rect !in verified && card !in verified.values) verified[rect] = card
-        }
-        return verified
-    }
-
     fun applyAnchors(
         assignment: Map<Int, Int>,
         anchors: Map<Int, Int>,

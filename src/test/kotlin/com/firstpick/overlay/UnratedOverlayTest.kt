@@ -6,13 +6,6 @@ import kotlin.test.assertNull
 
 class UnratedOverlayTest {
     @Test
-    fun `partial title verification cannot promote a weaker card to best pick`() {
-        val cards = listOf(OverlayCard(80.0, null), OverlayCard(40.0, null))
-        assertNull(bestRatedOverlayCard(cards, listOf(1)))
-        assertEquals(0, bestRatedOverlayCard(cards, listOf(0)))
-    }
-
-    @Test
     fun `catalog cards have no best-pick halo`() {
         val cards = listOf(OverlayCard(null, null), OverlayCard(null, null))
         assertNull(bestRatedOverlayCard(cards, listOf(0, 1)))

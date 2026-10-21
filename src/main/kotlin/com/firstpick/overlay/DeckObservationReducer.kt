@@ -39,7 +39,6 @@ data class DeckObservationState internal constructor(
     val totalCards: Int?,
     internal val knownBasicCounts: Map<String, Int>,
     val failure: DeckObservationFailure?,
-    internal val unexplainedChange: Boolean = false,
 ) {
     val status: DeckObservationStatus
         get() = when {
@@ -134,7 +133,6 @@ class DeckObservationReducer(draftPoolBaseline: List<DeckCardCount>) {
             knownCounts = nextCounts.toSortedMap(String.CASE_INSENSITIVE_ORDER),
             totalCards = frame.totalCards,
             failure = null,
-            unexplainedChange = unexplainedChange,
         )
     }
 

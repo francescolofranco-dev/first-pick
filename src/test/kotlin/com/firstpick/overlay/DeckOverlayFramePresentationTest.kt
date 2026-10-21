@@ -16,17 +16,6 @@ class DeckOverlayFramePresentationTest {
     ).state
 
     @Test
-    fun slowReaderExpiresPositionsButRetainsVerificationProgress() {
-        val waiting = trusted.copy(verifiedCards = 12, expectedCards = 23).awaitingFreshFrame()
-        assertEquals(DeckGuidanceStatus.READING, waiting.status)
-        assertTrue(waiting.marks.isEmpty())
-        assertEquals(0, waiting.remainingAdds)
-        assertEquals(12, waiting.verifiedCards)
-        assertEquals(23, waiting.expectedCards)
-        assertEquals(waiting, waiting.awaitingFreshFrame())
-    }
-
-    @Test
     fun lostEvidenceImmediatelyClearsInstructionsIncludingObscuredRows() {
         for (attempt in listOf(
             DeckOverlayFrameAttempt.ReaderFailure,

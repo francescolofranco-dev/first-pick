@@ -16,8 +16,8 @@ internal class DeckGuidanceSession(
     private val baselineCounts = baseline.groupingBy(DeckCardCount::name)
         .fold(0) { total, card -> total + card.count }
     private val matcher = CanonicalCardNameMatcher(baselineCounts.keys)
-    private val reconciler = DeckObservationReconciler(baseline)
-    private var observationState = DeckObservationReducer(baseline).initialState()
+    private val reducer = DeckObservationReducer(baseline)
+    private var observationState = reducer.initialState()
     private var unreadableSinceMs: Long? = null
     private var lastLoggedTotal: Int? = null
     private var lastLoggedStatus: DeckGuidanceStatus? = null
@@ -33,7 +33,6 @@ internal class DeckGuidanceSession(
     fun observe(
         image: BufferedImage,
         screen: DeckBuilderScreenObservation,
-        nowMs: Long = System.nanoTime() / 1_000_000L,
     ): DeckGuidanceOverlayModel {
         unreadableSinceMs = null
         val visibleRows = screen.deckRows.mapNotNull { row ->
@@ -56,13 +55,13 @@ internal class DeckGuidanceSession(
             VisibleExactCardCount(name, drafted - outsideDeck)
         }
 
-        observationState = reconciler.observe(
+        observationState = reducer.reduce(
+            observationState,
             DeckObservationFrame(
                 totalCards = screen.deckSize,
                 visibleRows = visibleRows,
                 visiblePool = visiblePool,
             ),
-            nowMs,
         )
         val guidance = DeckGuidance.evaluate(target, observationState.asDeckReadState())
         if (guidance.status == DeckGuidanceStatus.UNABLE) {
@@ -111,13 +110,12 @@ internal class DeckGuidanceSession(
     @Synchronized
     fun unreadableFrame(nowMs: Long) {
         val since = unreadableSinceMs ?: nowMs.also { unreadableSinceMs = it }
-        if (nowMs - since >= 3_000) invalidate()
+        if (nowMs - since >= 3_000) observationState = reducer.initialState()
     }
 
     @Synchronized
     fun invalidate() {
-        reconciler.invalidate()
-        observationState = DeckObservationReducer(baseline).initialState()
+        observationState = reducer.initialState()
         unreadableSinceMs = null
     }
 

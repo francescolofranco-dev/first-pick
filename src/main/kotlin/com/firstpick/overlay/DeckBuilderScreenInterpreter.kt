@@ -87,21 +87,7 @@ object DeckBuilderScreenInterpreter {
                     it.prefix.bounds.centerY < occlusionTop
             }
             .sortedBy { it.prefix.bounds.centerY }
-        if (rawRows.size < MIN_ROWS) {
-            // Pool copies remain useful when a hover preview or an empty deck
-            // prevents establishing row geometry. Never invent row positions.
-            if (done == null) return null
-            val pool = findPoolTitles(observations, PANEL_MIN_X)
-            if (pool.isEmpty() && header.current != 0) return null
-            return DeckBuilderScreenObservation(
-                deckSize = header.current,
-                minimumDeckSize = header.minimum,
-                deckRows = emptyList(),
-                poolCardTitles = pool,
-                deckPanelBounds = NormalizedRect(PANEL_MIN_X, 0.10, 1.0 - PANEL_MIN_X, 0.87),
-                confidence = minOf(header.source.confidence, done.confidence),
-            ).takeIf { it.confidence >= MIN_SCREEN_CONFIDENCE }
-        }
+        if (rawRows.size < MIN_ROWS) return null
 
         val alignedX = rawRows.map { it.prefix.bounds.x }.median()
         val rows = rawRows.filter { abs(it.prefix.bounds.x - alignedX) <= ROW_X_TOLERANCE }

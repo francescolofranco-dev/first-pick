@@ -50,7 +50,7 @@ fun ArenaDeckBuilderOverlay(
     val targetKey = remember(target) { target.stableCountKey() }
     val session = remember(sessionKey, poolKey) { DeckGuidanceSession(target, draftPool) }
     SideEffect { session.updateTarget(target) }
-    var presentation by remember(session) { mutableStateOf(DeckOverlayPresentationState.initial()) }
+    var presentation by remember(poolKey) { mutableStateOf(DeckOverlayPresentationState.initial()) }
     var workHealth by remember(poolKey, targetKey) {
         mutableStateOf(
             OverlayHealth(
@@ -109,7 +109,7 @@ fun ArenaDeckBuilderOverlay(
         while (true) {
             delay(100)
             if (System.nanoTime() / 1_000_000L - lastFrameAtMs > 900) {
-                presentation = presentation.copy(model = presentation.model.awaitingFreshFrame())
+                presentation = presentation.copy(model = DeckGuidanceOverlayModel(DeckGuidanceStatus.READING))
             }
         }
     }

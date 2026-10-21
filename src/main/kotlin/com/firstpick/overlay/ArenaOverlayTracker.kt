@@ -160,10 +160,10 @@ fun ArenaOverlayTracker(
         calibrating ->
             OverlayHealth(OverlayHealthState.READING, "Detecting Arena's pack layout.")
 
-        assignmentState.value?.size == cards.size && clickThroughApplied ->
+        assignmentState.value != null && clickThroughApplied ->
             OverlayHealth(OverlayHealthState.ACTIVE, "Draft overlay is synced to Arena's pack.")
 
-        assignmentState.value?.size == cards.size ->
+        assignmentState.value != null ->
             OverlayHealth(OverlayHealthState.READING, "Preparing the draft overlay.")
 
         else -> recognitionHealth
@@ -247,7 +247,7 @@ fun ArenaOverlayTracker(
                     // Early complete assignments can still be from cards flying into place.
                     titleAnchors = if (
                         match.assignment.size >= expected &&
-                        settler.fullRecognitions >= REQUIRED_FULL_RECOGNITIONS - 1
+                        settler.fullRecognitions == REQUIRED_FULL_RECOGNITIONS - 1
                     ) {
                         reader.recognize(frame)
                             ?.let { PackCardTitleMatcher.anchors(it, rects, cards.map(OverlayCard::name)) }
@@ -285,22 +285,10 @@ fun ArenaOverlayTracker(
                             store.put(b.w, b.h, it)
                             calVersion++
                         }
-                        val verified = PackCardTitleMatcher.verifiedAssignment(
+                        assignmentState.value = PackCardTitleMatcher.applyAnchors(
                             settled.match.assignment,
                             completedAttempt.titleAnchors,
-                            cards.map(OverlayCard::name),
                         )
-                        // Never carry an earlier frame's anchors into a new layout.
-                        assignmentState.value = verified.takeIf { it.isNotEmpty() }
-                        if (verified.size < cards.size) {
-                            lastFailure = "titles verified (${verified.size}/${cards.size})"
-                            recognitionHealth = OverlayHealth(
-                                OverlayHealthState.READING,
-                                "Verifying Arena's card titles (${verified.size}/${cards.size}).",
-                            )
-                            delay(RECOGNITION_RETRY_MS)
-                            return@repeat
-                        }
                         recognitionHealth = OverlayHealth(
                             OverlayHealthState.ACTIVE,
                             "Draft overlay is synced to Arena's pack.",
@@ -318,17 +306,9 @@ fun ArenaOverlayTracker(
         }
 
 
-        val verifiedCount = assignmentState.value?.size ?: 0
-        captureFailed = capturedFrames == 0
-        recognitionHealth = if (verifiedCount > 0) {
-            OverlayHealth(
-                OverlayHealthState.READING,
-                "Verified $verifiedCount/${cards.size} card titles; unreadable cards remain ungraded.",
-            )
-        } else {
-            packRecognitionFailureHealth(capturedFrames)
-        }
-        Log.warn(TAG, "$lastFailure after $MAX_RECOGNITION_ATTEMPTS attempts; showing only $verifiedCount verified seals")
+        captureFailed = true
+        recognitionHealth = packRecognitionFailureHealth(capturedFrames)
+        Log.warn(TAG, "$lastFailure after $MAX_RECOGNITION_ATTEMPTS attempts; leaving seals ungraded")
     }
 
     LaunchedEffect(calibrating, b.w, b.h) {
@@ -436,8 +416,7 @@ private fun geometryMarks(
 }
 
 internal fun bestRatedOverlayCard(cards: List<OverlayCard>, assigned: Collection<Int>): Int? =
-    cards.indices.filter { cards[it].value != null }.maxByOrNull { cards[it].value!! }
-        ?.takeIf { it in assigned }
+    assigned.filter { cards[it].value != null }.maxByOrNull { cards[it].value!! }
 
 
 private const val BADGE_SCALE = 0.52f

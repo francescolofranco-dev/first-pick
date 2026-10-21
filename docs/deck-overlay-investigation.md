@@ -227,3 +227,13 @@ still needs a foreground Arena interaction run.
 The final version is 2.3.3 because the concurrently completed three-color deck
 changes on main already used 2.3.2. The combined application passed the full production checks and was rebuilt,
 installed, and visibly verified as v2.3.3 before integration.
+
+## Rollback in 2.5.5
+
+User testing found worse recognition coverage and moving rating badges during
+drafting. Versions 2.3.3 and 2.5.4 did not establish live interaction parity.
+The overlay implementation, native deck reader, and corresponding tests are
+restored to revision 5fcfb16, before both experimental changes. Unrelated
+features remain current. The earlier implementation notes above are historical,
+not a description of the active overlay. Further overlay changes require real
+interaction validation before claiming an improvement.

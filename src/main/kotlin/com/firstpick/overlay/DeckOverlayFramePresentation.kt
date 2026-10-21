@@ -219,11 +219,3 @@ internal fun deckOverlayPollDelayMs(processingElapsedMs: Long): Long = maxOf(
     DECK_OVERLAY_MIN_REST_MS,
     DECK_OVERLAY_FRAME_START_TARGET_MS - processingElapsedMs.coerceAtLeast(0),
 )
-
-/** Expire card positions without erasing the progress label during a slow read. */
-internal fun DeckGuidanceOverlayModel.awaitingFreshFrame(): DeckGuidanceOverlayModel =
-    DeckGuidanceOverlayModel(
-        status = DeckGuidanceStatus.READING,
-        verifiedCards = verifiedCards,
-        expectedCards = expectedCards,
-    )
