@@ -1,0 +1,533 @@
+{
+  "schema": 1,
+  "description": "Existing real-image component fixtures and two full-grid captures. Repeated stills exercise settling; they are not interaction recordings.",
+  "provenance": "Identity/crop labels from CardRecognizerTest; geometry captures from CardDetectorTest. Room A/B are fixture identifiers, not canonical card names. No deck-edit, rating-value, or display annotations.",
+  "appVersion": "2.5.5 restored baseline",
+  "contexts": [
+    {
+      "id": "repulsor-avengers",
+      "mode": "draft",
+      "cards": [
+        {
+          "name": "Repulsor Blast",
+          "reference": "msh-repulsor-reference.jpg"
+        },
+        {
+          "name": "Avengers Hangar",
+          "reference": "msh-avengers-reference.jpg"
+        }
+      ]
+    },
+    {
+      "id": "arcane-killian",
+      "mode": "draft",
+      "cards": [
+        {
+          "name": "Arcane Omens",
+          "reference": "sos-arcane-killian-references.jpg",
+          "crop": {
+            "x": 0,
+            "y": 0,
+            "width": 336,
+            "height": 468
+          }
+        },
+        {
+          "name": "Killian's Confidence",
+          "reference": "sos-arcane-killian-references.jpg",
+          "crop": {
+            "x": 336,
+            "y": 0,
+            "width": 336,
+            "height": 468
+          }
+        }
+      ]
+    },
+    {
+      "id": "missing-swamp-reference",
+      "mode": "draft",
+      "cards": [
+        {
+          "name": "Swordsman",
+          "reference": "msh-p3p4-swordsman-white-tiger-references.jpg",
+          "crop": {
+            "x": 0,
+            "y": 0,
+            "width": 336,
+            "height": 468
+          }
+        },
+        {
+          "name": "White Tiger",
+          "reference": "msh-p3p4-swordsman-white-tiger-references.jpg",
+          "crop": {
+            "x": 336,
+            "y": 0,
+            "width": 336,
+            "height": 468
+          }
+        },
+        {
+          "name": "Swamp"
+        }
+      ]
+    },
+    {
+      "id": "rooms",
+      "mode": "draft",
+      "cards": [
+        {
+          "name": "Room reference A",
+          "reference": "dsk-room-references.jpg",
+          "crop": {
+            "x": 0,
+            "y": 0,
+            "width": 336,
+            "height": 468
+          },
+          "isRoom": true
+        },
+        {
+          "name": "Room reference B",
+          "reference": "dsk-room-references.jpg",
+          "crop": {
+            "x": 336,
+            "y": 0,
+            "width": 336,
+            "height": 468
+          },
+          "isRoom": true
+        },
+        {
+          "name": "Unknown reference"
+        }
+      ]
+    },
+    {
+      "id": "grid-13",
+      "mode": "draft",
+      "cards": [
+        {
+          "name": "Unannotated slot 0"
+        },
+        {
+          "name": "Unannotated slot 1"
+        },
+        {
+          "name": "Unannotated slot 2"
+        },
+        {
+          "name": "Unannotated slot 3"
+        },
+        {
+          "name": "Unannotated slot 4"
+        },
+        {
+          "name": "Unannotated slot 5"
+        },
+        {
+          "name": "Unannotated slot 6"
+        },
+        {
+          "name": "Unannotated slot 7"
+        },
+        {
+          "name": "Unannotated slot 8"
+        },
+        {
+          "name": "Unannotated slot 9"
+        },
+        {
+          "name": "Unannotated slot 10"
+        },
+        {
+          "name": "Unannotated slot 11"
+        },
+        {
+          "name": "Unannotated slot 12"
+        }
+      ]
+    },
+    {
+      "id": "grid-14",
+      "mode": "draft",
+      "cards": [
+        {
+          "name": "Unannotated slot 0"
+        },
+        {
+          "name": "Unannotated slot 1"
+        },
+        {
+          "name": "Unannotated slot 2"
+        },
+        {
+          "name": "Unannotated slot 3"
+        },
+        {
+          "name": "Unannotated slot 4"
+        },
+        {
+          "name": "Unannotated slot 5"
+        },
+        {
+          "name": "Unannotated slot 6"
+        },
+        {
+          "name": "Unannotated slot 7"
+        },
+        {
+          "name": "Unannotated slot 8"
+        },
+        {
+          "name": "Unannotated slot 9"
+        },
+        {
+          "name": "Unannotated slot 10"
+        },
+        {
+          "name": "Unannotated slot 11"
+        },
+        {
+          "name": "Unannotated slot 12"
+        },
+        {
+          "name": "Unannotated slot 13"
+        }
+      ]
+    }
+  ],
+  "frames": [
+    {
+      "atMs": 0,
+      "context": "repulsor-avengers",
+      "image": "msh-p2p4-repulsor-avengers.jpg",
+      "recognitionRects": [
+        {
+          "index": 0,
+          "x": 0,
+          "y": 0,
+          "width": 228,
+          "height": 330
+        },
+        {
+          "index": 1,
+          "x": 228,
+          "y": 0,
+          "width": 228,
+          "height": 330
+        }
+      ],
+      "expectedCards": {}
+    },
+    {
+      "atMs": 300,
+      "context": "repulsor-avengers",
+      "image": "msh-p2p4-repulsor-avengers.jpg",
+      "recognitionRects": [
+        {
+          "index": 0,
+          "x": 0,
+          "y": 0,
+          "width": 228,
+          "height": 330
+        },
+        {
+          "index": 1,
+          "x": 228,
+          "y": 0,
+          "width": 228,
+          "height": 330
+        }
+      ],
+      "expectedCards": {}
+    },
+    {
+      "atMs": 600,
+      "context": "repulsor-avengers",
+      "image": "msh-p2p4-repulsor-avengers.jpg",
+      "recognitionRects": [
+        {
+          "index": 0,
+          "x": 0,
+          "y": 0,
+          "width": 228,
+          "height": 330
+        },
+        {
+          "index": 1,
+          "x": 228,
+          "y": 0,
+          "width": 228,
+          "height": 330
+        }
+      ],
+      "expectedCards": {
+        "0": "Repulsor Blast",
+        "1": "Avengers Hangar"
+      }
+    },
+    {
+      "atMs": 900,
+      "context": "arcane-killian",
+      "image": "sos-arcane-killian-offset-capture.jpg",
+      "recognitionRects": [
+        {
+          "index": 0,
+          "x": 0,
+          "y": 0,
+          "width": 220,
+          "height": 318
+        },
+        {
+          "index": 1,
+          "x": 220,
+          "y": 0,
+          "width": 220,
+          "height": 318
+        }
+      ],
+      "expectedCards": {}
+    },
+    {
+      "atMs": 1200,
+      "context": "arcane-killian",
+      "image": "sos-arcane-killian-offset-capture.jpg",
+      "recognitionRects": [
+        {
+          "index": 0,
+          "x": 0,
+          "y": 0,
+          "width": 220,
+          "height": 318
+        },
+        {
+          "index": 1,
+          "x": 220,
+          "y": 0,
+          "width": 220,
+          "height": 318
+        }
+      ],
+      "expectedCards": {}
+    },
+    {
+      "atMs": 1500,
+      "context": "arcane-killian",
+      "image": "sos-arcane-killian-offset-capture.jpg",
+      "recognitionRects": [
+        {
+          "index": 0,
+          "x": 0,
+          "y": 0,
+          "width": 220,
+          "height": 318
+        },
+        {
+          "index": 1,
+          "x": 220,
+          "y": 0,
+          "width": 220,
+          "height": 318
+        }
+      ],
+      "expectedCards": {
+        "0": "Arcane Omens",
+        "1": "Killian's Confidence"
+      }
+    },
+    {
+      "atMs": 1800,
+      "context": "missing-swamp-reference",
+      "image": "msh-p3p4-swordsman-white-tiger-swamp.jpg",
+      "recognitionRects": [
+        {
+          "index": 0,
+          "x": 0,
+          "y": 0,
+          "width": 226,
+          "height": 331
+        },
+        {
+          "index": 1,
+          "x": 226,
+          "y": 0,
+          "width": 226,
+          "height": 331
+        },
+        {
+          "index": 2,
+          "x": 452,
+          "y": 0,
+          "width": 226,
+          "height": 331
+        }
+      ],
+      "expectedCards": {}
+    },
+    {
+      "atMs": 2100,
+      "context": "missing-swamp-reference",
+      "image": "msh-p3p4-swordsman-white-tiger-swamp.jpg",
+      "recognitionRects": [
+        {
+          "index": 0,
+          "x": 0,
+          "y": 0,
+          "width": 226,
+          "height": 331
+        },
+        {
+          "index": 1,
+          "x": 226,
+          "y": 0,
+          "width": 226,
+          "height": 331
+        },
+        {
+          "index": 2,
+          "x": 452,
+          "y": 0,
+          "width": 226,
+          "height": 331
+        }
+      ],
+      "expectedCards": {}
+    },
+    {
+      "atMs": 2400,
+      "context": "missing-swamp-reference",
+      "image": "msh-p3p4-swordsman-white-tiger-swamp.jpg",
+      "recognitionRects": [
+        {
+          "index": 0,
+          "x": 0,
+          "y": 0,
+          "width": 226,
+          "height": 331
+        },
+        {
+          "index": 1,
+          "x": 226,
+          "y": 0,
+          "width": 226,
+          "height": 331
+        },
+        {
+          "index": 2,
+          "x": 452,
+          "y": 0,
+          "width": 226,
+          "height": 331
+        }
+      ],
+      "expectedCards": {
+        "0": "Swordsman",
+        "1": "White Tiger",
+        "2": "Swamp"
+      }
+    },
+    {
+      "atMs": 2700,
+      "context": "rooms",
+      "image": "dsk-room-cycle.jpg",
+      "recognitionRects": [
+        {
+          "index": 0,
+          "x": 0,
+          "y": 0,
+          "width": 219,
+          "height": 334
+        },
+        {
+          "index": 1,
+          "x": 219,
+          "y": 0,
+          "width": 219,
+          "height": 334
+        },
+        {
+          "index": 2,
+          "x": 438,
+          "y": 0,
+          "width": 219,
+          "height": 334
+        }
+      ],
+      "expectedCards": {}
+    },
+    {
+      "atMs": 3000,
+      "context": "rooms",
+      "image": "dsk-room-cycle.jpg",
+      "recognitionRects": [
+        {
+          "index": 0,
+          "x": 0,
+          "y": 0,
+          "width": 219,
+          "height": 334
+        },
+        {
+          "index": 1,
+          "x": 219,
+          "y": 0,
+          "width": 219,
+          "height": 334
+        },
+        {
+          "index": 2,
+          "x": 438,
+          "y": 0,
+          "width": 219,
+          "height": 334
+        }
+      ],
+      "expectedCards": {}
+    },
+    {
+      "atMs": 3300,
+      "context": "rooms",
+      "image": "dsk-room-cycle.jpg",
+      "recognitionRects": [
+        {
+          "index": 0,
+          "x": 0,
+          "y": 0,
+          "width": 219,
+          "height": 334
+        },
+        {
+          "index": 1,
+          "x": 219,
+          "y": 0,
+          "width": 219,
+          "height": 334
+        },
+        {
+          "index": 2,
+          "x": 438,
+          "y": 0,
+          "width": 219,
+          "height": 334
+        }
+      ],
+      "expectedCards": {
+        "0": "Room reference A",
+        "1": "Room reference B",
+        "2": "Unknown reference"
+      }
+    },
+    {
+      "atMs": 3600,
+      "context": "grid-13",
+      "image": "p1p1-13cards.png"
+    },
+    {
+      "atMs": 3900,
+      "context": "grid-14",
+      "image": "msh-p1p1-14cards.jpg"
+    }
+  ]
+}

@@ -262,3 +262,29 @@ tasks.register<Test>("deckAudit") {
     systemProperty("firstpick.audit.seedStart", providers.gradleProperty("auditSeedStart").orElse("0").get())
     outputs.upToDateWhen { false }
 }
+
+// Standalone, opt-in diagnostics. Normal application startup does not record frames.
+tasks.register<JavaExec>("overlayReplay") {
+    group = "verification"
+    description = "Replay a self-contained overlay recording offline and write a baseline report."
+    mainClass.set("com.firstpick.diagnostics.OverlayReplayKt")
+    classpath = sourceSets["main"].runtimeClasspath
+    args(providers.gradleProperty("manifest").orElse("src/test/resources/overlay/baseline.json").get(),
+        providers.gradleProperty("reportDir").orElse("build/reports/overlay-baseline").get())
+}
+
+tasks.register<JavaExec>("overlayRecord") {
+    group = "verification"
+    description = "Explicitly record a bounded local Arena session; requires a context manifest and a new output directory."
+    mainClass.set("com.firstpick.tools.OverlayRecordKt")
+    classpath = sourceSets["main"].runtimeClasspath
+    val contextFile = providers.gradleProperty("context").orElse("").get()
+    val recordingDir = providers.gradleProperty("recordingDir").orElse("").get()
+    args(contextFile, recordingDir, providers.gradleProperty("recordFrames").orElse("60").get(),
+        providers.gradleProperty("recordIntervalMs").orElse("300").get())
+    doFirst {
+        require(contextFile.isNotBlank() && recordingDir.isNotBlank()) {
+            "Specify -Pcontext=/path/context.json -PrecordingDir=/path/new-directory. Recording is opt-in."
+        }
+    }
+}
