@@ -52,7 +52,7 @@ fun recordMain(args: Array<String>) {
             if (elapsed() >= 120_000) { reason = "duration limit"; break }
             val at = elapsed()
             val bounds = locator.locate()
-            val frame = if (bounds?.frontmost != true) {
+            val frame = if (bounds == null || (reader == null && !bounds.frontmost)) {
                 RecordedFrame(at, elapsed(), context.id, event = "focus_lost")
             } else {
                 val deck = reader?.read(context.cards.map { it.name }, bounds.w, bounds.h)

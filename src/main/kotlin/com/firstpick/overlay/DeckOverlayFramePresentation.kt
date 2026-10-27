@@ -215,7 +215,7 @@ internal const val DECK_OVERLAY_FRAME_START_TARGET_MS = 300L
 internal const val DECK_OVERLAY_MIN_REST_MS = 50L
 
 /** Delay that targets a fixed interval between frame starts without busy looping. */
-internal fun deckOverlayPollDelayMs(processingElapsedMs: Long): Long = maxOf(
+internal fun deckOverlayPollDelayMs(processingElapsedMs: Long, arenaFrontmost: Boolean = true): Long = maxOf(
     DECK_OVERLAY_MIN_REST_MS,
-    DECK_OVERLAY_FRAME_START_TARGET_MS - processingElapsedMs.coerceAtLeast(0),
+    (if (arenaFrontmost) DECK_OVERLAY_FRAME_START_TARGET_MS else 1_000L) - processingElapsedMs.coerceAtLeast(0),
 )

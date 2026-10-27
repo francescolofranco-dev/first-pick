@@ -93,6 +93,13 @@ fun ArenaDeckBuilderOverlay(
     )
     OverlayHealthEffect(health, onHealthChanged)
 
+    LaunchedEffect(session, bounds != null) {
+        if (bounds == null) {
+            session.invalidate()
+            presentation = DeckOverlayPresentationState.initial()
+        }
+    }
+
     val arena = bounds ?: return
     val windowState = rememberWindowState(
         position = WindowPosition(arena.x.dp, arena.y.dp),
@@ -120,39 +127,25 @@ fun ArenaDeckBuilderOverlay(
             "Reading Arena's Limited deck builder.",
         )
         while (true) {
-            // Reacquire deck evidence after focus changes; edits may happen while hidden.
-            if (!arenaFrontmost) {
-                session.invalidate()
-                presentation = DeckOverlayPresentationState.initial()
-                delay(WINDOW_POLL_MS)
-                continue
-            }
-
+            // Keep observing Arena while its overlay is hidden. Focus changes do
+            // not erase a scan; capture gaps and observed edits still invalidate it.
             val frameStartedNs = System.nanoTime()
-            val attempt = withContext(Dispatchers.IO) {
-                val frame = reader.read(draftPool.map { it.name }, arena.w, arena.h)
-                    ?: return@withContext DeckOverlayFrameAttempt.ReaderFailure
-                val image = frame.image
-                val text = frame.text
-                val screen = DeckBuilderScreenInterpreter.interpret(text)
-                val shell = DeckBuilderScreenInterpreter.detectShell(text)
+            val frame = withContext(Dispatchers.IO) {
+                reader.read(draftPool.map { it.name }, arena.w, arena.h)
+            }
+            // Reduce only after the cancellable capture returns, so an obsolete
+            // window/session cannot publish a late frame into the active scan.
+            val attempt = if (frame == null) DeckOverlayFrameAttempt.ReaderFailure else {
+                val screen = DeckBuilderScreenInterpreter.interpret(frame.text)
+                val shell = DeckBuilderScreenInterpreter.detectShell(frame.text)
                 when {
                     screen != null && isSupportedLimitedDeckBuilder(screen) ->
-                        DeckOverlayFrameAttempt.Recognized(
-                            model = session.observe(image, screen),
-                        )
-
+                        DeckOverlayFrameAttempt.Recognized(session.observe(frame.image, screen))
                     shell?.minimumDeckSize == DeckGuidance.LIMITED_DECK_SIZE ->
                         DeckOverlayFrameAttempt.SupportedBuilderShell
-
                     shell != null -> DeckOverlayFrameAttempt.UnsupportedLayout
                     else -> DeckOverlayFrameAttempt.OutsideBuilder
                 }
-            }
-            if (!arenaFrontmost) {
-                session.invalidate()
-                presentation = DeckOverlayPresentationState.initial()
-                continue
             }
             lastFrameAtMs = System.nanoTime() / 1_000_000L
             if (attempt !is DeckOverlayFrameAttempt.Recognized) session.unreadableFrame(lastFrameAtMs)
@@ -167,7 +160,7 @@ fun ArenaDeckBuilderOverlay(
             logDeckOverlayTransitions(update.transitions)
 
             val processingElapsedMs = ((System.nanoTime() - frameStartedNs) / 1_000_000L).coerceAtLeast(0L)
-            delay(deckOverlayPollDelayMs(processingElapsedMs))
+            delay(deckOverlayPollDelayMs(processingElapsedMs, arenaFrontmost))
         }
     }
 

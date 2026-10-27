@@ -30,7 +30,9 @@ text. A new OCR implementation will need a separate evaluation from source pixel
 The draft replay stops recognition once its assignment locks, matching the current
 tracker. It retains the current behavior of pairing a selected assignment with the
 latest calibration. Context changes reset sessions. A deck `focus_lost` resets its
-session. `reader_failure`, `outside`, and explicitly annotated `tick` events test
+session because it supplies no capturable window evidence. A deck frame with
+`window.frontmost=false` continues the reading but suppresses visible instructions,
+matching background deck capture. `reader_failure`, `outside`, and explicitly annotated `tick` events test
 presentation gaps; tick events clear the model as the current watchdog does.
 Replay is a component/pipeline baseline, not an instrumented production UI. It
 does not reproduce the production capture debounce, retry limit, coroutine
@@ -71,8 +73,10 @@ assets plus frame images. Defaults are 60 observations and a minimum 300 ms betw
 request starts. Slow capture/OCR increases that interval. It does not edit Arena,
 choose cards, read account stores, or copy Player.log. Arena images can contain
 player names and other visible game UI; inspect them before sharing a recording.
-Only foreground Arena frames are saved. Background attempts become `focus_lost`
-events. An unavailable capture becomes `reader_failure`.
+Draft mode saves only foreground Arena frames; background attempts become
+`focus_lost` events. Deck mode also saves capturable Arena frames while the game
+is inactive, recording `window.frontmost=false`. If the Arena window disappears,
+it records `focus_lost`; an unavailable capture becomes `reader_failure`.
 
 For draft mode it captures through `WindowCapture` and records `VisionOcr` output.
 For deck mode it uses the current `DeckFrameReader`, including its current pixel/

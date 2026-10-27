@@ -162,9 +162,9 @@ internal class OverlayReplay(private val root: Path, private val recording: Over
                 }
                 presentations[context.id] = presentation
                 status = presentation.model.status.name
-                visible = presentation.contentVisible
+                visible = presentation.contentVisible && frame.window?.frontmost != false
                 counts = context.cards.associate { it.name to session.currentCount(it.name) }
-                marks = presentation.model.renderableMarks().map { mark ->
+                marks = (if (visible) presentation.model.renderableMarks() else emptyList()).map { mark ->
                     when (mark) {
                         is DeckGuidanceVisualMark.AddCard -> "ADD ${mark.bounds}"
                         is DeckGuidanceVisualMark.RemoveRow -> "REMOVE ${mark.currentCount} ${mark.bounds}"

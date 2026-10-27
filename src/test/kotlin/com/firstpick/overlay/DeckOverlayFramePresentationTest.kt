@@ -94,5 +94,8 @@ class DeckOverlayFramePresentationTest {
         assertEquals(50, deckOverlayPollDelayMs(250))
         assertEquals(50, deckOverlayPollDelayMs(2_000))
         assertEquals(300, deckOverlayPollDelayMs(-100))
+        assertEquals(1_000, deckOverlayPollDelayMs(0, arenaFrontmost = false))
+        assertEquals(880, deckOverlayPollDelayMs(120, arenaFrontmost = false))
+        assertEquals(50, deckOverlayPollDelayMs(2_000, arenaFrontmost = false))
     }
 }

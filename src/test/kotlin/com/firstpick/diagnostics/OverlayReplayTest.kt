@@ -65,6 +65,40 @@ class OverlayReplayTest {
     }
 
     @Test
+    fun readableBackgroundFramesKeepTheScanButHideInstructionsAndDetectEdits() {
+        val file = corpus()
+        val context = RecordingContext("deck", "deck", listOf(RecordingCard("Negate"), RecordingCard("Abrade", count = 2)),
+            target = listOf(RecordingCard("Negate"), RecordingCard("Abrade")))
+        fun line(t: String, y: Double) = RecordedText(t, 0.95, 0.765, y, 0.20, 0.018)
+        fun frame(at: Long, total: Int, frontmost: Boolean, vararg rows: String) = RecordedFrame(
+            at, context = "deck", image = "p1p1-13cards.png", textAvailable = true,
+            window = RecordedWindow(0, 0, 1280, 748, frontmost),
+            text = listOf(RecordedText("$total/40 Cards", 0.95, 0.82, 0.13, 0.12, 0.018),
+                RecordedText("Done", 0.95, 0.86, 0.91, 0.12, 0.018)) +
+                rows.mapIndexed { index, row -> line(row, 0.25 + index * 0.04) },
+        )
+        val recording = OverlayRecording(description = "Deck focus lifecycle", provenance = "synthetic OCR unit test", appVersion = "test",
+            contexts = listOf(context), frames = listOf(
+                frame(0, 40, true, "1x Negate", "2x Abrade"),
+                frame(1_000, 40, false, "2x Abrade", "37x Island"),
+                frame(2_000, 40, true, "2x Abrade", "37x Island"),
+                frame(3_000, 39, false, "2x Abrade", "37x Island"),
+                frame(4_000, 39, true, "2x Abrade", "37x Island"),
+            ))
+        val result = OverlayReplay(file.parent, recording).run()
+        assertTrue(result.all { it.status == "NEEDS_CHANGES" })
+        assertFalse(result[1].visible)
+        assertTrue(result[1].marks.isEmpty())
+        assertEquals(1, result[2].knownCounts["Negate"])
+        assertTrue(result[2].visible)
+        assertTrue(result[2].marks.any { it.startsWith("REMOVE") })
+        assertEquals(0, result[3].knownCounts["Negate"])
+        assertFalse(result[3].visible)
+        assertTrue(result[3].marks.isEmpty())
+        assertEquals(0, result[4].knownCounts["Negate"])
+    }
+
+    @Test
     fun rejectsInvalidContextsTimestampsAndEscapingAssets() {
         val root = Files.createTempDirectory("overlay-recording")
         try {
