@@ -361,7 +361,7 @@ class DeckBuilderTest {
     }
 
     @Test
-    fun keepsTheDeckCreatureDenseDespiteHighWinRateSpells() {
+    fun keepsMuchStrongerSpellsInsteadOfForcingCreatureDensity() {
         val metaMap = mutableMapOf<String, CardMeta>()
         fun mk(id: Int, name: String, gih: Double, color: String, cmc: Int, creature: Boolean): RankedCard {
             metaMap[name] = CardMeta(name, cmc = cmc, isCreature = creature, isLand = false)
@@ -375,6 +375,7 @@ class DeckBuilderTest {
         val meta: (String) -> CardMeta? = { metaMap[it] }
 
         val top = DeckBuilder.build(pool, metrics, meta).first()
-        assertTrue(top.creatures >= 15, "expected a creature-dense deck, got ${top.creatures}")
+        assertEquals(11, top.creatures)
+        assertEquals(12, top.spells.count { it.name.startsWith("Spell") })
     }
 }

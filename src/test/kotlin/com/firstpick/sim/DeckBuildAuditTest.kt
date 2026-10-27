@@ -44,6 +44,39 @@ class DeckBuildAuditTest {
     )
 
     @Test
+    fun graveyardControlPoolDoesNotForceThreeLootsOverStrongSpells() {
+        val rows = json.decodeFromString<List<Row>>(
+            javaClass.getResourceAsStream("/deck-audit/FRA.json")!!.bufferedReader().use { it.readText() },
+        )
+        val ratings = rows.map { it.rating }
+        val byId = ratings.associateBy { it.mtgaId }
+        val metadata = rows.associate { it.rating.name to it.metadata() }
+        // Full drafted pool; the basic Mountain is supplied separately by Arena.
+        val ids = listOf(
+            106492, 106387, 106516, 106399, 106263, 106396, 106276, 106298,
+            106276, 106280, 106358, 106477, 106484, 106312, 106285, 106485,
+            106456, 106279, 106510, 106283, 106483, 106263, 106460, 106419,
+            106296, 106243, 106280, 106464, 106250, 106257, 106290, 106478,
+            106273, 106260, 106256, 106298, 106480, 106488, 106477, 106360, 106477,
+        )
+        val pool = ids.map { id ->
+            val rating = byId.getValue(id)
+            RankedCard(grpId = id, name = rating.name, rating = rating)
+        }
+        val profile = json.decodeFromString<SetSynergyProfile>(
+            javaClass.getResourceAsStream("/synergy/FRA.json")!!.bufferedReader().use { it.readText() },
+        )
+        val deck = DeckProjector.project(pool, SetMetrics.from(ratings), metadata::get,
+            synergy = SynergyIndex(profile), basePair = "UB")!!
+        assertEquals(23, deck.spells.size)
+        assertTrue(deck.spells.none { it.name == "Loot, the Anomaly" })
+        assertTrue(deck.creatures < 15)
+        assertTrue(deck.spells.any { it.name == "Twinned Vision" })
+        assertTrue(deck.spells.any { it.name == "Blessed Ghoul" })
+        println("Graveyard control regression: " + deck.spells.groupingBy { it.name }.eachCount())
+    }
+
+    @Test
     fun auditCompleteRandomizedDraftsAcrossSets() = runBlocking {
         val report = StringBuilder("# Seeded deck-building audit\n\n")
         var findings = 0

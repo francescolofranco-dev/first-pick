@@ -14,6 +14,7 @@ data class DeckConstructionPolicy(
     val minimumBuildableSpells: Int,
     val creatureTarget: Int,
     val removalTarget: Int,
+    /** Soft spell limit: exceeding it favors similarly rated creatures, never forces weak ones. */
     val nonCreatureCap: Int,
     val creatureCurve: Map<Int, Int>,
     val removalMinimumZ: Double,

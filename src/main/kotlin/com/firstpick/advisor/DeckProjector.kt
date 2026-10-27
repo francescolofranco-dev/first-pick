@@ -12,6 +12,9 @@ import com.firstpick.guide.LimitedDeckPolicies
 
 object DeckProjector {
     private const val CREATURE_BIAS = 0.015
+    // Very thin creature suites get extra help, but never unlimited priority.
+    private const val LOW_CREATURE_BIAS = 0.030
+    private const val LOW_CREATURE_COUNT = 10
 
 
     private const val SIGNPOST_NUDGE = 0.010
@@ -574,7 +577,10 @@ object DeckProjector {
             // Committed third-color spells already occupy curve space, even
             // when they supply interaction or card advantage rather than bodies.
             val missing = (target - chosen.count { curveBucket(it.cmc) == bucket }).coerceAtLeast(0)
+            // Curve targets may spend a little quality, never force a dud.
+            val bestRemaining = candidates.firstOrNull { it !in chosen }?.score ?: continue
             byBucket[bucket].orEmpty().filterNot { it in chosen }
+                .filter { it.score >= bestRemaining - CREATURE_BIAS }
                 .take(minOf(missing, (policy.spellSlots - chosen.size).coerceAtLeast(0))).forEach { chosen.add(it) }
         }
 
@@ -598,8 +604,11 @@ object DeckProjector {
             val pick = when {
                 c == null -> otherQueue.removeFirst().also { otherCount++ }
                 o == null -> creatureQueue.removeFirst()
-                otherCount >= policy.nonCreatureCap + requiredNonCreatures -> creatureQueue.removeFirst()
-                creatureCount < policy.creatureTarget - requiredNonCreatures && c.score >= o.score - CREATURE_BIAS -> creatureQueue.removeFirst()
+                creatureCount < LOW_CREATURE_COUNT - requiredNonCreatures &&
+                    c.score >= o.score - LOW_CREATURE_BIAS -> creatureQueue.removeFirst()
+                (otherCount >= policy.nonCreatureCap + requiredNonCreatures ||
+                    creatureCount < policy.creatureTarget - requiredNonCreatures) &&
+                    c.score >= o.score - CREATURE_BIAS -> creatureQueue.removeFirst()
                 c.score > o.score -> creatureQueue.removeFirst()
                 else -> otherQueue.removeFirst().also { otherCount++ }
             }

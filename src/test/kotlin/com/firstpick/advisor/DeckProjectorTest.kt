@@ -223,6 +223,53 @@ class DeckProjectorTest {
     }
 
     @Test
+    fun strongSpellsReplaceAllThreeLowQualityCreatures() {
+        val pool = buildList {
+            repeat(12) { add(card(it, "Body$it", 0.55, if (it % 2 == 0) "U" else "B")) }
+            repeat(3) { add(card(100 + it, "Loot", 0.477, "B")) }
+            repeat(12) { add(card(200 + it, "Spell$it", 0.59, if (it % 2 == 0) "U" else "B")) }
+        }
+        val metadata: (String) -> CardMeta? = { name ->
+            CardMeta(name, 3, !name.startsWith("Spell"), false)
+        }
+        val deck = DeckProjector.project(pool, metrics, metadata, basePair = "UB")!!
+        assertEquals(23, deck.spells.size)
+        assertTrue(deck.spells.none { it.name == "Loot" })
+        assertTrue(deck.spells.count { it.name.startsWith("Spell") } > 8)
+    }
+
+    @Test
+    fun weakCurveFillersCannotDisplaceMuchStrongerSpellsEvenWithFewCreatures() {
+        val pool = buildList {
+            repeat(8) { add(card(it, "Body$it", 0.56, if (it % 2 == 0) "U" else "B")) }
+            repeat(7) { add(card(100 + it, "Weak$it", 0.47, "B")) }
+            repeat(15) { add(card(200 + it, "Spell$it", 0.60, if (it % 2 == 0) "U" else "B")) }
+        }
+        val metadata: (String) -> CardMeta? = { name ->
+            CardMeta(name, if (name.startsWith("Weak")) 2 else 3, !name.startsWith("Spell"), false)
+        }
+        val deck = DeckProjector.project(pool, metrics, metadata, basePair = "UB")!!
+        assertEquals(23, deck.spells.size)
+        assertEquals(8, deck.creatures)
+        assertTrue(deck.spells.none { it.name.startsWith("Weak") })
+    }
+
+    @Test
+    fun closeQualityChoicesStillFavorEnoughCreatures() {
+        val pool = buildList {
+            repeat(10) { add(card(it, "Body$it", 0.59, if (it % 2 == 0) "U" else "B")) }
+            repeat(5) { add(card(100 + it, "Filler$it", 0.58, "B")) }
+            repeat(15) { add(card(200 + it, "Spell$it", 0.59, if (it % 2 == 0) "U" else "B")) }
+        }
+        val metadata: (String) -> CardMeta? = { name ->
+            CardMeta(name, 3, !name.startsWith("Spell"), false)
+        }
+        val deck = DeckProjector.project(pool, metrics, metadata, basePair = "UB")!!
+        assertEquals(23, deck.spells.size)
+        assertEquals(15, deck.creatures)
+    }
+
+    @Test
     fun duplicateCopiesAreCountedNotConfusedByName() {
 
 
