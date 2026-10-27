@@ -13,6 +13,7 @@ enum class OverlayHealthState(val label: String) {
     READING("Reading Arena"),
     ACTIVE("Synced"),
     CAPTURE_UNAVAILABLE("Capture unavailable"),
+    CARD_IMAGES_UNAVAILABLE("Card images unavailable"),
     UNSUPPORTED_LAYOUT("Unsupported layout"),
     CLICK_THROUGH_FAILED("Click-through failed"),
 }
@@ -29,6 +30,7 @@ data class OverlayHealth(
 ) {
     val needsAttention: Boolean
         get() = state == OverlayHealthState.CAPTURE_UNAVAILABLE ||
+            state == OverlayHealthState.CARD_IMAGES_UNAVAILABLE ||
             state == OverlayHealthState.UNSUPPORTED_LAYOUT ||
             state == OverlayHealthState.CLICK_THROUGH_FAILED
 }

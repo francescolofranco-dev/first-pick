@@ -558,6 +558,7 @@ private fun OverlayHealthStatus(health: OverlayHealth) {
         OverlayHealthState.READING -> AppTheme.colors.accentSecondary
         OverlayHealthState.WAITING_FOR_ARENA, OverlayHealthState.INACTIVE -> AppTheme.colors.textSecondary
         OverlayHealthState.CAPTURE_UNAVAILABLE,
+        OverlayHealthState.CARD_IMAGES_UNAVAILABLE,
         OverlayHealthState.UNSUPPORTED_LAYOUT,
         OverlayHealthState.CLICK_THROUGH_FAILED,
         -> AppTheme.colors.danger

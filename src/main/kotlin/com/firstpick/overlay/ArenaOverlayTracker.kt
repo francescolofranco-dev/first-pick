@@ -136,7 +136,6 @@ fun ArenaOverlayTracker(
 
     val packKey = remember(cards) { cards.joinToString("|") { "${it.name}#${it.imageUrl}#${it.isRoom}" } }
     val assignmentState = remember(packKey) { mutableStateOf<Map<Int, Int>?>(null) }
-    var captureFailed by remember(packKey) { mutableStateOf(false) }
     var recognitionHealth by remember(packKey) {
         mutableStateOf(
             if (cards.isEmpty() && !calibrating) {
@@ -201,7 +200,6 @@ fun ArenaOverlayTracker(
 
     LaunchedEffect(packKey, visible, b.w, b.h) {
         if (calibrating || !visible || cards.isEmpty() || assignmentState.value != null) return@LaunchedEffect
-        captureFailed = false
         recognitionHealth = OverlayHealth(
             OverlayHealthState.READING,
             "Recognizing the cards in Arena's pack.",
@@ -217,11 +215,7 @@ fun ArenaOverlayTracker(
         val expected = refs.count { it != null }
         if (expected == 0) {
             Log.warn(TAG, "no card art available for recognition; seals stay ungraded")
-            captureFailed = true
-            recognitionHealth = OverlayHealth(
-                OverlayHealthState.UNSUPPORTED_LAYOUT,
-                "This pack cannot be matched because card art is unavailable.",
-            )
+            recognitionHealth = packReferenceFailureHealth()
             return@LaunchedEffect
         }
         var lastFailure = "no frame captured — check Screen Recording permission"
@@ -306,7 +300,6 @@ fun ArenaOverlayTracker(
         }
 
 
-        captureFailed = true
         recognitionHealth = packRecognitionFailureHealth(capturedFrames)
         Log.warn(TAG, "$lastFailure after $MAX_RECOGNITION_ATTEMPTS attempts; leaving seals ungraded")
     }
@@ -360,10 +353,17 @@ fun ArenaOverlayTracker(
             for (m in marks) {
                 if (m.number != null) NumberBox(m) else GradeSeal(m)
             }
-            if (captureFailed && !calibrating) CaptureHint(Modifier.align(Alignment.TopCenter))
+            if (!calibrating && assignmentState.value == null && recognitionHealth.needsAttention) {
+                OverlayFailureHint(recognitionHealth.detail, Modifier.align(Alignment.TopCenter))
+            }
         }
     }
 }
+
+internal fun packReferenceFailureHealth(): OverlayHealth = OverlayHealth(
+    OverlayHealthState.CARD_IMAGES_UNAVAILABLE,
+    "Card images could not be loaded for this pack. Reopen the overlay to retry.",
+)
 
 internal fun packRecognitionFailureHealth(capturedFrames: Int): OverlayHealth =
     if (capturedFrames == 0) {
@@ -379,7 +379,7 @@ internal fun packRecognitionFailureHealth(capturedFrames: Int): OverlayHealth =
     }
 
 @Composable
-private fun CaptureHint(modifier: Modifier) {
+private fun OverlayFailureHint(detail: String, modifier: Modifier) {
     Box(
         modifier
             .offset(y = 44.dp)
@@ -388,7 +388,7 @@ private fun CaptureHint(modifier: Modifier) {
             .padding(horizontal = 14.dp, vertical = 8.dp),
     ) {
         Text(
-            "FirstPick can't capture Arena — enable Screen Recording for FirstPick (or window-capture) in System Settings › Privacy & Security, then reopen the overlay.",
+            detail,
             color = Color(0xFFF3F4F6),
             fontSize = 12.sp,
             fontWeight = FontWeight.Medium,

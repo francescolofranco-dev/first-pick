@@ -50,6 +50,15 @@ class OverlayHealthTest {
     }
 
     @Test
+    fun missingReferenceImagesDoNotClaimACapturePermissionFailure() {
+        val health = packReferenceFailureHealth()
+        assertEquals(OverlayHealthState.CARD_IMAGES_UNAVAILABLE, health.state)
+        assertTrue(health.needsAttention)
+        assertFalse("Screen Recording" in health.detail)
+        assertFalse("capture" in health.detail.lowercase())
+    }
+
+    @Test
     fun failedPackRecognitionDistinguishesCaptureFromLayout() {
         assertEquals(
             OverlayHealthState.CAPTURE_UNAVAILABLE,

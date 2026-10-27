@@ -36,12 +36,23 @@ object CardImageLoader {
         withContext(Dispatchers.IO) {
             if (url.isBlank()) return@withContext null
             val bytes = cachedBytes(url, cacheDir) ?: return@withContext null
-            val img = runCatching { javax.imageio.ImageIO.read(java.io.ByteArrayInputStream(bytes)) }
-                .onFailure { com.firstpick.core.Log.warn("CardImageLoader", "decode failed for $url: $it") }
-                .getOrNull()
+            val img = decodeBufferedImage(bytes)
             if (img == null) com.firstpick.core.Log.warn("CardImageLoader", "no image decoded for $url")
             img
         }
+
+    /** ImageIO has no built-in WebP reader; use the decoder already used by card previews. */
+    internal fun decodeBufferedImage(bytes: ByteArray): java.awt.image.BufferedImage? {
+        runCatching { javax.imageio.ImageIO.read(java.io.ByteArrayInputStream(bytes)) }
+            .getOrNull()?.let { return it }
+        return runCatching {
+            SkiaImage.makeFromEncoded(bytes).use { image ->
+                image.encodeToData(org.jetbrains.skia.EncodedImageFormat.PNG)?.use { png ->
+                    javax.imageio.ImageIO.read(java.io.ByteArrayInputStream(png.bytes))
+                }
+            }
+        }.getOrNull()
+    }
 
     private fun cachedBytes(url: String, cacheDir: Path): ByteArray? {
         val dir = cacheDir.resolve("images")
