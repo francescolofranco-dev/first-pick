@@ -2,6 +2,8 @@ package com.firstpick.overlay
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -45,6 +47,9 @@ data class DeckGuidanceOverlayModel(
     val basicLandDelta: Int = 0,
     val verifiedCards: Int = 0,
     val expectedCards: Int = 0,
+    /** Individually confirmed differences, including while other counts are unknown. */
+    val changes: List<CardGuidance> = emptyList(),
+    val unverifiedNames: List<String> = emptyList(),
 ) {
     /** Partial readings only contain marks from the current verified visible cards. */
     fun renderableMarks(): List<DeckGuidanceVisualMark> =
@@ -113,12 +118,27 @@ fun DeckGuidanceOverlay(
                 is DeckGuidanceVisualMark.AddCard -> ActionBadge(rect, adding = true, inDeckList = mark.inDeckList)
             }
         }
-        StatusPill(
-            style = statusPillStyle(model),
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .offset(y = viewportHeight * STATUS_TOP_FRACTION),
-        )
+        Column(
+            modifier = Modifier.align(Alignment.TopCenter)
+                .offset(y = viewportHeight * STATUS_TOP_FRACTION)
+                .widthIn(max = viewportWidth * 0.74f),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            StatusPill(style = statusPillStyle(model))
+            val detail = model.guidanceDetails()
+            if (detail.isNotEmpty()) {
+                Text(
+                    text = detail,
+                    modifier = Modifier.padding(top = 4.dp)
+                        .background(DeckGuidanceOverlayPalette.PillBackground, BADGE_SHAPE)
+                        .padding(horizontal = 12.dp, vertical = 6.dp),
+                    color = DeckGuidanceOverlayPalette.PillText,
+                    fontSize = 12.sp,
+                    maxLines = 3,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                )
+            }
+        }
     }
 }
 
@@ -207,14 +227,30 @@ fun statusPillStyle(model: DeckGuidanceOverlayModel): DeckGuidanceStatusPillStyl
     DeckGuidanceStatus.READING -> DeckGuidanceStatusPillStyle(
         when {
             model.expectedCards > 0 && model.verifiedCards >= model.expectedCards ->
-                "Suggested cards verified · Checking lands and remaining cards…"
+                "Suggested counts checked · Checking lands and remaining cards…"
             model.expectedCards > 0 ->
-                "Checking deck · ${model.verifiedCards}/${model.expectedCards} suggested nonbasic copies verified"
+                "Checking deck · ${model.verifiedCards}/${model.expectedCards} suggested copies checked"
             else -> "Checking recent changes…"
         }, DeckGuidanceOverlayPalette.ReadingAccent)
     DeckGuidanceStatus.NEEDS_CHANGES -> DeckGuidanceStatusPillStyle(model.needsChangesLabel(), DeckGuidanceOverlayPalette.RemoveAccent)
     DeckGuidanceStatus.MATCHES -> DeckGuidanceStatusPillStyle("Deck matches build", DeckGuidanceOverlayPalette.AddAccent)
     DeckGuidanceStatus.UNABLE -> DeckGuidanceStatusPillStyle("Unable to read deck", DeckGuidanceOverlayPalette.UnableAccent)
+}
+
+internal fun DeckGuidanceOverlayModel.guidanceDetails(): String {
+    if (status != DeckGuidanceStatus.READING && status != DeckGuidanceStatus.NEEDS_CHANGES) return ""
+    val instructions = changes.take(4).joinToString(" · ") {
+        "${if (it.action == DeckGuidanceAction.ADD) "Add" else "Cut"} ${kotlin.math.abs(it.difference)} ${it.name}"
+    }.let { if (changes.size > 4) "$it · +${changes.size - 4} more changes" else it }
+    val pending = if (status == DeckGuidanceStatus.READING) {
+        if (unverifiedNames.isNotEmpty()) {
+            "Still to read: ${unverifiedNames.take(3).joinToString(" · ")}" +
+                if (unverifiedNames.size > 3) " · +${unverifiedNames.size - 3} more" else ""
+        } else "Scroll the deck list through the lands to finish checking."
+    } else ""
+    return listOf(instructions.takeIf { it.isNotEmpty() }?.let {
+        if (status == DeckGuidanceStatus.READING) "Confirmed: $it" else it
+    }, pending.takeIf { it.isNotEmpty() }).filterNotNull().joinToString("\n")
 }
 
 private fun DeckGuidanceOverlayModel.needsChangesLabel(): String {

@@ -57,6 +57,41 @@ class DeckGuidanceSessionTest {
     }
 
     @Test
+    fun missingCopyIsCheckedAndNamedBeforeEveryPoolCardIsKnown() {
+        val session = DeckGuidanceSession(
+            target = listOf(DeckCardCount("Stock Up", 1)),
+            draftPool = listOf(DeckCardCount("Stock Up", 1), DeckCardCount("Offscreen Card", 1)),
+        )
+        val partial = session.observe(pipImage(0, drafted = 1), screen(total = 39, rowCount = null))
+        assertEquals(DeckGuidanceStatus.READING, partial.status)
+        assertEquals(1, partial.verifiedCards)
+        assertEquals(1, partial.expectedCards)
+        assertEquals(0, session.currentCount("Stock Up"))
+        assertEquals(null, session.currentCount("Offscreen Card"))
+        assertEquals("Stock Up", partial.changes.single().name)
+        assertTrue(partial.guidanceDetails().contains("Add 1 Stock Up"))
+        assertTrue(partial.unverifiedNames.isEmpty())
+    }
+
+    @Test
+    fun removedHapatraInPoolIdentifiesTheRemainingTruncatedDeckRow() {
+        val frost = "Hapatra, the Desert Frost"
+        val fang = "Hapatra, the Desert Fang"
+        val session = DeckGuidanceSession(listOf(DeckCardCount(fang, 1)),
+            listOf(DeckCardCount(frost, 1), DeckCardCount(fang, 1)))
+        val current = screen(total = 39, rowCount = null).copy(
+            deckRows = listOf(VisibleDeckRowObservation(1, "Hapatra, the Dese...", rowBounds, rowBounds, 1.0)),
+            poolCardTitles = listOf(poolTitle.copy(cardName = frost)),
+        )
+        val model = session.observe(pipImage(0, drafted = 1), current)
+        assertEquals(0, session.currentCount(frost))
+        assertEquals(1, session.currentCount(fang))
+        assertEquals(DeckGuidanceStatus.NEEDS_CHANGES, model.status)
+        assertEquals(1, model.basicLandDelta)
+        assertTrue(model.changes.isEmpty())
+    }
+
+    @Test
     fun duplicateSequenceMovesFromRedToExactToGreen() {
         val session = DeckGuidanceSession(
             target = listOf(DeckCardCount("Stock Up", 1)),
@@ -195,6 +230,9 @@ class DeckGuidanceSessionTest {
         assertEquals(0, partial.remainingRemovals)
         assertIs<DeckGuidanceVisualMark.RemoveRow>(partial.renderableMarks().single())
         assertEquals(null, session.currentCount("Offscreen Card"))
+        assertEquals(listOf("Offscreen Card"), partial.unverifiedNames)
+        assertTrue(partial.guidanceDetails().contains("Still to read: Offscreen Card"))
+        assertTrue(partial.guidanceDetails().contains("Cut 1 Stock Up"))
         session.invalidate()
         assertEquals(null, session.currentCount("Stock Up"))
     }
@@ -251,8 +289,8 @@ class DeckGuidanceSessionTest {
         assertEquals(DeckGuidanceStatus.READING, partial.status)
         assertEquals(2, partial.verifiedCards)
         assertEquals(2, partial.expectedCards)
-        assertEquals("Suggested cards verified · Checking lands and remaining cards…", statusPillStyle(partial).label)
-        assertEquals("Checking deck · 1/2 suggested nonbasic copies verified",
+        assertEquals("Suggested counts checked · Checking lands and remaining cards…", statusPillStyle(partial).label)
+        assertEquals("Checking deck · 1/2 suggested copies checked",
             statusPillStyle(partial.copy(verifiedCards = 1)).label)
     }
 

@@ -16,6 +16,7 @@ internal class DeckGuidanceSession(
     private val baselineCounts = baseline.groupingBy(DeckCardCount::name)
         .fold(0) { total, card -> total + card.count }
     private val matcher = CanonicalCardNameMatcher(baselineCounts.keys)
+    private val rowResolver = DeckRowNameResolver(baselineCounts)
     private val reducer = DeckObservationReducer(baseline)
     private var observationState = reducer.initialState()
     private var unreadableSinceMs: Long? = null
@@ -35,24 +36,29 @@ internal class DeckGuidanceSession(
         screen: DeckBuilderScreenObservation,
     ): DeckGuidanceOverlayModel {
         unreadableSinceMs = null
-        val visibleRows = screen.deckRows.mapNotNull { row ->
-            val basic = BASIC_LANDS.match(row.cardName) as? CanonicalCardNameMatch.Matched
-            if (basic != null) VisibleExactCardCount(basic.name, row.count, isBasicLand = true)
-            else canonicalName(row.cardName)?.let { VisibleExactCardCount(it, row.count) }
-        }
-        val visibleRowNames = visibleRows.mapTo(HashSet(), VisibleExactCardCount::name)
-        val visiblePool = screen.poolCardTitles.mapNotNull { card ->
+        val directlyResolvedRows = rowResolver.resolve(screen.deckRows)
+        val directlyResolvedNames = directlyResolvedRows.values.toSet()
+        val poolCounts = screen.poolCardTitles.mapNotNull { card ->
             val name = canonicalName(card.cardName) ?: return@mapNotNull null
-            // A deck-list row directly labels the current count and wins over
-            // pool chrome that can still be animating after a click.
-            if (name in visibleRowNames) return@mapNotNull null
+            // Direct deck-list labels win over pool chrome that may still animate.
+            if (name in directlyResolvedNames) return@mapNotNull null
             val outsideDeck = DeckPoolCopyDetector.count(image, card) ?: return@mapNotNull null
             val drafted = baselineCounts[name] ?: return@mapNotNull null
             if (outsideDeck > drafted) return@mapNotNull null
-            // Arena exposes at most four diamonds, so four is not exact for the
-            // rare Limited pool containing five or more copies.
             if (outsideDeck == 4 && drafted > 4) return@mapNotNull null
-            VisibleExactCardCount(name, drafted - outsideDeck)
+            name to drafted - outsideDeck
+        }.groupBy({ it.first }, { it.second }).mapNotNull { (name, counts) ->
+            counts.distinct().singleOrNull()?.let { name to it }
+        }.toMap()
+        val resolvedRows = rowResolver.resolve(screen.deckRows, poolCounts)
+        val visibleRows = screen.deckRows.mapNotNull { row ->
+            val basic = BASIC_LANDS.match(row.cardName) as? CanonicalCardNameMatch.Matched
+            if (basic != null) VisibleExactCardCount(basic.name, row.count, isBasicLand = true)
+            else resolvedRows[row]?.let { VisibleExactCardCount(it, row.count) }
+        }
+        val visibleRowNames = visibleRows.mapTo(HashSet(), VisibleExactCardCount::name)
+        val visiblePool = poolCounts.filterKeys { it !in visibleRowNames }.map { (name, count) ->
+            VisibleExactCardCount(name, count)
         }
 
         observationState = reducer.reduce(
@@ -76,7 +82,7 @@ internal class DeckGuidanceSession(
         }
         val marks = buildList {
             for (row in screen.deckRows) {
-                val name = canonicalName(row.cardName) ?: continue
+                val name = resolvedRows[row] ?: continue
                 val card = cards[name] ?: continue
                 card.action.toVisualMark(row.bounds, currentCount = row.count)?.let { mark ->
                     add(if (mark is DeckGuidanceVisualMark.AddCard) mark.copy(inDeckList = true) else mark)
@@ -100,9 +106,11 @@ internal class DeckGuidanceSession(
             remainingRemovals = guidance.remainingRemovals,
             basicLandDelta = guidance.basicLandDelta,
             verifiedCards = targets.entries.sumOf { (name, count) ->
-                minOf(count, observationState.knownCounts[name] ?: 0)
+                if (name in observationState.knownCounts) count else 0
             },
             expectedCards = targets.values.sum(),
+            changes = cards.values.filter { it.action != DeckGuidanceAction.OK },
+            unverifiedNames = targets.keys.filterNot(observationState.knownCounts::containsKey).sorted(),
         ).also { logTransition(screen, guidance, it) }
     }
 
