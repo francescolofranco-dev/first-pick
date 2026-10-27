@@ -6,7 +6,6 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.nio.file.Files
 import java.nio.file.Path
-import javax.imageio.ImageIO
 
 internal val recordingJson = Json { prettyPrint = true; ignoreUnknownKeys = false }
 
@@ -123,4 +122,6 @@ internal fun writeRecording(path: Path, recording: OverlayRecording) {
 }
 
 internal fun readRecordingImage(root: Path, name: String) =
-    requireNotNull(ImageIO.read(recordingAsset(root, name).toFile())) { "Unreadable image $name" }
+    requireNotNull(com.firstpick.ui.CardImageLoader.decodeBufferedImage(Files.readAllBytes(recordingAsset(root, name)))) {
+        "Unreadable image $name"
+    }

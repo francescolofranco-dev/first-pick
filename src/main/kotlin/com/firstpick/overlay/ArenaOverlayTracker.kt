@@ -89,7 +89,9 @@ internal class RecognitionSettler(private val required: Int) {
         attempts += attempt
         if (attempt.calibration != null) latestCalibration = attempt.calibration
         if (fullRecognitions < required) return null
-        val settled = attempts.groupBy { it.match.assignment }
+        // Current title evidence outranks a repeated but unconstrained artwork guess.
+        val settled = attempts.lastOrNull { it.titleAnchors.isNotEmpty() }
+            ?: attempts.groupBy { it.match.assignment }
             .values
             .sortedWith(
                 compareByDescending<List<RecognitionAttempt>> { it.size }
@@ -235,20 +237,18 @@ fun ArenaOverlayTracker(
                 val rects = grid?.cards(cards.size)
                     ?: PackGeometry.rects(store.get(b.w, b.h) ?: PackGeometry.DEFAULT, frame.width, frame.height, cards.size)
                 val match = CardRecognizer.matchDetailed(frame, rects, refs)
+                // Read titles on the final settling frame, as before. Unreadable
+                // titles keep their artwork fallback instead of losing their grades.
+                val anchors = if (match.assignment.size >= expected &&
+                    settler.fullRecognitions == REQUIRED_FULL_RECOGNITIONS - 1) {
+                    reader.recognize(frame)
+                        ?.let { PackCardTitleMatcher.anchors(it, rects, cards.map(OverlayCard::name)) }
+                        .orEmpty()
+                } else emptyMap()
                 RecognitionAttempt(
-                    match = match,
+                    match = if (anchors.isEmpty()) match else CardRecognizer.matchDetailed(frame, rects, refs, anchors),
                     calibration = freshCal,
-                    // Early complete assignments can still be from cards flying into place.
-                    titleAnchors = if (
-                        match.assignment.size >= expected &&
-                        settler.fullRecognitions == REQUIRED_FULL_RECOGNITIONS - 1
-                    ) {
-                        reader.recognize(frame)
-                            ?.let { PackCardTitleMatcher.anchors(it, rects, cards.map(OverlayCard::name)) }
-                            .orEmpty()
-                    } else {
-                        emptyMap()
-                    },
+                    titleAnchors = anchors,
                 )
             }
             val result = attempt?.match

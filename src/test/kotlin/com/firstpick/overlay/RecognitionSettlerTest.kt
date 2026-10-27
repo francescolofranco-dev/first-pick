@@ -26,6 +26,15 @@ class RecognitionSettlerTest {
     }
 
     @Test
+    fun currentTitleConstrainedAssignmentOutranksRepeatedArtworkGuess() {
+        val settler = RecognitionSettler(required = 3)
+        assertNull(settler.observe(attempt(card = 4, distance = 20.0)))
+        assertNull(settler.observe(attempt(card = 4, distance = 10.0)))
+        val corrected = settler.observe(attempt(card = 8, distance = 200.0).copy(titleAnchors = mapOf(0 to 8)))
+        assertEquals(mapOf(0 to 8), corrected?.match?.assignment)
+    }
+
+    @Test
     fun repeatedAssignmentBeatsOneSuspiciouslyCheapOutlier() {
         val settler = RecognitionSettler(required = 3)
 

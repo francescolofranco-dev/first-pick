@@ -133,28 +133,41 @@ object CardRecognizer {
         return matchDetailed(frame, rects, refs).assignment
     }
 
-    fun matchDetailed(frame: BufferedImage, rects: List<CardDetector.CardRect>, refs: List<Signature?>): MatchResult {
-        val knownRefs = refs.mapIndexedNotNull { index, signature -> signature?.let { index to it } }
-        if (rects.isEmpty() || knownRefs.isEmpty() || knownRefs.size > rects.size) {
+    fun matchDetailed(
+        frame: BufferedImage,
+        rects: List<CardDetector.CardRect>,
+        refs: List<Signature?>,
+        titleAnchors: Map<Int, Int> = emptyMap(),
+    ): MatchResult {
+        require(titleAnchors.keys.all { id -> rects.any { it.index == id } })
+        require(titleAnchors.values.all { it in refs.indices } && titleAnchors.values.distinct().size == titleAnchors.size)
+        val knownIndices = refs.indices.filter { refs[it] != null || it in titleAnchors.values }
+        if (rects.isEmpty() || knownIndices.isEmpty() || knownIndices.size > rects.size) {
             return MatchResult(emptyMap(), Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY)
         }
 
         val rectSigs = rects.map { ofRegion(frame, it.x, it.y, it.w, it.h) }
-        val costs = Array(knownRefs.size) { refPos ->
-            DoubleArray(rects.size) { rectPos -> distance(knownRefs[refPos].second, rectSigs[rectPos]) }
+        val costs = Array(knownIndices.size) { refPos ->
+            val ref = refs[knownIndices[refPos]]
+            DoubleArray(rects.size) { rectPos -> if (ref == null) 0.0 else distance(ref, rectSigs[rectPos]) }
         }
-        val refToRect = minimumAssignment(costs)
-        val assignment = HashMap<Int, Int>(knownRefs.size)
+        // Reserve title-identified slots before solving the remaining artwork matches.
+        // A missing basic-land image must not compete with spells for its rectangle.
+        val fixed = titleAnchors.entries.associate { (rectId, cardIndex) ->
+            knownIndices.indexOf(cardIndex) to rects.indexOfFirst { it.index == rectId }
+        }
+        val refToRect = minimumAssignment(costs, fixed)
+        val assignment = HashMap<Int, Int>(knownIndices.size)
         var total = 0.0
         var worst = 0.0
         for (refPos in refToRect.indices) {
             val rectPos = refToRect[refPos]
             val d = costs[refPos][rectPos]
-            assignment[rects[rectPos].index] = knownRefs[refPos].first
+            assignment[rects[rectPos].index] = knownIndices[refPos]
             total += d
             worst = maxOf(worst, d)
         }
-        val unknownRefs = refs.indices.filter { refs[it] == null }
+        val unknownRefs = refs.indices.filter { refs[it] == null && it !in titleAnchors.values }
         val unusedRects = rects.filter { it.index !in assignment }
         if (unknownRefs.size == 1 && unusedRects.size == 1) {
             assignment[unusedRects.single().index] = unknownRefs.single()
@@ -162,9 +175,24 @@ object CardRecognizer {
         return MatchResult(assignment, total, worst)
     }
 
-    internal fun minimumAssignment(costs: Array<DoubleArray>): IntArray {
+    internal fun minimumAssignment(costs: Array<DoubleArray>, fixed: Map<Int, Int> = emptyMap()): IntArray {
         val rows = costs.size
+        if (rows == 0) return IntArray(0)
         val cols = costs.first().size
+        require(rows <= cols && costs.all { it.size == cols })
+        require(fixed.keys.all { it in 0 until rows } && fixed.values.all { it in 0 until cols })
+        require(fixed.values.distinct().size == fixed.size)
+        if (fixed.isNotEmpty()) {
+            val remainingRows = (0 until rows).filter { it !in fixed }
+            val remainingCols = (0 until cols).filter { it !in fixed.values }
+            val remaining = minimumAssignment(Array(remainingRows.size) { r ->
+                DoubleArray(remainingCols.size) { c -> costs[remainingRows[r]][remainingCols[c]] }
+            })
+            return IntArray(rows).also { result ->
+                fixed.forEach { (r, c) -> result[r] = c }
+                remainingRows.forEachIndexed { i, r -> result[r] = remainingCols[remaining[i]] }
+            }
+        }
         val u = DoubleArray(rows + 1)
         val v = DoubleArray(cols + 1)
         val p = IntArray(cols + 1)

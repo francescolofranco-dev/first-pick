@@ -142,6 +142,28 @@ class CardRecognizerTest {
     }
 
     @Test
+    fun titleConstraintReservesABasicLandWithoutArtwork() {
+        val frame = BufferedImage(640, 440, BufferedImage.TYPE_INT_RGB)
+        frame.createGraphics().apply {
+            drawImage(card(2), 10, 10, null)
+            drawImage(card(1), 330, 10, null)
+            dispose()
+        }
+        val rects = listOf(CardDetector.CardRect(5, 10, 10, 300, 420), CardDetector.CardRect(9, 330, 10, 300, 420))
+        val refs = listOf(CardRecognizer.ofCard(card(1)), null)
+        assertEquals(mapOf(5 to 1, 9 to 0), CardRecognizer.match(frame, rects, refs))
+        assertEquals(mapOf(5 to 0, 9 to 1), CardRecognizer.matchDetailed(frame, rects, refs, mapOf(9 to 1)).assignment)
+    }
+
+    @Test
+    fun constraintsReoptimizeRemainingCardsRatherThanJustSwappingTwoSlots() {
+        val costs = arrayOf(doubleArrayOf(9.0, 1.0, 0.0), doubleArrayOf(1.0, 0.0, 9.0), doubleArrayOf(0.0, 0.0, 0.0))
+        assertEquals(listOf(2, 1, 0), CardRecognizer.minimumAssignment(costs).toList())
+        assertEquals(listOf(1, 0, 2), CardRecognizer.minimumAssignment(costs, mapOf(2 to 2)).toList())
+        assertEquals(listOf(0, 1, 2), CardRecognizer.minimumAssignment(costs, mapOf(0 to 0, 1 to 1, 2 to 2)).toList())
+    }
+
+    @Test
     fun reflowsSidewaysRoomReferencesToMatchArenasStackedLayout() {
         val frame = fixture("dsk-room-cycle.jpg")
         val referenceStrip = fixture("dsk-room-references.jpg")

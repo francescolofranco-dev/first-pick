@@ -6,6 +6,8 @@ import com.firstpick.overlay.CardDetector
 import com.firstpick.overlay.CardRecognizer
 import com.firstpick.overlay.PackGeometry
 import com.firstpick.overlay.WindowCapture
+import com.firstpick.overlay.VisionOcr
+import com.firstpick.overlay.PackCardTitleMatcher
 import com.firstpick.ui.CardImageLoader
 import kotlinx.coroutines.runBlocking
 import java.io.File
@@ -75,7 +77,13 @@ fun main(args: Array<String>) = runBlocking {
     }
     println("REFS: ${refs.count { it != null }}/${pack.size} reference signatures")
 
-    val result = CardRecognizer.matchDetailed(frame, rects, refs)
+    val rawResult = CardRecognizer.matchDetailed(frame, rects, refs)
+    val anchors = VisionOcr().recognize(frame)?.let {
+        PackCardTitleMatcher.anchors(it, rects, pack.map { card -> card.displayName })
+    }.orEmpty()
+    println("TITLES: ${anchors.size}/${pack.size} verified anchors")
+    for ((slot, card) in anchors.entries.sortedBy { it.key }) println("  title rect#$slot -> ${pack[card].displayName}")
+    val result = if (anchors.isEmpty()) rawResult else CardRecognizer.matchDetailed(frame, rects, refs, anchors)
     val assign = result.assignment
     println("RECOGNIZE: ${assign.size} assignments")
     println("  total distance=${"%.1f".format(result.totalDistance)}; worst=${"%.1f".format(result.worstDistance)}")

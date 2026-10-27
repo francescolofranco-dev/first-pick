@@ -117,7 +117,8 @@ internal class OverlayReplay(private val root: Path, private val recording: Over
                     } else emptyMap()
                     anchors = title.mapValues { context.cards[it.value].name }
                     if (refs.any { it != null } && match.assignment.size >= refs.count { it != null }) {
-                        val settled = state.settler.observe(RecognitionAttempt(match, fresh, title))
+                        val constrained = if (title.isEmpty()) match else CardRecognizer.matchDetailed(image, rects, refs, title)
+                        val settled = state.settler.observe(RecognitionAttempt(constrained, fresh, title))
                         if (settled != null) {
                             if (settled.calibration != null) state.calibration = settled.calibration
                             state.assignment = PackCardTitleMatcher.applyAnchors(settled.match.assignment, title)
