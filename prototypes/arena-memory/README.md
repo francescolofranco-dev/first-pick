@@ -95,11 +95,20 @@ process's loaded images and verifies its live executable header against disk.
 `self-test` separately verifies a known buffer. Neither self-read proves Arena
 access.
 
-Validation on 2026-10-28: all 11 checks passed; the real self-process image test
-successfully read 365 image records and verified the executable header. Arena
-access at normal privileges was denied. The approved administrator attempt
-requires a password, which the user must enter locally; Arena memory access
-remains unproven until that run returns `arena_memory_read_verified`.
+Validation on 2026-10-28: all 11 checks passed. The real self-process image test
+successfully enumerated loaded images and verified its executable header. Arena
+access at normal privileges was denied. The user then ran the approved probe
+with one administrator authorization: `task_read_for_pid` succeeded, 296,688
+bytes were read, and both live ARM64 image headers matched the installed files.
+The measured read phase took 6 ms, excluding authorization and build inspection;
+this is not a deck-reader or overlay latency measurement.
+
+The sanitized result is retained in
+[verified-transport-macos-arm64.json](verified-transport-macos-arm64.json). It
+contains no process addresses, PID, account data, or heap contents. This proves
+memory transport for the recorded Arena 2026.64.50 build on this Mac. Deck
+extraction remains unimplemented; future builds and ordinary app-level permission
+UX are separate work.
 
 ## Next milestone after access is verified
 

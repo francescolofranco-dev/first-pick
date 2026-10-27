@@ -1,0 +1,37 @@
+{
+  "observed_on": "2026-10-28",
+  "provenance": "User ran the approved bounded probe from commit 6e4b1f4 with one administrator authorization; on-disk header hashes independently rechecked afterward.",
+  "scope": "Memory transport only. No deck objects, card IDs, or quantities were extracted. elapsed_ms excludes authorization and build inspection.",
+  "result": {
+    "bundle_id": "com.wizards.mtga",
+    "app_version": "2026.64.50",
+    "runtime": "IL2CPP",
+    "metadata_version": 39,
+    "metadata_sha256": "4e49778e395728b0bb23a18118856376cd7511742f23fb0801b5528e28b0ce23",
+    "deck_type_markers_present": [
+      "DeckBuilderModel",
+      "DraftDeckView",
+      "WrapperDeckBuilder"
+    ],
+    "deck_snapshot": "not_implemented",
+    "arena_access_proven": true,
+    "status": "arena_memory_read_verified",
+    "read_api": "task_read_for_pid",
+    "verified_images": [
+      {
+        "image": "MTGA",
+        "architecture": "arm64",
+        "header_sha256": "e18b941e4f2b0b7eb4084c3f22ceb6edffd44a40649f89abc290f3817db24446",
+        "matches_installed_binary": true
+      },
+      {
+        "image": "GameAssembly.dylib",
+        "architecture": "arm64",
+        "header_sha256": "b9202bca07d0fb2ad5d1bcb420e99a958b800220e49b555562f264ece656db01",
+        "matches_installed_binary": true
+      }
+    ],
+    "bytes_read": 296688,
+    "elapsed_ms": 6.0
+  }
+}

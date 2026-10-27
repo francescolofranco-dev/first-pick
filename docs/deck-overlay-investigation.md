@@ -48,6 +48,27 @@ the official documentation, these strongly support an Arena integration using
 an internal Mono reader alongside logs. They do not establish how every unsaved
 deck edit or overlay position is obtained, or rule out supplementary vision.
 
+## Verified transport milestone — 2026-10-28
+
+The standalone [memory probe](../prototypes/arena-memory/README.md) has now
+verified actual read-only access to Arena on this Mac. Normal user access was
+denied. After one explicit administrator authorization entered locally by the
+user, `task_read_for_pid` granted a read port. The probe used
+`mach_vm_read_overwrite` to read live ARM64 headers for `MTGA` and
+`GameAssembly.dylib`, verifying both against the installed binaries.
+
+The [sanitized result](../prototypes/arena-memory/verified-transport-macos-arm64.json)
+records 296,688 bytes read and a 6 ms read phase, excluding authorization and
+build inspection. These figures do not measure deck extraction or overlay
+latency. Eleven prototype checks passed, including a real self-process Mach-O
+read and validation of bounds, identity, and malformed inputs.
+
+The actual installed Arena 2026.64.50 build uses IL2CPP metadata version 39.
+The legacy Mono naming observed in Companion logs must not be taken as an
+instruction to apply Mono layouts to this build. Current deck objects, field
+offsets, card IDs, and quantities have not yet been decoded. The next milestone
+is a build-specific IL2CPP deck snapshot; the production overlay is unchanged.
+
 ## Revised implementation priority — 2026-10-27
 
 1. Establish whether the running macOS Arena process can be inspected read-only
