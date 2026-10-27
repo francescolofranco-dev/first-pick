@@ -5,28 +5,69 @@ The original investigation proposed changes without modifying app behavior.
 The implementation follow-up is recorded below. Local logs were inspected read-only. No raw account data, identifiers,
 log excerpts, or screenshots are included here.
 
-## Conclusion
+## Conclusion — updated 2026-10-27
 
 Treat Arena information as equally available to FirstPick and Untapped. There is
-no evidence here of privileged access. FirstPick already has suitable native
-capture and recognition technology. Its live deck model and presentation rules
-have specific weaknesses that can explain repeated checking and unstable
-add/remove guidance. Whether these account for all of the observed difference
-requires a controlled interaction recording, not a claim about Untapped internals.
+no evidence here of privileged access. Equal access does not imply that both apps
+currently use the same sources: FirstPick reconstructs unsaved deck edits from
+screen evidence, while Untapped documents a read-only process-memory technique
+and local diagnostic component names corroborate an Arena-specific Mono reader.
+The original investigation omitted this avenue and focused too narrowly on logs
+and improvements to screen recognition.
+
+A memory-based Arena state provider is now the priority feasibility investigation.
+It could supply card IDs and quantities independently of shortened titles,
+scrolling, and filters. Reading the current unsaved Limited deck on this macOS
+installation has not yet been demonstrated. Neither a complete structure map nor
+Untapped's polling/rendering implementation is established by the evidence below.
 
 ## What is known about Untapped
 
-Draftsmith is a feature of the Untapped Companion, not a separate competing
-integration. Their [Companion documentation](https://help.hearthsim.net/en/articles/5020719-how-does-the-untapped-gg-companion-work)
-says that it tails Arena's `Player.log` and reconstructs state from logged events.
-Their [Draftsmith page](https://mtga.untapped.gg/draftsmith) documents deck
-recommendations from the drafted/opened pool.
+Draftsmith is a feature of the Untapped Companion. Its
+[MTGA-specific Companion documentation](https://help.hearthsim.net/en/articles/5020719-how-does-the-untapped-gg-companion-work)
+describes following `Player.log`. That establishes log use, not exclusive log use.
 
-Neither source specifies how individual unsaved deck edits are detected, how card
-positions are obtained, whether screen recognition is used, or how conflicting
-observations are reconciled. General log-based tracking does not establish that
-live deck-building is log-only. Better OCR, undocumented-but-public log signals,
-and better reconciliation remain hypotheses, not findings about their product.
+Two additional official articles describe the Companion accessing game memory
+read-only through standard Windows and macOS APIs, without modifying game files,
+injecting/hooking code, or taking game actions:
+
+- [How does the Untapped.gg Companion work?](https://help.hearthsim.net/en/articles/8377705-how-does-the-untapped-gg-companion-work)
+- [Is the Untapped.gg Companion safe to use?](https://help.hearthsim.net/en/articles/7121040-is-the-untapped-gg-companion-safe-to-use)
+
+These articles are filed under the Yu-Gi-Oh! collection in their help center.
+They establish the Companion's documented technique, but by themselves do not
+prove which Draftsmith deck-editor fields are read in MTGA.
+
+For Arena-specific corroboration, on 2026-10-27 we inspected the installed
+Companion's local diagnostic logs read-only. They contain component/function
+names including `MonoMtgaCurrentScene.read`,
+`ScryMtgaDraftRollover.readMonoReader`, `ScryMtgaInventory.readMonoReader`, and
+`MtgaDeckbuilderWatcher.nextUpdate`. These are sanitized identifiers only; no raw
+log entries, account data, addresses, or tokens are retained here. Together with
+the official documentation, these strongly support an Arena integration using
+an internal Mono reader alongside logs. They do not establish how every unsaved
+deck edit or overlay position is obtained, or rule out supplementary vision.
+
+## Revised implementation priority — 2026-10-27
+
+1. Establish whether the running macOS Arena process can be inspected read-only
+   under the installed build's actual access constraints. Do not weaken platform
+   protections or write to the game to obtain access.
+2. Demonstrate a minimal reader for the current Limited deck: stable card IDs,
+   per-ID quantities, main deck versus sideboard, and the active course/editor.
+   Compare snapshots before and after one edit, scrolling, and filtering. Include
+   the two Hapatra cards whose rendered prefixes collide. Availability of these
+   specific fields remains a hypothesis until this experiment succeeds.
+3. If demonstrated, put this behind a state-provider interface, using memory
+   snapshots for identity/counts, logs for draft/save/history context, and screen
+   recognition only where still needed for geometry or an explicit fallback.
+4. Require coherent snapshots, correct course scoping, supported-build checks,
+   and explicit unavailability when layouts change. Measure action-to-update
+   latency against real edits before replacing the production provider.
+
+The OCR and focus-retention fixes address real defects in the existing provider;
+they do not establish parity with a memory-based integration. No memory reader
+was implemented or executed during this documentation update.
 
 ## Local Arena evidence
 
@@ -134,7 +175,7 @@ images, but no recorded deck-building interaction sequence. The native worker
 returns capture/OCR/write timing fields that the Kotlin reader does not expose
 for latency diagnostics. Passing unit tests cannot establish comparative parity.
 
-## Implementation order
+## Original implementation order (2026-10-21)
 
 1. Add opt-in local diagnostics: monotonic capture timestamps, worker duration,
    regions rescanned, recognition outcome, evidence source per count, and why a
