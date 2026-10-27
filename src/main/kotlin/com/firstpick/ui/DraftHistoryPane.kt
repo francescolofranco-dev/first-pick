@@ -90,7 +90,14 @@ internal fun DraftHistoryPane(
                     if (showPool) {
                         if (state.draftPool.isEmpty()) Text("Card data is unavailable. Return to history and try again when connected.",
                             color = AppTheme.colors.textSecondary)
-                        else ScrollableDeckPane { items(state.draftPool) { DeckSpellRow(it) } }
+                        else Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                                CopyCardsButton(state.draftPool, "drafted cards")
+                            }
+                            Box(Modifier.weight(1f)) {
+                                ScrollableDeckPane { items(state.draftPool) { DeckSpellRow(it) } }
+                            }
+                        }
                     } else if (state.deckOptions.isNotEmpty()) {
                         DeckBuilderPane(state.deckOptions, savedDeck = state.savedDeck, committedDeck = null, onUseDeck = {})
                     } else {

@@ -662,7 +662,10 @@ private fun OptionCard(
                 )
             }
             Spacer(Modifier.width(6.dp))
-            DeckPowerSummary(opt)
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                DeckPowerSummary(opt)
+                CopyCardsButton(opt.spells + opt.lands, "${opt.title} cards")
+            }
         }
         Row(
             modifier = Modifier.fillMaxWidth(),
