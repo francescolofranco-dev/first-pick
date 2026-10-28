@@ -25,7 +25,7 @@ class ProductionLaunchTest(unittest.TestCase):
                 f"100 {root}/FirstPick.app/Contents/MacOS/FirstPick\n"
                 f"101 {root}/Imposter.app/Contents/MacOS/FirstPick\n"
                 "102 /usr/bin/python3\n"
-                f"103 {root}/FirstPick.app/Contents/Helpers/deck-reader\n"
+                f"103 {root}/FirstPick.app/Contents/Helpers/arena-memory\n"
                 "104 /missing/FirstPick.app/Contents/MacOS/FirstPick\n"
             )
             with patch.object(production.subprocess, "check_output", return_value=output):

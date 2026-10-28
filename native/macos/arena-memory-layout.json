@@ -213,6 +213,120 @@
       "fields": {
         "<IsShowing>k__BackingField": 32
       }
+    },
+    "draft_controller": {
+      "index": 10367,
+      "name": "DraftContentController",
+      "namespace": "Wotc.Mtga.Wrapper.Draft",
+      "fields": {
+        "_draftPackHolder": 48,
+        "_active": 240,
+        "_packCollection": 256,
+        "_draftDeckManager": 296,
+        "_layoutChangeCoroutine": 312,
+        "_okToPickCard": 427,
+        "_settingCardsCoroutine": 456
+      }
+    },
+    "draft_holder": {
+      "index": 10386,
+      "name": "DraftPackHolder",
+      "namespace": "Wotc.Mtga.Wrapper.Draft",
+      "fields": {
+        "_isInitialized": 248,
+        "_currentPackLayoutData": 272,
+        "_allCardViews": 312,
+        "_packCollection": 328,
+        "_pendingPackCollection": 336,
+        "<IsAnimating>k__BackingField": 354
+      }
+    },
+    "draft_card_view": {
+      "index": 1362,
+      "name": "DraftPackCardView",
+      "namespace": "",
+      "fields": {
+        "<CurrentCard>k__BackingField": 456
+      }
+    },
+    "meta_card_view": {
+      "index": 1046,
+      "name": "MetaCardView",
+      "namespace": "",
+      "fields": {
+        "<IsDragging>k__BackingField": 235
+      }
+    },
+    "draft_deck_manager": {
+      "index": 10369,
+      "name": "DraftDeckManager",
+      "namespace": "Wotc.Mtga.Wrapper.Draft",
+      "fields": {
+        "_deck": 24
+      }
+    },
+    "draft_deck": {
+      "index": 1302,
+      "name": "Deck",
+      "namespace": "",
+      "fields": {
+        "_main": 16,
+        "_sideboard": 24
+      }
+    },
+    "card_collection": {
+      "index": 967,
+      "name": "CardCollection",
+      "namespace": "",
+      "fields": {
+        "_itemList": 24
+      }
+    },
+    "card_collection_item": {
+      "index": 968,
+      "name": "CardCollectionItem",
+      "namespace": "",
+      "fields": {
+        "<Card>k__BackingField": 16,
+        "<Quantity>k__BackingField": 24
+      }
+    },
+    "card_data": {
+      "index": 16432,
+      "name": "CardData",
+      "namespace": "GreClient.CardData",
+      "fields": {
+        "_printing": 24
+      }
+    },
+    "card_printing": {
+      "index": 16436,
+      "name": "CardPrintingData",
+      "namespace": "GreClient.CardData",
+      "fields": {
+        "Record": 192
+      }
+    },
+    "card_printing_record": {
+      "index": 17433,
+      "name": "CardPrintingRecord",
+      "namespace": "Wotc.Mtga.Cards.Database",
+      "fields": {
+        "GrpId": 16
+      }
+    },
+    "draft_pack_layout": {
+      "index": 1359,
+      "name": "DraftPackLayoutData",
+      "namespace": "",
+      "fields": {
+        "AspectRatio": 16,
+        "UpperLeft": 20,
+        "Scale": 32,
+        "Offset": 36,
+        "ColumnCount": 48,
+        "RowCount": 52
+      }
     }
   },
   "field_offsets_vm": 150212352

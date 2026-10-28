@@ -1,6 +1,6 @@
 package com.firstpick.overlay
 
-/** A rectangle in top-left-origin coordinates, normalized to the observed image. */
+/** A rectangle in top-left-origin coordinates, normalized to the Arena viewport. */
 data class NormalizedRect(
     val x: Double,
     val y: Double,
@@ -25,16 +25,3 @@ data class NormalizedRect(
         return NormalizedRect(left, top, right - left, bottom - top)
     }
 }
-
-data class ScreenTextObservation(
-    val text: String,
-    val confidence: Double,
-    val bounds: NormalizedRect,
-)
-
-/** Raw OCR for one image. Coordinates are independent of Retina scale and window size. */
-data class ScreenTextFrame(
-    val pixelWidth: Int,
-    val pixelHeight: Int,
-    val observations: List<ScreenTextObservation>,
-)

@@ -66,47 +66,11 @@ internal class MemoryDeckGuidanceSession(
 
 internal fun memoryGuidanceModel(target: List<DeckCardCount>, deck: DeckSnapshot): DeckGuidanceOverlayModel {
     val guidance = DeckGuidance.evaluate(target, DeckReadState.Ready(deck))
-    val expected = target.filterNot { it.isBasicLand || isBasicLandName(it.name) }.sumOf { it.count }
     return DeckGuidanceOverlayModel(
         status = guidance.status,
         remainingAdds = guidance.remainingAdds,
         remainingRemovals = guidance.remainingRemovals,
         basicLandDelta = guidance.basicLandDelta,
-        verifiedCards = expected,
-        expectedCards = expected,
         changes = guidance.cards.filter { it.action != DeckGuidanceAction.OK },
     )
-}
-
-/** Geometry can expire independently; its OCR counts never replace memory quantities. */
-internal fun memoryGuidanceMarks(
-    model: DeckGuidanceOverlayModel,
-    deck: DeckSnapshot,
-    pool: List<DeckCardCount>,
-    screen: DeckBuilderScreenObservation,
-    aspectRatio: Double,
-): List<DeckGuidanceVisualMark> {
-    if (screen.deckSize != deck.totalCards || !isSupportedLimitedDeckBuilder(screen)) return emptyList()
-    val counts = deck.cards.filterNot { it.isBasicLand }.associate { it.name to it.count }
-    val baseline = pool.filterNot { it.isBasicLand || isBasicLandName(it.name) }
-        .groupingBy(DeckCardCount::name).fold(0) { sum, card -> sum + card.count }
-    val rows = DeckRowNameResolver(baseline).resolve(screen.deckRows, baseline.mapValues { (name, _) -> counts[name] ?: 0 })
-    val matcher = CanonicalCardNameMatcher(baseline.keys)
-    return buildList {
-        for (row in screen.deckRows) {
-            val name = rows[row] ?: continue
-            val action = model.changes.firstOrNull { it.name == name }?.action ?: continue
-            // Reject geometry from an earlier duplicate quantity even if the overall total matches.
-            if (counts[name] != row.count) continue
-            action.toVisualMark(row.bounds, row.count)?.let { mark ->
-                add(if (mark is DeckGuidanceVisualMark.AddCard) mark.copy(inDeckList = true) else mark)
-            }
-        }
-        for (card in screen.poolCardTitles) {
-            val name = (matcher.match(card.cardName) as? CanonicalCardNameMatch.Matched)?.name ?: continue
-            if (model.changes.none { it.name == name && it.action == DeckGuidanceAction.ADD }) continue
-            val bounds = DeckPoolGeometry.cardBounds(card, aspectRatio) ?: continue
-            add(DeckGuidanceVisualMark.AddCard(bounds))
-        }
-    }
 }

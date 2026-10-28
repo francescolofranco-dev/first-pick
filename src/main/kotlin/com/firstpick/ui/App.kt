@@ -119,7 +119,7 @@ fun App(
                     state.dataError?.let {
                         Text(it, style = AppTheme.typography.caption, color = AppTheme.colors.danger)
                     }
-                    if (isOverlayOpen && state.phase == DraftPhase.COMPLETE) {
+                    if (isOverlayOpen) {
                         LiveDeckAccessBanner(liveDeckAccess, onGrantArenaAccess)
                     }
 
@@ -198,7 +198,7 @@ private fun LiveDeckAccessBanner(access: LiveDeckAccess, onGrant: () -> Unit) {
         horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         Column(Modifier.weight(1f)) {
-            Text("Live deck sync", style = AppTheme.typography.caption, color = AppTheme.colors.textPrimary)
+            Text("Live Arena access", style = AppTheme.typography.caption, color = AppTheme.colors.textPrimary)
             Text(access.detail, style = AppTheme.typography.micro, color = AppTheme.colors.textSecondary)
             if (access.canGrant) Text(
                 "macOS will ask for administrator permission. Access is read-only and ends when FirstPick or Arena closes.",
@@ -588,8 +588,7 @@ private fun OverlayHealthStatus(health: OverlayHealth) {
         OverlayHealthState.ACTIVE -> AppTheme.colors.positive
         OverlayHealthState.READING -> AppTheme.colors.accentSecondary
         OverlayHealthState.WAITING_FOR_ARENA, OverlayHealthState.INACTIVE -> AppTheme.colors.textSecondary
-        OverlayHealthState.CAPTURE_UNAVAILABLE,
-        OverlayHealthState.CARD_IMAGES_UNAVAILABLE,
+        OverlayHealthState.ACCESS_REQUIRED,
         OverlayHealthState.UNSUPPORTED_LAYOUT,
         OverlayHealthState.CLICK_THROUGH_FAILED,
         -> AppTheme.colors.danger

@@ -25,7 +25,7 @@ and needs, then proposes 2–3 finished decks when the draft ends.
 - **Live pack ranking** — every card graded **A+ → F** with a 0–100 value, best pick on top.
 - **Deck-aware scoring** — blends global and in-color win rates, archetype synergy, and missing roles.
 - **Dashboard** — likely colors, archetypes, open-color signals, curve, and pool.
-- **On-card overlay** — grades drawn directly on Arena's cards, at any window size.
+- **Memory-backed overlay** — complete live deck identities and quantities, with named add/cut guidance independent of scrolling and filters. Draft pick advice is a preview pending live pack validation; per-card placement is pending verified memory geometry.
 - **Set guides** — color-pair themes and key commons/uncommons per set, with cited sources.
 - **Personal stats** — local SQLite storage for drafts, draft event results, draft match history, play/draw performance, deck colors, and Limited rank progression. Recover available records from older Arena logs automatically.
 - **Draft history** — completed drafts saved locally; reopen deck builds and the full drafted pool, including drafts recovered from the current Arena log.
@@ -52,7 +52,7 @@ After the draft, compare builds and review the full list:
 1. Download the `.dmg` for your Mac (`arm64` for Apple Silicon, `x86_64` for Intel) from
    [**Releases**](../../releases/latest) and drag **FirstPick** to Applications.
 2. In Arena, enable **Options → Account → Detailed Logs (Plugin Support)**.
-3. For overlays, grant **Screen Recording** permission. Frames are processed locally and never stored or uploaded.
+3. Enable the overlay and click **Grant Arena access** in FirstPick. Complete the macOS administrator prompt for temporary read-only access. The current supported memory layout is Arena **2026.64.50 on Apple Silicon**; unsupported builds pause the overlay. Screen Recording is not used. The dashboard still works without memory access.
 
 Older or `*-unsigned.dmg` builds may need **Open Anyway** in Privacy & Security, or
 `xattr -dr com.apple.quarantine "/Applications/FirstPick.app"`.
@@ -61,7 +61,7 @@ Older or `*-unsigned.dmg` builds may need **Open Anyway** in Privacy & Security,
 
 ```bash
 git clone https://github.com/francescolofranco-dev/first-pick firstpick && cd firstpick
-native/macos/build.sh   # native capture/OCR helpers
+native/macos/build.sh --host # native window-metadata and read-only memory helpers
 ./gradlew run           # needs a full JDK 21
 ./gradlew runProduction # build, install, and open the production app
 ```

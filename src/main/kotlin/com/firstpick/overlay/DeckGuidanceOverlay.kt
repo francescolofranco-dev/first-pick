@@ -45,11 +45,7 @@ data class DeckGuidanceOverlayModel(
     val remainingAdds: Int = 0,
     val remainingRemovals: Int = 0,
     val basicLandDelta: Int = 0,
-    val verifiedCards: Int = 0,
-    val expectedCards: Int = 0,
-    /** Individually confirmed differences, including while other counts are unknown. */
     val changes: List<CardGuidance> = emptyList(),
-    val unverifiedNames: List<String> = emptyList(),
     val notice: String? = null,
 ) {
     /** Partial readings only contain marks from the current verified visible cards. */
@@ -135,7 +131,7 @@ fun DeckGuidanceOverlay(
                         .padding(horizontal = 12.dp, vertical = 6.dp),
                     color = DeckGuidanceOverlayPalette.PillText,
                     fontSize = 12.sp,
-                    maxLines = 3,
+                    maxLines = 8,
                     overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                 )
             }
@@ -227,33 +223,17 @@ fun statusPillStyle(status: DeckGuidanceStatus): DeckGuidanceStatusPillStyle =
 fun statusPillStyle(model: DeckGuidanceOverlayModel): DeckGuidanceStatusPillStyle = model.notice?.let {
     DeckGuidanceStatusPillStyle(it, DeckGuidanceOverlayPalette.ReadingAccent)
 } ?: when (model.status) {
-    DeckGuidanceStatus.READING -> DeckGuidanceStatusPillStyle(
-        when {
-            model.expectedCards > 0 && model.verifiedCards >= model.expectedCards ->
-                "Suggested counts checked · Checking lands and remaining cards…"
-            model.expectedCards > 0 ->
-                "Checking deck · ${model.verifiedCards}/${model.expectedCards} suggested copies checked"
-            else -> "Checking recent changes…"
-        }, DeckGuidanceOverlayPalette.ReadingAccent)
+    DeckGuidanceStatus.READING -> DeckGuidanceStatusPillStyle("Checking recent changes…", DeckGuidanceOverlayPalette.ReadingAccent)
     DeckGuidanceStatus.NEEDS_CHANGES -> DeckGuidanceStatusPillStyle(model.needsChangesLabel(), DeckGuidanceOverlayPalette.RemoveAccent)
     DeckGuidanceStatus.MATCHES -> DeckGuidanceStatusPillStyle("Deck matches build", DeckGuidanceOverlayPalette.AddAccent)
     DeckGuidanceStatus.UNABLE -> DeckGuidanceStatusPillStyle("Unable to read deck", DeckGuidanceOverlayPalette.UnableAccent)
 }
 
 internal fun DeckGuidanceOverlayModel.guidanceDetails(): String {
-    if (status != DeckGuidanceStatus.READING && status != DeckGuidanceStatus.NEEDS_CHANGES) return ""
-    val instructions = changes.take(4).joinToString(" · ") {
+    if (status != DeckGuidanceStatus.NEEDS_CHANGES) return ""
+    return changes.joinToString(" · ") {
         "${if (it.action == DeckGuidanceAction.ADD) "Add" else "Cut"} ${kotlin.math.abs(it.difference)} ${it.name}"
-    }.let { if (changes.size > 4) "$it · +${changes.size - 4} more changes" else it }
-    val pending = if (status == DeckGuidanceStatus.READING) {
-        if (unverifiedNames.isNotEmpty()) {
-            "Still to read: ${unverifiedNames.take(3).joinToString(" · ")}" +
-                if (unverifiedNames.size > 3) " · +${unverifiedNames.size - 3} more" else ""
-        } else "Scroll the deck list through the lands to finish checking."
-    } else ""
-    return listOf(instructions.takeIf { it.isNotEmpty() }?.let {
-        if (status == DeckGuidanceStatus.READING) "Confirmed: $it" else it
-    }, pending.takeIf { it.isNotEmpty() }).filterNotNull().joinToString("\n")
+    }
 }
 
 private fun DeckGuidanceOverlayModel.needsChangesLabel(): String {

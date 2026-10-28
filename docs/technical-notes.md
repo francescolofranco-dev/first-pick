@@ -4,19 +4,25 @@ Details moved from the README.
 
 ## Requirements and deck-guidance limits
 
-- macOS (Apple Silicon or Intel)
-- MTG Arena, with **Options → Account → Detailed Logs (Plugin Support)** enabled
-- For the draft and deck-builder overlays: **Screen Recording** permission (System Settings →
-  Privacy & Security → Screen Recording). macOS prompts on first use; FirstPick uses
-  it solely to find where the cards are drawn. Frames are processed locally through
-  short-lived temporary files that are deleted after each pass; they are never retained
-  or sent anywhere. The rest of the app works without it.
+- macOS; the dashboard works on Apple Silicon or Intel.
+- MTG Arena, with **Options → Account → Detailed Logs (Plugin Support)** enabled.
+- The overlay requires **Grant Arena access** in FirstPick and a supported Arena
+  memory layout. Currently verified: Arena 2026.64.50, arm64, IL2CPP metadata v39.
+  Unsupported builds and missing access pause the overlay. Screen Recording is
+  not used, and there is no screen-recognition fallback.
 
-Deck guidance currently supports Arena's vertical compact deck list with the sideboard
-collapsed. It marks only cards and rows visible on the current pool page or deck-list
-scroll position. A persistent native worker reads the deck panel and pool title bands,
-reusing OCR for unchanged regions. Returning from another app or an unreadable builder
-requires fresh verification. Scroll through the deck or pool to expose unknown cards.
+The deck overlay reads the complete unsaved Limited deck and unfiltered pool.
+It requires an exact match to the selected draft and two stable observations.
+Scrolling, card filters, artwork and truncated names do not determine quantities.
+A stale read, active dialog, disconnection or inactive editor clears instructions.
+The native helper obtains only a read port and drops administrator privileges
+before serving owner-only typed snapshots. Access ends with FirstPick, Arena,
+eight hours or the read budget; nothing is installed into Arena.
+
+Draft memory extraction has synthetic graph coverage and requires a real pack
+for live acceptance. Named recommendations are a preview; individual card badges
+are withheld until memory-derived screen bounds are verified. Local/world
+coordinates and row/column records alone are not enough to place an overlay.
 
 The build page also compares your chosen build with Arena's **last saved deck**, using
 server-confirmed course data from the log. This comparison is explicitly separate from
@@ -28,11 +34,11 @@ A coroutine pipeline: tail `~/Library/Logs/Wizards of the Coast/MTGA/Player.log`
 → reconstruct the live draft → fetch + cache 17Lands ratings, archetype data, and
 Scryfall card facts → combine them with bundled, reviewed set guidance → run the
 contextual advisor → render a Compose dashboard.
-It only ever **reads** the log and your local MTGA card database — plus, when the
-overlays are on, screen frames of the Arena window analyzed locally to locate cards
-and read the visible deck-builder counts. Capture and OCR use short-lived temporary
-files that are deleted after each pass. FirstPick never writes to Arena, blocks Arena's
-Done button, or retains or uploads frames.
+FirstPick reads the log and local card database for recommendations and history.
+The authorized overlay reads Arena memory for current card identities and counts;
+ordinary OS window metadata supplies window position and foreground state. It
+captures no screenshots, requests no Screen Recording access, and never writes
+Arena memory, calls game functions, pauses the game or blocks its Done button.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the architecture.
 
@@ -49,9 +55,9 @@ The app is written to `build/compose/binaries/main/app/FirstPick.app`.
 `runProduction` quits existing packaged FirstPick instances, installs the verified
 build at `~/Applications/FirstPick.app`, and opens that copy. Use this command for
 updates so every checkout launches the same installation.
-It bundles its own JVM and the optimized capture/OCR helpers for your Mac's
+It bundles its own JVM and the window-metadata and read-only memory helpers for your Mac's
 architecture, and does not enable the development demo launcher. `runProduction`
-also disables the demo, overlay tracking, deck-preview, and smoke-test environment
+also disables the demo, deck-preview, and smoke-test environment
 flags. The first build needs
 the Xcode command-line tools and can take several minutes; unchanged native
 helpers and tests are reused on later builds. Changes to the Swift toolchain,
@@ -61,10 +67,10 @@ test checks; ordinary `run` and `test` do not require a native rebuild.
 Without `MACOS_SIGNING_IDENTITY`, `buildProduction` signs the app and its bundled
 helpers with a persistent local certificate. The keychain and its unlock file live
 in `~/Library/Application Support/FirstPick/signing` with private permissions;
-keep this directory across builds and checkouts. No system trust or screen-recording
-settings are changed. This is local signing, not Apple notarization. Switching from
-an older ad-hoc build may require one new Screen Recording grant and a full quit
-and reopen. Subsequent builds retain the same certificate-backed identity.
+keep this directory across builds and checkouts. No system trust or privacy
+settings are changed. This is local signing, not Apple notarization. Subsequent
+builds retain the same certificate-backed identity. Arena access is tied to the
+running processes, so restarting the app requires another explicit grant.
 `createDistributable` alone remains an unsigned packaging test when no Developer ID
 is configured; use `buildProduction` or `runProduction` for everyday local builds.
 
@@ -75,8 +81,7 @@ both).
 
 This is the same build type used by the shipped DMG, not the experimental
 ProGuard `*Release` tasks. Both development and packaged apps use JVM JIT
-optimization; packaging is not a different OCR algorithm and does not itself fix
-card-recognition errors. Local builds are not notarized unless signing and
+optimization. Local builds are not notarized unless signing and
 notarization are configured (see [the distribution runbook](docs/distribution.md)).
 If packaging cannot find a full JDK, pass `-PcomposeJdk=/path/to/full/jdk21` to
 either command, or set `COMPOSE_JDK`.

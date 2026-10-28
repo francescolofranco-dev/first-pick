@@ -40,6 +40,7 @@ def graph():
     g.m.put(g.messages_list + 16, 'i', 0)
     g.field(messages, 'messages', '_messages', g.messages_list)
     popup = g.object('popup_manager')
+    g.popup_manager = popup
     g.field(popup, 'popup_manager', '_activePopup', 0)
     refs = g.dictionary([(g.m.alloc(), obj) for obj in [g.model_provider, g.context_provider, popup]], 'services')
     container = g.object('container')
@@ -48,6 +49,48 @@ def graph():
     pool = g.object('card_list')
     g.field(pool, 'card_list', '_grpQuantityTable', g.dictionary([(1001, 2), (1002, 1), (1003, 1), (1004, 2), (2001, 17)], 'quantities'))
     g.field(g.model, 'model', '_cardPool', pool)
+    return g
+
+
+def draft_graph():
+    g = graph()
+    def objects(values):
+        klass = g.make_class('List`1', 'System.Collections.Generic', {'_items': 16, '_size': 24, '_version': 28})
+        obj = g.m.alloc(); array = g.m.alloc(32 + 8 * len(values))
+        g.m.put(obj, 'Q', klass);g.m.put(obj + 16, 'Qii', array, len(values), 1)
+        g.m.put(array + 16, 'QQ', 0, len(values))
+        for i, value in enumerate(values):g.m.put(array + 32 + i * 8, 'Q', value)
+        return obj
+    def card(id):
+        printing = g.object('card_printing')
+        g.m.put(printing + 192, 'I', id)
+        wrapper = g.object('card_data');g.field(wrapper, 'card_data', '_printing', printing)
+        return wrapper
+    def collection(pairs):
+        obj = g.object('card_collection');items = []
+        for id, count in pairs:
+            item = g.object('card_collection_item')
+            g.field(item, 'card_collection_item', '<Card>k__BackingField', card(id))
+            g.field(item, 'card_collection_item', '<Quantity>k__BackingField', count, 'i');items.append(item)
+        g.field(obj, 'card_collection', '_itemList', objects(items));return obj
+    g.draft_controller = g.object('draft_controller');g.draft_holder = g.object('draft_holder')
+    g.field(g.scene, 'scene', '<CurrentNavContent>k__BackingField', g.draft_controller)
+    g.field(g.draft_controller, 'draft_controller', '_active', 1, 'B')
+    g.field(g.draft_controller, 'draft_controller', '_okToPickCard', 1, 'B')
+    g.field(g.draft_controller, 'draft_controller', '_draftPackHolder', g.draft_holder)
+    g.field(g.draft_holder, 'draft_holder', '_isInitialized', 1, 'B')
+    pack = collection([(1001, 1), (1002, 2)])
+    g.field(g.draft_controller, 'draft_controller', '_packCollection', pack)
+    g.field(g.draft_holder, 'draft_holder', '_packCollection', pack)
+    g.views=[]
+    for id in [1002,1001,1002]:
+        view=g.object('draft_card_view');g.field(view,'draft_card_view','<CurrentCard>k__BackingField',card(id));g.views.append(view)
+    g.field(g.draft_holder,'draft_holder','_allCardViews',objects(g.views))
+    manager=g.object('draft_deck_manager');deck=g.object('draft_deck')
+    g.field(g.draft_controller,'draft_controller','_draftDeckManager',manager)
+    g.field(manager,'draft_deck_manager','_deck',deck)
+    g.field(deck,'draft_deck','_main',collection([(1003,2)]))
+    g.field(deck,'draft_deck','_sideboard',collection([(1004,1)]))
     return g
 
 
@@ -90,6 +133,38 @@ class NativeDeckReaderTests(unittest.TestCase):
         result = read(g)
         self.assertEqual('unsupported_build', result['status'])
         self.assertNotIn('main', result)
+
+
+class NativeDraftReaderTests(unittest.TestCase):
+    def test_duplicate_pack_ids_follow_actual_card_views_and_preserve_picked_pool(self):
+        value=read(draft_graph())
+        self.assertEqual('draft_ready',value['status'])
+        self.assertEqual([1002,1001,1002],value['cards'])
+        self.assertEqual([[1003,2],[1004,1]],value['picked'])
+        self.assertNotIn('bounds',value)
+
+    def test_animations_dragging_wrong_cards_and_inactive_screen_emit_no_partial_pack(self):
+        for condition in ['animation','drag','wrong_card','inactive','layout_change']:
+            g=draft_graph()
+            if condition=='animation':g.field(g.draft_holder,'draft_holder','<IsAnimating>k__BackingField',1,'B')
+            elif condition=='drag':g.field(g.views[0],'meta_card_view','<IsDragging>k__BackingField',1,'B')
+            elif condition=='wrong_card':g.field(g.views[0],'draft_card_view','<CurrentCard>k__BackingField',g.widget)
+            elif condition=='inactive':g.field(g.draft_controller,'draft_controller','_active',0,'B')
+            else:g.field(g.draft_controller,'draft_controller','_layoutChangeCoroutine',g.m.alloc())
+            with self.subTest(condition=condition):
+                value=read(g);self.assertNotEqual('draft_ready',value['status']);self.assertNotIn('cards',value)
+
+    def test_real_modal_and_disconnect_guards_also_apply_to_picking(self):
+        for condition in ['disconnected','dialog','settings','popup']:
+            g=draft_graph()
+            if condition=='disconnected':g.field(g.tcp_state,'tcp_state','<ConnectState>k__BackingField',1,'i')
+            elif condition=='dialog':g.m.put(g.messages_list+16,'i',1)
+            elif condition=='settings':g.field(g.menu,'settings_menu','<IsOpen>k__BackingField',1,'B')
+            else:
+                popup=g.object('popup_base');g.field(popup,'popup_base','<IsShowing>k__BackingField',1,'B')
+                g.field(g.popup_manager,'popup_manager','_activePopup',popup)
+            with self.subTest(condition=condition):
+                value=read(g);self.assertEqual('blocked',value['status']);self.assertNotIn('cards',value)
 
 
 if __name__ == '__main__':

@@ -26,8 +26,6 @@ class MemoryDeckGuidanceTest {
         assertEquals(1, result.remainingAdds)
         assertEquals(1, result.remainingRemovals)
         assertEquals(0, result.basicLandDelta)
-        assertEquals(3, result.verifiedCards)
-        assertTrue(result.unverifiedNames.isEmpty())
         assertEquals(DeckGuidanceAction.REMOVE, result.changes.single { it.name == frost }.action)
         assertEquals(DeckGuidanceAction.ADD, result.changes.single { it.name == fang }.action)
     }
@@ -77,30 +75,17 @@ class MemoryDeckGuidanceTest {
         assertIs<MemoryDeckValidation.Rejected>(session.observe(raw(), pool, 4000))
     }
 
-    @Test fun geometryCannotOverrideMemoryCountsOrGuessAmbiguousRows() {
-        val deck = assertIs<MemoryDeckValidation.Ready>(validateMemoryDeck(raw(), pool, names)).deck
-        val model = memoryGuidanceModel(listOf(DeckCardCount(fang, 1)), deck)
-        val bounds = NormalizedRect(.8, .3, .18, .04)
-        fun screen(name: String, count: Int, total: Int = 40) = DeckBuilderScreenObservation(total, 40,
-            listOf(VisibleDeckRowObservation(count, name, bounds, bounds, 1.0)), emptyList(), bounds, 1.0)
-        assertTrue(memoryGuidanceMarks(model, deck, pool, screen(frost, 2), 1.7).isEmpty())
-        assertTrue(memoryGuidanceMarks(model, deck, pool, screen(frost, 1, 41), 1.7).isEmpty())
-        assertEquals(1, memoryGuidanceMarks(model, deck, pool, screen(frost, 1), 1.7).size)
-        val both = deck.copy(cards = deck.cards + DeckCardCount(fang, 1), totalCards = 41)
-        assertTrue(memoryGuidanceMarks(model, both, pool, screen("Hapatra, the Dese…", 1, 41), 1.7).isEmpty())
-    }
-
     @Test fun structuredResponsesRejectMalformedAndPartialCounts() {
         fun parse(value: String) = parseArenaMemoryRead(Json.parseToJsonElement(value) as JsonObject)
         val ready = """{"status":"ready","editor_session":"${"a".repeat(64)}","main":[[75022,40]],"sideboard":[],"pool":[[75022,40]],"total":40}"""
         assertIs<ArenaMemoryRead.Ready>(parse(ready))
         for (bad in listOf(ready.replace("\"total\":40", "\"total\":39"), ready.replace("[75022,40]", "[75022,-1]"),
                 ready.replace("\"sideboard\":[],", ""), ready.replace("[[75022,40]]", "[[75022,20],[75022,20]]"))) {
-            assertEquals(false, assertIs<ArenaMemoryRead.Unavailable>(parse(bad)).screenFallback)
+            assertIs<ArenaMemoryRead.Unavailable>(parse(bad))
         }
-        assertEquals(false, assertIs<ArenaMemoryRead.Unavailable>(parse("""{"status":"unavailable"}""")).screenFallback)
-        assertEquals(true, assertIs<ArenaMemoryRead.Unavailable>(parse("""{"status":"access_required"}""")).screenFallback)
-        assertEquals(true, assertIs<ArenaMemoryRead.Unavailable>(parse("""{"status":"unsupported_build"}""")).screenFallback)
+        assertIs<ArenaMemoryRead.Unavailable>(parse("""{"status":"unavailable"}"""))
+        assertEquals(MemoryUnavailableKind.ACCESS_REQUIRED, assertIs<ArenaMemoryRead.Unavailable>(parse("""{"status":"access_required"}""")).kind)
+        assertEquals(MemoryUnavailableKind.UNSUPPORTED, assertIs<ArenaMemoryRead.Unavailable>(parse("""{"status":"unsupported_build"}""")).kind)
         assertIs<ArenaMemoryRead.Paused>(parse("""{"status":"blocked","reason":"Close dialog"}"""))
     }
 }

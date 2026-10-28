@@ -167,11 +167,13 @@ fun main() {
                 }
                 ArenaOverlayTracker(
                     cards = cards,
+                    draftPool = deckGuidancePool(state.draftPool),
+                    sessionKey = "${state.sessionKey}:${state.pack}:${state.pick}",
+                    memoryReader = liveDeckReader,
                     onHealthChanged = { draftOverlayHealth = it },
                 )
             }
 
-            !isOverlayOpen && DevFlags.overlayTrack -> ArenaOverlayTracker()
         }
     }
 }
@@ -185,6 +187,7 @@ internal fun overlayCards(packCards: List<PackCardUi>): List<OverlayCard> =
             originalIndex = it.originalIndex,
             isRoom = it.isRoom,
             recommendedPair = it.recommendedPair,
+            grpId = it.grpId,
         )
     }
 

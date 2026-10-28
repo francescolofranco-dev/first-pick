@@ -17,6 +17,8 @@ esac
 if (( $# > 1 )); then echo "Usage: $0 [--host]" >&2; exit 1; fi
 module_cache="$here/../../build/native-module-cache"
 mkdir -p "$out" "$module_cache"
+# Retire generated capture executables left by an earlier checkout/build.
+rm -f "$out/window-capture" "$out/vision-ocr" "$out/deck-reader"
 
 build() {
   local name="$1"; local minos="$2"; shift 2
@@ -53,8 +55,4 @@ PY
 }
 
 build window-locator 11
-build window-capture 13 -framework ScreenCaptureKit
-build vision-ocr 11 -framework Vision -framework ImageIO
-
-build deck-reader 13 -framework ScreenCaptureKit -framework Vision -framework ImageIO
 build arena-memory 13

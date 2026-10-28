@@ -50,65 +50,21 @@ class OverlayHealthTest {
     }
 
     @Test
-    fun missingReferenceImagesDoNotClaimACapturePermissionFailure() {
-        val health = packReferenceFailureHealth()
-        assertEquals(OverlayHealthState.CARD_IMAGES_UNAVAILABLE, health.state)
-        assertTrue(health.needsAttention)
-        assertFalse("Screen Recording" in health.detail)
-        assertFalse("capture" in health.detail.lowercase())
-    }
-
-    @Test
-    fun failedPackRecognitionDistinguishesCaptureFromLayout() {
-        assertEquals(
-            OverlayHealthState.CAPTURE_UNAVAILABLE,
-            packRecognitionFailureHealth(capturedFrames = 0).state,
-        )
-        assertEquals(
-            OverlayHealthState.UNSUPPORTED_LAYOUT,
-            packRecognitionFailureHealth(capturedFrames = 1).state,
-        )
-    }
-
-    @Test
-    fun deckFrameHealthCoversReadingActiveUnsupportedAndInactiveStates() {
-        val initial = DeckOverlayPresentationState.initial()
-        assertEquals(
-            OverlayHealthState.CAPTURE_UNAVAILABLE,
-            deckOverlayWorkHealth(DeckOverlayFrameAttempt.ReaderFailure, initial).state,
-        )
-        assertEquals(
-            OverlayHealthState.READING,
-            deckOverlayWorkHealth(DeckOverlayFrameAttempt.SupportedBuilderShell, initial).state,
-        )
-        assertEquals(
-            OverlayHealthState.UNSUPPORTED_LAYOUT,
-            deckOverlayWorkHealth(DeckOverlayFrameAttempt.UnsupportedLayout, initial).state,
-        )
-        assertEquals(
-            OverlayHealthState.READING,
-            deckOverlayWorkHealth(DeckOverlayFrameAttempt.OutsideBuilder, initial).state,
-        )
-        assertEquals(
-            OverlayHealthState.INACTIVE,
-            deckOverlayWorkHealth(
-                DeckOverlayFrameAttempt.OutsideBuilder,
-                initial.copy(contentVisible = false),
-            ).state,
-        )
-
-        val recognized = DeckOverlayFrameAttempt.Recognized(
-            DeckGuidanceOverlayModel(DeckGuidanceStatus.MATCHES),
-        )
-        val acquired = DeckOverlayPresentationReducer.reduce(initial, recognized, nowMs = 0).state
-        assertEquals(OverlayHealthState.ACTIVE, deckOverlayWorkHealth(recognized, acquired).state)
+    fun memoryFailuresDistinguishPermissionBuildAndTransientRead() {
+        assertEquals(OverlayHealthState.ACCESS_REQUIRED, memoryReadHealth(
+            ArenaMemoryRead.Unavailable("Grant Arena access", MemoryUnavailableKind.ACCESS_REQUIRED)).state)
+        assertEquals(OverlayHealthState.UNSUPPORTED_LAYOUT, memoryReadHealth(
+            ArenaMemoryRead.Unavailable("Unknown build", MemoryUnavailableKind.UNSUPPORTED)).state)
+        assertEquals(OverlayHealthState.READING, memoryReadHealth(ArenaMemoryRead.Unavailable("Updating")).state)
+        assertEquals(OverlayHealthState.READING, memoryReadHealth(ArenaMemoryRead.Paused("Close settings")).state)
+        assertEquals(OverlayHealthState.INACTIVE, memoryReadHealth(ArenaMemoryRead.Paused("Different screen", true)).state)
     }
 
     @Test
     fun onlyActionableFailuresNeedAttention() {
         assertFalse(active.needsAttention)
         assertFalse(OverlayHealth(OverlayHealthState.READING).needsAttention)
-        assertTrue(OverlayHealth(OverlayHealthState.CAPTURE_UNAVAILABLE).needsAttention)
+        assertTrue(OverlayHealth(OverlayHealthState.ACCESS_REQUIRED).needsAttention)
         assertTrue(OverlayHealth(OverlayHealthState.UNSUPPORTED_LAYOUT).needsAttention)
         assertTrue(OverlayHealth(OverlayHealthState.CLICK_THROUGH_FAILED).needsAttention)
     }

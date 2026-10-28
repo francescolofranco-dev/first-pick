@@ -30,7 +30,7 @@ enum class LiveDeckAccessStatus { CHECKING, ACCESS_REQUIRED, GRANTING, CONNECTED
 
 data class LiveDeckAccess(
     val status: LiveDeckAccessStatus = LiveDeckAccessStatus.CHECKING,
-    val detail: String = "Checking live deck access.",
+    val detail: String = "Checking Arena access.",
 ) {
     val canGrant: Boolean get() = status == LiveDeckAccessStatus.ACCESS_REQUIRED || status == LiveDeckAccessStatus.FAILED
 }
@@ -42,11 +42,14 @@ internal data class ArenaMemoryDeck(
     val pool: List<ArenaCardQuantity>,
     val total: Int,
 )
+internal data class ArenaMemoryPack(val editorSession: String, val cards: List<Int>, val picked: List<ArenaCardQuantity>)
+internal enum class MemoryUnavailableKind { ACCESS_REQUIRED, UNSUPPORTED, WAITING }
 
 internal sealed interface ArenaMemoryRead {
     data class Ready(val deck: ArenaMemoryDeck) : ArenaMemoryRead
+    data class PackReady(val pack: ArenaMemoryPack) : ArenaMemoryRead
     data class Paused(val reason: String, val outsideBuilder: Boolean = false) : ArenaMemoryRead
-    data class Unavailable(val reason: String, val screenFallback: Boolean) : ArenaMemoryRead
+    data class Unavailable(val reason: String, val kind: MemoryUnavailableKind = MemoryUnavailableKind.WAITING) : ArenaMemoryRead
 }
 
 /** Only typed deck snapshots cross the production socket. No raw-address API. */
@@ -68,7 +71,7 @@ class ArenaMemoryReader(
     private val responses = Executors.newSingleThreadExecutor { Thread(it, "arena-memory-response").apply { isDaemon = true } }
 
     internal fun read(): ArenaMemoryRead {
-        if (closed.get()) return ArenaMemoryRead.Unavailable("Live deck sync is closed.", true)
+        if (closed.get()) return ArenaMemoryRead.Unavailable("Live Arena access is closed.")
         val current = session
         val payload = try {
             if (current != null) rpc(current, "snapshot") else workerSnapshot()
@@ -78,18 +81,18 @@ class ArenaMemoryReader(
                 removeDirectory(current)
                 state.value = LiveDeckAccess(LiveDeckAccessStatus.ACCESS_REQUIRED, "The Arena connection ended. Grant access again to reconnect.")
             }
-            return ArenaMemoryRead.Unavailable("Waiting for a fresh Arena deck reading.", current == null)
+            return ArenaMemoryRead.Unavailable("Grant Arena access in FirstPick to reconnect the overlay.", MemoryUnavailableKind.ACCESS_REQUIRED)
         }
         val result = parseArenaMemoryRead(payload)
         when ((payload["status"] as? JsonPrimitive)?.contentOrNull) {
-            "ready", "blocked", "outside_builder", "changing" -> if (!granting.get()) {
-                state.value = LiveDeckAccess(LiveDeckAccessStatus.CONNECTED, "Live deck access is connected to Arena.")
+            "ready", "draft_ready", "blocked", "outside_builder", "changing" -> if (!granting.get()) {
+                state.value = LiveDeckAccess(LiveDeckAccessStatus.CONNECTED, "Live Arena access is connected.")
             }
             "access_required" -> if (!granting.get() && state.value.status !in setOf(LiveDeckAccessStatus.FAILED, LiveDeckAccessStatus.UNSUPPORTED)) {
-                state.value = LiveDeckAccess(LiveDeckAccessStatus.ACCESS_REQUIRED, "Read your complete deck without scrolling. Screen reading is available meanwhile.")
+                state.value = LiveDeckAccess(LiveDeckAccessStatus.ACCESS_REQUIRED, "Grant read-only access to enable Arena's live overlay.")
             }
             "unsupported_build" -> if (!granting.get()) {
-                state.value = LiveDeckAccess(LiveDeckAccessStatus.UNSUPPORTED, "Live sync does not support this Arena build yet. Using screen reading.")
+                state.value = LiveDeckAccess(LiveDeckAccessStatus.UNSUPPORTED, "This Arena build is not supported yet. The overlay is paused.")
             }
             "arena_closed" -> {
                 if (current != null) { session = null; removeDirectory(current) }
@@ -113,7 +116,7 @@ class ArenaMemoryReader(
             val process = ProcessBuilder(binary.absolutePath, "--grant", pendingSession.socket.toString(), token,
                 ProcessHandle.current().pid().toString()).redirectError(ProcessBuilder.Redirect.DISCARD).start()
             grantProcess = process
-            val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(120)
+            val deadline = System.nanoTime() + TimeUnit.MINUTES.toNanos(5)
             while (!closed.get() && System.nanoTime() < deadline) {
                 val bootstrap = pendingSession.directory.resolve("bootstrap.json")
                 if (Files.exists(bootstrap) && Files.size(bootstrap) <= 4096) {
@@ -127,17 +130,17 @@ class ArenaMemoryReader(
                 if (Files.exists(pendingSession.socket)) {
                     val answer = runCatching { rpc(pendingSession, "snapshot") }.getOrNull()
                     val status = answer?.get("status")?.jsonPrimitive?.contentOrNull
-                    if (status in setOf("ready", "blocked", "outside_builder", "changing")) {
+                    if (status in setOf("ready", "draft_ready", "blocked", "outside_builder", "changing")) {
                         session?.let { runCatching { rpc(it, "close") }; removeDirectory(it) }
                         session = pendingSession
                         candidate = null
-                        state.value = LiveDeckAccess(LiveDeckAccessStatus.CONNECTED, "Live deck access is connected to Arena.")
+                        state.value = LiveDeckAccess(LiveDeckAccessStatus.CONNECTED, "Live Arena access is connected.")
                         return
                     }
                     if (status == "unsupported_build") {
                         state.value = LiveDeckAccess(LiveDeckAccessStatus.UNSUPPORTED,
                             (answer["reason"] as? JsonPrimitive)?.contentOrNull.orEmpty().take(240)
-                                .ifBlank { "Live sync could not verify this Arena layout. Using screen reading." })
+                                .ifBlank { "This Arena layout could not be verified. The overlay is paused." })
                         return
                     }
                 }
@@ -157,7 +160,7 @@ class ArenaMemoryReader(
             error("Arena session did not become ready")
         } catch (_: Exception) {
             if (!closed.get()) state.value = LiveDeckAccess(LiveDeckAccessStatus.FAILED,
-                "Arena access could not be established. Open Arena and try again; screen reading remains available.")
+                "Arena access could not be established. Open Arena and grant access again to enable the overlay.")
         } finally {
             candidate?.let { runCatching { rpc(it, "close") }; removeDirectory(it) }
             if (candidate != null) grantProcess?.destroy()
@@ -241,24 +244,24 @@ class ArenaMemoryReader(
 internal fun parseArenaMemoryRead(objectValue: JsonObject): ArenaMemoryRead = runCatching {
     val status = objectValue["status"]?.jsonPrimitive?.contentOrNull
     val reason = objectValue["reason"]?.jsonPrimitive?.contentOrNull.orEmpty().take(240)
+    fun pile(field: String, maxCopies: Int): List<ArenaCardQuantity> {
+        val rows = objectValue[field] as? JsonArray ?: error("Missing pile")
+        require(rows.size <= 2048)
+        val cards = rows.map {
+            val row = it as? JsonArray ?: error("Invalid card")
+            require(row.size == 2)
+            val id = row[0].jsonPrimitive.intOrNull ?: error("Invalid ID")
+            val count = row[1].jsonPrimitive.intOrNull ?: error("Invalid quantity")
+            require(id > 0 && count in 1..300)
+            ArenaCardQuantity(id, count)
+        }
+        require(cards.distinctBy { it.grpId }.size == cards.size && cards.sumOf { it.count } <= maxCopies)
+        return cards
+    }
     when (status) {
         "ready" -> {
             val key = objectValue["editor_session"]?.jsonPrimitive?.contentOrNull ?: error("No editor identity")
             require(key.matches(Regex("[a-f0-9]{64}")))
-            fun pile(field: String, maxCopies: Int): List<ArenaCardQuantity> {
-                val rows = objectValue[field] as? JsonArray ?: error("Missing pile")
-                require(rows.size <= 2048)
-                val cards = rows.map {
-                    val row = it as? JsonArray ?: error("Invalid card")
-                    require(row.size == 2)
-                    val id = row[0].jsonPrimitive.intOrNull ?: error("Invalid ID")
-                    val count = row[1].jsonPrimitive.intOrNull ?: error("Invalid quantity")
-                    require(id > 0 && count in 1..300)
-                    ArenaCardQuantity(id, count)
-                }
-                require(cards.distinctBy { it.grpId }.size == cards.size && cards.sumOf { it.count } <= maxCopies)
-                return cards
-            }
             val main = pile("main", 300)
             pile("sideboard", 300)
             val pool = pile("pool", 10000)
@@ -266,9 +269,19 @@ internal fun parseArenaMemoryRead(objectValue: JsonObject): ArenaMemoryRead = ru
             require(total == main.sumOf { it.count })
             ArenaMemoryRead.Ready(ArenaMemoryDeck(key, main, pool, total))
         }
+        "draft_ready" -> {
+            val key = objectValue["editor_session"]?.jsonPrimitive?.contentOrNull ?: error("No draft identity")
+            require(key.matches(Regex("[a-f0-9]{64}")))
+            val cards = (objectValue["cards"] as? JsonArray)?.map { it.jsonPrimitive.intOrNull ?: error("Invalid ID") }
+                ?: error("Missing draft cards")
+            require(cards.size in 1..30 && cards.all { it > 0 })
+            ArenaMemoryRead.PackReady(ArenaMemoryPack(key, cards, pile("picked", 300)))
+        }
         "blocked", "changing" -> ArenaMemoryRead.Paused(reason.ifBlank { "Checking recent Arena changes." })
         "outside_builder" -> ArenaMemoryRead.Paused(reason, outsideBuilder = true)
-        "access_required", "unsupported_build", "arena_closed" -> ArenaMemoryRead.Unavailable(reason, screenFallback = true)
-        else -> ArenaMemoryRead.Unavailable(reason.ifBlank { "Waiting for a fresh Arena deck reading." }, screenFallback = false)
+        "access_required" -> ArenaMemoryRead.Unavailable("Grant Arena access in FirstPick to enable the overlay.", MemoryUnavailableKind.ACCESS_REQUIRED)
+        "unsupported_build" -> ArenaMemoryRead.Unavailable(reason.ifBlank { "This Arena build is not supported yet. The overlay is paused." }, MemoryUnavailableKind.UNSUPPORTED)
+        "arena_closed" -> ArenaMemoryRead.Unavailable("Open Arena to enable the live overlay.")
+        else -> ArenaMemoryRead.Unavailable(reason.ifBlank { "Waiting for a fresh Arena reading." })
     }
-}.getOrElse { ArenaMemoryRead.Unavailable("Arena returned an incomplete or inconsistent deck snapshot.", screenFallback = false) }
+}.getOrElse { ArenaMemoryRead.Unavailable("Arena returned an incomplete or inconsistent snapshot.") }

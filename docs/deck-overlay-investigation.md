@@ -1,5 +1,13 @@
 # Deck-building overlay reliability investigation
 
+Current implementation: **3.0.0 uses memory exclusively for live overlay state**.
+The deck builder has live acceptance coverage; draft extraction has synthetic
+coverage and its named-advice preview awaits a real draft pack. Screen capture,
+OCR, artwork recognition, calibration and screen-derived marks are removed.
+See [memory verification](overlay-diagnostics.md) for current checks and the
+remaining geometry work. The dated investigation and milestones below describe
+earlier implementations and preserve the reasoning that led to this change.
+
 Investigated on 2026-10-21 against repository revision `997bfb2` (FirstPick 2.3.1).
 The original investigation proposed changes without modifying app behavior.
 The implementation follow-up is recorded below. Local logs were inspected read-only. No raw account data, identifiers,
@@ -377,3 +385,45 @@ highlight-position accuracy benchmark is claimed by these checks. The prototype
 timings above are not app latency. The host production build is Apple Silicon;
 Intel source type-checks, but universal linking could not be verified with this
 machine's SDK because its Intel Swift compatibility libraries are missing.
+
+## Memory-only migration: 3.0.0
+
+Removed the production capture/OCR workers, artwork matching, calibration,
+screen-derived deck evidence, screen recording/replay tools, and automatic screen
+fallback. Only `window-locator` (OS window metadata) and `arena-memory` ship as
+native helpers. Missing permission or unsupported layouts pause the overlay.
+The major version reflects removal of the old compatibility path.
+
+Deck guidance now polls memory directly, clears stale instructions, and lists
+every named change rather than hiding the fifth change behind a summary. There
+are no screen-derived positional marks. A shared window host preserves foreground
+tracking and click-through, including when the native window is recreated.
+
+The draft reader follows the active `DraftContentController`, its pack collection,
+actual `DraftPackCardView` order and `DraftDeckManager` main/side collections.
+It compares the displayed card-ID multiset with the complete pack and compares
+the picked pool with FirstPick's advisor context. Repeated stable observations
+are required. Animations, dragging, popups, settings, dialogs, changing packs and
+unverified object types produce no partial recommendations. This is a named-pick
+preview; a real draft pack is deferred at the user's request. Local layout fields
+were identified, but projection/clipping and per-card screen bounds are not yet
+proven. Grades are not drawn at assumed card locations.
+
+Validation so far: all 452 remaining Kotlin tests and six compiled-native graph
+tests passed without skips; native graph tests now run in every production build.
+All selected field offsets match the installed Arena binary and metadata. The
+installed 3.0.0 JAR matches the final tested build, and an artifact inspection
+found no retired recognition code or capture executables. Production was rebuilt,
+signed, installed and restarted; its version and access controls were visibly
+verified. After the user granted access, the running reader was verified as UID
+501 (real and effective), and the app visibly reported connected access. Live
+snapshots returned the complete 40-card deck. A filter hiding every pool card and
+scrolling the deck to its lands preserved the exact main deck, unfiltered pool
+and editor identity. No cards were changed by this verification.
+
+The [sanitized acceptance record](../prototypes/arena-memory/verified-memory-only-macos-arm64.json)
+contains the checks and limitations. After the subsequent pause, the previous
+read session had ended and Arena was showing **Waiting for the Server**. An
+additional 3.0.0 land add/remove retest was therefore not performed; the prior
+2.8.0 live edit evidence is separate. Draft-pack acceptance and per-card screen
+geometry remain deferred, as described above. No latency benchmark is claimed.

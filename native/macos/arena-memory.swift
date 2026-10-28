@@ -116,7 +116,7 @@ private final class Target {
     let launch: proc_bsdinfo
     init(pid supplied: pid_t? = nil) throws {
         #if !arch(arm64)
-        throw ReadFailure("unsupported_build", "Live deck sync is not available for this Arena architecture. Screen reading remains available.")
+        throw ReadFailure("unsupported_build", "Live Arena access is not available for this architecture. The overlay is paused.")
         #else
         let pid: pid_t
         if let supplied = supplied { pid = supplied }
@@ -155,7 +155,7 @@ private final class Memory {
         var value: mach_port_t = 0
         if selfTest { value = mach_task_self_ }
         else if taskReadForPID(mach_task_self_, pid, &value) != KERN_SUCCESS || value == 0 {
-            throw ReadFailure("access_required", "Grant access to read your live Arena deck. Screen reading is available meanwhile.")
+            throw ReadFailure("access_required", "Grant Arena access in FirstPick to enable the live overlay.")
         }
         port = value; fixture = nil
     }
@@ -348,21 +348,13 @@ private final class DeckRuntime {
             if try flag(menu, "settings_menu", "<IsOpen>k__BackingField") { throw ReadFailure("blocked", "Close Arena's settings to resume deck guidance.") }
         }
     }
-    func roots() throws -> [UInt64] {
-        let wrapper = try singleton("wrapper", "<Instance>k__BackingField")
-        let scene = try field(wrapper, "wrapper", "<SceneLoader>k__BackingField", "scene")
-        let nav = try memory.pointer(scene + profile.offset("scene", "<CurrentNavContent>k__BackingField"), nullable: true)
-        guard try nav != 0 && identity(memory.pointer(nav)) == ("WrapperDeckBuilder", "") else { throw ReadFailure("outside_builder", "Open the Limited deck builder for this draft.") }
-        guard try flag(nav, "editor", "_isActive") else { throw ReadFailure("outside_builder", "The deck builder is inactive.") }
-        let widget = try field(nav, "editor", "_deckbuilder", "widget")
-        guard try flag(widget, "widget", "_isActive") else { throw ReadFailure("outside_builder", "The deck builder is inactive.") }
-        try connectionAndMessages(wrapper)
+    func activeServices(_ keys: [String]) throws -> [String: UInt64] {
         let pantry = try singleton("pantry", "instance"), parent = try memory.pointer(klass("pantry") + 0x58)
         try require(try identity(parent) == ("Pantry`1", "SharedClientCore.SharedClientCore.Code"), "Unexpected service registry.")
         guard let offset = try fields(parent)["_containers"] else { throw ReadFailure("unsupported_build", "Missing registry scope table.") }
         let scopes = try dictionary(memory.pointer(pantry + offset), .scopes)
         try require(scopes.count <= 5 && scopes.allSatisfy { $0.0 <= 4 }, "Unexpected registry scopes.")
-        var found: [String: Set<UInt64>] = ["model_provider": [], "context_provider": [], "popup_manager": []]
+        var found = Dictionary(uniqueKeysWithValues: keys.map { ($0, Set<UInt64>()) })
         for (_, container) in scopes {
             try check(container, "container")
             for (_, value) in try dictionary(memory.pointer(container + profile.offset("container", "_references")), .services) where value != 0 {
@@ -371,7 +363,10 @@ private final class DeckRuntime {
             }
         }
         try require(found.values.allSatisfy { $0.count == 1 }, "A unique active deck service could not be found.")
-        let popup = try memory.pointer(found["popup_manager"]!.first! + profile.offset("popup_manager", "_activePopup"), nullable: true)
+        return found.mapValues { $0.first! }
+    }
+    func checkPopup(_ manager: UInt64) throws {
+        let popup = try memory.pointer(manager + profile.offset("popup_manager", "_activePopup"), nullable: true)
         if popup != 0 {
             var parent = try memory.pointer(popup), matches = false
             for _ in 0..<10 {
@@ -382,8 +377,20 @@ private final class DeckRuntime {
             try require(matches, "Unexpected active popup type.")
             if try flag(popup, "popup_base", "<IsShowing>k__BackingField") { throw ReadFailure("blocked", "Close the Arena popup to resume deck guidance.") }
         }
-        let model = try field(found["model_provider"]!.first!, "model_provider", "_model", "model")
-        let context = try field(found["context_provider"]!.first!, "context_provider", "_context", "context")
+    }
+    func roots() throws -> [UInt64] {
+        let wrapper = try singleton("wrapper", "<Instance>k__BackingField")
+        let scene = try field(wrapper, "wrapper", "<SceneLoader>k__BackingField", "scene")
+        let nav = try memory.pointer(scene + profile.offset("scene", "<CurrentNavContent>k__BackingField"), nullable: true)
+        guard try nav != 0 && identity(memory.pointer(nav)) == ("WrapperDeckBuilder", "") else { throw ReadFailure("outside_builder", "Open the Limited deck builder for this draft.") }
+        guard try flag(nav, "editor", "_isActive") else { throw ReadFailure("outside_builder", "The deck builder is inactive.") }
+        let widget = try field(nav, "editor", "_deckbuilder", "widget")
+        guard try flag(widget, "widget", "_isActive") else { throw ReadFailure("outside_builder", "The deck builder is inactive.") }
+        try connectionAndMessages(wrapper)
+        let found = try activeServices(["model_provider", "context_provider", "popup_manager"])
+        try checkPopup(found["popup_manager"]!)
+        let model = try field(found["model_provider"]!, "model_provider", "_model", "model")
+        let context = try field(found["context_provider"]!, "context_provider", "_context", "context")
         guard try !flag(model, "model", "_isConstructed") else { throw ReadFailure("outside_builder", "Live deck sync supports Limited decks.") }
         let event = try memory.pointer(context + profile.offset("context", "Event"), nullable: true)
         guard event != 0 else { throw ReadFailure("outside_builder", "No Limited event is active.") }
@@ -397,8 +404,100 @@ private final class DeckRuntime {
         try require(copies <= (pool ? 10000 : 300), "Card pile exceeds its supported bounds.")
         return rows.filter { $0.1 > 0 }.sorted { $0.0 < $1.0 }.map { [$0.0, $0.1] }
     }
+    func listObjects(_ object: UInt64, maximum: Int) throws -> [UInt64] {
+        let k = try memory.pointer(object), id = try identity(k), f = try fields(k)
+        try require(id == ("List`1", "System.Collections.Generic"), "Unexpected draft collection.")
+        guard let size = f["_size"], let items = f["_items"], let version = f["_version"] else { throw ReadFailure("unsupported_build", "Missing draft collection bookkeeping.") }
+        let before = try memory.read(object + version, 4)
+        let count = Int(try integer(memory.read(object + size, 4), 0, Int32.self))
+        try require(count >= 0 && count <= maximum, "Draft collection exceeds its bounds.")
+        let array = try memory.pointer(object + items, nullable: count == 0)
+        if count == 0 { return [] }
+        try require(try memory.u64(array + 16) == 0 && memory.u64(array + 24) >= count && memory.u64(array + 24) <= 2048, "Invalid draft array.")
+        let data = try memory.read(array + 32, count * 8)
+        guard try before == memory.read(object + version, 4) && data == memory.read(array + 32, count * 8) && count == integer(memory.read(object + size, 4), 0, Int32.self) else { throw ReadFailure("changing", "Arena is updating the draft.") }
+        return try (0..<count).map { i in
+            let value: UInt64 = try integer(data, i * 8)
+            try require(value >= 4096 && value < 1 << 48 && value % 8 == 0, "Invalid draft object.")
+            return value
+        }
+    }
+    func cardID(_ object: UInt64) throws -> UInt64 {
+        var printing = object
+        if try identity(memory.pointer(object)) == ("CardData", "GreClient.CardData") {
+            printing = try field(object, "card_data", "_printing", "card_printing")
+        } else { try check(printing, "card_printing") }
+        // CardPrintingRecord is an inline value type; its offsets include the
+        // 16-byte boxed header in IL2CPP metadata, absent in this embedded field.
+        let id = UInt64(try integer(memory.read(printing + profile.offset("card_printing", "Record") + profile.offset("card_printing_record", "GrpId") - 16, 4), 0, UInt32.self))
+        try require(id > 0 && id <= Int32.max, "Invalid draft card identity.")
+        return id
+    }
+    func collection(_ object: UInt64, maximum: Int) throws -> [[UInt64]] {
+        try check(object, "card_collection")
+        let items = try listObjects(memory.pointer(object + profile.offset("card_collection", "_itemList")), maximum: maximum)
+        var counts: [UInt64: UInt64] = [:]
+        for item in items {
+            try check(item, "card_collection_item")
+            let card = try memory.pointer(item + profile.offset("card_collection_item", "<Card>k__BackingField"))
+            let count = Int(try integer(memory.read(item + profile.offset("card_collection_item", "<Quantity>k__BackingField"), 4), 0, Int32.self))
+            try require(count > 0 && count <= 300, "Invalid draft card quantity.")
+            let id = try cardID(card)
+            try require(counts[id] == nil, "Duplicate draft collection entry.")
+            counts[id] = UInt64(count)
+        }
+        try require(counts.values.reduce(0, +) <= maximum, "Draft collection exceeds its copy limit.")
+        return counts.keys.sorted().map { [$0, counts[$0]!] }
+    }
+    func draftSnapshot(_ nav: UInt64) throws -> [String: Any] {
+        try check(nav, "draft_controller")
+        guard try flag(nav, "draft_controller", "_active") else { throw ReadFailure("outside_builder", "The draft screen is inactive.") }
+        let wrapper = try singleton("wrapper", "<Instance>k__BackingField")
+        try connectionAndMessages(wrapper)
+        try checkPopup(activeServices(["popup_manager"])["popup_manager"]!)
+        for field in ["_layoutChangeCoroutine", "_settingCardsCoroutine"] {
+            guard try memory.pointer(nav + profile.offset("draft_controller", field), nullable: true) == 0 else { throw ReadFailure("changing", "Arena is arranging the new pack.") }
+        }
+        guard try flag(nav, "draft_controller", "_okToPickCard") else { throw ReadFailure("changing", "Waiting for Arena's current pack.") }
+        let holder = try field(nav, "draft_controller", "_draftPackHolder", "draft_holder")
+        guard try flag(holder, "draft_holder", "_isInitialized") && !flag(holder, "draft_holder", "<IsAnimating>k__BackingField") && memory.pointer(holder + profile.offset("draft_holder", "_pendingPackCollection"), nullable: true) == 0 else { throw ReadFailure("changing", "Arena is animating the pack.") }
+        let pack = try field(nav, "draft_controller", "_packCollection", "card_collection")
+        guard try memory.pointer(holder + profile.offset("draft_holder", "_packCollection")) == pack else { throw ReadFailure("changing", "Arena is changing packs.") }
+        let expected = try collection(pack, maximum: 30)
+        let views = try listObjects(memory.pointer(holder + profile.offset("draft_holder", "_allCardViews")), maximum: 30)
+        var ids: [UInt64] = []
+        for view in views {
+            try check(view, "draft_card_view")
+            guard try !flag(view, "meta_card_view", "<IsDragging>k__BackingField") else { throw ReadFailure("changing", "A draft card is being moved.") }
+            ids.append(try cardID(memory.pointer(view + profile.offset("draft_card_view", "<CurrentCard>k__BackingField"))))
+        }
+        let actual = Dictionary(grouping: ids, by: { $0 }).mapValues { UInt64($0.count) }
+        let wanted = Dictionary(uniqueKeysWithValues: expected.map { ($0[0], $0[1]) })
+        guard !ids.isEmpty && actual == wanted else { throw ReadFailure("changing", "Arena's displayed cards are updating.") }
+        let manager = try field(nav, "draft_controller", "_draftDeckManager", "draft_deck_manager")
+        let deck = try field(manager, "draft_deck_manager", "_deck", "draft_deck")
+        let main = try collection(field(deck, "draft_deck", "_main", "card_collection"), maximum: 300)
+        let side = try collection(field(deck, "draft_deck", "_sideboard", "card_collection"), maximum: 300)
+        var picked: [UInt64: UInt64] = [:]
+        for row in main + side { picked[row[0], default: 0] += row[1] }
+        let session = hash(Data((nonce + ":draft:\(nav):\(manager)").utf8))
+        // These layout records are kept inside the process until live projection
+        // and clipping are verified. Local/world positions are not screen bounds.
+        return ["status": "draft_ready", "editor_session": session, "cards": ids,
+                "picked": picked.keys.sorted().map { [$0, picked[$0]!] }]
+    }
     func snapshot() throws -> [String: Any] {
         try target?.validate(); memory.begin()
+        let wrapper = try singleton("wrapper", "<Instance>k__BackingField")
+        let scene = try field(wrapper, "wrapper", "<SceneLoader>k__BackingField", "scene")
+        let nav = try memory.pointer(scene + profile.offset("scene", "<CurrentNavContent>k__BackingField"), nullable: true)
+        if try nav != 0 && identity(memory.pointer(nav)) == ("DraftContentController", "Wotc.Mtga.Wrapper.Draft") {
+            let a = try draftSnapshot(nav), b = try draftSnapshot(nav)
+            guard try memory.pointer(scene + profile.offset("scene", "<CurrentNavContent>k__BackingField")) == nav,
+                  NSDictionary(dictionary: a).isEqual(to: b) else { throw ReadFailure("changing", "Arena is updating the draft.") }
+            try target?.validate()
+            return b
+        }
         for _ in 0..<3 {
             do {
                 let a = try roots(), main = try quantities(a[4]), side = try quantities(a[5]), pool = try quantities(a[6], pool: true)
@@ -441,7 +540,7 @@ private func grant(_ path: String, _ token: String, _ parent: pid_t) throws -> [
     let command = args.map(shellQuote).joined(separator: " ")
     var error: NSDictionary?
     let script = authorizationScript(command)
-    guard let result = script?.executeAndReturnError(&error), error == nil else { return ["status": "access_required", "reason": "Access was not granted. Screen reading remains available."] }
+    guard let result = script?.executeAndReturnError(&error), error == nil else { return ["status": "access_required", "reason": "Access was not granted. Grant Arena access to enable the overlay."] }
     if let text = result.stringValue, text.utf8.count <= 4096,
        let data = text.data(using: .utf8), let response = try? JSONSerialization.jsonObject(with: data) as? [String: Any] { return response }
     return ["status": "closed"]

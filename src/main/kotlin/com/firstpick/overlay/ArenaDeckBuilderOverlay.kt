@@ -1,355 +1,70 @@
 package com.firstpick.overlay
 
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.DpSize
+import androidx.compose.runtime.*
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Window
-import androidx.compose.ui.window.WindowPosition
-import androidx.compose.ui.window.rememberWindowState
-import com.firstpick.core.Log
-import com.firstpick.ui.MacOverlay
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 
-private const val DECK_OVERLAY_TAG = "DeckOverlay"
-private const val DECK_OVERLAY_TITLE = "FirstPick Deck Guidance"
-private const val WINDOW_POLL_MS = 300L
-private const val WINDOW_GRACE_MS = 1_000L
-private const val CLICK_THROUGH_ATTEMPTS = 40
-private const val CLICK_THROUGH_RETRY_MS = 150L
-
-/** Transparent, non-interactive guidance attached directly to Arena's window. */
+/** Counts and identities come exclusively from the authorized Arena reader. */
 @Composable
 fun ArenaDeckBuilderOverlay(
     target: List<DeckCardCount>,
     draftPool: List<DeckCardCount>,
     sessionKey: String? = null,
     locator: WindowLocator = WindowLocator(),
-    memoryReader: ArenaMemoryReader? = null,
+    memoryReader: ArenaMemoryReader,
     onHealthChanged: (OverlayHealth) -> Unit = {},
 ) {
     val loc = remember { locator }
-    val reader = remember { DeckFrameReader() }
-    val geometryReader = remember { DeckFrameReader() }
-    DisposableEffect(reader, geometryReader) {
-        onDispose {
-            // The bounded reader may still be finishing a frame; never block Compose disposal.
-            Thread({ reader.close(); geometryReader.close() }, "deck-reader-close").apply { isDaemon = true }.start()
-        }
-    }
-    val poolKey = remember(draftPool) { draftPool.stableCountKey() }
-    val targetKey = remember(target) { target.stableCountKey() }
-    val session = remember(sessionKey, poolKey) { DeckGuidanceSession(target, draftPool) }
-    val memorySession = remember(sessionKey, poolKey) { MemoryDeckGuidanceSession() }
-    var usesMemory by remember(sessionKey, poolKey) { mutableStateOf(false) }
-    var memoryDeck by remember(sessionKey, poolKey) { mutableStateOf<MemoryDeckValidation.Ready?>(null) }
-    var geometry by remember(sessionKey, poolKey) { mutableStateOf<MemoryDeckGeometry?>(null) }
-    SideEffect { session.updateTarget(target) }
-    var presentation by remember(poolKey) { mutableStateOf(DeckOverlayPresentationState.initial()) }
-    var workHealth by remember(poolKey, targetKey) {
-        mutableStateOf(
-            OverlayHealth(
-                OverlayHealthState.READING,
-                "Reading Arena's Limited deck builder.",
-            ),
-        )
-    }
-    var clickThroughFailed by remember { mutableStateOf(false) }
-    var clickThroughApplied by remember { mutableStateOf(false) }
-
-    var bounds by remember { mutableStateOf<WindowBounds?>(null) }
-    LaunchedEffect(loc) {
-        var lastSeen = 0L
-        while (true) {
-            val located = withContext(Dispatchers.IO) { loc.locate() }
-            val now = System.currentTimeMillis()
-            if (located != null && located.w > 0 && located.h > 0) {
-                bounds = located
-                lastSeen = now
-            } else if (now - lastSeen > WINDOW_GRACE_MS) {
-                bounds = null
-            }
-            delay(WINDOW_POLL_MS)
-        }
-    }
-
-    val effectiveWorkHealth = if (
-        workHealth.state == OverlayHealthState.ACTIVE && !clickThroughApplied
-    ) {
-        OverlayHealth(OverlayHealthState.READING, "Preparing deck guidance.")
-    } else {
-        workHealth
-    }
-    val health = resolveOverlayHealth(
-        arenaAvailable = bounds != null,
-        arenaFrontmost = bounds?.frontmost == true,
-        clickThroughFailed = clickThroughFailed,
-        work = effectiveWorkHealth,
-    )
-    OverlayHealthEffect(health, onHealthChanged)
-
-    LaunchedEffect(session, bounds != null) {
-        if (bounds == null) {
-            session.invalidate()
-            presentation = DeckOverlayPresentationState.initial()
-        }
-    }
-
-    val arena = bounds ?: return
-    val windowState = rememberWindowState(
-        position = WindowPosition(arena.x.dp, arena.y.dp),
-        size = DpSize(arena.w.dp, arena.h.dp),
-    )
-    LaunchedEffect(arena.x, arena.y, arena.w, arena.h) {
-        windowState.position = WindowPosition(arena.x.dp, arena.y.dp)
-        windowState.size = DpSize(arena.w.dp, arena.h.dp)
-    }
-
-    val arenaFrontmost by rememberUpdatedState(arena.frontmost)
-    val currentMemoryDeck by rememberUpdatedState(memoryDeck)
-    LaunchedEffect(usesMemory, session, arena.w, arena.h) {
-        geometry = null
-        if (!usesMemory) return@LaunchedEffect
-        while (true) {
-            val before = currentMemoryDeck
-            val startedMs = System.nanoTime() / 1_000_000L
-            if (before != null && arenaFrontmost) {
-                val frame = withContext(Dispatchers.IO) {
-                    geometryReader.read(draftPool.map { it.name }, arena.w, arena.h)
-                }
-                geometry = frame?.let { value ->
-                    DeckBuilderScreenInterpreter.interpret(value.text)?.let { screen ->
-                        if (currentMemoryDeck == before) MemoryDeckGeometry(before, screen,
-                            value.image.width.toDouble() / value.image.height, startedMs) else null
-                    }
-                }
-            } else geometry = null
-            delay(deckOverlayPollDelayMs(System.nanoTime() / 1_000_000L - startedMs, arenaFrontmost))
-        }
-    }
-    var lastFrameAtMs by remember { mutableStateOf(0L) }
+    val session = remember(sessionKey, draftPool) { MemoryDeckGuidanceSession() }
+    var model by remember(session, target) { mutableStateOf(DeckGuidanceOverlayModel(DeckGuidanceStatus.READING)) }
+    var health by remember { mutableStateOf(OverlayHealth(OverlayHealthState.READING, "Reading the live deck.")) }
+    var contentVisible by remember { mutableStateOf(true) }
+    var frontmost by remember { mutableStateOf(false) }
+    val currentFrontmost by rememberUpdatedState(frontmost)
+    var lastReadingMs by remember { mutableStateOf(0L) }
     LaunchedEffect(session) {
         while (true) {
             delay(100)
-            if (System.nanoTime() / 1_000_000L - lastFrameAtMs > 900) {
-                presentation = presentation.copy(model = DeckGuidanceOverlayModel(DeckGuidanceStatus.READING))
+            if (System.nanoTime() / 1_000_000L - lastReadingMs > 900) {
+                model = DeckGuidanceOverlayModel(DeckGuidanceStatus.READING)
+                health = OverlayHealth(OverlayHealthState.READING, "Waiting for a fresh live deck reading.")
             }
         }
     }
-    LaunchedEffect(session, targetKey, arena.w, arena.h) {
-        presentation = DeckOverlayPresentationState.initial()
-        workHealth = OverlayHealth(
-            OverlayHealthState.READING,
-            "Reading Arena's Limited deck builder.",
-        )
+    LaunchedEffect(session, target) {
+        model = DeckGuidanceOverlayModel(DeckGuidanceStatus.READING)
         while (true) {
-            // Keep observing Arena while its overlay is hidden. Focus changes do
-            // not erase a scan; capture gaps and observed edits still invalidate it.
-            val frameStartedNs = System.nanoTime()
-            val memory = withContext(Dispatchers.IO) { memoryReader?.read() }
+            val read = withContext(Dispatchers.IO) { memoryReader.read() }
             val now = System.nanoTime() / 1_000_000L
-            val fallback = memory == null || memory is ArenaMemoryRead.Unavailable && memory.screenFallback
-            if (fallback && usesMemory) session.invalidate()
-            usesMemory = !fallback
-            var liveHealth: OverlayHealth? = null
-            val frame = if (fallback) withContext(Dispatchers.IO) {
-                reader.read(draftPool.map { it.name }, arena.w, arena.h)
-            } else null
-            // Reduce only after the cancellable capture returns, so an obsolete
-            // window/session cannot publish a late frame into the active scan.
-            val attempt = if (!fallback) {
-                when (memory) {
-                    is ArenaMemoryRead.Ready -> {
-                        when (val verified = withContext(Dispatchers.IO) { memorySession.observe(memory.deck, draftPool, now) }) {
-                            is MemoryDeckValidation.Ready -> {
-                                if (memoryDeck == null) Log.info(DECK_OVERLAY_TAG, "Complete live deck verified against this draft; total=${verified.deck.totalCards}")
-                                memoryDeck = verified
-                                var model = memoryGuidanceModel(target, verified.deck)
-                                val positions = geometry
-                                if (positions != null && positions.deck == verified && now - positions.startedAtMs in 0..500) {
-                                    model = model.copy(marks = memoryGuidanceMarks(model, verified.deck, draftPool, positions.screen, positions.aspectRatio))
-                                }
-                                liveHealth = OverlayHealth(OverlayHealthState.ACTIVE, "Live deck guidance is synced to Arena.")
-                                DeckOverlayFrameAttempt.Recognized(model)
-                            }
-                            is MemoryDeckValidation.Rejected -> {
-                                memoryDeck = null
-                                liveHealth = OverlayHealth(OverlayHealthState.READING, verified.reason)
-                                DeckOverlayFrameAttempt.Recognized(DeckGuidanceOverlayModel(DeckGuidanceStatus.READING, notice = verified.reason))
-                            }
-                        }
-                    }
-                    is ArenaMemoryRead.Paused -> {
-                        memorySession.invalidate(); memoryDeck = null
-                        liveHealth = OverlayHealth(OverlayHealthState.READING, memory.reason)
-                        if (memory.outsideBuilder) DeckOverlayFrameAttempt.OutsideBuilder
-                        else DeckOverlayFrameAttempt.Recognized(DeckGuidanceOverlayModel(DeckGuidanceStatus.READING, notice = memory.reason))
-                    }
-                    else -> {
-                        memorySession.invalidate(); memoryDeck = null
-                        liveHealth = OverlayHealth(OverlayHealthState.READING, "Waiting for a fresh live deck reading.")
-                        DeckOverlayFrameAttempt.Recognized(DeckGuidanceOverlayModel(DeckGuidanceStatus.READING))
+            contentVisible = read !is ArenaMemoryRead.Paused || !read.outsideBuilder
+            if (read is ArenaMemoryRead.PackReady) contentVisible = false
+            health = memoryReadHealth(read)
+            model = when (read) {
+                is ArenaMemoryRead.Ready -> when (val verified = withContext(Dispatchers.IO) { session.observe(read.deck, draftPool, now) }) {
+                    is MemoryDeckValidation.Ready -> memoryGuidanceModel(target, verified.deck)
+                    is MemoryDeckValidation.Rejected -> {
+                        health = OverlayHealth(OverlayHealthState.READING, verified.reason)
+                        DeckGuidanceOverlayModel(DeckGuidanceStatus.READING, notice = verified.reason)
                     }
                 }
-            } else if (frame == null) DeckOverlayFrameAttempt.ReaderFailure else {
-                val screen = DeckBuilderScreenInterpreter.interpret(frame.text)
-                val shell = DeckBuilderScreenInterpreter.detectShell(frame.text)
-                when {
-                    screen != null && isSupportedLimitedDeckBuilder(screen) ->
-                        DeckOverlayFrameAttempt.Recognized(session.observe(frame.image, screen))
-                    shell?.minimumDeckSize == DeckGuidance.LIMITED_DECK_SIZE ->
-                        DeckOverlayFrameAttempt.SupportedBuilderShell
-                    shell != null -> DeckOverlayFrameAttempt.UnsupportedLayout
-                    else -> DeckOverlayFrameAttempt.OutsideBuilder
+                else -> {
+                    session.invalidate()
+                    val reason = when (read) {
+                        is ArenaMemoryRead.Paused -> read.reason
+                        is ArenaMemoryRead.Unavailable -> read.reason
+                        else -> "Waiting for a fresh live deck reading."
+                    }
+                    DeckGuidanceOverlayModel(DeckGuidanceStatus.READING, notice = reason)
                 }
             }
-            if (fallback) { memorySession.invalidate(); memoryDeck = null }
-            lastFrameAtMs = System.nanoTime() / 1_000_000L
-            if (attempt !is DeckOverlayFrameAttempt.Recognized) session.unreadableFrame(lastFrameAtMs)
-            val update = DeckOverlayPresentationReducer.reduce(
-                state = presentation,
-                attempt = attempt,
-                nowMs = System.nanoTime() / 1_000_000L,
-            )
-            presentation = update.state
-            if (!presentation.contentVisible) session.invalidate()
-            workHealth = liveHealth ?: deckOverlayWorkHealth(attempt, update.state)
-            logDeckOverlayTransitions(update.transitions)
-
-            val processingElapsedMs = ((System.nanoTime() - frameStartedNs) / 1_000_000L).coerceAtLeast(0L)
-            delay(deckOverlayPollDelayMs(processingElapsedMs, arenaFrontmost))
+            lastReadingMs = System.nanoTime() / 1_000_000L
+            delay(if (currentFrontmost) 150 else 500)
         }
     }
-
-    val visible = arena.frontmost && presentation.contentVisible && !clickThroughFailed
-    Window(
-        onCloseRequest = {},
-        visible = visible,
-        state = windowState,
-        title = DECK_OVERLAY_TITLE,
-        transparent = true,
-        undecorated = true,
-        alwaysOnTop = true,
-        focusable = false,
-        resizable = false,
-    ) {
-        LaunchedEffect(visible) {
-            if (!visible || clickThroughApplied) return@LaunchedEffect
-            repeat(CLICK_THROUGH_ATTEMPTS) {
-                if (withContext(Dispatchers.IO) { MacOverlay.setClickThrough(window, true) }) {
-                    clickThroughApplied = true
-                    clickThroughFailed = false
-                    return@LaunchedEffect
-                }
-                delay(CLICK_THROUGH_RETRY_MS)
-            }
-            clickThroughFailed = true
-            Log.warn(DECK_OVERLAY_TAG, "click-through could not be applied; hiding deck guidance")
-        }
-
-        DeckGuidanceOverlay(
-            model = presentation.model,
-            viewportWidth = arena.w.dp,
-            viewportHeight = arena.h.dp,
-            modifier = Modifier.fillMaxSize(),
-        )
-    }
-}
-
-private data class MemoryDeckGeometry(
-    val deck: MemoryDeckValidation.Ready,
-    val screen: DeckBuilderScreenObservation,
-    val aspectRatio: Double,
-    val startedAtMs: Long,
-)
-
-internal fun deckOverlayWorkHealth(
-    attempt: DeckOverlayFrameAttempt,
-    presentation: DeckOverlayPresentationState,
-): OverlayHealth = when (attempt) {
-    DeckOverlayFrameAttempt.ReaderFailure -> OverlayHealth(
-        OverlayHealthState.CAPTURE_UNAVAILABLE,
-        "Arena could not be read. Check Screen Recording permission.",
-    )
-
-    DeckOverlayFrameAttempt.SupportedBuilderShell -> OverlayHealth(
-        OverlayHealthState.READING,
-        "The Limited deck builder is visible; reading its card rows.",
-    )
-
-    DeckOverlayFrameAttempt.UnsupportedLayout -> OverlayHealth(
-        OverlayHealthState.UNSUPPORTED_LAYOUT,
-        "Open a 40-card Limited deck builder to use deck guidance.",
-    )
-
-    DeckOverlayFrameAttempt.OutsideBuilder -> if (presentation.contentVisible) {
-        OverlayHealth(
-            OverlayHealthState.READING,
-            "Looking for Arena's Limited deck builder.",
-        )
-    } else {
-        OverlayHealth(
-            OverlayHealthState.INACTIVE,
-            "Open Arena's Limited deck builder to start guidance.",
-        )
-    }
-
-    is DeckOverlayFrameAttempt.Recognized -> if (presentation.unreadableReason == null &&
-        presentation.model.status != DeckGuidanceStatus.READING) {
-        OverlayHealth(
-            OverlayHealthState.ACTIVE,
-            "Deck guidance is synced to Arena.",
-        )
-    } else {
-        OverlayHealth(
-            OverlayHealthState.READING,
-            "Checking recent changes in Arena.",
-        )
-    }
-}
-
-private fun List<DeckCardCount>.stableCountKey(): String =
-    sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.name })
-        .joinToString("|") { "${it.name}:${it.count}:${it.isBasicLand}" }
-
-internal fun isSupportedLimitedDeckBuilder(screen: DeckBuilderScreenObservation): Boolean =
-    screen.minimumDeckSize == DeckGuidance.LIMITED_DECK_SIZE
-
-private fun logDeckOverlayTransitions(transitions: List<DeckOverlayPresentationTransition>) {
-    for (transition in transitions) {
-        when (transition) {
-            DeckOverlayPresentationTransition.Acquired ->
-                Log.info(DECK_OVERLAY_TAG, "Limited deck builder acquired")
-
-            is DeckOverlayPresentationTransition.Unreadable -> {
-                val reason = when (transition.reason) {
-                    DeckOverlayUnreadableReason.CAPTURE_OR_OCR -> "capture/OCR is temporarily unavailable"
-                    DeckOverlayUnreadableReason.ROWS_OBSCURED -> "deck rows are obscured while the builder shell remains visible"
-                    DeckOverlayUnreadableReason.GUIDANCE_UNAVAILABLE -> "visible deck counts are temporarily ambiguous"
-                }
-                val action = "waiting for a fresh deck reading"
-                Log.warn(DECK_OVERLAY_TAG, "$reason; $action")
-            }
-
-            is DeckOverlayPresentationTransition.GraceExpired ->
-                Log.warn(DECK_OVERLAY_TAG, "deck reading remained unavailable; waiting for a fresh frame")
-
-            DeckOverlayPresentationTransition.Recovered ->
-                Log.info(DECK_OVERLAY_TAG, "deck reading recovered")
-
-            DeckOverlayPresentationTransition.Lost ->
-                Log.info(DECK_OVERLAY_TAG, "Limited deck builder lost; hiding guidance")
-        }
+    ArenaMemoryOverlayWindow("FirstPick Deck Guidance", health, contentVisible, loc,
+        onForegroundChanged = { frontmost = it }, onHealthChanged = onHealthChanged) { arena ->
+        DeckGuidanceOverlay(model, arena.w.dp, arena.h.dp)
     }
 }

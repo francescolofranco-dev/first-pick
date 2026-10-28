@@ -19,6 +19,8 @@ require(firstPickPackageVersion == version.toString()) { "packageVersion must ma
 
 tasks.named<ProcessResources>("processResources") {
     from("VERSION") { rename { "app-version.txt" } }
+    // Older checkouts may still contain ignored capture executables on disk.
+    exclude("native/macos/window-capture", "native/macos/vision-ocr", "native/macos/deck-reader")
 }
 
 kotlin {
@@ -76,7 +78,6 @@ compose.desktop {
 
 tasks.withType<JavaExec>().matching { it.name == "run" }.configureEach {
     environment("FIRSTPICK_DEMO", "1")
-    if (project.hasProperty("track")) systemProperty("firstpick.overlayTrack", "true")
 }
 
 val buildNativeHelpers = tasks.register<Exec>("buildNativeHelpers") {
@@ -106,9 +107,6 @@ val buildNativeHelpers = tasks.register<Exec>("buildNativeHelpers") {
     }
     outputs.files(
         "src/main/resources/native/macos/window-locator",
-        "src/main/resources/native/macos/window-capture",
-        "src/main/resources/native/macos/vision-ocr",
-        "src/main/resources/native/macos/deck-reader",
         "src/main/resources/native/macos/arena-memory",
     )
     workingDir(layout.projectDirectory)
@@ -128,8 +126,15 @@ val buildNativeHelpers = tasks.register<Exec>("buildNativeHelpers") {
 // Order native resources before the shared JVM resource/JAR tasks, without
 // requiring Xcode for ordinary development builds or unit tests.
 tasks.named("processResources") { mustRunAfter(buildNativeHelpers) }
+val testNativeMemory = tasks.register<Exec>("testNativeMemory") {
+    group = "verification"
+    description = "Verify the compiled Arena reader against synthetic IL2CPP graphs without game access."
+    dependsOn(buildNativeHelpers)
+    workingDir(layout.projectDirectory)
+    commandLine("python3", "-B", "-m", "unittest", "discover", "-s", "native/tests", "-v")
+}
 tasks.matching { it.name == "createDistributable" }.configureEach {
-    dependsOn(buildNativeHelpers, "test")
+    dependsOn(testNativeMemory, "test")
 }
 
 val productionApp = layout.buildDirectory.dir("compose/binaries/main/app/FirstPick.app")
@@ -145,7 +150,7 @@ tasks.matching { it.name == "createDistributable" }.configureEach {
     doLast {
         val app = appDirectory.get().asFile
         val helpers = File(app, "Contents/Helpers").apply { mkdirs() }
-        for (name in listOf("window-locator", "window-capture", "vision-ocr", "deck-reader", "arena-memory")) {
+        for (name in listOf("window-locator", "arena-memory")) {
             val destination = File(helpers, name)
             File(nativeDirectory, name).copyTo(destination, overwrite = true)
             check(destination.setExecutable(true, false)) { "Could not make bundled helper executable." }
@@ -235,17 +240,6 @@ tasks.register<JavaExec>("evalHarness") {
     args(a)
 }
 
-tasks.register<JavaExec>("overlayDebug") {
-    group = "verification"
-    description = "Run the overlay capture→detect→recognize pipeline once and report each stage."
-    mainClass.set("com.firstpick.tools.OverlayDebugKt")
-    classpath = sourceSets["main"].runtimeClasspath
-    val a = mutableListOf<String>()
-    a.add(project.findProperty("frame")?.toString() ?: "")
-    project.findProperty("format")?.let { a.add(it.toString()) }
-    args(a)
-}
-
 tasks.register<JavaExec>("clickThroughProbe") {
     group = "verification"
     description = "Verify overlay click-through end-to-end on a real window; -Pstay=1 keeps it up for manual clicks."
@@ -289,30 +283,4 @@ tasks.register<Test>("deckAudit") {
     systemProperty("firstpick.audit.seeds", providers.gradleProperty("auditSeeds").orElse("100").get())
     systemProperty("firstpick.audit.seedStart", providers.gradleProperty("auditSeedStart").orElse("0").get())
     outputs.upToDateWhen { false }
-}
-
-// Standalone, opt-in diagnostics. Normal application startup does not record frames.
-tasks.register<JavaExec>("overlayReplay") {
-    group = "verification"
-    description = "Replay a self-contained overlay recording offline and write a baseline report."
-    mainClass.set("com.firstpick.diagnostics.OverlayReplayKt")
-    classpath = sourceSets["main"].runtimeClasspath
-    args(providers.gradleProperty("manifest").orElse("src/test/resources/overlay/baseline.json").get(),
-        providers.gradleProperty("reportDir").orElse("build/reports/overlay-baseline").get())
-}
-
-tasks.register<JavaExec>("overlayRecord") {
-    group = "verification"
-    description = "Explicitly record a bounded local Arena session; requires a context manifest and a new output directory."
-    mainClass.set("com.firstpick.tools.OverlayRecordKt")
-    classpath = sourceSets["main"].runtimeClasspath
-    val contextFile = providers.gradleProperty("context").orElse("").get()
-    val recordingDir = providers.gradleProperty("recordingDir").orElse("").get()
-    args(contextFile, recordingDir, providers.gradleProperty("recordFrames").orElse("60").get(),
-        providers.gradleProperty("recordIntervalMs").orElse("300").get())
-    doFirst {
-        require(contextFile.isNotBlank() && recordingDir.isNotBlank()) {
-            "Specify -Pcontext=/path/context.json -PrecordingDir=/path/new-directory. Recording is opt-in."
-        }
-    }
 }

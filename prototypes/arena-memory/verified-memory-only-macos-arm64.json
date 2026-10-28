@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "verified_on": "2026-10-28",
+  "firstpick_version": "3.0.0",
+  "arena_version": "2026.64.50",
+  "architecture": "arm64",
+  "read_api": "task_read_for_pid",
+  "administrator_privileges_dropped": true,
+  "live_checks": {
+    "complete_deck_copies": 40,
+    "pool_filtered_to_no_results": true,
+    "deck_list_scrolled": true,
+    "exact_main_unchanged": true,
+    "exact_pool_unchanged": true,
+    "same_editor_observed": true,
+    "main_digest_sha256": "de83e375fc3528e0c3663a55a79381c55f37dc36af9c2cce9d4a91913e39f9a5"
+  },
+  "automated_checks": {
+    "kotlin_tests": 452,
+    "native_graph_tests": 6,
+    "failures": 0,
+    "skipped": 0
+  },
+  "packaged_helpers": [
+    "arena-memory",
+    "window-locator"
+  ],
+  "retired_recognition_entries_in_app_jar": 0,
+  "limits": [
+    "Live draft-pack testing deferred by the user.",
+    "No verified per-card screen geometry or positional badges.",
+    "The additional 3.0.0 land add/remove retest was not performed: after the pause the read session had ended and Arena was waiting for its server. No cards were changed by this verification.",
+    "No end-to-end overlay latency benchmark."
+  ]
+}
