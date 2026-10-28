@@ -15,6 +15,7 @@ class DeckBadgeRenderTest {
             status = DeckGuidanceStatus.NEEDS_CHANGES,
             remainingAdds = 2,
             remainingRemovals = 1,
+            basicLandChanges = listOf(CardGuidance("Forest", 3, 2)),
             marks = listOf(
                 DeckGuidanceVisualMark.AddCard(NormalizedRect(0.78, 0.40, 0.21, 0.04), inDeckList = true),
                 DeckGuidanceVisualMark.RemoveRow(NormalizedRect(0.78, 0.45, 0.21, 0.04), 2),

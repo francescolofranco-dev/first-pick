@@ -14,6 +14,12 @@ Details moved from the README.
 The deck overlay reads the complete unsaved Limited deck and unfiltered pool.
 It requires an exact match to the selected draft and two stable observations.
 Scrolling, card filters, artwork and truncated names do not determine quantities.
+From 3.1.0, the selected build carries its allocated basic lands through the
+displayed list, export and overlay target. Guidance names each missing or excess
+type (for example, **Add 1 Forest** or **Remove 1 Mountain**), and a 40-card deck
+with the wrong basic color split still needs changes. Multiple printings and
+snow-covered variants count toward the same basic mana type. Nonbasic lands
+remain separate cards; their sources are not counted as extra basic slots.
 A stale read, active dialog, disconnection or inactive editor clears instructions.
 The native helper obtains only a read port and drops administrator privileges
 before serving owner-only typed snapshots. Access ends with FirstPick, Arena,

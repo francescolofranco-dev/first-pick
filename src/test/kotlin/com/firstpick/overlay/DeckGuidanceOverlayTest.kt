@@ -4,6 +4,8 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertNull
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class DeckGuidanceOverlayTest {
     private val bounds = NormalizedRect(0.75, 0.25, 0.20, 0.04)
@@ -69,6 +71,28 @@ class DeckGuidanceOverlayTest {
                 ),
             ).label,
         )
+    }
+
+    @Test
+    fun landOnlyGuidanceNamesTheMissingBasicInThePrimaryLabelAndDetails() {
+        val model = memoryGuidanceModel(
+            listOf(DeckCardCount("Spell", 23), DeckCardCount("Island", 7, true), DeckCardCount("Swamp", 7, true), DeckCardCount("Forest", 3, true)),
+            DeckSnapshot(listOf(DeckCardCount("Spell", 23), DeckCardCount("Island", 7, true), DeckCardCount("Swamp", 7, true), DeckCardCount("Forest", 2, true)), 39),
+        )
+        assertEquals("Add 1 Forest", statusPillStyle(model).label)
+        assertEquals("Add 1 Forest", model.guidanceDetails())
+    }
+
+    @Test
+    fun namedLandSwapsRemainVisibleAlongsideSpellInstructionsAtFortyCards() {
+        val model = memoryGuidanceModel(
+            listOf(DeckCardCount("Spell", 22), DeckCardCount("Missing spell", 1), DeckCardCount("Island", 9, true), DeckCardCount("Swamp", 8, true)),
+            DeckSnapshot(listOf(DeckCardCount("Spell", 22), DeckCardCount("Extra spell", 1), DeckCardCount("Island", 8, true), DeckCardCount("Swamp", 8, true), DeckCardCount("Mountain", 1, true)), 40),
+        )
+        assertEquals("Deck needs changes · Cut 1 card · Add 1 card · Add 1 Island · Remove 1 Mountain", statusPillStyle(model).label)
+        assertTrue(model.guidanceDetails().contains("Add 1 Island"))
+        assertTrue(model.guidanceDetails().contains("Remove 1 Mountain"))
+        assertFalse(statusPillStyle(model).label.contains("basic land"))
     }
 
     @Test

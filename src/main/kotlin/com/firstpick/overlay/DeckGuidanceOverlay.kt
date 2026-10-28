@@ -47,6 +47,7 @@ data class DeckGuidanceOverlayModel(
     val basicLandDelta: Int = 0,
     val changes: List<CardGuidance> = emptyList(),
     val notice: String? = null,
+    val basicLandChanges: List<CardGuidance> = emptyList(),
 ) {
     /** Partial readings only contain marks from the current verified visible cards. */
     fun renderableMarks(): List<DeckGuidanceVisualMark> =
@@ -231,15 +232,25 @@ fun statusPillStyle(model: DeckGuidanceOverlayModel): DeckGuidanceStatusPillStyl
 
 internal fun DeckGuidanceOverlayModel.guidanceDetails(): String {
     if (status != DeckGuidanceStatus.NEEDS_CHANGES) return ""
-    return changes.joinToString(" · ") {
+    val cards = changes.map {
         "${if (it.action == DeckGuidanceAction.ADD) "Add" else "Cut"} ${kotlin.math.abs(it.difference)} ${it.name}"
     }
+    return (cards + basicLandChanges.filter { it.action != DeckGuidanceAction.OK }.map { it.basicLandInstruction() })
+        .joinToString(" · ")
 }
+
+private fun CardGuidance.basicLandInstruction(): String =
+    "${if (action == DeckGuidanceAction.ADD) "Add" else "Remove"} ${kotlin.math.abs(difference)} $name"
 
 private fun DeckGuidanceOverlayModel.needsChangesLabel(): String {
     val namedChanges = buildList {
         if (remainingRemovals > 0) add("Cut $remainingRemovals ${if (remainingRemovals == 1) "card" else "cards"}")
         if (remainingAdds > 0) add("Add $remainingAdds ${if (remainingAdds == 1) "card" else "cards"}")
+    }
+    val basicInstructions = basicLandChanges.filter { it.action != DeckGuidanceAction.OK }.map { it.basicLandInstruction() }
+    if (basicInstructions.isNotEmpty()) {
+        val instructions = (namedChanges + basicInstructions).joinToString(" · ")
+        return if (namedChanges.isNotEmpty()) "Deck needs changes · $instructions" else instructions
     }
     if (namedChanges.isNotEmpty()) {
         val completeInstructions = namedChanges + when {

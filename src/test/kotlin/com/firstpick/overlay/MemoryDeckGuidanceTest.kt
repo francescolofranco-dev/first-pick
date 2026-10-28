@@ -53,6 +53,18 @@ class MemoryDeckGuidanceTest {
         assertIs<MemoryDeckValidation.Ready>(validateMemoryDeck(value, pool, names + (92374 to "Island")))
     }
 
+    @Test fun exactMemoryBasicCountsDriveNamedManaChangesAcrossDifferentPrintings() {
+        val snapshot = raw().copy(main = listOf(ArenaCardQuantity(106460, 1), ArenaCardQuantity(106263, 2),
+            ArenaCardQuantity(75022, 20), ArenaCardQuantity(92374, 17)))
+        val current = assertIs<MemoryDeckValidation.Ready>(validateMemoryDeck(snapshot, pool, names + (92374 to "Island")))
+        val target = listOf(DeckCardCount(frost, 1), DeckCardCount(protege, 2), DeckCardCount("Island", 36, true), DeckCardCount("Swamp", 1, true))
+        val model = memoryGuidanceModel(target, current.deck)
+        assertEquals(DeckGuidanceStatus.NEEDS_CHANGES, model.status)
+        assertEquals(0, model.basicLandDelta)
+        assertEquals("Remove 1 Island · Add 1 Swamp", statusPillStyle(model).label)
+        assertTrue(model.changes.isEmpty())
+    }
+
     @Test fun aSecondPollIsRequiredAndEqualTotalSwapsInvalidateOldInstructions() {
         val session = MemoryDeckGuidanceSession { names }
         assertIs<MemoryDeckValidation.Rejected>(session.observe(raw(), pool, 0))

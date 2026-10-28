@@ -528,7 +528,7 @@ class DraftViewModel(
             removal = removal,
             landLine = landLine,
             spells = spells.toDeckSpells(),
-            lands = nonbasicLands.toDeckSpells(),
+            lands = nonbasicLands.toDeckSpells() + basicLandCards(manaSources?.basicSources),
             hasObservedPower = hasObservedPower,
             isThreeColor = isThreeColor,
             manaPlanLabel = threeColorPlan?.label,
@@ -613,6 +613,16 @@ class DraftViewModel(
         private const val TAG = "DraftViewModel"
         private const val TOTAL_PICKS = LimitedPolicy.DRAFT_TOTAL_PICKS
         private val WUBRG_ORDER = listOf('W', 'U', 'B', 'R', 'G')
+    }
+}
+
+/** Preserve the allocated basic slots as cards, rather than only a display label. */
+internal fun basicLandCards(sources: Map<Char, Int>?): List<DeckSpellUi> = listOf(
+    'W' to "Plains", 'U' to "Island", 'B' to "Swamp", 'R' to "Mountain", 'G' to "Forest", 'C' to "Wastes",
+).mapNotNull { (color, name) ->
+    sources?.get(color)?.takeIf { it > 0 }?.let { count ->
+        DeckSpellUi(name, cmc = 0, color = color.toString(), gihWr = null, count = count,
+            typeLabel = "Basic Land", isLand = true, isBasicLand = true)
     }
 }
 

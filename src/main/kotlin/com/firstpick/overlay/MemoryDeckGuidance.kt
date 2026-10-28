@@ -71,6 +71,7 @@ internal fun memoryGuidanceModel(target: List<DeckCardCount>, deck: DeckSnapshot
         remainingAdds = guidance.remainingAdds,
         remainingRemovals = guidance.remainingRemovals,
         basicLandDelta = guidance.basicLandDelta,
+        basicLandChanges = guidance.basicLands.filter { it.action != DeckGuidanceAction.OK },
         changes = guidance.cards.filter { it.action != DeckGuidanceAction.OK },
     )
 }

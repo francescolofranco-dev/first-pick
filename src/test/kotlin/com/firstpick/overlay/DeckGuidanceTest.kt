@@ -79,17 +79,72 @@ class DeckGuidanceTest {
     }
 
     @Test
-    fun basicLandsAreIgnoredButStillCountTowardTheDeckTotal() {
+    fun aFortyCardDeckStillNeedsTheSelectedBasicLandColors() {
         val target = listOf(card("Spell", 23), card("Plains", 17, basic = true))
         val result = DeckGuidance.evaluate(
             target,
             ready(40, card("Spell", 23), card("Plains", 9, basic = true), card("Island", 8, basic = true)),
         )
 
-        assertEquals(DeckGuidanceStatus.MATCHES, result.status)
+        assertEquals(DeckGuidanceStatus.NEEDS_CHANGES, result.status)
         assertEquals(DeckGuidanceAction.OK, result.forCard("Spell")?.action)
         assertNull(result.forCard("Plains"))
         assertNull(result.forCard("Island"))
+        assertEquals(CardGuidance("Plains", 17, 9), result.basicLands.single { it.name == "Plains" })
+        assertEquals(CardGuidance("Island", 0, 8), result.basicLands.single { it.name == "Island" })
+        assertEquals(0, result.basicLandDelta)
+    }
+
+    @Test
+    fun missingBasicIsNamedFromTheSelectedThreeColorManaBase() {
+        val target = listOf(card("Spell", 23), card("Island", 7, true), card("Swamp", 7, true), card("Forest", 3, true))
+        val result = DeckGuidance.evaluate(target,
+            ready(39, card("Spell", 23), card("Island", 7, true), card("Swamp", 7, true), card("Forest", 2, true)))
+        assertEquals(listOf(CardGuidance("Forest", 3, 2)), result.basicLands.filter { it.action != DeckGuidanceAction.OK })
+        assertEquals(1, result.basicLandDelta)
+        assertEquals(1, result.netCardDelta)
+        assertEquals(0, result.remainingAdds)
+    }
+
+    @Test
+    fun excessAndWrongColorBasicsAreNamedEvenAtFortyCards() {
+        val target = listOf(card("Spell", 23), card("Island", 9, true), card("Swamp", 8, true))
+        val result = DeckGuidance.evaluate(target,
+            ready(40, card("Spell", 23), card("Island", 8, true), card("Swamp", 8, true), card("Mountain", 1, true)))
+        assertEquals(listOf(CardGuidance("Island", 9, 8), CardGuidance("Mountain", 0, 1)),
+            result.basicLands.filter { it.action != DeckGuidanceAction.OK })
+        assertEquals(DeckGuidanceStatus.NEEDS_CHANGES, result.status)
+        assertEquals(0, result.netCardDelta)
+    }
+
+    @Test
+    fun basicInstructionsAccountForSpellChangesAndDraftedNonbasicLands() {
+        val target = listOf(card("Spell", 23), card("Dual Land", 1), card("Island", 8, true), card("Swamp", 8, true))
+        val result = DeckGuidance.evaluate(target,
+            ready(40, card("Spell", 22), card("Dual Land", 1), card("Island", 8, true), card("Swamp", 9, true)))
+        assertEquals(1, result.remainingAdds)
+        assertEquals(0, result.remainingRemovals)
+        assertEquals(-1, result.basicLandDelta)
+        assertEquals(listOf(CardGuidance("Swamp", 8, 9)), result.basicLands.filter { it.action != DeckGuidanceAction.OK })
+        assertEquals(0, result.netCardDelta)
+    }
+
+    @Test
+    fun basicPrintingsAndSnowVariantsDoNotTriggerManaColorSwaps() {
+        val target = listOf(card("Spell", 23), card("Island", 9, true), card("Swamp", 8, true))
+        val result = DeckGuidance.evaluate(target,
+            ready(40, card("Spell", 23), card("Island", 4, true), card("Snow-Covered Island", 4, true),
+                card(" island ", 1), card("Swamp", 8, true)))
+        assertEquals(DeckGuidanceStatus.MATCHES, result.status)
+        assertEquals(CardGuidance("Island", 9, 9), result.basicLands.single { it.name == "Island" })
+    }
+
+    @Test
+    fun aPartialManaPlanDoesNotInventMissingColors() {
+        val result = DeckGuidance.evaluate(listOf(card("Spell", 23), card("Island", 8, true)),
+            ready(39, card("Spell", 23), card("Island", 8, true), card("Swamp", 8, true)))
+        assertEquals(emptyList(), result.basicLands)
+        assertEquals(1, result.basicLandDelta)
     }
 
     @Test

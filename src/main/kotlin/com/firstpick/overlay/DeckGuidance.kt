@@ -1,5 +1,8 @@
 package com.firstpick.overlay
 
+import com.firstpick.cards.canonicalBasicLandName
+import com.firstpick.cards.isBasicLandName
+
 enum class DeckGuidanceAction { ADD, REMOVE, OK }
 
 enum class DeckGuidanceStatus { READING, NEEDS_CHANGES, MATCHES, UNABLE }
@@ -48,8 +51,10 @@ data class CardGuidance(
 data class DeckGuidanceResult(
     val status: DeckGuidanceStatus,
     val cards: List<CardGuidance> = emptyList(),
-    /** Basic lands to add (> 0) or remove (< 0) after the named-card changes. */
+    /** Net basic copies to add (> 0) or remove (< 0), separate from nonbasics. */
     val basicLandDelta: Int = 0,
+    /** Exact per-type mana-base comparison when the complete target is available. */
+    val basicLands: List<CardGuidance> = emptyList(),
 ) {
     fun forCard(name: String): CardGuidance? = cards.firstOrNull { it.name == name }
 
@@ -95,17 +100,35 @@ object DeckGuidance {
         val exactNonbasicCounts = cards.all { it.action == DeckGuidanceAction.OK }
         val namedCardDelta = cards.sumOf(CardGuidance::difference)
         val basicLandDelta = LIMITED_DECK_SIZE - (current.totalCards + namedCardDelta)
-        val status = if (exactNonbasicCounts && current.totalCards == LIMITED_DECK_SIZE) {
+        // A partial target cannot tell us which colors fill its unspecified slots.
+        val basics = if (target.sumOf { it.count } == LIMITED_DECK_SIZE) {
+            val wanted = target.basicCounts()
+            val present = current.cards.basicCounts()
+            (wanted.keys + present.keys).sortedWith(compareBy<String> {
+                BASIC_ORDER.indexOf(it).takeIf { index -> index >= 0 } ?: BASIC_ORDER.size
+            }.thenBy { it }).map { name -> CardGuidance(name, wanted[name] ?: 0, present[name] ?: 0) }
+        } else emptyList()
+        val exactBasicCounts = basics.all { it.action == DeckGuidanceAction.OK }
+        val status = if (exactNonbasicCounts && exactBasicCounts && current.totalCards == LIMITED_DECK_SIZE) {
             DeckGuidanceStatus.MATCHES
         } else {
             DeckGuidanceStatus.NEEDS_CHANGES
         }
-        return DeckGuidanceResult(status, cards, basicLandDelta)
+        return DeckGuidanceResult(status, cards, basicLandDelta, basics)
     }
 
     private fun List<DeckCardCount>.nonbasicCounts(): Map<String, Int> =
         asSequence()
-            .filterNot(DeckCardCount::isBasicLand)
+            .filterNot { it.isBasic() }
             .groupingBy(DeckCardCount::name)
             .fold(0) { total, card -> total + card.count }
+
+    private fun List<DeckCardCount>.basicCounts(): Map<String, Int> = asSequence()
+        .filter { it.isBasic() }
+        // The mana plan specifies colors, not artwork or snow requirements.
+        .groupingBy { (canonicalBasicLandName(it.name) ?: it.name).removePrefix("Snow-Covered ") }
+        .fold(0) { total, card -> total + card.count }
+
+    private fun DeckCardCount.isBasic(): Boolean = isBasicLand || isBasicLandName(name)
+    private val BASIC_ORDER = listOf("Plains", "Island", "Swamp", "Mountain", "Forest", "Wastes")
 }

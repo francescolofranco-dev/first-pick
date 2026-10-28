@@ -56,6 +56,10 @@ class DraftViewModelTest {
             assertEquals(42, result.draftPool.sumOf { it.count })
             assertEquals(setOf("Test Hobbit", "White Hobbit"), result.draftPool.map { it.name }.toSet())
             assertTrue(result.deckOptions.isNotEmpty())
+            for (deck in result.deckOptions) {
+                assertEquals(40, (deck.spells + deck.lands).sumOf { it.count })
+                assertTrue(deck.lands.any { it.isBasicLand }, "The proposed basics must reach export and live guidance")
+            }
             assertEquals(0, http.requestCount)
             assertEquals(com.firstpick.model.DraftPhase.IDLE, vm.ui.value.phase)
         } finally { scope.cancel() }
@@ -210,6 +214,15 @@ class DraftViewModelTest {
     fun landLineShowsTheProjectedBasicSourceSplit() {
         assertEquals("17 lands · 8W · 7U · 2 nonbasic", deckLandLine(17, 2, mapOf('W' to 8, 'U' to 7)))
         assertEquals("17 lands · Arena adds 17 basics", deckLandLine(17, 0, null))
+    }
+
+    @Test
+    fun allocatedBasicsBecomeExplicitCardsWithoutCountingNonbasicSourcesTwice() {
+        val lands = basicLandCards(mapOf('W' to 8, 'U' to 7, 'B' to 0))
+        assertEquals(listOf("Plains" to 8, "Island" to 7), lands.map { it.name to it.count })
+        assertTrue(lands.all { it.isBasicLand && it.isLand })
+        assertEquals(15, lands.sumOf { it.count }, "Two drafted nonbasic slots are not additional basics")
+        assertTrue(basicLandCards(null).isEmpty())
     }
 
     @Test
