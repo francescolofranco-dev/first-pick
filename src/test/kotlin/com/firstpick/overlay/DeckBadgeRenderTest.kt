@@ -20,6 +20,7 @@ class DeckBadgeRenderTest {
                 DeckGuidanceVisualMark.AddCard(NormalizedRect(0.78, 0.40, 0.21, 0.04), inDeckList = true),
                 DeckGuidanceVisualMark.RemoveRow(NormalizedRect(0.78, 0.45, 0.21, 0.04), 2),
                 DeckGuidanceVisualMark.AddCard(NormalizedRect(0.03, 0.28, 0.13, 0.33)),
+                DeckGuidanceVisualMark.RemoveRow(NormalizedRect(0.55, 0.40, 0.10, 0.035), 1, compact = true),
             ),
         )
         val output = File("build/reports/deck-badges.png")

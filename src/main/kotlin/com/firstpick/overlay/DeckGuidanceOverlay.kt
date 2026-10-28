@@ -31,11 +31,13 @@ sealed interface DeckGuidanceVisualMark {
     data class RemoveRow(
         override val bounds: NormalizedRect,
         val currentCount: Int,
+        val compact: Boolean = false,
     ) : DeckGuidanceVisualMark
 
     data class AddCard(
         override val bounds: NormalizedRect,
         val inDeckList: Boolean = false,
+        val compact: Boolean = false,
     ) : DeckGuidanceVisualMark
 }
 
@@ -112,8 +114,8 @@ fun DeckGuidanceOverlay(
         for (mark in model.renderableMarks()) {
             val rect = mark.bounds.inViewport(viewportWidth.value, viewportHeight.value) ?: continue
             when (mark) {
-                is DeckGuidanceVisualMark.RemoveRow -> ActionBadge(rect, adding = false, inDeckList = true)
-                is DeckGuidanceVisualMark.AddCard -> ActionBadge(rect, adding = true, inDeckList = mark.inDeckList)
+                is DeckGuidanceVisualMark.RemoveRow -> ActionBadge(rect, adding = false, inDeckList = true, compact = mark.compact)
+                is DeckGuidanceVisualMark.AddCard -> ActionBadge(rect, adding = true, inDeckList = mark.inDeckList, compact = mark.compact)
             }
         }
         Column(
@@ -123,7 +125,9 @@ fun DeckGuidanceOverlay(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             StatusPill(style = statusPillStyle(model))
-            val detail = model.guidanceDetails()
+            val detail = if (model.status == DeckGuidanceStatus.NEEDS_CHANGES)
+                model.basicLandChanges.filter { it.action != DeckGuidanceAction.OK }.joinToString(" · ") { it.basicLandInstruction() }
+                else ""
             if (detail.isNotEmpty()) {
                 Text(
                     text = detail,
@@ -161,11 +165,13 @@ fun DeckGuidanceOverlayPixels(
 
 /** Compact labels use a row's center or a pool card's top, never trace Arena's chrome. */
 @Composable
-private fun ActionBadge(rect: GuidanceViewportRect, adding: Boolean, inDeckList: Boolean) {
-    val height = if (inDeckList) rect.height.coerceIn(14f, 22f) else 22f
-    val width = 54f
-    val left = if (inDeckList) rect.left - width - 6f else rect.left
-    val top = if (inDeckList) rect.top + (rect.height - height) / 2f else rect.top - height - 4f
+private fun ActionBadge(rect: GuidanceViewportRect, adding: Boolean, inDeckList: Boolean, compact: Boolean) {
+    if (compact && rect.height < 12f) return
+    val height = if (compact) 8f else if (inDeckList) rect.height.coerceIn(14f, 22f) else 16f
+    val width = if (compact) 24f else if (inDeckList) 54f else 36f
+    val left = if (compact) rect.left + 3f else if (inDeckList) rect.left - width - 6f else rect.left
+    val top = if (compact) rect.top + rect.height - height - 1f
+        else if (inDeckList) rect.top + (rect.height - height) / 2f else rect.top - height - 4f
     val accent = if (adding) DeckGuidanceOverlayPalette.AddAccent else DeckGuidanceOverlayPalette.RemoveAccent
     Box(
         Modifier
@@ -176,10 +182,10 @@ private fun ActionBadge(rect: GuidanceViewportRect, adding: Boolean, inDeckList:
         contentAlignment = Alignment.Center,
     ) {
         Text(
-            text = if (adding) "+ Add" else "− Cut",
+            text = if (compact) { if (adding) "Add" else "Cut" } else if (adding) "+ Add" else "− Cut",
             color = accent,
-            fontSize = (height * 0.55f).sp,
-            lineHeight = (height * 0.65f).sp,
+            fontSize = (if (compact) 6.5f else height * 0.55f).sp,
+            lineHeight = (if (compact) 7f else height * 0.65f).sp,
             fontWeight = FontWeight.Bold,
             maxLines = 1,
         )

@@ -57,15 +57,34 @@ in `prototypes/arena-memory/verified-draft-empty-items-macos-arm64.json`.
 
 Further live acceptance must cover Quick Draft, pick-two, identical copies,
 more pack transitions, layouts, selected cards, animations and changed window
-sizes. The current preview shows named choices only after the complete pack and
-drafted pool match the advisor. It emits no guessed per-card coordinates.
+sizes. Pack identities and drafted pools must match the advisor before grades
+can appear.
 
-## Next: memory geometry
+## Positioned badges (3.2.0)
 
-Installed metadata identifies `DraftContentController`, `DraftPackHolder`,
-`DraftPackCardView`, `DraftPackLayoutData` and `MetaCardView`. Layout records include
-columns, rows, scale, offsets and local positions. Before exposing screen bounds,
-verify the parent transforms, camera/canvas projection, clipping, active state,
-animation completion and viewport dimensions against real interaction. Associate
-each rectangle with its exact card ID in the same coherent observation. Until
-then, memory-based counts remain authoritative and there are no spatial badges.
+The native reader verifies UnityPlayer's complete fingerprint, loaded header and
+reviewed code anchors before reading native UI geometry. It follows actual card
+colliders/row rectangles through their parent TRS hierarchy into the root
+screen-space Canvas. The result is normalized against the live client viewport;
+the renderer accounts for macOS window chrome without screenshot calibration.
+
+Each rectangle travels with its exact card ID and quantity. Hidden objects,
+dirty rectangles, dragging, invalid/cyclic parents and incoherent observations
+produce no spatial marks. Pool pages and scrolling decks are clipped to their
+actual viewport. Stacked deck cards use the exposed header band derived from
+their neighboring card positions. Exact deck counts remain usable when geometry
+is temporarily unavailable.
+
+Draft cards use the restored colored score crests at their lower edge. Deck
+guidance uses Add/Cut labels, with smaller labels for stacked headers. The full
+card-name change list has been removed from the overlay; named basic-land
+instructions remain available.
+
+The installed production reader was checked against 27 live deck positions in
+the column layout and 7 pool-card positions, all matching the authoritative
+40-card deck/pool IDs and quantities. The app reached `Overlay · Synced` after
+the original pool-and-deck view was restored. Evidence is saved in
+`prototypes/arena-memory/verified-card-geometry-macos-arm64.json`.
+Draft projection also has native synthetic graph tests for duplicate IDs,
+visibility, invalid transforms and dirty layout state. A real draft-pack visual
+acceptance test remains deferred at the user's request.

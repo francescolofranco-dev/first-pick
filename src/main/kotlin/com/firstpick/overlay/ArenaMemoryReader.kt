@@ -8,6 +8,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.intOrNull
+import kotlinx.serialization.json.doubleOrNull
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
@@ -41,8 +42,10 @@ internal data class ArenaMemoryDeck(
     val main: List<ArenaCardQuantity>,
     val pool: List<ArenaCardQuantity>,
     val total: Int,
+    val geometry: ArenaCardGeometry? = null,
 )
-internal data class ArenaMemoryPack(val editorSession: String, val cards: List<Int>, val picked: List<ArenaCardQuantity>)
+internal data class ArenaMemoryPack(val editorSession: String, val cards: List<Int>, val picked: List<ArenaCardQuantity>,
+    val geometry: ArenaCardGeometry? = null)
 internal enum class MemoryUnavailableKind { ACCESS_REQUIRED, UNSUPPORTED, WAITING }
 
 internal sealed interface ArenaMemoryRead {
@@ -267,7 +270,17 @@ internal fun parseArenaMemoryRead(objectValue: JsonObject): ArenaMemoryRead = ru
             val pool = pile("pool", 10000)
             val total = objectValue["total"]?.jsonPrimitive?.intOrNull ?: error("Missing total")
             require(total == main.sumOf { it.count })
-            ArenaMemoryRead.Ready(ArenaMemoryDeck(key, main, pool, total))
+            val geometry = parseMemoryCardGeometry(objectValue["geometry"] as? JsonObject)?.takeIf { frame ->
+                frame.cards.all { card ->
+                    val source = when (card.zone) {
+                        ArenaCardZone.DECK, ArenaCardZone.COLUMN -> main
+                        ArenaCardZone.POOL -> pool
+                        ArenaCardZone.PACK -> emptyList()
+                    }
+                    source.any { it.grpId == card.grpId && it.count >= card.count }
+                }
+            }
+            ArenaMemoryRead.Ready(ArenaMemoryDeck(key, main, pool, total, geometry))
         }
         "draft_ready" -> {
             val key = objectValue["editor_session"]?.jsonPrimitive?.contentOrNull ?: error("No draft identity")
@@ -275,7 +288,10 @@ internal fun parseArenaMemoryRead(objectValue: JsonObject): ArenaMemoryRead = ru
             val cards = (objectValue["cards"] as? JsonArray)?.map { it.jsonPrimitive.intOrNull ?: error("Invalid ID") }
                 ?: error("Missing draft cards")
             require(cards.size in 1..30 && cards.all { it > 0 })
-            ArenaMemoryRead.PackReady(ArenaMemoryPack(key, cards, pile("picked", 300)))
+            val geometry = parseMemoryCardGeometry(objectValue["geometry"] as? JsonObject)?.takeIf { frame ->
+                frame.cards.all { it.zone == ArenaCardZone.PACK && it.count == 1 } && frame.cards.map { it.grpId } == cards
+            }
+            ArenaMemoryRead.PackReady(ArenaMemoryPack(key, cards, pile("picked", 300), geometry))
         }
         "blocked", "changing" -> ArenaMemoryRead.Paused(reason.ifBlank { "Checking recent Arena changes." })
         "outside_builder" -> ArenaMemoryRead.Paused(reason, outsideBuilder = true)
@@ -285,3 +301,28 @@ internal fun parseArenaMemoryRead(objectValue: JsonObject): ArenaMemoryRead = ru
         else -> ArenaMemoryRead.Unavailable(reason.ifBlank { "Waiting for a fresh Arena reading." })
     }
 }.getOrElse { ArenaMemoryRead.Unavailable("Arena returned an incomplete or inconsistent snapshot.") }
+
+/** Geometry can be withheld independently while exact card quantities remain usable. */
+internal fun parseMemoryCardGeometry(value: JsonObject?): ArenaCardGeometry? = runCatching {
+    if (value == null) return null
+    val screen = value["screen"] as? JsonArray ?: error("No viewport")
+    require(screen.size == 2)
+    val width = screen[0].jsonPrimitive.intOrNull ?: error("No width")
+    val height = screen[1].jsonPrimitive.intOrNull ?: error("No height")
+    require(width in 320..16384 && height in 200..16384)
+    val rows = value["cards"] as? JsonArray ?: error("No positions")
+    require(rows.size <= 128)
+    val positions = rows.map { entry ->
+        val row = entry as? JsonArray ?: error("Invalid position")
+        require(row.size == 7)
+        val id = row[0].jsonPrimitive.intOrNull ?: error("Invalid identity")
+        val count = row[1].jsonPrimitive.intOrNull ?: error("Invalid count")
+        val zone = ArenaCardZone.entries.firstOrNull { it.name.equals(row[2].jsonPrimitive.contentOrNull, ignoreCase = true) }
+            ?: error("Invalid card area")
+        val coordinates = (0..3).map { row[it + 3].jsonPrimitive.doubleOrNull ?: error("Invalid bounds") }
+        val rect = NormalizedRect(coordinates[0], coordinates[1], coordinates[2], coordinates[3])
+        require(id > 0 && count in 1..300 && rect.isValid())
+        ArenaVisibleCard(id, count, zone, rect)
+    }
+    ArenaCardGeometry(width, height, positions)
+}.getOrNull()

@@ -79,7 +79,10 @@
       "name": "DeckBuilderWidget",
       "namespace": "",
       "fields": {
-        "_isActive": 48
+        "_isActive": 48,
+        "_deckListView": 192,
+        "_deckColumnView": 200,
+        "_poolCardHolder": 208
       }
     },
     "pantry": {
@@ -254,7 +257,8 @@
       "name": "MetaCardView",
       "namespace": "",
       "fields": {
-        "<IsDragging>k__BackingField": 235
+        "<IsDragging>k__BackingField": 235,
+        "_cardData": 72
       }
     },
     "draft_deck_manager": {
@@ -327,7 +331,205 @@
         "ColumnCount": 48,
         "RowCount": 52
       }
+    },
+    "list_view": {
+      "index": 1208,
+      "name": "DeckListView",
+      "namespace": "",
+      "fields": {
+        "MainDeckCardHolder": 32
+      }
+    },
+    "list_holder": {
+      "index": 1213,
+      "name": "ListMetaCardHolder_Expanding",
+      "namespace": "",
+      "fields": {
+        "_tiles": 248
+      }
+    },
+    "list_row": {
+      "index": 1217,
+      "name": "ListMetaCardView_Expanding",
+      "namespace": "",
+      "fields": {
+        "<Quantity>k__BackingField": 336,
+        "_frameImage": 368
+      }
+    },
+    "meta_holder": {
+      "index": 1042,
+      "name": "MetaCardHolder",
+      "namespace": "",
+      "fields": {
+        "ScrollRect": 48
+      }
+    },
+    "pool_holder": {
+      "index": 1182,
+      "name": "CardPoolHolder",
+      "namespace": "",
+      "fields": {
+        "_pages": 264,
+        "_isScrolling": 328,
+        "_rectTransform": 344
+      }
+    },
+    "pool_page": {
+      "index": 1178,
+      "name": "Page",
+      "namespace": "",
+      "fields": {
+        "CardViews": 24
+      }
+    },
+    "pool_card": {
+      "index": 1057,
+      "name": "PagesMetaCardView",
+      "namespace": "",
+      "fields": {}
+    },
+    "graphic": {
+      "index": 30861,
+      "name": "Graphic",
+      "namespace": "UnityEngine.UI",
+      "fields": {
+        "m_RectTransform": 80,
+        "m_CanvasRenderer": 88
+      }
+    },
+    "scroll_rect": {
+      "index": 30930,
+      "name": "ScrollRect",
+      "namespace": "UnityEngine.UI",
+      "fields": {
+        "m_Content": 32,
+        "m_Viewport": 64,
+        "m_ViewRect": 128,
+        "m_Dragging": 192
+      }
+    },
+    "cdc_meta": {
+      "index": 1019,
+      "name": "CDCMetaCardView",
+      "namespace": "",
+      "fields": {
+        "_cardCollider": 384
+      }
+    },
+    "column_view": {
+      "index": 1196,
+      "name": "DeckColumnView",
+      "namespace": "",
+      "fields": {
+        "MainHolder": 104
+      }
+    },
+    "column_manager": {
+      "index": 1201,
+      "name": "StaticColumnManager",
+      "namespace": "",
+      "fields": {
+        "scrollRect": 192,
+        "_allColumns": 280
+      }
+    },
+    "draft_column_holder": {
+      "index": 1356,
+      "name": "DraftColumnMetaCardHolder",
+      "namespace": "",
+      "fields": {}
+    },
+    "column_holder": {
+      "index": 1204,
+      "name": "StaticColumnMetaCardHolder",
+      "namespace": "",
+      "fields": {
+        "_cardViews": 256
+      }
+    },
+    "column_card": {
+      "index": 1205,
+      "name": "StaticColumnMetaCardView",
+      "namespace": "",
+      "fields": {
+        "_quantity": 468
+      }
     }
   },
-  "field_offsets_vm": 150212352
+  "field_offsets_vm": 150212352,
+  "unity_sha256": "8f11cf5dc3cbdedea50189f5095dac41924d02b242a5df035c14d28b15b7fd72",
+  "unity_geometry": {
+    "screen_manager_vm": 29705088,
+    "canvas_vtable_vm": 28767856,
+    "rect_transform_vtable_vm": 28660560,
+    "box_collider_vtable_vm": 28665656
+  },
+  "unity_code_anchors": [
+    {
+      "vm": 5032484,
+      "hex": "8b3240b9080680526c7d089ba9aa41a92369ec3c4b796bb8cb04f8378c9c0090",
+      "purpose": "Transform hierarchy, TRS stride and parent indices"
+    },
+    {
+      "vm": 5031096,
+      "hex": "2100805212fdff9768c64339a8000034e00313aa01008052020080d276fdff9760e20291",
+      "purpose": "RectTransform cached rectangle and dirty flag"
+    },
+    {
+      "vm": 174948,
+      "hex": "131040f9330200b4",
+      "purpose": "Component owner"
+    },
+    {
+      "vm": 174988,
+      "hex": "681240f9130540f9",
+      "purpose": "GameObject first Transform component"
+    },
+    {
+      "vm": 180092,
+      "hex": "003040b9c0035fd6",
+      "purpose": "GameObject component count"
+    },
+    {
+      "vm": 206332,
+      "hex": "f44fbea9fd7b01a9fd430091133440f9f30000b4",
+      "purpose": "Transform native parent"
+    },
+    {
+      "vm": 562496,
+      "hex": "e80300aa001841f9c0ffffb5003d42bdc0035fd6",
+      "purpose": "Canvas root parent"
+    },
+    {
+      "vm": 10957696,
+      "hex": "f30300aa001841f9c0ffffb5602e40b9",
+      "purpose": "Canvas render mode"
+    },
+    {
+      "vm": 367200,
+      "hex": "083040f9096840b9290800b9280000f9c0035fd63d07131408c046f8097440b9290800b9280000f9c0035fd6",
+      "purpose": "BoxCollider center and size"
+    },
+    {
+      "vm": 2619340,
+      "hex": "a8ce00b000c141f9c0035fd6",
+      "purpose": "Screen manager pointer"
+    },
+    {
+      "vm": 72148,
+      "hex": "7eb7099400b840b9",
+      "purpose": "Screen dimensions"
+    },
+    {
+      "vm": 1594400,
+      "hex": "001c41391ffc0371c00000541f000071",
+      "purpose": "GameObject hierarchy activity"
+    },
+    {
+      "vm": 560100,
+      "hex": "00604339c0035fd6",
+      "purpose": "CanvasRenderer clipping"
+    }
+  ]
 }

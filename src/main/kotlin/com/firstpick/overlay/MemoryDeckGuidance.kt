@@ -4,7 +4,7 @@ import com.firstpick.cards.ArenaCardNameResolver
 import com.firstpick.cards.isBasicLandName
 
 internal sealed interface MemoryDeckValidation {
-    data class Ready(val editorSession: String, val deck: DeckSnapshot) : MemoryDeckValidation
+    data class Ready(val editorSession: String, val deck: DeckSnapshot, val names: Map<Int, String> = emptyMap()) : MemoryDeckValidation
     data class Rejected(val reason: String) : MemoryDeckValidation
 }
 
@@ -38,7 +38,7 @@ internal fun validateMemoryDeck(
     if (mainCounts.any { (name, count) -> count > (baseline[name] ?: 0) } || cards.sumOf { it.count } != snapshot.total) {
         return MemoryDeckValidation.Rejected("Arena's deck is updating. Waiting for consistent counts.")
     }
-    return MemoryDeckValidation.Ready(snapshot.editorSession, DeckSnapshot(cards, snapshot.total))
+    return MemoryDeckValidation.Ready(snapshot.editorSession, DeckSnapshot(cards, snapshot.total), names)
 }
 
 /** Require a second stable poll before publishing an edit; never retain old instructions across a gap. */

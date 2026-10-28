@@ -31,7 +31,7 @@ build() {
 import pathlib, sys
 profile, source, destination = map(pathlib.Path, sys.argv[1:])
 destination.write_text('import Foundation\nprivate let pinnedMemoryProfileJSON = #"""\n' +
-    profile.read_text() + '"""#\n' + source.read_text())
+    profile.read_text() + '"""#\n' + source.read_text() + '\n' + source.with_name('arena-geometry.swift').read_text())
 PY
     source="$tmp/main.swift"
   fi

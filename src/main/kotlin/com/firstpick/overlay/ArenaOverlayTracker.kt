@@ -11,12 +11,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.firstpick.ui.letterGrade
-import com.firstpick.ui.valueTierColor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
-import kotlin.math.roundToInt
 
 data class OverlayCard(
     val value: Double?,
@@ -28,7 +25,7 @@ data class OverlayCard(
     val grpId: Int = 0,
 )
 
-/** Exact ID matching supplies named advice; unverified screen positions supply no badges. */
+/** Exact IDs and card rectangles share one coherent Arena memory observation. */
 @Composable
 fun ArenaOverlayTracker(
     cards: List<OverlayCard>,
@@ -41,6 +38,7 @@ fun ArenaOverlayTracker(
     val loc = remember { locator }
     val session = remember(sessionKey, cards, draftPool) { MemoryPackGuidanceSession() }
     var verified by remember(session) { mutableStateOf<List<OverlayCard>>(emptyList()) }
+    var geometry by remember(session) { mutableStateOf<ArenaCardGeometry?>(null) }
     var notice by remember { mutableStateOf("Waiting for a live draft pack." ) }
     var health by remember { mutableStateOf(OverlayHealth(OverlayHealthState.READING, notice)) }
     var visible by remember { mutableStateOf(true) }
@@ -52,6 +50,7 @@ fun ArenaOverlayTracker(
             delay(100)
             if (System.nanoTime() / 1_000_000L - lastReadMs > 900) {
                 verified = emptyList()
+                geometry = null
                 notice = "Waiting for a fresh live pack reading."
                 health = OverlayHealth(OverlayHealthState.READING, notice)
             }
@@ -66,17 +65,21 @@ fun ArenaOverlayTracker(
                 is ArenaMemoryRead.PackReady -> when (val result = withContext(Dispatchers.IO) { session.observe(read.pack, cards, draftPool, now) }) {
                     is MemoryPackValidation.Ready -> {
                         verified = result.cards
-                        notice = "Live pick advice · Preview"
-                        health = OverlayHealth(OverlayHealthState.ACTIVE, "The complete live pack and drafted pool match these recommendations.")
+                        geometry = read.pack.geometry
+                        notice = "Reading live card positions…"
+                        health = if (geometry != null) OverlayHealth(OverlayHealthState.ACTIVE, "The live pack, drafted pool and card positions are synced.")
+                            else OverlayHealth(OverlayHealthState.READING, notice)
                     }
                     is MemoryPackValidation.Rejected -> {
                         verified = emptyList()
+                        geometry = null
                         notice = result.reason
                         health = OverlayHealth(OverlayHealthState.READING, notice)
                     }
                 }
                 else -> {
                     verified = emptyList()
+                    geometry = null
                     session.invalidate()
                     notice = when (read) {
                         is ArenaMemoryRead.Paused -> read.reason
@@ -95,16 +98,12 @@ fun ArenaOverlayTracker(
     ArenaMemoryOverlayWindow("FirstPick Arena Tracker", health, visible, loc,
         onForegroundChanged = { frontmost = it }, onHealthChanged = onHealthChanged) { arena ->
         Box(Modifier.size(arena.w.dp, arena.h.dp)) {
-            Column(Modifier.align(Alignment.TopCenter).padding(top = 24.dp).widthIn(max = (arena.w * .72).dp)
+            val marks = draftScoreMarks(verified, geometry?.inWindow(arena).orEmpty())
+            DraftScoreBadges(marks, arena.w.dp, arena.h.dp)
+            if (marks.isEmpty()) Box(Modifier.align(Alignment.TopEnd).padding(24.dp).widthIn(max = (arena.w * .6).dp)
                 .background(DeckGuidanceOverlayPalette.PillBackground, RoundedCornerShape(12.dp))
-                .border(1.dp, DeckGuidanceOverlayPalette.ReadingAccent, RoundedCornerShape(12.dp)).padding(12.dp),
-                verticalArrangement = Arrangement.spacedBy(5.dp)) {
-                Text(notice, color = DeckGuidanceOverlayPalette.PillText, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                for (card in rankedMemoryPicks(verified).take(3)) {
-                    val grade = card.value?.let { "${letterGrade(it)} · ${it.roundToInt()}" } ?: "Unrated"
-                    Text("${if (card.recommendedPair) "Pick · " else ""}${card.name}  $grade",
-                        color = valueTierColor(card.value), fontSize = 13.sp)
-                }
+                .border(1.dp, DeckGuidanceOverlayPalette.ReadingAccent, RoundedCornerShape(12.dp)).padding(9.dp)) {
+                Text(notice, color = DeckGuidanceOverlayPalette.PillText, fontSize = 12.sp, fontWeight = FontWeight.Bold)
             }
         }
     }

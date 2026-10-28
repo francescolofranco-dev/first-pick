@@ -113,6 +113,7 @@ private final class Target {
     let app: URL
     let profile: Profile
     let assembly: MachImage
+    let unity: MachImage
     let launch: proc_bsdinfo
     init(pid supplied: pid_t? = nil) throws {
         #if !arch(arm64)
@@ -138,6 +139,9 @@ private final class Target {
         let bytes = try Data(contentsOf: assemblyURL, options: .mappedIfSafe)
         try require(hash(bytes) == profile.object["assembly_sha256"] as? String, "This Arena update is not supported by live deck sync yet.")
         assembly = try MachImage(bytes)
+        let unityBytes = try Data(contentsOf: app.appendingPathComponent("Contents/Frameworks/UnityPlayer.dylib"), options: .mappedIfSafe)
+        try require(hash(unityBytes) == profile.object["unity_sha256"] as? String, "This Arena graphics layout is not supported yet.")
+        unity = try MachImage(unityBytes)
         #endif
     }
     func validate() throws {
@@ -211,6 +215,7 @@ private final class DeckRuntime {
     let profile: Profile
     let memory: Memory
     let slide: UInt64
+    var unitySlide: UInt64 = 0
     let nonce = UUID().uuidString
     var classes: [String: UInt64] = [:]
     var fieldCache: [UInt64: [String: UInt64]] = [:]
@@ -221,16 +226,23 @@ private final class DeckRuntime {
         try require(count > 0 && count <= 4096, "Invalid Arena image count.")
         let rows = try memory.read(table, count * 24)
         try require(try memory.read(list, 16) == before, "Arena's image list is changing.")
-        var found: [UInt64] = []
+        var found: [UInt64] = [], unityFound: [UInt64] = []
         for i in 0..<count {
             let path = try memory.string(memory.u64(table + UInt64(i * 24 + 8)), limit: 4096)
             if path.hasSuffix("/GameAssembly.dylib") {
                 try require(URL(fileURLWithPath: path).resolvingSymlinksInPath() == target.app.appendingPathComponent("Contents/Frameworks/GameAssembly.dylib").resolvingSymlinksInPath(), "Unexpected loaded Arena assembly.")
                 found.append(try integer(rows, i * 24, UInt64.self))
             }
+            if path.hasSuffix("/UnityPlayer.dylib") {
+                try require(URL(fileURLWithPath: path).resolvingSymlinksInPath() == target.app.appendingPathComponent("Contents/Frameworks/UnityPlayer.dylib").resolvingSymlinksInPath(), "Unexpected loaded Unity image.")
+                unityFound.append(try integer(rows, i * 24, UInt64.self))
+            }
         }
         try require(found.count == 1, "The Arena assembly is unavailable.")
         slide = found[0]
+        try require(unityFound.count == 1, "The Arena graphics image is unavailable.")
+        unitySlide = unityFound[0]
+        try require(try memory.read(unitySlide, 32 + target.unity.commandsSize) == target.unity.slice.prefix(32 + target.unity.commandsSize), "The running graphics image differs from its installed files.")
         try require(try memory.read(slide, 32 + target.assembly.commandsSize) == target.assembly.slice.prefix(32 + target.assembly.commandsSize), "The running Arena build differs from its installed files.")
         for anchor in profile.object["code_anchors"] as? [[String: Any]] ?? [] {
             guard let hex = anchor["hex"] as? String else { throw ReadFailure("unsupported_build", "Invalid code anchor.") }
@@ -239,6 +251,14 @@ private final class DeckRuntime {
                 return UInt8(hex[a..<b], radix: 16)
             })
             try require(!bytes.isEmpty && bytes.count * 2 == hex.count && (try memory.read(slide + number(anchor, "vm"), bytes.count)) == bytes, "The running Arena layout differs from its reviewed profile.")
+        }
+        for anchor in profile.object["unity_code_anchors"] as? [[String: Any]] ?? [] {
+            guard let hex = anchor["hex"] as? String else { throw ReadFailure("unsupported_build", "Invalid graphics anchor.") }
+            let bytes = Data(stride(from: 0, to: hex.count, by: 2).compactMap { i -> UInt8? in
+                let a = hex.index(hex.startIndex, offsetBy: i), b = hex.index(a, offsetBy: 2)
+                return UInt8(hex[a..<b], radix: 16)
+            })
+            try require(!bytes.isEmpty && (try memory.read(unitySlide + number(anchor, "vm"), bytes.count)) == bytes, "The running graphics layout differs from its reviewed profile.")
         }
     }
     init(fixture: Data, profile: Profile) {
@@ -490,8 +510,11 @@ private final class DeckRuntime {
         let session = hash(Data((nonce + ":draft:\(nav):\(manager)").utf8))
         // These layout records are kept inside the process until live projection
         // and clipping are verified. Local/world positions are not screen bounds.
-        return ["status": "draft_ready", "editor_session": session, "cards": ids,
+        var result: [String: Any] = ["status": "draft_ready", "editor_session": session, "cards": ids,
                 "picked": picked.keys.sorted().map { [$0, picked[$0]!] }]
+        do { result["geometry"] = try ArenaGeometry(self).pack(views) }
+        catch { result["geometry_reason"] = failure(error)["reason"] }
+        return result
     }
     func snapshot() throws -> [String: Any] {
         try target?.validate(); memory.begin()
@@ -508,11 +531,16 @@ private final class DeckRuntime {
         for _ in 0..<3 {
             do {
                 let a = try roots(), main = try quantities(a[4]), side = try quantities(a[5]), pool = try quantities(a[6], pool: true)
+                let geometry = try? ArenaGeometry(self).deck(a[0])
                 guard try a == roots() && main == quantities(a[4]) && side == quantities(a[5]) && pool == quantities(a[6], pool: true) else { throw ReadFailure("changing", "Arena is updating the deck.") }
                 try target?.validate()
                 let session = hash(Data((nonce + ":" + a.prefix(4).map(String.init).joined(separator: ":")).utf8))
-                return ["status": "ready", "editor_session": session, "main": main, "sideboard": side, "pool": pool,
+                var result: [String: Any] = ["status": "ready", "editor_session": session, "main": main, "sideboard": side, "pool": pool,
                         "total": main.reduce(UInt64(0)) { $0 + $1[1] }, "elapsed_ms": Int((ProcessInfo.processInfo.systemUptime - memory.started) * 1000)]
+                if let geometry = geometry, let repeated = try? ArenaGeometry(self).deck(a[0]),
+                    NSDictionary(dictionary: geometry).isEqual(to: repeated) { result["geometry"] = repeated }
+                result["elapsed_ms"] = Int((ProcessInfo.processInfo.systemUptime - memory.started) * 1000)
+                return result
             } catch let error as ReadFailure where error.status == "changing" { continue }
         }
         throw ReadFailure("changing", "Arena is updating the deck.")

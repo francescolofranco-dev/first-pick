@@ -108,6 +108,50 @@ def read(g):
         return json.loads(result.stdout)
 
 
+def draft_geometry_graph():
+    g = draft_graph()
+    layout = g.profile['unity_geometry']
+    for name in ['canvas_vtable_vm', 'rect_transform_vtable_vm', 'box_collider_vtable_vm']:
+        layout[name] = g.m.alloc()
+    screen = g.m.alloc()
+    layout['screen_manager_vm'] = g.m.alloc(8)
+    g.m.put(layout['screen_manager_vm'], 'Q', screen)
+    g.m.put(screen + 0xb8, 'II', 2560, 1440)
+    hierarchy = g.m.alloc(); data = g.m.alloc(4 * 48); parents = g.m.alloc(16)
+    g.m.put(hierarchy + 0x18, 'QQ', data, parents)
+    for i in range(4):
+        g.m.put(data + i * 48, '12f', 0 if i == 0 else -800 + i * 350, 180, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0)
+        g.m.put(parents + i * 4, 'i', -1 if i == 0 else 0)
+    root = g.m.alloc(); canvas = g.m.alloc(1024)
+    g.m.put(root, 'Q', layout['rect_transform_vtable_vm'])
+    g.m.put(root + 0xb8, '4f', -960, -540, 1920, 1080)
+    g.m.put(canvas, 'Q', layout['canvas_vtable_vm'])
+    g.m.put(canvas + 0x2c, 'I', 1)
+    def owner(transform, index, components):
+        obj = g.m.alloc(); array = g.m.alloc(len(components) * 16)
+        g.m.put(obj + 0x20, 'Q', array);g.m.put(obj + 0x30, 'I', len(components));g.m.put(obj + 0x47, 'B', 1)
+        for i, component in enumerate(components):
+            g.m.put(array + i * 16 + 8, 'Q', component);g.m.put(component + 0x20, 'Q', obj)
+        g.m.put(transform + 0x28, 'Q', hierarchy);g.m.put(transform + 0x30, 'I', index)
+        g.m.put(transform + 0x68, 'Q', 0 if index == 0 else root)
+        return obj
+    owner(root, 0, [root, canvas])
+    g.geometry_owners=[];g.geometry_transforms=[]
+    for i, view in enumerate(g.views, 1):
+        transform = g.m.alloc(); behaviour = g.m.alloc(); collider = g.m.alloc()
+        g.m.put(transform, 'Q', g.m.alloc())
+        g.m.put(behaviour, 'Q', g.m.alloc())
+        g.m.put(collider, 'Q', layout['box_collider_vtable_vm'])
+        g.m.put(collider + 0x60, '6f', 0, 0, 0, 200, 280, .1)
+        obj = owner(transform, i, [transform, behaviour, collider])
+        g.m.put(view + 16, 'Q', behaviour)
+        managed = g.m.alloc();g.m.put(managed + 16, 'Q', collider)
+        g.field(view, 'cdc_meta', '_cardCollider', managed)
+        g.geometry_owners.append(obj);g.geometry_transforms.append(transform)
+    g.geometry_root=root;g.geometry_data=data
+    return g
+
+
 class NativeDeckReaderTests(unittest.TestCase):
     def test_exact_quantities_and_pool_are_read_by_the_native_implementation(self):
         value = read(graph())
@@ -214,6 +258,30 @@ class NativeDraftReaderTests(unittest.TestCase):
                 g.field(g.popup_manager,'popup_manager','_activePopup',popup)
             with self.subTest(condition=condition):
                 value=read(g);self.assertEqual('blocked',value['status']);self.assertNotIn('cards',value)
+
+
+class NativeGeometryTests(unittest.TestCase):
+    def test_exact_duplicate_ids_have_separate_projected_card_rectangles(self):
+        value = read(draft_geometry_graph())
+        self.assertEqual('draft_ready', value['status'])
+        geometry = value['geometry']
+        self.assertEqual([2560, 1440], geometry['screen'])
+        self.assertEqual([1002, 1001, 1002], [row[0] for row in geometry['cards']])
+        self.assertEqual(3, len({row[3] for row in geometry['cards']}))
+        self.assertAlmostEqual(200 / 1920, geometry['cards'][0][5])
+        self.assertAlmostEqual((540 - 180 - 140) / 1080, geometry['cards'][0][4])
+
+    def test_hidden_dirty_or_invalid_transforms_do_not_emit_positions(self):
+        for condition in ['hidden', 'dirty_rect', 'parent_cycle', 'quaternion']:
+            g = draft_geometry_graph()
+            if condition == 'hidden':g.m.put(g.geometry_owners[0] + 0x47, 'B', 0)
+            elif condition == 'dirty_rect':g.m.put(g.geometry_root + 0xf1, 'B', 1)
+            elif condition == 'parent_cycle':g.m.put(g.geometry_transforms[0] + 0x68, 'Q', g.geometry_transforms[0])
+            else:g.m.put(g.geometry_data + 48 + 7 * 4, 'f', 0)
+            with self.subTest(condition=condition):
+                value = read(g)
+                self.assertEqual('draft_ready', value['status'])
+                self.assertNotIn('geometry', value)
 
 
 if __name__ == '__main__':

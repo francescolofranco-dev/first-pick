@@ -24,11 +24,14 @@ fun ArenaDeckBuilderOverlay(
     var frontmost by remember { mutableStateOf(false) }
     val currentFrontmost by rememberUpdatedState(frontmost)
     var lastReadingMs by remember { mutableStateOf(0L) }
+    var geometry by remember(session) { mutableStateOf<ArenaCardGeometry?>(null) }
+    var names by remember(session) { mutableStateOf<Map<Int, String>>(emptyMap()) }
     LaunchedEffect(session) {
         while (true) {
             delay(100)
             if (System.nanoTime() / 1_000_000L - lastReadingMs > 900) {
                 model = DeckGuidanceOverlayModel(DeckGuidanceStatus.READING)
+                geometry = null
                 health = OverlayHealth(OverlayHealthState.READING, "Waiting for a fresh live deck reading.")
             }
         }
@@ -43,14 +46,20 @@ fun ArenaDeckBuilderOverlay(
             health = memoryReadHealth(read)
             model = when (read) {
                 is ArenaMemoryRead.Ready -> when (val verified = withContext(Dispatchers.IO) { session.observe(read.deck, draftPool, now) }) {
-                    is MemoryDeckValidation.Ready -> memoryGuidanceModel(target, verified.deck)
+                    is MemoryDeckValidation.Ready -> {
+                        geometry = read.deck.geometry
+                        names = verified.names
+                        memoryGuidanceModel(target, verified.deck)
+                    }
                     is MemoryDeckValidation.Rejected -> {
                         health = OverlayHealth(OverlayHealthState.READING, verified.reason)
+                        geometry = null
                         DeckGuidanceOverlayModel(DeckGuidanceStatus.READING, notice = verified.reason)
                     }
                 }
                 else -> {
                     session.invalidate()
+                    geometry = null
                     val reason = when (read) {
                         is ArenaMemoryRead.Paused -> read.reason
                         is ArenaMemoryRead.Unavailable -> read.reason
@@ -65,6 +74,6 @@ fun ArenaDeckBuilderOverlay(
     }
     ArenaMemoryOverlayWindow("FirstPick Deck Guidance", health, contentVisible, loc,
         onForegroundChanged = { frontmost = it }, onHealthChanged = onHealthChanged) { arena ->
-        DeckGuidanceOverlay(model, arena.w.dp, arena.h.dp)
+        DeckGuidanceOverlay(model.withMemoryMarks(geometry?.inWindow(arena).orEmpty(), names), arena.w.dp, arena.h.dp)
     }
 }
