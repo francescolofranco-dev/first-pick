@@ -1,0 +1,143 @@
+{
+  "app_version": "2026.64.50",
+  "metadata_sha256": "4e49778e395728b0bb23a18118856376cd7511742f23fb0801b5528e28b0ce23",
+  "assembly_sha256": "c74857bc83b4bbe11b54d876b8cf3567b7ed4c7930fb1e20b5af032399721c39",
+  "class_table_vm": 156340208,
+  "code_anchors": [
+    {
+      "vm": 10960128,
+      "hex": "ff8302d1f85f06a9f65707a9f44f08a9fd7b09a9fd4302911f04003180080054f30300aa285504b016f947f9d4da60f8bf3903d5741900b5345504d094623f91",
+      "purpose": "Type-definition class table lookup"
+    },
+    {
+      "vm": 11053948,
+      "hex": "002c40f9c0035fd6",
+      "purpose": "Class parent offset"
+    },
+    {
+      "vm": 10888824,
+      "hex": "000840f9c0035fd6",
+      "purpose": "Class name offset"
+    },
+    {
+      "vm": 10888816,
+      "hex": "000c40f9c0035fd6",
+      "purpose": "Class namespace offset"
+    },
+    {
+      "vm": 10587028,
+      "hex": "005c40f9c0035fd6",
+      "purpose": "Static field storage offset"
+    },
+    {
+      "vm": 11051408,
+      "hex": "210200b4f44fbea9fd7b01a9fd430091f30300aa280040f9a80100b400810091684240f9694a42790815098b1f0008eb22020054200000f9fd7b41a9f44fc2a8c0035fd6000080d2c0035fd6f40301aae00313aa0c000094684a4279c8000034604240f9800200f9fd7b41a9f44fc2a8",
+      "purpose": "Field array and count layout"
+    },
+    {
+      "vm": 16133472,
+      "hex": "f44fbea9fd7b01a9fd430091732c04f068b27339140c04b094620091c8000037000c04b000600091c7e1ea972800805268b23339800240f9fd7b41a9f44fc2a8bfe05814",
+      "purpose": "DeckBuilderWidget model provider via Pantry"
+    },
+    {
+      "vm": 39432348,
+      "hex": "f44fbea9fd7b01a9fd430091f30300aa081c40f9880100b5a05603b000800f91fa009297c056039000402491f7009297205c03f000c01391f4009297681e40f9c80100b4a85603b008810f91080140f9085d40f9000140f9000200b4681e40f9030540f92100805202008052fd7b41a9f44fc2a81151ed17",
+      "purpose": "Pantry singleton service lookup"
+    }
+  ],
+  "types": {
+    "wrapper": {
+      "index": 1844,
+      "name": "WrapperController",
+      "namespace": "",
+      "fields": {
+        "<Instance>k__BackingField": 0,
+        "<SceneLoader>k__BackingField": 64
+      }
+    },
+    "scene": {
+      "index": 1708,
+      "name": "SceneLoader",
+      "namespace": "",
+      "fields": {
+        "<CurrentNavContent>k__BackingField": 368
+      }
+    },
+    "editor": {
+      "index": 1295,
+      "name": "WrapperDeckBuilder",
+      "namespace": "",
+      "fields": {
+        "_isActive": 35,
+        "_deckbuilder": 56
+      }
+    },
+    "widget": {
+      "index": 1248,
+      "name": "DeckBuilderWidget",
+      "namespace": "",
+      "fields": {
+        "_isActive": 48
+      }
+    },
+    "pantry": {
+      "index": 8112,
+      "name": "Pantry",
+      "namespace": "Wizards.Mtga",
+      "fields": {
+        "instance": 0
+      }
+    },
+    "container": {
+      "index": 17138,
+      "name": "PantryContainer",
+      "namespace": "SharedClientCore.SharedClientCore.Code",
+      "fields": {
+        "_references": 24
+      }
+    },
+    "model_provider": {
+      "index": 9543,
+      "name": "DeckBuilderModelProvider",
+      "namespace": "Core.Code.Decks",
+      "fields": {
+        "_model": 16
+      }
+    },
+    "context_provider": {
+      "index": 9534,
+      "name": "DeckBuilderContextProvider",
+      "namespace": "Core.Code.Decks",
+      "fields": {
+        "_context": 32
+      }
+    },
+    "model": {
+      "index": 1174,
+      "name": "DeckBuilderModel",
+      "namespace": "",
+      "fields": {
+        "_isConstructed": 16,
+        "_mainDeck": 48,
+        "_sideboard": 56
+      }
+    },
+    "context": {
+      "index": 1166,
+      "name": "DeckBuilderContext",
+      "namespace": "",
+      "fields": {
+        "Event": 16
+      }
+    },
+    "card_list": {
+      "index": 973,
+      "name": "CardList",
+      "namespace": "",
+      "fields": {
+        "_grpQuantityTable": 48
+      }
+    }
+  },
+  "field_offsets_vm": 150212352
+}

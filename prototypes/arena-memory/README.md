@@ -1,7 +1,8 @@
 # Arena memory feasibility prototype
 
-This isolated developer tool establishes whether macOS permits a real read from
-Arena's process. It is not shipped in FirstPick and does not change its overlay.
+These isolated developer tools test read-only access to Arena's process and a
+build-specific active-deck reader. They are not shipped in FirstPick and do not
+change its overlay.
 Python 3.9+ and the standard library are sufficient. Nothing is downloaded.
 
 ## What constitutes success
@@ -12,8 +13,8 @@ and `GameAssembly.dylib`. Both headers must exactly match their on-disk slices
 for the running architecture. This is an actual `mach_vm_read_overwrite` read,
 not a screenshot, log-derived approximation, or a file-only inspection.
 
-**This does not yet retrieve the current deck.** `deck_snapshot` remains
-`not_implemented`, including on successful transport verification. Do not claim
+**The transport probe does not retrieve the current deck.** Its `deck_snapshot`
+remains `not_implemented`, including on successful transport verification. Do not claim
 card IDs, quantities, edit latency, or Untapped parity from this milestone.
 
 The installed build inspected on 2026-10-27 has IL2CPP metadata version 39 and a
@@ -107,19 +108,190 @@ The sanitized result is retained in
 [verified-transport-macos-arm64.json](verified-transport-macos-arm64.json). It
 contains no process addresses, PID, account data, or heap contents. This proves
 memory transport for the recorded Arena 2026.64.50 build on this Mac. Deck
-extraction remains unimplemented; future builds and ordinary app-level permission
+extraction is not proven by that result; future builds and ordinary app-level permission
 UX are separate work.
 
-## Next milestone after access is verified
+## Active Limited deck prototype (live verified 2026-10-28)
 
-Use the exact installed build/metadata fingerprint to locate IL2CPP deck-editor
-objects and resolve card IDs and quantities. Start with the active Limited main
-deck and sideboard only. Prove a single-card add/remove, duplicate quantities,
-the two Hapatra cards, and independence from scrolling/filtering before wiring
-anything into the production state provider. Do not read unrelated account or
-match state, and do not export a heap dump to find it.
+`deck_reader.py` implements the next, separate milestone. It supports only the
+reviewed arm64 Arena 2026.64.50 build, with metadata v39. `inspect-layout` checks
+the metadata and complete assembly SHA-256, selected native code anchors, class
+names, and field offsets against the installed files. It performs no live reads.
+
+```sh
+python3 -I -B prototypes/arena-memory/deck_reader.py inspect-layout
+python3 -I -B prototypes/arena-memory/deck_reader.py snapshot
+```
+
+The snapshot path is explicit:
+
+1. `WrapperController.Instance` → `SceneLoader.CurrentNavContent` → active
+   `WrapperDeckBuilder` and `DeckBuilderWidget`.
+2. `Wizards.Mtga.Pantry.instance` → service scope tables → the unique initialized
+   `DeckBuilderModelProvider` and `DeckBuilderContextProvider`. Registry entries
+   contain dispatch pointers; only referenced objects' class pointers are checked
+   while selecting these two services. Other service object fields are not read.
+3. The model must be non-Constructed and have an active event context. Its
+   `_mainDeck` and `_sideboard` point to `CardList` objects.
+4. Each list's **unfiltered** `_grpQuantityTable` supplies exact Arena group IDs
+   and quantities, including duplicate copies and basic lands. Rendered rows,
+   `_filteredSortedList`, card-name strings, saved-deck collections, and OCR are
+   not consulted.
+
+The class table address and non-generic field offsets in
+`layout-2026.64.50-arm64.json` were derived from the installed binary/metadata.
+Offsets in that file are relative VM offsets, not captured process addresses.
+Generic field offsets are read from runtime `FieldInfo` metadata after checking
+the expected class identity and generic argument widths. The tool reads data;
+it does not invoke the getter functions used to derive this path.
+
+Before following objects, live module headers, load commands (including UUID),
+and selected native code bytes must match disk. Dictionaries have bounded sizes,
+validated entry accounting, type/field checks, and repeated byte/version reads.
+The active editor roots and both piles must agree across two observations.
+This detects many concurrent changes; it does **not** create an atomic snapshot
+or pause the game. A consistently observed intermediate game transaction is
+still possible. Production integration would need settling and reconciliation.
+
+The existing 2 MiB read budget, eight-second read deadline, ten-second process
+alarm, exact target-path checks, and lesser `task_read_for_pid` right apply.
+There is no control-port fallback. Output contains card IDs/counts, totals,
+build fingerprints, timing, and sanitized status/checkpoint information. It does
+not emit process addresses, account identifiers, deck names, or raw memory.
+The script itself writes no files. Unknown builds, other screens (including
+in-draft deck views), Constructed editors, ambiguous providers, and inconsistent
+reads fail without emitting partial deck contents.
+
+If separately authorized for this deck-reader test, open the Limited deck
+builder and run one administrator invocation in Terminal:
+
+```sh
+sudo -- /usr/bin/python3 -I -B prototypes/arena-memory/deck_reader.py snapshot
+```
+
+The prior one-time transport authorization is not a persistent privileged
+helper. The tool never asks for a password or escalates itself. User authorization
+and entering a password in Terminal remain separate from OS grant of the read port.
+
+Current verification: `inspect-layout` passes against the installed build, and
+32 tests pass outside the filesystem/IPC sandbox, including the original 11
+transport tests. Synthetic IL2CPP graphs
+exercise exact IDs, duplicates, unfiltered piles, zero/freed dictionary entries,
+fresh reads after edits, equal-total swaps, concurrent writes before version
+increments, invalid shapes, inactive/Constructed editors, wrong objects, and
+address/size limits. Synthetic results are not evidence of live deck extraction.
+
+Metadata names occupy packed, byte-aligned strings; the selected class name and
+empty namespace have offsets congruent to 7 and 1 modulo 8. String pointers use
+byte alignment, while object/array pointers retain their stricter checks. The
+synthetic graph uses unaligned metadata strings throughout, with a regression
+test confirming that unaligned object pointers still fail.
+
+### Live results
+
+The reader returned `active_limited_deck_read` for the actual editor: **40 cards,
+25 distinct IDs**, including 7 Islands, 7 Swamps, 2 Mountains, and two copies each
+of Protege's Awakening and Apex Witchstalker. IDs were resolved by a read-only
+join against Arena's installed card catalog and compared with the visible deck.
+
+Real Arena interactions verified:
+
+- Scrolling to the lands and filtering the pool preserved the exact snapshot.
+- Adding an Island produced 41 total cards and 8 Islands; removing it restored
+  every original ID and quantity.
+- Adding Desert Fang produced both Hapatra IDs at once. Removing Desert Frost
+  then produced an equal-total 40-card swap: **106460 (Desert Frost)** absent,
+  **106516 (Desert Fang)** present. The original selection was then restored.
+- All 180 repeated reads succeeded. With cached runtime class/field metadata,
+  two matching deck observations over the temporary socket took a median
+  **115.05 ms**, p95 **135 ms**, and maximum **249.9 ms**. The 180 reads requested
+  4,082,336 bytes. Initial module verification/authorization are excluded; socket
+  overhead is included. These are reader timings, not action-to-overlay latency.
+
+Sanitized evidence is in [verified-deck-macos-arm64.json](verified-deck-macos-arm64.json).
+It retains totals, selected test IDs, hashes confirming restoration, measurements,
+and limitations. It contains no account identifiers, addresses, credentials, raw
+memory, or complete user deck list. The temporary read session was explicitly
+closed after the checks.
+
+The native automation initially raised Arena without making it the key window,
+so Unity ignored simulated input. Choosing the actual MTGA window in its Window
+menu made clicks and scrolling work. Native drag gestures remained unreliable.
+UI automation is used to validate the reader; it is not part of the memory path.
+
+### Optional temporary development session
+
+Repeated one-shot Terminal commands can be replaced by a separately authorized,
+finite session while debugging this prototype:
+
+```sh
+sudo -- /usr/bin/python3 -I -B prototypes/arena-memory/read_session.py
+```
+
+The launcher verifies the pinned installed/running build and obtains only the
+Arena `task_read_for_pid` right. It then drops supplementary groups, sets the
+invoking user's real/effective/saved group and user IDs, verifies the drop, and
+tests that the retained read right works. Only afterward does it create an
+owner-only local Unix socket and a private authentication manifest in a temporary
+directory. No elevated process remains serving requests. The process neither
+executes client-supplied commands nor reloads code while privileged.
+
+The session expires after **15 minutes or 64 MiB of reads**. Requests have a
+64 KiB maximum, bounded framing/timeouts, a per-session random authentication
+token, and one fixed, verified Arena target. No target changes, writes, process
+control, injection, network listener, helper installation, or permission-setting
+changes are supported. A retained read right is a capability for Arena memory;
+the socket is a low-level development transport, not a production API that
+restricts reads to particular deck fields. The client remains responsible for
+following only the reviewed deck/metadata paths. This scope requires explicit
+session authorization rather than silently reusing a one-shot approval.
+
+The launcher prints `read_session_ready` and the manifest path; leave that
+Terminal process open. Its manifest contains a local secret and must not be
+copied into chat or committed. The normal, unprivileged reader can then use:
+
+```sh
+python3 -I -B prototypes/arena-memory/deck_reader.py snapshot --session /tmp/firstpick-arena-session-EXAMPLE/session.json
+```
+
+Each snapshot retains its own 2 MiB/eight-second limits, build verification, and
+deck validation. An explicit authenticated `close` request releases the right
+early; otherwise the deadline or process exit releases it. Normal exit removes
+the temporary socket/manifest. A hard deadline termination can leave expired,
+private temporary files, with no live service. The session test uses a known
+buffer in the test process itself and confirms local socket transport and
+shutdown; it proves no Arena access or actual privilege drop.
+
+Privilege-drop semantics follow Apple's
+[setuid/setgid documentation](https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man2/setuid.2.html).
+
+### Remaining production work
+
+This proves exact active main-deck extraction for one pinned arm64 build. The
+formal `_sideboard` was empty, so non-empty formal sideboards have synthetic
+coverage only. Arena's available Limited cards live in a separate `_cardPool`
+which includes basic-land catalog entries and selected cards; do not treat the
+empty formal sideboard as an empty available pool. That pool is not exported by
+the prototype. In-draft deck views and Constructed editors remain unsupported.
+
+The model also remained readable behind a disconnect dialog. Before presenting
+live guidance, production needs connection/modal/phase validity, session identity,
+settling across non-atomic edits, a reviewed permission lifecycle, and explicit
+unknown-build fallback. Integrate a verified provider into deck reconciliation
+while keeping geometry/highlight acquisition separate. Draft-picking support
+needs its own model path and interaction corpus.
+
+The standalone prototype changes no app/native/package code. There is no app
+version bump, rebuild, restart, production integration, or claimed overlay UX
+improvement in this milestone.
 
 API/layout references consulted: Apple's SDK `mach/task_info.h`,
 `mach-o/dyld_images.h`, and `mach/mach_vm.h`, plus
 [Apple's mach_vm_read documentation](https://developer.apple.com/documentation/kernel/1402405-mach_vm_read).
 No third-party memory-reader implementation is vendored.
+
+IL2CPP format references consulted while inspecting the installed files:
+[Cpp2IL type definitions](https://github.com/SamboyCoding/Cpp2IL/blob/development/LibCpp2IL/Metadata/Il2CppTypeDefinition.cs),
+[metadata registration](https://github.com/SamboyCoding/Cpp2IL/blob/development/LibCpp2IL/BinaryStructures/Il2CppMetadataRegistration.cs),
+and [generic classes](https://github.com/SamboyCoding/Cpp2IL/blob/development/LibCpp2IL/BinaryStructures/Il2CppGenericClass.cs).
+This is a narrow, pinned layout profile rather than a general IL2CPP extractor.

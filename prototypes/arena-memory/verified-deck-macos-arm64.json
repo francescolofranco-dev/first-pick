@@ -1,0 +1,52 @@
+{
+  "status": "active_limited_deck_read",
+  "bundle_id": "com.wizards.mtga",
+  "app_version": "2026.64.50",
+  "runtime": "IL2CPP",
+  "metadata_version": 39,
+  "metadata_sha256": "4e49778e395728b0bb23a18118856376cd7511742f23fb0801b5528e28b0ce23",
+  "read_api": "task_read_for_pid (temporary session)",
+  "validation_date": "2026-10-28",
+  "architecture": "arm64",
+  "main_copies": 40,
+  "main_distinct_cards": 25,
+  "formal_sideboard_copies": 0,
+  "original_deck_snapshot_sha256": "21150687e36a836e70e6402940b1568064b0b27218921315d511cd45e67de129",
+  "final_deck_snapshot_sha256": "21150687e36a836e70e6402940b1568064b0b27218921315d511cd45e67de129",
+  "verified_checks": {
+    "scroll_and_lands_filter_preserve_exact_deck": true,
+    "island_add_7_to_8_total_40_to_41": true,
+    "island_remove_restores_exact_deck": true,
+    "duplicates_seen_in_ui_and_memory": {
+      "106263": 2,
+      "106276": 2
+    },
+    "hapatra_both_present": {
+      "106460": 1,
+      "106516": 1
+    },
+    "equal_total_hapatra_swap": {
+      "removed_grp_id": 106460,
+      "added_grp_id": 106516,
+      "total": 40
+    },
+    "original_card_selection_restored": true
+  },
+  "repeated_read_measurements": {
+    "samples": 180,
+    "successful": 180,
+    "median_ms": 115.05,
+    "p95_ms": 135.0,
+    "max_ms": 249.9,
+    "bytes_read": 4082336,
+    "includes": "two full deck observations over temporary Unix-socket transport, cached class/field metadata; excludes initial assembly verification and authorization",
+    "action_to_overlay_latency_measured": false
+  },
+  "limitations": [
+    "Only the exact pinned arm64 build and post-draft Limited editor are supported.",
+    "The formal sideboard was empty; non-empty sideboards have synthetic coverage only.",
+    "The available draft pool is not the formal sideboard and is not exported by this prototype.",
+    "The editor model remains readable behind a disconnect dialog; connectivity/modal guards are still required before production integration.",
+    "Production overlay integration, app permission UX and future-build compatibility are not implemented."
+  ]
+}

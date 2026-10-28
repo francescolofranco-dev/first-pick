@@ -299,3 +299,22 @@ restored to revision 5fcfb16, before both experimental changes. Unrelated
 features remain current. The earlier implementation notes above are historical,
 not a description of the active overlay. Further overlay changes require real
 interaction validation before claiming an improvement.
+
+## Verified memory deck reader (2026-10-28)
+
+The standalone [Arena memory prototype](../prototypes/arena-memory/README.md)
+now extracts exact group IDs and quantities from the active Limited editor for
+Arena 2026.64.50 arm64/IL2CPP v39. Live checks verified duplicate quantities,
+scroll/filter independence, an Island add/remove, and a same-total swap between
+Desert Frost (106460) and Desert Fang (106516), followed by restoration of the
+original card selection. All 180 repeated observations succeeded; median read
+time was 115.05 ms and p95 was 135 ms through the temporary read session with
+runtime metadata cached. These timings exclude authorization/module verification
+and do not measure overlay latency.
+
+The [sanitized evidence](../prototypes/arena-memory/verified-deck-macos-arm64.json)
+records the checks and limits. Production still needs provider integration,
+permission UX, connection/modal validity, session scoping, and future-build
+handling. The formal sideboard was empty; the available draft pool is a separate
+model and must not be confused with it. The installed FirstPick overlay remains
+unchanged by this prototype.
