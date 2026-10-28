@@ -60,4 +60,18 @@ class MemoryCardGeometryTest {
             assertNull(value.pack.geometry)
         }
     }
+
+    @Test fun horizontalMarkersUseTheActualGutterEvenBesideCardsWithNoAdvice() {
+        val model = DeckGuidanceOverlayModel(DeckGuidanceStatus.NEEDS_CHANGES,
+            changes = listOf(CardGuidance("Cut me", 0, 1)))
+        val previous = placement(2, ArenaCardZone.COLUMN, NormalizedRect(.1, .4, .1, .03))
+        val current = placement(1, ArenaCardZone.COLUMN, NormalizedRect(.211, .4, .1, .03))
+        val mark = assertIs<DeckGuidanceVisualMark.RemoveRow>(model.withMemoryMarks(
+            listOf(previous, current), mapOf(1 to "Cut me", 2 to "Keep me")).marks.single())
+        assertTrue(mark.compact)
+        assertEquals(previous.bounds.right, mark.bounds.x)
+        assertEquals(current.bounds.x, mark.bounds.right, .000001)
+        val overlapping = previous.copy(bounds = previous.bounds.copy(width = .13))
+        assertTrue(model.withMemoryMarks(listOf(overlapping, current), mapOf(1 to "Cut me")).marks.isEmpty())
+    }
 }

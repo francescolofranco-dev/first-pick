@@ -188,9 +188,8 @@ private final class ArenaGeometry {
                 if try !active(native(view)) { continue }
                 let count=try integer(m.read(view+p.offset("list_row","<Quantity>k__BackingField"),4),0,Int32.self)
                 if count <= 0 { continue }
-                let image=try m.pointer(view+p.offset("list_row","_frameImage"))
                 let card=try m.pointer(view+p.offset("meta_card_view","_cardData"))
-                let q=try uiRect(transform(native(image)))
+                let q=try uiRect(transform(native(view)))
                 try append(r.cardID(card),UInt64(count),"deck",q,clip:area)
             }
         }

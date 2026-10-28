@@ -75,16 +75,28 @@ actual viewport. Stacked deck cards use the exposed header band derived from
 their neighboring card positions. Exact deck counts remain usable when geometry
 is temporarily unavailable.
 
-Draft cards use the restored colored score crests at their lower edge. Deck
-guidance uses Add/Cut labels, with smaller labels for stacked headers. The full
-card-name change list has been removed from the overlay; named basic-land
-instructions remain available.
+Draft cards use the restored colored score crests at their lower edge. In the
+horizontal split (pool above, stacked deck below), deck guidance uses +/− markers
+in the actual gaps between columns, with an Add/Cut key. The marker's full bounds
+must fit in that gap, keeping both its own card and neighboring titles clear.
+In the vertical split (deck list on the right), full Add/Cut labels sit beside
+the complete row, including its quantity counter. Pool cards use larger Add
+labels above the card. The full card-name change
+list has been removed from the overlay; named basic-land instructions remain.
 
 The installed production reader was checked against 27 live deck positions in
 the column layout and 7 pool-card positions, all matching the authoritative
 40-card deck/pool IDs and quantities. The app reached `Overlay · Synced` after
 the original pool-and-deck view was restored. Evidence is saved in
 `prototypes/arena-memory/verified-card-geometry-macos-arm64.json`.
+The 3.2.1 follow-up checked the vertical layout with 10 visible pool cards and
+16 deck rows. Main deck, sideboard and pool counts were identical across layouts
+and the app restart. Its whole-row geometry leaves a 39.2-point gap beside the
+pool; the 34-point labels and one-point margin fit within that gap. Render tests
+check that list labels and horizontal gutter markers leave card names clear.
+The installed optimized 3.2.1 artifact matches the tested build; 467 app tests
+and 13 native tests pass. These geometry and renderer checks do not replace the
+user's final visual acceptance of the revised labels.
 Draft projection also has native synthetic graph tests for duplicate IDs,
 visibility, invalid transforms and dirty layout state. A real draft-pack visual
 acceptance test remains deferred at the user's request.

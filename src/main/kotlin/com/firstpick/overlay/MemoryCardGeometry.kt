@@ -49,16 +49,25 @@ internal fun DeckGuidanceOverlayModel.withMemoryMarks(
     if (status != DeckGuidanceStatus.NEEDS_CHANGES) return copy(marks = emptyList())
     val advice = (changes + basicLandChanges).associateBy { it.name }
     val matcher = CanonicalCardNameMatcher(advice.keys)
+    val columns = placements.filter { it.zone == ArenaCardZone.COLUMN && it.bounds.isValid() }
     return copy(marks = placements.mapNotNull { card ->
         if (!card.bounds.isValid() || card.count !in 1..300) return@mapNotNull null
         val name = names[card.grpId] ?: return@mapNotNull null
         val canonical = canonicalBasicLandName(name)?.removePrefix("Snow-Covered ")
             ?: (matcher.match(name) as? CanonicalCardNameMatch.Matched)?.name
         val guidance = advice[canonical] ?: return@mapNotNull null
+        // The horizontal split's stacked headers leave only a narrow gutter.
+        // Use that measured gap, never place words over the card's title.
+        val bounds = if (card.zone == ArenaCardZone.COLUMN) {
+            val left = columns.filter { it.bounds.centerX < card.bounds.centerX - card.bounds.width / 2 }
+                .maxOfOrNull { it.bounds.right } ?: 0.0
+            NormalizedRect(left, card.bounds.y, card.bounds.x - left, card.bounds.height)
+                .takeIf(NormalizedRect::isValid) ?: return@mapNotNull null
+        } else card.bounds
         when (card.zone) {
             ArenaCardZone.DECK, ArenaCardZone.COLUMN -> when (guidance.action) {
-                DeckGuidanceAction.ADD -> DeckGuidanceVisualMark.AddCard(card.bounds, inDeckList = true, compact = card.zone == ArenaCardZone.COLUMN)
-                DeckGuidanceAction.REMOVE -> DeckGuidanceVisualMark.RemoveRow(card.bounds, card.count, compact = card.zone == ArenaCardZone.COLUMN)
+                DeckGuidanceAction.ADD -> DeckGuidanceVisualMark.AddCard(bounds, inDeckList = true, compact = card.zone == ArenaCardZone.COLUMN)
+                DeckGuidanceAction.REMOVE -> DeckGuidanceVisualMark.RemoveRow(bounds, card.count, compact = card.zone == ArenaCardZone.COLUMN)
                 DeckGuidanceAction.OK -> null
             }
             ArenaCardZone.POOL -> if (guidance.action == DeckGuidanceAction.ADD) DeckGuidanceVisualMark.AddCard(card.bounds) else null

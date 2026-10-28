@@ -62,6 +62,7 @@ def draft_graph():
         g.m.put(array + 16, 'QQ', 0, len(values))
         for i, value in enumerate(values):g.m.put(array + 32 + i * 8, 'Q', value)
         return obj
+    g.objects = objects
     def card(id):
         printing = g.object('card_printing')
         g.m.put(printing + 192, 'I', id)
@@ -282,6 +283,39 @@ class NativeGeometryTests(unittest.TestCase):
                 value = read(g)
                 self.assertEqual('draft_ready', value['status'])
                 self.assertNotIn('geometry', value)
+
+    def test_vertical_layout_uses_the_whole_row_including_its_quantity_counter(self):
+        g = draft_geometry_graph()
+        g.field(g.scene,'scene','<CurrentNavContent>k__BackingField',g.editor)
+        pool=g.object('pool_holder');g.field(g.widget,'widget','_poolCardHolder',pool)
+        g.field(pool,'pool_holder','_pages',g.objects([]))
+        deck_list=g.object('list_view');holder=g.object('list_holder');row=g.object('list_row')
+        g.field(g.widget,'widget','_deckListView',deck_list)
+        g.field(deck_list,'list_view','MainDeckCardHolder',holder)
+        behaviour=struct.unpack_from('<Q',g.m.data,g.views[0]+16)[0]
+        g.m.put(deck_list+16,'Q',behaviour);g.m.put(row+16,'Q',behaviour)
+        transform=g.geometry_transforms[0]
+        g.m.put(transform,'Q',g.profile['unity_geometry']['rect_transform_vtable_vm'])
+        g.m.put(transform+0xb8,'4f',-130,-16,260,32)
+        item=struct.unpack_from('<Q',g.m.data,g.views[0]+456)[0]
+        card=struct.unpack_from('<Q',g.m.data,item+16)[0]
+        g.field(row,'meta_card_view','_cardData',card)
+        g.field(row,'list_row','<Quantity>k__BackingField',1,'i')
+        g.field(holder,'list_holder','_tiles',g.objects([row]))
+        scroll=g.object('scroll_rect');viewport=g.m.alloc()
+        g.m.put(viewport+16,'Q',g.geometry_root)
+        g.field(scroll,'scroll_rect','m_Viewport',viewport)
+        g.field(holder,'meta_holder','ScrollRect',scroll)
+        columns=g.object('column_view')
+        g.field(g.widget,'widget','_deckColumnView',columns)
+        inactive=struct.unpack_from('<Q',g.m.data,g.views[2]+16)[0]
+        g.m.put(columns+16,'Q',inactive);g.m.put(g.geometry_owners[2]+0x47,'B',0)
+        value=read(g)
+        self.assertEqual('ready',value['status'])
+        position=value['geometry']['cards'][0]
+        self.assertEqual([1002,1,'deck'],position[:3])
+        self.assertAlmostEqual(260/1920,position[5])
+        self.assertAlmostEqual(32/1080,position[6])
 
 
 if __name__ == '__main__':
