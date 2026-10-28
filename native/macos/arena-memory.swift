@@ -469,7 +469,11 @@ private final class DeckRuntime {
         for view in views {
             try check(view, "draft_card_view")
             guard try !flag(view, "meta_card_view", "<IsDragging>k__BackingField") else { throw ReadFailure("changing", "A draft card is being moved.") }
-            ids.append(try cardID(memory.pointer(view + profile.offset("draft_card_view", "<CurrentCard>k__BackingField"))))
+            // CurrentCard implements ICardCollectionItem. Its Card field holds
+            // the CardData; the view does not point directly to a printing.
+            let item = try field(view, "draft_card_view", "<CurrentCard>k__BackingField", "card_collection_item")
+            let card = try field(item, "card_collection_item", "<Card>k__BackingField", "card_data")
+            ids.append(try cardID(card))
         }
         let actual = Dictionary(grouping: ids, by: { $0 }).mapValues { UInt64($0.count) }
         let wanted = Dictionary(uniqueKeysWithValues: expected.map { ($0[0], $0[1]) })

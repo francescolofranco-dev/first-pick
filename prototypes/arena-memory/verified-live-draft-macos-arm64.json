@@ -1,0 +1,157 @@
+{
+  "schema_version": 1,
+  "verified_on": "2026-10-28",
+  "firstpick_version": "3.1.1",
+  "arena_version": "2026.64.50",
+  "metadata_sha256": "4e49778e395728b0bb23a18118856376cd7511742f23fb0801b5528e28b0ce23",
+  "architecture": "arm64",
+  "format": "Premier Draft",
+  "runtime": "IL2CPP",
+  "read_api": "task_read_for_pid",
+  "regression": "DraftPackCardView.CurrentCard contains a CardCollectionItem; unwrap its Card before resolving the printing.",
+  "before": {
+    "status": "unsupported_build",
+    "reason": "Unexpected Arena object: card_printing."
+  },
+  "after": {
+    "snapshot_status": "draft_ready",
+    "app_overlay_health": "Overlay \u00b7 Synced",
+    "watch_observations": 60,
+    "watch_status_counts": {
+      "draft_ready": 39,
+      "changing": 21
+    },
+    "watch_paused_reasons": [
+      "A draft card is being moved.",
+      "Arena is arranging the new pack.",
+      "Waiting for Arena's current pack."
+    ],
+    "distinct_snapshots": [
+      {
+        "cards": [
+          106566,
+          106381,
+          106518,
+          106344,
+          106349,
+          106407,
+          106418,
+          106419,
+          106428
+        ],
+        "picked": [
+          [
+            106281,
+            1
+          ],
+          [
+            106356,
+            1
+          ],
+          [
+            106362,
+            1
+          ],
+          [
+            106375,
+            1
+          ],
+          [
+            106510,
+            1
+          ]
+        ]
+      },
+      {
+        "cards": [
+          106345,
+          106294,
+          106311,
+          106354,
+          106360,
+          106416,
+          106427
+        ],
+        "picked": [
+          [
+            106281,
+            1
+          ],
+          [
+            106356,
+            1
+          ],
+          [
+            106362,
+            1
+          ],
+          [
+            106375,
+            1
+          ],
+          [
+            106428,
+            1
+          ],
+          [
+            106465,
+            1
+          ],
+          [
+            106510,
+            1
+          ]
+        ]
+      },
+      {
+        "cards": [
+          106480,
+          106396,
+          106265,
+          106360,
+          106417,
+          106420
+        ],
+        "picked": [
+          [
+            106281,
+            1
+          ],
+          [
+            106354,
+            1
+          ],
+          [
+            106356,
+            1
+          ],
+          [
+            106362,
+            1
+          ],
+          [
+            106375,
+            1
+          ],
+          [
+            106428,
+            1
+          ],
+          [
+            106465,
+            1
+          ],
+          [
+            106510,
+            1
+          ]
+        ]
+      }
+    ]
+  },
+  "limits": [
+    "One live Premier Draft on the pinned macOS arm64 Arena build; other draft formats remain unverified.",
+    "No per-card screen geometry or latency benchmark was verified.",
+    "No automated card picks were made during this validation."
+  ]
+}

@@ -2,6 +2,7 @@
 import base64
 import importlib.util
 import json
+import struct
 from pathlib import Path
 import subprocess
 import tempfile
@@ -66,12 +67,13 @@ def draft_graph():
         g.m.put(printing + 192, 'I', id)
         wrapper = g.object('card_data');g.field(wrapper, 'card_data', '_printing', printing)
         return wrapper
+    def item(id, count):
+        obj = g.object('card_collection_item')
+        g.field(obj, 'card_collection_item', '<Card>k__BackingField', card(id))
+        g.field(obj, 'card_collection_item', '<Quantity>k__BackingField', count, 'i')
+        return obj
     def collection(pairs):
-        obj = g.object('card_collection');items = []
-        for id, count in pairs:
-            item = g.object('card_collection_item')
-            g.field(item, 'card_collection_item', '<Card>k__BackingField', card(id))
-            g.field(item, 'card_collection_item', '<Quantity>k__BackingField', count, 'i');items.append(item)
+        obj = g.object('card_collection');items = [item(id, count) for id, count in pairs]
         g.field(obj, 'card_collection', '_itemList', objects(items));return obj
     g.draft_controller = g.object('draft_controller');g.draft_holder = g.object('draft_holder')
     g.field(g.scene, 'scene', '<CurrentNavContent>k__BackingField', g.draft_controller)
@@ -82,9 +84,11 @@ def draft_graph():
     pack = collection([(1001, 1), (1002, 2)])
     g.field(g.draft_controller, 'draft_controller', '_packCollection', pack)
     g.field(g.draft_holder, 'draft_holder', '_packCollection', pack)
-    g.views=[]
+    g.views=[];g.view_items=[]
     for id in [1002,1001,1002]:
-        view=g.object('draft_card_view');g.field(view,'draft_card_view','<CurrentCard>k__BackingField',card(id));g.views.append(view)
+        # DraftPackCardView.CurrentCard is ICardCollectionItem, not CardData.
+        current=item(id,1);g.view_items.append(current)
+        view=g.object('draft_card_view');g.field(view,'draft_card_view','<CurrentCard>k__BackingField',current);g.views.append(view)
     g.field(g.draft_holder,'draft_holder','_allCardViews',objects(g.views))
     manager=g.object('draft_deck_manager');deck=g.object('draft_deck')
     g.field(g.draft_controller,'draft_controller','_draftDeckManager',manager)
@@ -142,6 +146,17 @@ class NativeDraftReaderTests(unittest.TestCase):
         self.assertEqual([1002,1001,1002],value['cards'])
         self.assertEqual([[1003,2],[1004,1]],value['picked'])
         self.assertNotIn('bounds',value)
+
+    def test_card_view_requires_a_collection_item_containing_a_real_card(self):
+        for condition in ['unwrapped_card', 'wrong_item_card']:
+            g=draft_graph()
+            if condition=='unwrapped_card':
+                card_pointer=struct.unpack_from('<Q',g.m.data,g.view_items[0]+16)[0]
+                g.field(g.views[0],'draft_card_view','<CurrentCard>k__BackingField',card_pointer)
+            else:
+                g.field(g.view_items[0],'card_collection_item','<Card>k__BackingField',g.widget)
+            with self.subTest(condition=condition):
+                value=read(g);self.assertEqual('unsupported_build',value['status']);self.assertNotIn('cards',value)
 
     def test_animations_dragging_wrong_cards_and_inactive_screen_emit_no_partial_pack(self):
         for condition in ['animation','drag','wrong_card','inactive','layout_change']:

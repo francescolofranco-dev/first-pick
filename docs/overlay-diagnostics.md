@@ -20,6 +20,10 @@ multisets, stale pools, duplicate-count mistakes, different editors and read gap
 The compiled Swift helper reads synthetic IL2CPP graphs to verify exact deck and
 pack IDs, quantities, card view order, and blocking during animations, dragging,
 settings, dialogs and disconnection. These tests do not prove live draft access.
+Draft view fixtures must model `DraftPackCardView.CurrentCard` as an
+`ICardCollectionItem`, whose `Card` field contains `CardData`. Treating the view's
+item as a printing caused the `Unexpected Arena object: card_printing` error;
+regression tests cover this wrapper and reject incorrectly unwrapped objects.
 
 The shipping app must contain only `window-locator` and `arena-memory` in its
 Helpers directory, with no capture/OCR executables or recognition classes in the
@@ -35,11 +39,16 @@ app JAR. The locator reads OS window metadata; it does not capture screen pixels
 5. Open and cancel a dialog; confirm instructions disappear and then recover.
 6. Quit either process and verify the read session ends.
 
-A real draft pack is required before accepting live picking support. Check
-Quick Draft, human drafts, pick-two, identical copies, pack transitions, layouts,
-selected cards, animations and changed window sizes. The current preview shows
-named choices only after the complete pack and drafted pool match the advisor.
-It emits no guessed per-card coordinates.
+Version 3.1.1 was verified against a live Premier Draft on the pinned macOS arm64
+build. The app reached `Overlay · Synced`; native observations read complete
+packs and picked pools, followed a pack transition, and paused during card
+movement and waiting for the next pack. Sanitized evidence is saved in
+`prototypes/arena-memory/verified-live-draft-macos-arm64.json`.
+
+Further live acceptance must cover Quick Draft, pick-two, identical copies,
+more pack transitions, layouts, selected cards, animations and changed window
+sizes. The current preview shows named choices only after the complete pack and
+drafted pool match the advisor. It emits no guessed per-card coordinates.
 
 ## Next: memory geometry
 
