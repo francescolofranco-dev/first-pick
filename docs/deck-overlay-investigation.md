@@ -318,3 +318,62 @@ permission UX, connection/modal validity, session scoping, and future-build
 handling. The formal sideboard was empty; the available draft pool is a separate
 model and must not be confused with it. The installed FirstPick overlay remains
 unchanged by this prototype.
+
+## App integration: 2.8.0
+
+The deck-building overlay now prefers a native, read-only memory provider on
+the verified Arena 2026.64.50 arm64 build. The provider reads the main deck,
+formal sideboard and full unfiltered draft pool. Group IDs resolve through
+Arena's installed card catalog, including full names hidden behind ellipses.
+The full nonbasic pool must match the selected FirstPick draft, and two stable
+polls must agree before guidance is published. Scroll position and pool filters
+do not determine card quantities. Draft-picking badges use their existing reader.
+
+Screen reading still supplies optional, short-lived highlight positions. It
+cannot overwrite memory counts; ambiguous or stale positions produce no mark.
+Text instructions remain available without a successful screen capture. Deck
+edits, different editors, read gaps, disconnection, settings and active modal
+dialogs withhold instructions until the current state can be verified again.
+Unsupported Arena builds and sessions without access retain the screen reader.
+
+The **Grant Arena access** button uses macOS's administrator prompt. The signed
+Swift helper verifies the installed and loaded Arena build, obtains only a Mach
+read port, then drops administrator privileges before accepting requests. Its
+owner-only temporary socket accepts typed deck snapshots and close requests;
+it exposes no arbitrary-address reads. The helper exits when FirstPick or this
+Arena process ends, its private socket is removed, eight hours pass, or its
+8 GiB read budget expires. No daemon, entitlement or system-setting change is
+installed. Password handling belongs entirely to macOS. Starting a new Arena
+process requires another explicit grant.
+
+History provides **Guide this deck in Arena** to resume a saved draft after
+Arena rotates its log. This is an explicit overlay context; merely browsing
+history does not change live advice. A newly observed draft takes over, and
+the full-pool match still prevents guidance for an unrelated Arena editor.
+
+Automated validation: 552 Kotlin tests passed with no skips; three native
+synthetic IL2CPP graph tests cover exact quantities, pool extraction, modal and
+connection guards, and rejection without partial cards. The helper's self-read,
+permission-script compilation and installed-build inspection also passed.
+`runProduction` rebuilt, signed, installed and restarted version 2.8.0; its
+version, saved-draft action and permission button were visibly verified.
+Live acceptance (2026-10-28): the initial detached authorization launch failed
+to connect. Keeping the authorization call attached, observing socket readiness
+concurrently, and preserving startup errors resolved the failure. The running
+reader was verified to have dropped administrator privileges. Its complete
+41-copy nonbasic pool matched the selected 42-card draft (which includes a basic
+Mountain). All card IDs resolved in Arena's local catalog.
+
+The production session read the exact original 40-card selection while a pool
+filter hid every card, and while the deck list was scrolled to different rows.
+Adding an Island changed only group ID 75022 from 7 to 8 and the total to 41;
+removing it restored the original main deck, pool and editor identity exactly.
+A real discard-confirmation dialog returned `blocked` and no card counts;
+cancelling it resumed complete readings. Test filters were cleared afterward.
+The app visibly reported **Overlay · Synced**, and the user's screenshot showed
+**Cut 3 cards · Add 2 cards · Add 1 basic land**, with complete named instructions
+including Desert Fang versus Desert Frost and Kiora. No end-to-end latency or
+highlight-position accuracy benchmark is claimed by these checks. The prototype
+timings above are not app latency. The host production build is Apple Silicon;
+Intel source type-checks, but universal linking could not be verified with this
+machine's SDK because its Intel Swift compatibility libraries are missing.

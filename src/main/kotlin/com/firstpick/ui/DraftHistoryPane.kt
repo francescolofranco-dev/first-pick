@@ -22,6 +22,7 @@ import java.time.format.DateTimeFormatter
 internal fun DraftHistoryPane(
     history: List<DraftHistoryEntry>,
     onReviewDraft: suspend (DraftState) -> DraftUiState,
+    onGuideDraft: (DraftUiState) -> Unit = {},
 ) {
     var selectedSet by remember { mutableStateOf("All sets") }
     var setMenuOpen by remember { mutableStateOf(false) }
@@ -86,6 +87,9 @@ internal fun DraftHistoryPane(
                 Text("Loading draft…", color = AppTheme.colors.textSecondary)
             } else {
                 state.dataError?.let { Text(it, color = AppTheme.colors.warning) }
+                if (state.deckOptions.isNotEmpty() && state.draftPool.isNotEmpty()) {
+                    AppButton(onClick = { onGuideDraft(state) }) { Text("Guide this deck in Arena") }
+                }
                 Box(Modifier.weight(1f).fillMaxWidth()) {
                     if (showPool) {
                         if (state.draftPool.isEmpty()) Text("Card data is unavailable. Return to history and try again when connected.",

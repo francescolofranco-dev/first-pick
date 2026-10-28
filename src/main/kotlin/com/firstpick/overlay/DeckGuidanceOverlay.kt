@@ -50,6 +50,7 @@ data class DeckGuidanceOverlayModel(
     /** Individually confirmed differences, including while other counts are unknown. */
     val changes: List<CardGuidance> = emptyList(),
     val unverifiedNames: List<String> = emptyList(),
+    val notice: String? = null,
 ) {
     /** Partial readings only contain marks from the current verified visible cards. */
     fun renderableMarks(): List<DeckGuidanceVisualMark> =
@@ -223,7 +224,9 @@ data class DeckGuidanceStatusPillStyle(
 fun statusPillStyle(status: DeckGuidanceStatus): DeckGuidanceStatusPillStyle =
     statusPillStyle(DeckGuidanceOverlayModel(status))
 
-fun statusPillStyle(model: DeckGuidanceOverlayModel): DeckGuidanceStatusPillStyle = when (model.status) {
+fun statusPillStyle(model: DeckGuidanceOverlayModel): DeckGuidanceStatusPillStyle = model.notice?.let {
+    DeckGuidanceStatusPillStyle(it, DeckGuidanceOverlayPalette.ReadingAccent)
+} ?: when (model.status) {
     DeckGuidanceStatus.READING -> DeckGuidanceStatusPillStyle(
         when {
             model.expectedCards > 0 && model.verifiedCards >= model.expectedCards ->

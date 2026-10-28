@@ -27,6 +27,9 @@ class BasicLandResolverTest {
         assertEquals("Blossom-Blessed Angel", resolver.resolve(106227))
         assertEquals("Seed Suture", resolver.resolve(106228))
         assertNull(resolver.resolve(123456))
+        assertEquals(mapOf(106227 to "Blossom-Blessed Angel", 106228 to "Seed Suture"),
+            resolver.resolveAll(setOf(106227, 106228, 123456)))
+        assertTrue(resolver.resolveAll(setOf(-1)).isEmpty())
         assertTrue(resolver.idsForSet("FRA'; DROP TABLE Cards;").isEmpty())
     }
 

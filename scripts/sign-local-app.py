@@ -67,7 +67,7 @@ def sign_app(app, helpers, state):
             fingerprint = fingerprint.strip().split("=")[1].replace(":", "")
             bundled = app / "Contents/Helpers"
             bundled.mkdir(exist_ok=True)
-            for name in ("window-locator", "window-capture", "vision-ocr", "deck-reader"):
+            for name in ("window-locator", "window-capture", "vision-ocr", "deck-reader", "arena-memory"):
                 run("ditto", str(helpers / name), str(bundled / name))
                 sign(bundled / name, "com.firstpick.app." + name, fingerprint, keychain)
             sign(app, "com.firstpick.app", fingerprint, keychain, preserve=True)

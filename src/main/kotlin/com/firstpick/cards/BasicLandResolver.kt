@@ -40,6 +40,31 @@ class ArenaCardNameResolver(
     private val hits = ConcurrentHashMap<Int, String>()
     private val misses = ConcurrentHashMap<Int, DatabaseSnapshot>()
 
+    /** One bounded catalog query for a complete live deck/pool, including basic printings. */
+    fun resolveAll(grpIds: Set<Int>): Map<Int, String> {
+        if (grpIds.size > 2048 || grpIds.any { it <= 0 }) return emptyMap()
+        val missing = grpIds.filterNot(hits::containsKey)
+        if (missing.isNotEmpty()) {
+            val database = newestDatabase() ?: return grpIds.mapNotNull { id -> hits[id]?.let { id to it } }.toMap()
+            val uncached = missing.filterNot { misses[it] == database }
+            if (uncached.isEmpty()) return grpIds.mapNotNull { id -> hits[id]?.let { id to it } }.toMap()
+            val sql = """
+                SELECT card.GrpId, title.Loc FROM Cards card
+                JOIN Localizations_enUS title ON title.LocId = card.TitleId AND title.Formatted = 1
+                WHERE card.GrpId IN (${uncached.joinToString(",")});
+            """.trimIndent()
+            val rows = query(database.path, sql) ?: return grpIds.mapNotNull { id -> hits[id]?.let { id to it } }.toMap()
+            rows.forEach { line ->
+                val parts = line.split('|', limit = 2)
+                val id = parts.firstOrNull()?.toIntOrNull()
+                val name = parts.getOrNull(1)?.replace(HTML_TAG, "")?.trim()?.takeIf(String::isNotEmpty)
+                if (id != null && name != null && id in grpIds) hits[id] = name
+            }
+            uncached.filterNot(hits::containsKey).forEach { misses[it] = database }
+        }
+        return grpIds.mapNotNull { id -> hits[id]?.let { id to it } }.toMap()
+    }
+
     /** Batch join for new sets whose Scryfall entries do not have Arena IDs yet. */
     fun idsForSet(set: String): Map<String, Int> {
         if (!Regex("[A-Za-z0-9]{2,5}").matches(set)) return emptyMap()

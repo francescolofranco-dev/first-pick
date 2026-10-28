@@ -45,6 +45,8 @@ import com.firstpick.core.AppVersion
 import com.firstpick.model.DraftPhase
 import com.firstpick.overlay.OverlayHealth
 import com.firstpick.overlay.OverlayHealthState
+import com.firstpick.overlay.LiveDeckAccess
+import com.firstpick.overlay.LiveDeckAccessStatus
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
@@ -56,6 +58,8 @@ fun App(
     state: DraftUiState,
     isOverlayOpen: Boolean = false,
     overlayHealth: OverlayHealth = OverlayHealth(OverlayHealthState.INACTIVE),
+    liveDeckAccess: LiveDeckAccess = LiveDeckAccess(),
+    onGrantArenaAccess: () -> Unit = {},
     onToggleOverlay: () -> Unit = {},
     committedDeck: DeckOptionUi? = null,
     onUseDeck: (DeckOptionUi) -> Unit = {},
@@ -69,6 +73,7 @@ fun App(
     stats: com.firstpick.stats.PlayerStats = com.firstpick.stats.PlayerStats(),
     history: List<com.firstpick.draft.DraftHistoryEntry> = emptyList(),
     onReviewDraft: suspend (com.firstpick.model.DraftState) -> DraftUiState = { DraftUiState() },
+    onGuideArchivedDraft: (DraftUiState) -> Unit = {},
 ) {
     var currentScreen by remember {
         mutableStateOf(if (state.phase == DraftPhase.COMPLETE) AppScreen.DECK_BUILDER else AppScreen.DRAFT_POOL)
@@ -114,6 +119,9 @@ fun App(
                     state.dataError?.let {
                         Text(it, style = AppTheme.typography.caption, color = AppTheme.colors.danger)
                     }
+                    if (isOverlayOpen && state.phase == DraftPhase.COMPLETE) {
+                        LiveDeckAccessBanner(liveDeckAccess, onGrantArenaAccess)
+                    }
 
                     // Bento Main Workspace
                     val showSidebar = currentScreen == AppScreen.DRAFT_POOL &&
@@ -140,7 +148,7 @@ fun App(
                                 Box(Modifier.weight(1f).fillMaxHeight()) {
                                     when (currentScreen) {
                                         AppScreen.STATS -> StatsPane(stats, history)
-                                        AppScreen.HISTORY -> DraftHistoryPane(history, onReviewDraft)
+                                        AppScreen.HISTORY -> DraftHistoryPane(history, onReviewDraft, onGuideArchivedDraft)
                                         AppScreen.GUIDES -> GuidePane(state, onLoadReferenceSet)
                                         AppScreen.DECK_BUILDER -> when {
                                             state.deckOptions.isNotEmpty() -> DeckBuilderPane(
@@ -177,6 +185,29 @@ fun App(
                         onRetryRatings = onRetryRatings,
                     )
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun LiveDeckAccessBanner(access: LiveDeckAccess, onGrant: () -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth().background(AppTheme.colors.surface, RoundedCornerShape(8.dp)).padding(10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        Column(Modifier.weight(1f)) {
+            Text("Live deck sync", style = AppTheme.typography.caption, color = AppTheme.colors.textPrimary)
+            Text(access.detail, style = AppTheme.typography.micro, color = AppTheme.colors.textSecondary)
+            if (access.canGrant) Text(
+                "macOS will ask for administrator permission. Access is read-only and ends when FirstPick or Arena closes.",
+                style = AppTheme.typography.micro, color = AppTheme.colors.textMuted,
+            )
+        }
+        if (access.canGrant || access.status == LiveDeckAccessStatus.GRANTING) {
+            AppButton(onClick = onGrant, enabled = access.canGrant) {
+                Text(if (access.status == LiveDeckAccessStatus.GRANTING) "Connecting…" else "Grant Arena access")
             }
         }
     }

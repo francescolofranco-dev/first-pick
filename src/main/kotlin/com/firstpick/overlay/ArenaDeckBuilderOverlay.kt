@@ -36,19 +36,25 @@ fun ArenaDeckBuilderOverlay(
     draftPool: List<DeckCardCount>,
     sessionKey: String? = null,
     locator: WindowLocator = WindowLocator(),
+    memoryReader: ArenaMemoryReader? = null,
     onHealthChanged: (OverlayHealth) -> Unit = {},
 ) {
     val loc = remember { locator }
     val reader = remember { DeckFrameReader() }
-    DisposableEffect(reader) {
+    val geometryReader = remember { DeckFrameReader() }
+    DisposableEffect(reader, geometryReader) {
         onDispose {
             // The bounded reader may still be finishing a frame; never block Compose disposal.
-            Thread({ reader.close() }, "deck-reader-close").apply { isDaemon = true }.start()
+            Thread({ reader.close(); geometryReader.close() }, "deck-reader-close").apply { isDaemon = true }.start()
         }
     }
     val poolKey = remember(draftPool) { draftPool.stableCountKey() }
     val targetKey = remember(target) { target.stableCountKey() }
     val session = remember(sessionKey, poolKey) { DeckGuidanceSession(target, draftPool) }
+    val memorySession = remember(sessionKey, poolKey) { MemoryDeckGuidanceSession() }
+    var usesMemory by remember(sessionKey, poolKey) { mutableStateOf(false) }
+    var memoryDeck by remember(sessionKey, poolKey) { mutableStateOf<MemoryDeckValidation.Ready?>(null) }
+    var geometry by remember(sessionKey, poolKey) { mutableStateOf<MemoryDeckGeometry?>(null) }
     SideEffect { session.updateTarget(target) }
     var presentation by remember(poolKey) { mutableStateOf(DeckOverlayPresentationState.initial()) }
     var workHealth by remember(poolKey, targetKey) {
@@ -111,6 +117,27 @@ fun ArenaDeckBuilderOverlay(
     }
 
     val arenaFrontmost by rememberUpdatedState(arena.frontmost)
+    val currentMemoryDeck by rememberUpdatedState(memoryDeck)
+    LaunchedEffect(usesMemory, session, arena.w, arena.h) {
+        geometry = null
+        if (!usesMemory) return@LaunchedEffect
+        while (true) {
+            val before = currentMemoryDeck
+            val startedMs = System.nanoTime() / 1_000_000L
+            if (before != null && arenaFrontmost) {
+                val frame = withContext(Dispatchers.IO) {
+                    geometryReader.read(draftPool.map { it.name }, arena.w, arena.h)
+                }
+                geometry = frame?.let { value ->
+                    DeckBuilderScreenInterpreter.interpret(value.text)?.let { screen ->
+                        if (currentMemoryDeck == before) MemoryDeckGeometry(before, screen,
+                            value.image.width.toDouble() / value.image.height, startedMs) else null
+                    }
+                }
+            } else geometry = null
+            delay(deckOverlayPollDelayMs(System.nanoTime() / 1_000_000L - startedMs, arenaFrontmost))
+        }
+    }
     var lastFrameAtMs by remember { mutableStateOf(0L) }
     LaunchedEffect(session) {
         while (true) {
@@ -130,12 +157,52 @@ fun ArenaDeckBuilderOverlay(
             // Keep observing Arena while its overlay is hidden. Focus changes do
             // not erase a scan; capture gaps and observed edits still invalidate it.
             val frameStartedNs = System.nanoTime()
-            val frame = withContext(Dispatchers.IO) {
+            val memory = withContext(Dispatchers.IO) { memoryReader?.read() }
+            val now = System.nanoTime() / 1_000_000L
+            val fallback = memory == null || memory is ArenaMemoryRead.Unavailable && memory.screenFallback
+            if (fallback && usesMemory) session.invalidate()
+            usesMemory = !fallback
+            var liveHealth: OverlayHealth? = null
+            val frame = if (fallback) withContext(Dispatchers.IO) {
                 reader.read(draftPool.map { it.name }, arena.w, arena.h)
-            }
+            } else null
             // Reduce only after the cancellable capture returns, so an obsolete
             // window/session cannot publish a late frame into the active scan.
-            val attempt = if (frame == null) DeckOverlayFrameAttempt.ReaderFailure else {
+            val attempt = if (!fallback) {
+                when (memory) {
+                    is ArenaMemoryRead.Ready -> {
+                        when (val verified = withContext(Dispatchers.IO) { memorySession.observe(memory.deck, draftPool, now) }) {
+                            is MemoryDeckValidation.Ready -> {
+                                if (memoryDeck == null) Log.info(DECK_OVERLAY_TAG, "Complete live deck verified against this draft; total=${verified.deck.totalCards}")
+                                memoryDeck = verified
+                                var model = memoryGuidanceModel(target, verified.deck)
+                                val positions = geometry
+                                if (positions != null && positions.deck == verified && now - positions.startedAtMs in 0..500) {
+                                    model = model.copy(marks = memoryGuidanceMarks(model, verified.deck, draftPool, positions.screen, positions.aspectRatio))
+                                }
+                                liveHealth = OverlayHealth(OverlayHealthState.ACTIVE, "Live deck guidance is synced to Arena.")
+                                DeckOverlayFrameAttempt.Recognized(model)
+                            }
+                            is MemoryDeckValidation.Rejected -> {
+                                memoryDeck = null
+                                liveHealth = OverlayHealth(OverlayHealthState.READING, verified.reason)
+                                DeckOverlayFrameAttempt.Recognized(DeckGuidanceOverlayModel(DeckGuidanceStatus.READING, notice = verified.reason))
+                            }
+                        }
+                    }
+                    is ArenaMemoryRead.Paused -> {
+                        memorySession.invalidate(); memoryDeck = null
+                        liveHealth = OverlayHealth(OverlayHealthState.READING, memory.reason)
+                        if (memory.outsideBuilder) DeckOverlayFrameAttempt.OutsideBuilder
+                        else DeckOverlayFrameAttempt.Recognized(DeckGuidanceOverlayModel(DeckGuidanceStatus.READING, notice = memory.reason))
+                    }
+                    else -> {
+                        memorySession.invalidate(); memoryDeck = null
+                        liveHealth = OverlayHealth(OverlayHealthState.READING, "Waiting for a fresh live deck reading.")
+                        DeckOverlayFrameAttempt.Recognized(DeckGuidanceOverlayModel(DeckGuidanceStatus.READING))
+                    }
+                }
+            } else if (frame == null) DeckOverlayFrameAttempt.ReaderFailure else {
                 val screen = DeckBuilderScreenInterpreter.interpret(frame.text)
                 val shell = DeckBuilderScreenInterpreter.detectShell(frame.text)
                 when {
@@ -147,6 +214,7 @@ fun ArenaDeckBuilderOverlay(
                     else -> DeckOverlayFrameAttempt.OutsideBuilder
                 }
             }
+            if (fallback) { memorySession.invalidate(); memoryDeck = null }
             lastFrameAtMs = System.nanoTime() / 1_000_000L
             if (attempt !is DeckOverlayFrameAttempt.Recognized) session.unreadableFrame(lastFrameAtMs)
             val update = DeckOverlayPresentationReducer.reduce(
@@ -156,7 +224,7 @@ fun ArenaDeckBuilderOverlay(
             )
             presentation = update.state
             if (!presentation.contentVisible) session.invalidate()
-            workHealth = deckOverlayWorkHealth(attempt, update.state)
+            workHealth = liveHealth ?: deckOverlayWorkHealth(attempt, update.state)
             logDeckOverlayTransitions(update.transitions)
 
             val processingElapsedMs = ((System.nanoTime() - frameStartedNs) / 1_000_000L).coerceAtLeast(0L)
@@ -198,6 +266,13 @@ fun ArenaDeckBuilderOverlay(
         )
     }
 }
+
+private data class MemoryDeckGeometry(
+    val deck: MemoryDeckValidation.Ready,
+    val screen: DeckBuilderScreenObservation,
+    val aspectRatio: Double,
+    val startedAtMs: Long,
+)
 
 internal fun deckOverlayWorkHealth(
     attempt: DeckOverlayFrameAttempt,

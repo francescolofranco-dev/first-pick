@@ -83,7 +83,7 @@ val buildNativeHelpers = tasks.register<Exec>("buildNativeHelpers") {
     group = "build"
     description = "Build optimized macOS helpers (host architecture, or -PnativeArchitecture=universal)."
     val architectureMode = providers.gradleProperty("nativeArchitecture").orElse("host").get()
-    inputs.files(fileTree("native/macos") { include("*.swift", "build.sh") })
+    inputs.files(fileTree("native/macos") { include("*.swift", "*.json", "build.sh") })
     inputs.property("architectureMode", architectureMode)
     inputs.property("signingIdentity", providers.environmentVariable("MACOS_SIGNING_IDENTITY").orElse(""))
     inputs.property("sdkRoot", providers.environmentVariable("SDKROOT").orElse(""))
@@ -109,6 +109,7 @@ val buildNativeHelpers = tasks.register<Exec>("buildNativeHelpers") {
         "src/main/resources/native/macos/window-capture",
         "src/main/resources/native/macos/vision-ocr",
         "src/main/resources/native/macos/deck-reader",
+        "src/main/resources/native/macos/arena-memory",
     )
     workingDir(layout.projectDirectory)
     val nativeCommand = mutableListOf("bash", "native/macos/build.sh")
@@ -132,6 +133,33 @@ tasks.matching { it.name == "createDistributable" }.configureEach {
 }
 
 val productionApp = layout.buildDirectory.dir("compose/binaries/main/app/FirstPick.app")
+
+// Keep authorization-capable executables inside the signed app on Developer ID
+// builds too. Local builds receive their persistent signature in the next task.
+val bundledNativeDirectory = layout.projectDirectory.dir("src/main/resources/native/macos").asFile
+val developerSigningIdentity = providers.environmentVariable("MACOS_SIGNING_IDENTITY").orElse("")
+tasks.matching { it.name == "createDistributable" }.configureEach {
+    val appDirectory = productionApp
+    val nativeDirectory = bundledNativeDirectory
+    val signingIdentity = developerSigningIdentity
+    doLast {
+        val app = appDirectory.get().asFile
+        val helpers = File(app, "Contents/Helpers").apply { mkdirs() }
+        for (name in listOf("window-locator", "window-capture", "vision-ocr", "deck-reader", "arena-memory")) {
+            val destination = File(helpers, name)
+            File(nativeDirectory, name).copyTo(destination, overwrite = true)
+            check(destination.setExecutable(true, false)) { "Could not make bundled helper executable." }
+        }
+        val identity = signingIdentity.get()
+        if (identity.isNotBlank()) {
+            check(ProcessBuilder("/usr/bin/codesign", "--force", "--sign", identity, "--timestamp", "--options", "runtime",
+                "--identifier", "com.firstpick.app", "--preserve-metadata=entitlements", app.absolutePath)
+                .inheritIO().start().waitFor() == 0) { "Signing the bundled native helpers failed." }
+            check(ProcessBuilder("/usr/bin/codesign", "--verify", "--deep", "--strict", app.absolutePath)
+                .inheritIO().start().waitFor() == 0) { "Bundled app signature verification failed." }
+        }
+    }
+}
 
 val signLocalProduction = tasks.register<Exec>("signLocalProduction") {
     dependsOn("createDistributable")

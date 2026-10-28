@@ -1,6 +1,7 @@
 package com.firstpick
 
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
@@ -13,6 +14,7 @@ import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import com.firstpick.ui.DevFlags
 import com.firstpick.overlay.ArenaDeckBuilderOverlay
+import com.firstpick.overlay.ArenaMemoryReader
 import com.firstpick.overlay.ArenaOverlayTracker
 import com.firstpick.overlay.DeckCardCount
 import com.firstpick.overlay.OverlayCard
@@ -33,6 +35,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.awt.Dimension
 import java.nio.file.Path
 
@@ -61,9 +64,21 @@ fun main() {
             }
         }
 
-        val state by viewModel.ui.collectAsState()
+        val liveState by viewModel.ui.collectAsState()
+        var archivedGuidance by remember { mutableStateOf<com.firstpick.ui.DraftUiState?>(null) }
+        // An explicit history action can resume guidance after Arena rotates its log.
+        // A newly observed draft always takes over from that archived context.
+        LaunchedEffect(liveState.phase, liveState.sessionKey) {
+            if (liveState.phase == DraftPhase.DRAFTING) archivedGuidance = null
+        }
+        val state = if (liveState.phase == DraftPhase.DRAFTING) liveState else archivedGuidance ?: liveState
         val history by viewModel.history.collectAsState()
         val stats by viewModel.stats.collectAsState()
+        val liveDeckReader = remember { ArenaMemoryReader() }
+        val liveDeckAccess by liveDeckReader.access.collectAsState()
+        DisposableEffect(liveDeckReader) {
+            onDispose { Thread({ liveDeckReader.close() }, "live-deck-close").apply { isDaemon = true }.start() }
+        }
         var isAboutOpen by remember { mutableStateOf(false) }
         var isOverlayOpen by remember { mutableStateOf(false) }
         var draftOverlayHealth by remember {
@@ -101,9 +116,16 @@ fun main() {
                 history = history,
                 stats = stats,
                 onReviewDraft = viewModel::reviewDraft,
+                onGuideArchivedDraft = { archived ->
+                    archivedGuidance = archived
+                    committedDeck = null
+                    isOverlayOpen = true
+                },
                 isOverlayOpen = isOverlayOpen,
                 overlayHealth = activeOverlayHealth,
                 onToggleOverlay = { isOverlayOpen = !isOverlayOpen },
+                liveDeckAccess = liveDeckAccess,
+                onGrantArenaAccess = { appScope.launch(Dispatchers.IO) { liveDeckReader.grantAccess() } },
                 committedDeck = selectedDeck,
                 onUseDeck = {
                     if (state.phase == DraftPhase.COMPLETE) committedDeck = it
@@ -115,6 +137,7 @@ fun main() {
                 onLoadReferenceSet = viewModel::loadReferenceCards,
                 onRetryRatings = { viewModel.retryRatings() },
                 onNewDraft = {
+                    archivedGuidance = null
                     committedDeck = null
                     viewModel.newDraft()
                 },
@@ -133,6 +156,7 @@ fun main() {
                     target = target,
                     draftPool = draftPool,
                     sessionKey = state.sessionKey,
+                    memoryReader = liveDeckReader,
                     onHealthChanged = { deckOverlayHealth = it },
                 )
             }
