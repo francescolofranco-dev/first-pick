@@ -5,3 +5,17 @@
 - Choose and stage the version before running checks so the tested version is the committed version. The header, About window, update checker, and package all use this file. Release tags must match it.
 - Enable the version guard in each clone with `git config core.hooksPath .githooks`. Do not bypass it for app changes.
 - After a requested app fix or feature, rebuild the production app and restart it when a running FirstPick instance needs the change; verify the visible result.
+
+## Agent skills
+
+### Issue tracker
+
+Local Markdown issues in `.scratch/<feature>/`. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Use the five default triage roles. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: root `GLOSSARY.md` and `docs/adr/`. See `docs/agents/domain.md`.
