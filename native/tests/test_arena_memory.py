@@ -75,6 +75,7 @@ def draft_graph():
     def collection(pairs):
         obj = g.object('card_collection');items = [item(id, count) for id, count in pairs]
         g.field(obj, 'card_collection', '_itemList', objects(items));return obj
+    g.collection = collection
     g.draft_controller = g.object('draft_controller');g.draft_holder = g.object('draft_holder')
     g.field(g.scene, 'scene', '<CurrentNavContent>k__BackingField', g.draft_controller)
     g.field(g.draft_controller, 'draft_controller', '_active', 1, 'B')
@@ -91,6 +92,7 @@ def draft_graph():
         view=g.object('draft_card_view');g.field(view,'draft_card_view','<CurrentCard>k__BackingField',current);g.views.append(view)
     g.field(g.draft_holder,'draft_holder','_allCardViews',objects(g.views))
     manager=g.object('draft_deck_manager');deck=g.object('draft_deck')
+    g.draft_deck=deck
     g.field(g.draft_controller,'draft_controller','_draftDeckManager',manager)
     g.field(manager,'draft_deck_manager','_deck',deck)
     g.field(deck,'draft_deck','_main',collection([(1003,2)]))
@@ -146,6 +148,38 @@ class NativeDraftReaderTests(unittest.TestCase):
         self.assertEqual([1002,1001,1002],value['cards'])
         self.assertEqual([[1003,2],[1004,1]],value['picked'])
         self.assertNotIn('bounds',value)
+
+    def test_zero_quantity_entries_after_moves_do_not_block_or_count_as_picked(self):
+        g=draft_graph()
+        g.field(g.draft_deck,'draft_deck','_main',g.collection([(1003,0),(1004,0),(1005,2)]))
+        g.field(g.draft_deck,'draft_deck','_sideboard',g.collection([(1003,2),(1004,1),(1005,0)]))
+        value=read(g)
+        self.assertEqual('draft_ready',value['status'])
+        self.assertEqual([[1003,2],[1004,1],[1005,2]],value['picked'])
+        self.assertEqual([1002,1001,1002],value['cards'])
+
+    def test_zero_quantity_pack_entries_do_not_require_a_card_or_visible_view(self):
+        g=draft_graph()
+        pack=g.collection([(1001,1),(1002,2),(1006,0)])
+        g.field(g.draft_controller,'draft_controller','_packCollection',pack)
+        g.field(g.draft_holder,'draft_holder','_packCollection',pack)
+        items=struct.unpack_from('<Q',g.m.data,pack+24)[0]
+        array=struct.unpack_from('<Q',g.m.data,items+16)[0]
+        empty=struct.unpack_from('<Q',g.m.data,array+32+2*8)[0]
+        g.field(empty,'card_collection_item','<Card>k__BackingField',0)
+        value=read(g)
+        self.assertEqual('draft_ready',value['status'])
+        self.assertEqual([1002,1001,1002],value['cards'])
+
+    def test_negative_excessive_and_total_overflow_quantities_emit_no_pack(self):
+        for pairs in [[(1003,-1)],[(1003,301)],[(1003,200),(1004,101)]]:
+            g=draft_graph()
+            g.field(g.draft_deck,'draft_deck','_main',g.collection(pairs))
+            with self.subTest(pairs=pairs):
+                value=read(g)
+                self.assertEqual('unsupported_build',value['status'])
+                self.assertNotIn('cards',value)
+                self.assertNotIn('picked',value)
 
     def test_card_view_requires_a_collection_item_containing_a_real_card(self):
         for condition in ['unwrapped_card', 'wrong_item_card']:

@@ -24,6 +24,10 @@ Draft view fixtures must model `DraftPackCardView.CurrentCard` as an
 `ICardCollectionItem`, whose `Card` field contains `CardData`. Treating the view's
 item as a printing caused the `Unexpected Arena object: card_printing` error;
 regression tests cover this wrapper and reject incorrectly unwrapped objects.
+Collections may also retain zero-copy entries after card moves/removals. Ignore
+these entries before dereferencing their card; they do not contribute to the
+pack or picked pool. Negative quantities, excessive counts and copy-limit
+violations must still suppress the entire snapshot.
 
 The shipping app must contain only `window-locator` and `arena-memory` in its
 Helpers directory, with no capture/OCR executables or recognition classes in the
@@ -44,6 +48,12 @@ build. The app reached `Overlay · Synced`; native observations read complete
 packs and picked pools, followed a pack transition, and paused during card
 movement and waiting for the next pack. Sanitized evidence is saved in
 `prototypes/arena-memory/verified-live-draft-macos-arm64.json`.
+
+Version 3.1.2 additionally verified recovery from `Invalid draft card quantity`
+during pack three of the same live Premier Draft. After zero-copy entries were
+excluded, complete pack/pool readings resumed and the app reached
+`Overlay · Synced` with 37 drafted copies at pack 3, pick 10. Evidence is saved
+in `prototypes/arena-memory/verified-draft-empty-items-macos-arm64.json`.
 
 Further live acceptance must cover Quick Draft, pick-two, identical copies,
 more pack transitions, layouts, selected cards, animations and changed window

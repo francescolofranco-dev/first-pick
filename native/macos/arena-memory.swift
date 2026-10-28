@@ -439,9 +439,12 @@ private final class DeckRuntime {
         var counts: [UInt64: UInt64] = [:]
         for item in items {
             try check(item, "card_collection_item")
-            let card = try memory.pointer(item + profile.offset("card_collection_item", "<Card>k__BackingField"))
             let count = Int(try integer(memory.read(item + profile.offset("card_collection_item", "<Quantity>k__BackingField"), 4), 0, Int32.self))
-            try require(count > 0 && count <= 300, "Invalid draft card quantity.")
+            try require(count >= 0 && count <= 300, "Invalid draft card quantity.")
+            // Collections can retain an empty item after moving/removing its
+            // copies. It contributes no card, even if its Card was cleared.
+            if count == 0 { continue }
+            let card = try memory.pointer(item + profile.offset("card_collection_item", "<Card>k__BackingField"))
             let id = try cardID(card)
             try require(counts[id] == nil, "Duplicate draft collection entry.")
             counts[id] = UInt64(count)
