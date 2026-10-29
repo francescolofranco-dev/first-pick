@@ -238,7 +238,7 @@ class NativeDraftReaderTests(unittest.TestCase):
                 value=read(g);self.assertEqual('unsupported_build',value['status']);self.assertNotIn('cards',value)
 
     def test_animations_dragging_wrong_cards_and_inactive_screen_emit_no_partial_pack(self):
-        for condition in ['animation','drag','wrong_card','inactive','layout_change']:
+        for condition in ['drag','wrong_card','inactive']:
             g=draft_graph()
             if condition=='animation':g.field(g.draft_holder,'draft_holder','<IsAnimating>k__BackingField',1,'B')
             elif condition=='drag':g.field(g.views[0],'meta_card_view','<IsDragging>k__BackingField',1,'B')
@@ -247,6 +247,25 @@ class NativeDraftReaderTests(unittest.TestCase):
             else:g.field(g.draft_controller,'draft_controller','_layoutChangeCoroutine',g.m.alloc())
             with self.subTest(condition=condition):
                 value=read(g);self.assertNotEqual('draft_ready',value['status']);self.assertNotIn('cards',value)
+
+    def test_position_only_animations_preserve_complete_pack_identity(self):
+        for condition in ['animation','layout_change']:
+            g=draft_graph()
+            if condition=='animation':g.field(g.draft_holder,'draft_holder','<IsAnimating>k__BackingField',1,'B')
+            else:g.field(g.draft_controller,'draft_controller','_layoutChangeCoroutine',g.m.alloc())
+            with self.subTest(condition=condition):
+                value=read(g)
+                self.assertEqual('draft_ready',value['status'])
+                self.assertEqual([1002,1001,1002],value['cards'])
+                self.assertNotIn('geometry',value)
+                self.assertIn('geometry_reason',value)
+
+    def test_a_pending_new_pack_explicitly_invalidates_previous_presentation(self):
+        g=draft_graph()
+        g.field(g.draft_holder,'draft_holder','_pendingPackCollection',g.m.alloc())
+        value=read(g)
+        self.assertEqual('changing',value['status'])
+        self.assertTrue(value['presentation_reset'])
 
     def test_real_modal_and_disconnect_guards_also_apply_to_picking(self):
         for condition in ['disconnected','dialog','settings','popup']:
@@ -262,6 +281,48 @@ class NativeDraftReaderTests(unittest.TestCase):
 
 
 class NativeGeometryTests(unittest.TestCase):
+    def test_horizontal_front_and_single_cards_keep_full_bounds(self):
+        for amount in [1,2]:
+            g=draft_geometry_graph()
+            g.field(g.scene,'scene','<CurrentNavContent>k__BackingField',g.editor)
+            pool=g.object('pool_holder');g.field(g.widget,'widget','_poolCardHolder',pool)
+            g.field(pool,'pool_holder','_pages',g.objects([]))
+            deck_list=g.object('list_view');holder=g.object('list_holder')
+            g.field(g.widget,'widget','_deckListView',deck_list)
+            g.field(deck_list,'list_view','MainDeckCardHolder',holder)
+            inactive=struct.unpack_from('<Q',g.m.data,g.views[2]+16)[0]
+            g.m.put(deck_list+16,'Q',inactive);g.m.put(g.geometry_owners[2]+0x47,'B',0)
+            columns=g.object('column_view');manager=g.object('draft_column_holder');column=g.object('column_holder')
+            g.field(g.widget,'widget','_deckColumnView',columns)
+            g.field(columns,'column_view','MainHolder',manager)
+            active=struct.unpack_from('<Q',g.m.data,g.views[0]+16)[0]
+            g.m.put(columns+16,'Q',active)
+            views=[]
+            for i in range(amount):
+                view=g.object('column_card')
+                behaviour=struct.unpack_from('<Q',g.m.data,g.views[i]+16)[0]
+                collider=struct.unpack_from('<Q',g.m.data,g.views[i]+g.profile['types']['cdc_meta']['fields']['_cardCollider'])[0]
+                card=struct.unpack_from('<Q',g.m.data,g.view_items[i]+16)[0]
+                g.m.put(view+16,'Q',behaviour)
+                g.field(view,'cdc_meta','_cardCollider',collider)
+                g.field(view,'meta_card_view','_cardData',card)
+                g.field(view,'column_card','_quantity',1,'i')
+                g.m.put(g.geometry_data+(i+1)*48,'2f',-300,180-i*40)
+                views.append(view)
+            g.field(column,'column_holder','_cardViews',g.objects(views))
+            g.field(manager,'column_manager','_allColumns',g.objects([column]))
+            scroll=g.object('scroll_rect');viewport=g.m.alloc()
+            g.m.put(viewport+16,'Q',g.geometry_root)
+            g.field(scroll,'scroll_rect','m_Viewport',viewport)
+            g.field(manager,'column_manager','scrollRect',scroll)
+            with self.subTest(cards=amount):
+                value=read(g)
+                self.assertEqual('ready',value['status'])
+                rows=value['geometry']['cards']
+                self.assertEqual(amount,len(rows))
+                self.assertAlmostEqual(280/1080,rows[-1][6])
+                if amount==2:self.assertAlmostEqual(40/1080,rows[0][6])
+
     def test_exact_duplicate_ids_have_separate_projected_card_rectangles(self):
         value = read(draft_geometry_graph())
         self.assertEqual('draft_ready', value['status'])

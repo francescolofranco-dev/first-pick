@@ -1,11 +1,11 @@
 # Overlay improvement implementation proposal
 
-Status: ready-for-agent
+Status: claimed
 
 This plan implements the confirmed decisions in [spec.md](spec.md), including
-Q8's acceptance targets. The user requested visual examples next. Those examples
-illustrate the proposed appearance; no application behavior has changed during
-the design interview or preview work.
+Q8's acceptance targets. The visual review is complete. Version 3.3.0 now
+implements the agreed presentation; production acceptance results and remaining
+limits are recorded below separately from the design targets.
 
 ## Intended result
 
@@ -192,3 +192,28 @@ The user confirmed the verification coverage, response target and shared
 design, and requested visual examples of the appearance. All interview decisions
 are settled. The examples do not replace the memory-geometry proof, real
 interaction measurements or production acceptance described above.
+
+## Implementation record — 3.3.0
+
+- Implemented independent semantic and geometry freshness, stable validation
+  after confirmation, bounded retention through isolated read gaps, explicit
+  invalidation for pack/editor changes, and scale-aware window alignment.
+- Implemented complete translucent pool cards, vertical deck rows, exposed
+  horizontal bands and full front cards. Removed individual change badges;
+  retained draft score crests and named basic-land changes.
+- Added the full named live copy comparison in FirstPick's deck builder and
+  brief match confirmation followed by fading of the in-game summary.
+- Fixed recovery after an Arena process restart: an exited process is treated
+  as closed, stale workers are discarded, and supported readers can offer the
+  existing access grant again after an earlier unsupported result.
+- `./gradlew buildProduction` passed: 475 Kotlin tests and 16 native tests.
+  The optimized 3.3.0 application was installed and restarted. Its app JAR and
+  native helpers match the tested artifact, and its signature verifies.
+- Added opt-in, bounded read-to-composition diagnostics. No end-to-end latency
+  result is claimed. The 95%-within-500-ms target remains unmeasured, and the
+  real positioned-draft check remains deferred until a pack is available.
+- The installed application has reconnected through its authorized typed socket.
+  Live deck-layout acceptance is pending Arena foreground activation: it remains
+  at Home, and OS metadata reports it as background despite automation attempts.
+  No cards have been changed. Evidence and explicit untested scenarios are in
+  `prototypes/arena-memory/verified-steady-overlay-macos-arm64.json`.

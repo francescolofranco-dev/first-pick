@@ -20,6 +20,14 @@ class MemoryCardGeometryTest {
         assertTrue(geometry.inWindow(WindowBounds(0, 0, 1280, 900)).isEmpty())
     }
 
+    @Test fun sameAspectRatioResizeCannotReuseOldPixelGeometry() {
+        val geometry = ArenaCardGeometry(2560, 1440, listOf(placement(1)))
+        assertEquals(1, geometry.inWindow(WindowBounds(0, 0, 1280, 748, backingScale = 2.0)).size)
+        assertTrue(geometry.inWindow(WindowBounds(0, 0, 1600, 928, backingScale = 2.0)).isEmpty())
+        assertEquals(1, geometry.copy(screenWidth = 3200, screenHeight = 1800)
+            .inWindow(WindowBounds(0, 0, 1600, 928, backingScale = 2.0)).size)
+    }
+
     @Test fun everyDuplicateCardKeepsItsOwnScoreRectangleAndBestPick() {
         val cards = listOf(OverlayCard(40.0, null, grpId = 2), OverlayCard(80.0, null, grpId = 1), OverlayCard(40.0, null, grpId = 2))
         val placements = listOf(placement(2), placement(1, rect = b), placement(2, rect = a.copy(x = .5)))
@@ -61,7 +69,7 @@ class MemoryCardGeometryTest {
         }
     }
 
-    @Test fun horizontalMarkersUseTheActualGutterEvenBesideCardsWithNoAdvice() {
+    @Test fun horizontalHighlightsUseTheWholeVisibleEntryRatherThanItsGutter() {
         val model = DeckGuidanceOverlayModel(DeckGuidanceStatus.NEEDS_CHANGES,
             changes = listOf(CardGuidance("Cut me", 0, 1)))
         val previous = placement(2, ArenaCardZone.COLUMN, NormalizedRect(.1, .4, .1, .03))
@@ -69,9 +77,8 @@ class MemoryCardGeometryTest {
         val mark = assertIs<DeckGuidanceVisualMark.RemoveRow>(model.withMemoryMarks(
             listOf(previous, current), mapOf(1 to "Cut me", 2 to "Keep me")).marks.single())
         assertTrue(mark.compact)
-        assertEquals(previous.bounds.right, mark.bounds.x)
-        assertEquals(current.bounds.x, mark.bounds.right, .000001)
-        val overlapping = previous.copy(bounds = previous.bounds.copy(width = .13))
-        assertTrue(model.withMemoryMarks(listOf(overlapping, current), mapOf(1 to "Cut me")).marks.isEmpty())
+        assertEquals(current.bounds, mark.bounds)
+        val front = current.copy(bounds = current.bounds.copy(height = .3))
+        assertEquals(front.bounds, model.withMemoryMarks(listOf(previous, front), mapOf(1 to "Cut me")).marks.single().bounds)
     }
 }

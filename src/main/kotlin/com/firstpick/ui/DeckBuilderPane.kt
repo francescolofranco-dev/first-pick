@@ -72,6 +72,7 @@ internal fun DeckBuilderPane(
     committedDeck: DeckOptionUi?,
     onUseDeck: (DeckOptionUi) -> Unit,
     guidanceEnabled: Boolean = false,
+    liveGuidance: com.firstpick.overlay.DeckGuidanceOverlayModel? = null,
 ) {
     if (options.isEmpty()) return
 
@@ -125,6 +126,10 @@ internal fun DeckBuilderPane(
                 Spacer(Modifier.height(10.dp))
                 DeckBentoSummaryCard(sel, spellCount, showTitleHeader = false)
                 Spacer(Modifier.height(10.dp))
+                if (guidanceEnabled && resolvedPreviewKey == committedKey && liveGuidance != null) {
+                    LiveDeckChanges(liveGuidance)
+                    Spacer(Modifier.height(10.dp))
+                }
                 DeckListHeader()
                 Spacer(Modifier.height(4.dp))
             }
@@ -133,6 +138,22 @@ internal fun DeckBuilderPane(
         if (sel.lands.isNotEmpty()) {
             item { SectionLabel("Lands") }
             items(sel.lands) { DeckSpellRow(it) }
+        }
+    }
+}
+
+@Composable
+private fun LiveDeckChanges(model: com.firstpick.overlay.DeckGuidanceOverlayModel) {
+    val changes = model.changes + model.basicLandChanges
+    Column(Modifier.fillMaxWidth().background(AppTheme.colors.surface, RoundedCornerShape(8.dp)).padding(12.dp),
+        verticalArrangement = Arrangement.spacedBy(5.dp)) {
+        Text("Live changes in Arena", style = AppTheme.typography.sectionHeader, color = AppTheme.colors.textSecondary)
+        if (model.status == com.firstpick.overlay.DeckGuidanceStatus.MATCHES) {
+            Text("Deck matches this build", style = AppTheme.typography.caption, color = AppTheme.colors.positive)
+        } else for (change in changes.filter { it.difference != 0 }) {
+            val adding = change.difference > 0
+            Text("${if (adding) "Add" else "Cut"} ${kotlin.math.abs(change.difference)} ${change.name}",
+                style = AppTheme.typography.caption, color = if (adding) AppTheme.colors.positive else AppTheme.colors.danger)
         }
     }
 }

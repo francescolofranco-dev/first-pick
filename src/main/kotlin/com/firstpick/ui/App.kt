@@ -58,6 +58,7 @@ fun App(
     state: DraftUiState,
     isOverlayOpen: Boolean = false,
     overlayHealth: OverlayHealth = OverlayHealth(OverlayHealthState.INACTIVE),
+    liveDeckGuidance: com.firstpick.overlay.DeckGuidanceOverlayModel? = null,
     liveDeckAccess: LiveDeckAccess = LiveDeckAccess(),
     onGrantArenaAccess: () -> Unit = {},
     onToggleOverlay: () -> Unit = {},
@@ -157,6 +158,7 @@ fun App(
                                                 committedDeck = committedDeck,
                                                 onUseDeck = onUseDeck,
                                                 guidanceEnabled = isOverlayOpen,
+                                                liveGuidance = liveDeckGuidance,
                                             )
                                             state.deckSoFar != null -> DeckSoFarPane(state.deckSoFar, state.deckSoFarCuts)
                                             else -> PackPane(

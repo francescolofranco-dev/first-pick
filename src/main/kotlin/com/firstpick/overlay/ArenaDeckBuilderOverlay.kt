@@ -6,7 +6,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 
-/** Counts and identities come exclusively from the authorized Arena reader. */
+/** Counts, identities and highlight bounds share an authorized Arena observation. */
 @Composable
 fun ArenaDeckBuilderOverlay(
     target: List<DeckCardCount>,
@@ -15,65 +15,67 @@ fun ArenaDeckBuilderOverlay(
     locator: WindowLocator = WindowLocator(),
     memoryReader: ArenaMemoryReader,
     onHealthChanged: (OverlayHealth) -> Unit = {},
+    onGuidanceChanged: (DeckGuidanceOverlayModel?) -> Unit = {},
 ) {
     val loc = remember { locator }
     val session = remember(sessionKey, draftPool) { MemoryDeckGuidanceSession() }
-    var model by remember(session, target) { mutableStateOf(DeckGuidanceOverlayModel(DeckGuidanceStatus.READING)) }
-    var health by remember { mutableStateOf(OverlayHealth(OverlayHealthState.READING, "Reading the live deck.")) }
+    val presentation = remember(session, target) { MemoryOverlayPresentation<VerifiedDeckOverlay>() }
+    val trace = remember(presentation) { OverlayTimingTrace("deck") }
+    var frame by remember(presentation) { mutableStateOf(MemoryOverlayFrame<VerifiedDeckOverlay>()) }
     var contentVisible by remember { mutableStateOf(true) }
     var frontmost by remember { mutableStateOf(false) }
     val currentFrontmost by rememberUpdatedState(frontmost)
-    var lastReadingMs by remember { mutableStateOf(0L) }
-    var geometry by remember(session) { mutableStateOf<ArenaCardGeometry?>(null) }
-    var names by remember(session) { mutableStateOf<Map<Int, String>>(emptyMap()) }
-    LaunchedEffect(session) {
+    val guidanceCallback by rememberUpdatedState(onGuidanceChanged)
+    LaunchedEffect(frame.content?.model) { guidanceCallback(frame.content?.model) }
+    DisposableEffect(presentation) { onDispose { guidanceCallback(null) } }
+    LaunchedEffect(presentation) {
         while (true) {
             delay(100)
-            if (System.nanoTime() / 1_000_000L - lastReadingMs > 900) {
-                model = DeckGuidanceOverlayModel(DeckGuidanceStatus.READING)
-                geometry = null
-                health = OverlayHealth(OverlayHealthState.READING, "Waiting for a fresh live deck reading.")
-            }
+            frame = presentation.expire(System.nanoTime() / 1_000_000L)
         }
     }
-    LaunchedEffect(session, target) {
-        model = DeckGuidanceOverlayModel(DeckGuidanceStatus.READING)
+    LaunchedEffect(presentation) {
         while (true) {
+            val readStarted = System.nanoTime()
             val read = withContext(Dispatchers.IO) { memoryReader.read() }
+            val readEnded = System.nanoTime()
             val now = System.nanoTime() / 1_000_000L
             contentVisible = read !is ArenaMemoryRead.Paused || !read.outsideBuilder
             if (read is ArenaMemoryRead.PackReady) contentVisible = false
-            health = memoryReadHealth(read)
-            model = when (read) {
-                is ArenaMemoryRead.Ready -> when (val verified = withContext(Dispatchers.IO) { session.observe(read.deck, draftPool, now) }) {
-                    is MemoryDeckValidation.Ready -> {
-                        geometry = read.deck.geometry
-                        names = verified.names
-                        memoryGuidanceModel(target, verified.deck)
+            frame = when (read) {
+                is ArenaMemoryRead.Ready -> {
+                    val validation = withContext(Dispatchers.IO) { session.observe(read.deck, draftPool, now) }
+                    val identity = read.deck.copy(geometry = null)
+                    when (validation) {
+                        is MemoryDeckValidation.Ready -> presentation.accepted(identity, read.deck.editorSession,
+                            VerifiedDeckOverlay(memoryGuidanceModel(target, validation.deck), validation.names), read.deck.geometry, now)
+                        is MemoryDeckValidation.Rejected -> if (validation.settling)
+                            presentation.settling(identity, read.deck.editorSession, read.deck.geometry, now)
+                        else presentation.clear(now, OverlayHealth(OverlayHealthState.READING, validation.reason))
                     }
-                    is MemoryDeckValidation.Rejected -> {
-                        health = OverlayHealth(OverlayHealthState.READING, verified.reason)
-                        geometry = null
-                        DeckGuidanceOverlayModel(DeckGuidanceStatus.READING, notice = verified.reason)
-                    }
+                }
+                is ArenaMemoryRead.PackReady -> {
+                    session.invalidate()
+                    presentation.clear(now)
                 }
                 else -> {
-                    session.invalidate()
-                    geometry = null
-                    val reason = when (read) {
-                        is ArenaMemoryRead.Paused -> read.reason
-                        is ArenaMemoryRead.Unavailable -> read.reason
-                        else -> "Waiting for a fresh live deck reading."
-                    }
-                    DeckGuidanceOverlayModel(DeckGuidanceStatus.READING, notice = reason)
+                    if (read.resetsPresentation()) session.invalidate()
+                    presentation.interrupted(read, now)
                 }
             }
-            lastReadingMs = System.nanoTime() / 1_000_000L
-            delay(if (currentFrontmost) 150 else 500)
+            trace.observed(read, frame, readStarted, readEnded)
+            delay(if (currentFrontmost) 100 else 400)
         }
     }
-    ArenaMemoryOverlayWindow("FirstPick Deck Guidance", health, contentVisible, loc,
+    ArenaMemoryOverlayWindow("FirstPick Deck Guidance", frame.health, contentVisible, loc,
+        geometry = frame.geometry,
         onForegroundChanged = { frontmost = it }, onHealthChanged = onHealthChanged) { arena ->
-        DeckGuidanceOverlay(model.withMemoryMarks(geometry?.inWindow(arena).orEmpty(), names), arena.w.dp, arena.h.dp)
+        SideEffect { trace.composed(frame, frontmost) }
+        val verified = frame.content
+        if (verified != null) {
+            DeckGuidanceOverlay(verified.model.withMemoryMarks(frame.geometry?.inWindow(arena).orEmpty(), verified.names), arena.w.dp, arena.h.dp)
+        } else if (frame.showNotice) {
+            DeckGuidanceOverlay(DeckGuidanceOverlayModel(DeckGuidanceStatus.READING, notice = frame.health.detail), arena.w.dp, arena.h.dp)
+        }
     }
 }

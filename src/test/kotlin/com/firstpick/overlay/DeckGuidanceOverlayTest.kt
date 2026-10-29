@@ -17,7 +17,7 @@ class DeckGuidanceOverlayTest {
             statusPillStyle(DeckGuidanceStatus.READING).let { it.label to it.accent },
         )
         assertEquals(
-            "Deck needs changes" to DeckGuidanceOverlayPalette.RemoveAccent,
+            "Deck needs changes" to DeckGuidanceOverlayPalette.ReadingAccent,
             statusPillStyle(DeckGuidanceStatus.NEEDS_CHANGES).let { it.label to it.accent },
         )
         assertEquals(
@@ -111,7 +111,8 @@ class DeckGuidanceOverlayTest {
     @Test
     fun refusesImpossibleOrInvalidMarks() {
         assertNull(DeckGuidanceAction.REMOVE.toVisualMark(bounds, currentCount = 0))
-        assertNull(DeckGuidanceAction.REMOVE.toVisualMark(bounds, currentCount = 100))
+        assertIs<DeckGuidanceVisualMark.RemoveRow>(DeckGuidanceAction.REMOVE.toVisualMark(bounds, currentCount = 100))
+        assertNull(DeckGuidanceAction.REMOVE.toVisualMark(bounds, currentCount = 301))
         assertNull(
             DeckGuidanceAction.ADD.toVisualMark(
                 NormalizedRect(x = 0.95, y = 0.1, width = 0.10, height = 0.1),

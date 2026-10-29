@@ -14,7 +14,15 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
+import kotlinx.coroutines.delay
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -110,50 +118,30 @@ fun DeckGuidanceOverlay(
     viewportHeight: Dp,
     modifier: Modifier = Modifier,
 ) {
+    var showSummary by remember(model.status) { mutableStateOf(true) }
+    LaunchedEffect(model.status) {
+        if (model.status == DeckGuidanceStatus.MATCHES) {
+            delay(2400)
+            showSummary = false
+        }
+    }
+    val summaryAlpha by animateFloatAsState(if (showSummary) 1f else 0f, tween(250))
     Box(modifier.size(viewportWidth, viewportHeight)) {
         for (mark in model.renderableMarks()) {
             val rect = mark.bounds.inViewport(viewportWidth.value, viewportHeight.value) ?: continue
             when (mark) {
-                is DeckGuidanceVisualMark.RemoveRow -> ActionBadge(rect, adding = false, inDeckList = true, compact = mark.compact)
-                is DeckGuidanceVisualMark.AddCard -> ActionBadge(rect, adding = true, inDeckList = mark.inDeckList, compact = mark.compact)
+                is DeckGuidanceVisualMark.RemoveRow -> ActionHighlight(rect, adding = false, inDeckList = true, compact = mark.compact)
+                is DeckGuidanceVisualMark.AddCard -> ActionHighlight(rect, adding = true, inDeckList = mark.inDeckList, compact = mark.compact)
             }
         }
         Column(
             modifier = Modifier.align(Alignment.TopCenter)
                 .offset(y = viewportHeight * STATUS_TOP_FRACTION)
-                .widthIn(max = viewportWidth * 0.74f),
+                .widthIn(max = viewportWidth * 0.84f)
+                .alpha(summaryAlpha),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            StatusPill(style = statusPillStyle(model))
-            if (model.renderableMarks().any { mark ->
-                    when (mark) {
-                        is DeckGuidanceVisualMark.RemoveRow -> mark.compact
-                        is DeckGuidanceVisualMark.AddCard -> mark.compact
-                    }
-                }) {
-                Row(Modifier.padding(top = 4.dp)
-                    .background(DeckGuidanceOverlayPalette.PillBackground, BADGE_SHAPE)
-                    .padding(horizontal = 8.dp, vertical = 3.dp)) {
-                    Text("+ Add", color = DeckGuidanceOverlayPalette.AddAccent, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                    Spacer(Modifier.width(14.dp))
-                    Text("− Cut", color = DeckGuidanceOverlayPalette.RemoveAccent, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                }
-            }
-            val detail = if (model.status == DeckGuidanceStatus.NEEDS_CHANGES)
-                model.basicLandChanges.filter { it.action != DeckGuidanceAction.OK }.joinToString(" · ") { it.basicLandInstruction() }
-                else ""
-            if (detail.isNotEmpty()) {
-                Text(
-                    text = detail,
-                    modifier = Modifier.padding(top = 4.dp)
-                        .background(DeckGuidanceOverlayPalette.PillBackground, BADGE_SHAPE)
-                        .padding(horizontal = 12.dp, vertical = 6.dp),
-                    color = DeckGuidanceOverlayPalette.PillText,
-                    fontSize = 12.sp,
-                    maxLines = 8,
-                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
-                )
-            }
+            StatusPill(model = model)
         }
     }
 }
@@ -177,42 +165,22 @@ fun DeckGuidanceOverlayPixels(
     }
 }
 
-/** Horizontal markers stay in measured gutters; list and pool labels stay outside cards. */
+/** Bounds are complete pool cards, list rows, or visible stacked entries. */
 @Composable
-private fun ActionBadge(rect: GuidanceViewportRect, adding: Boolean, inDeckList: Boolean, compact: Boolean) {
-    if (compact && rect.height < 12f) return
-    val height = if (compact) 12f else if (inDeckList) rect.height.coerceIn(14f, 22f) else 20f
-    val width = if (compact) (rect.width - 1f).coerceAtMost(12f) else if (inDeckList) 34f else 46f
-    if (compact && width < 10f) return
-    val left = if (compact) rect.left + rect.width - width - 0.5f
-        else if (inDeckList) rect.left - width - 1f else rect.left
-    val top = if (compact) rect.top + (rect.height - height) / 2f
-        else if (inDeckList) rect.top + (rect.height - height) / 2f else rect.top - height - 4f
+private fun ActionHighlight(rect: GuidanceViewportRect, adding: Boolean, inDeckList: Boolean, compact: Boolean) {
     val accent = if (adding) DeckGuidanceOverlayPalette.AddAccent else DeckGuidanceOverlayPalette.RemoveAccent
-    Box(
-        Modifier
-            .offset(left.coerceAtLeast(0f).dp, top.coerceAtLeast(0f).dp)
-            .size(width.dp, height.dp)
-            .background(DeckGuidanceOverlayPalette.PillBackground, BADGE_SHAPE)
-            .border(1.dp, accent, BADGE_SHAPE),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            text = if (compact) { if (adding) "+" else "−" } else if (adding) "+ Add" else "− Cut",
-            color = accent,
-            fontSize = (if (compact) 10f else if (inDeckList) 11f else height * 0.55f).sp,
-            lineHeight = (if (compact || inDeckList) 12f else height * 0.65f).sp,
-            fontWeight = FontWeight.Bold,
-            maxLines = 1,
-        )
-    }
+    val shape = RoundedCornerShape(if (inDeckList && !compact) (rect.height / 2).dp else 5.dp)
+    Box(Modifier.offset(rect.left.dp, rect.top.dp).size(rect.width.dp, rect.height.dp)
+        .background(accent.copy(alpha = 0.18f), shape)
+        .border(1.2.dp, accent.copy(alpha = 0.9f), shape))
 }
 
 @Composable
 private fun StatusPill(
-    style: DeckGuidanceStatusPillStyle,
+    model: DeckGuidanceOverlayModel,
     modifier: Modifier = Modifier,
 ) {
+    val style = statusPillStyle(model)
     Box(
         modifier
             .clip(PILL_SHAPE)
@@ -225,13 +193,31 @@ private fun StatusPill(
             Box(Modifier.size(9.dp).background(style.accent, CircleShape))
             Spacer(Modifier.width(10.dp))
             Text(
-                text = style.label,
+                text = summaryText(model),
                 color = DeckGuidanceOverlayPalette.PillText,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
-                maxLines = 1,
+                maxLines = 3,
             )
         }
+    }
+}
+
+internal fun summaryText(model: DeckGuidanceOverlayModel): AnnotatedString {
+    if (model.status != DeckGuidanceStatus.NEEDS_CHANGES || model.notice != null)
+        return AnnotatedString(statusPillStyle(model).label)
+    return buildAnnotatedString {
+        fun part(value: String, color: Color) {
+            if (length > 0) append(" · ")
+            withStyle(SpanStyle(color = color)) { append(value) }
+        }
+        if (model.remainingAdds > 0) part("Add ${model.remainingAdds} ${if (model.remainingAdds == 1) "card" else "cards"}", DeckGuidanceOverlayPalette.AddAccent)
+        if (model.remainingRemovals > 0) part("Cut ${model.remainingRemovals} ${if (model.remainingRemovals == 1) "card" else "cards"}", DeckGuidanceOverlayPalette.RemoveAccent)
+        val basics = model.basicLandChanges.filter { it.action != DeckGuidanceAction.OK }
+        for (land in basics) part(land.basicLandInstruction(), DeckGuidanceOverlayPalette.PillText)
+        if (basics.isEmpty() && model.basicLandDelta != 0) part(
+            "${if (model.basicLandDelta > 0) "Add" else "Remove"} ${kotlin.math.abs(model.basicLandDelta)} basic ${if (kotlin.math.abs(model.basicLandDelta) == 1) "land" else "lands"}",
+            DeckGuidanceOverlayPalette.PillText)
     }
 }
 
@@ -247,7 +233,7 @@ fun statusPillStyle(model: DeckGuidanceOverlayModel): DeckGuidanceStatusPillStyl
     DeckGuidanceStatusPillStyle(it, DeckGuidanceOverlayPalette.ReadingAccent)
 } ?: when (model.status) {
     DeckGuidanceStatus.READING -> DeckGuidanceStatusPillStyle("Checking recent changes…", DeckGuidanceOverlayPalette.ReadingAccent)
-    DeckGuidanceStatus.NEEDS_CHANGES -> DeckGuidanceStatusPillStyle(model.needsChangesLabel(), DeckGuidanceOverlayPalette.RemoveAccent)
+    DeckGuidanceStatus.NEEDS_CHANGES -> DeckGuidanceStatusPillStyle(model.needsChangesLabel(), DeckGuidanceOverlayPalette.ReadingAccent)
     DeckGuidanceStatus.MATCHES -> DeckGuidanceStatusPillStyle("Deck matches build", DeckGuidanceOverlayPalette.AddAccent)
     DeckGuidanceStatus.UNABLE -> DeckGuidanceStatusPillStyle("Unable to read deck", DeckGuidanceOverlayPalette.UnableAccent)
 }
@@ -300,8 +286,7 @@ object DeckGuidanceOverlayPalette {
     val PillText = Color(0xFFF3F4F6)
 }
 
-private val BADGE_SHAPE = RoundedCornerShape(5.dp)
 private val PILL_SHAPE = RoundedCornerShape(999.dp)
 private const val STATUS_TOP_FRACTION = 0.115f
 private val PILL_OUTLINE_WIDTH = 1.dp
-private const val MAX_RENDERED_COUNT = 99
+private const val MAX_RENDERED_COUNT = 300

@@ -87,6 +87,7 @@ fun main() {
         var deckOverlayHealth by remember {
             mutableStateOf(OverlayHealth(OverlayHealthState.INACTIVE, "Deck guidance is not active."))
         }
+        var liveDeckGuidance by remember(state.sessionKey) { mutableStateOf<com.firstpick.overlay.DeckGuidanceOverlayModel?>(null) }
         var committedDeck by remember(state.sessionKey, state.phase == DraftPhase.COMPLETE) {
             mutableStateOf<DeckOptionUi?>(null)
         }
@@ -123,12 +124,16 @@ fun main() {
                 },
                 isOverlayOpen = isOverlayOpen,
                 overlayHealth = activeOverlayHealth,
+                liveDeckGuidance = liveDeckGuidance,
                 onToggleOverlay = { isOverlayOpen = !isOverlayOpen },
                 liveDeckAccess = liveDeckAccess,
                 onGrantArenaAccess = { appScope.launch(Dispatchers.IO) { liveDeckReader.grantAccess() } },
                 committedDeck = selectedDeck,
                 onUseDeck = {
-                    if (state.phase == DraftPhase.COMPLETE) committedDeck = it
+                    if (state.phase == DraftPhase.COMPLETE) {
+                        liveDeckGuidance = null
+                        committedDeck = it
+                    }
                 },
                 onSelectPickCount = viewModel::setPickCountOverride,
                 onSimulate = { viewModel.startSimulation(it) },
@@ -158,6 +163,7 @@ fun main() {
                     sessionKey = state.sessionKey,
                     memoryReader = liveDeckReader,
                     onHealthChanged = { deckOverlayHealth = it },
+                    onGuidanceChanged = { liveDeckGuidance = it },
                 )
             }
 

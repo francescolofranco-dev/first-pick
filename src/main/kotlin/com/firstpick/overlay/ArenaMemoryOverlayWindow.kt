@@ -18,6 +18,7 @@ internal fun ArenaMemoryOverlayWindow(
     work: OverlayHealth,
     contentVisible: Boolean = true,
     locator: WindowLocator,
+    geometry: ArenaCardGeometry? = null,
     onForegroundChanged: (Boolean) -> Unit,
     onHealthChanged: (OverlayHealth) -> Unit,
     content: @Composable (WindowBounds) -> Unit,
@@ -37,8 +38,14 @@ internal fun ArenaMemoryOverlayWindow(
         }
     }
     SideEffect { onForegroundChanged(bounds?.frontmost == true) }
-    val effective = if (work.state == OverlayHealthState.ACTIVE && !clickThroughApplied)
-        OverlayHealth(OverlayHealthState.READING, "Preparing the live overlay.") else work
+    val effective = when {
+        work.state == OverlayHealthState.ACTIVE && !clickThroughApplied ->
+            OverlayHealth(OverlayHealthState.READING, "Preparing the live overlay.")
+        work.state == OverlayHealthState.ACTIVE && geometry != null && geometry.cards.isNotEmpty() &&
+            bounds?.let { geometry.inWindow(it).isEmpty() } == true ->
+            OverlayHealth(OverlayHealthState.READING, "Updating positions for Arena's window size…")
+        else -> work
+    }
     OverlayHealthEffect(resolveOverlayHealth(bounds != null, bounds?.frontmost == true,
         clickThroughFailed, effective), onHealthChanged)
     val arena = bounds ?: return

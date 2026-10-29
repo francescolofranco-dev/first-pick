@@ -10,7 +10,10 @@ private func taskReadForPID(_ task: mach_port_t, _ pid: pid_t, _ out: UnsafeMuta
 private struct ReadFailure: Error {
     let status: String
     let reason: String
-    init(_ status: String = "unavailable", _ reason: String) { self.status = status; self.reason = reason }
+    let resetPresentation: Bool
+    init(_ status: String = "unavailable", _ reason: String, resetPresentation: Bool = false) {
+        self.status = status; self.reason = reason; self.resetPresentation = resetPresentation
+    }
 }
 private func require(_ condition: Bool, _ reason: String) throws {
     if !condition { throw ReadFailure("unsupported_build", reason) }
@@ -19,7 +22,7 @@ private func json(_ object: [String: Any]) -> Data {
     (try? JSONSerialization.data(withJSONObject: object, options: [.sortedKeys])) ?? Data("{}".utf8)
 }
 private func failure(_ error: Error) -> [String: Any] {
-    if let error = error as? ReadFailure { return ["status": error.status, "reason": error.reason] }
+    if let error = error as? ReadFailure { return ["status": error.status, "reason": error.reason, "presentation_reset":error.resetPresentation] }
     return ["status": "unavailable", "reason": "The Arena reader could not complete this observation."]
 }
 private func hash(_ bytes: Data) -> String { SHA256.hash(data: bytes).map { String(format: "%02x", $0) }.joined() }
@@ -145,8 +148,10 @@ private final class Target {
         #endif
     }
     func validate() throws {
-        let current = try processIdentity(pid)
-        guard try processPath(pid) == executable && current.pbi_start_tvsec == launch.pbi_start_tvsec && current.pbi_start_tvusec == launch.pbi_start_tvusec else { throw ReadFailure("arena_closed", "Arena restarted. Grant access again to reconnect.") }
+        guard let current = try? processIdentity(pid), let path = try? processPath(pid),
+              path == executable && current.pbi_start_tvsec == launch.pbi_start_tvsec && current.pbi_start_tvusec == launch.pbi_start_tvusec else {
+            throw ReadFailure("arena_closed", "Arena restarted. Grant access again to reconnect.", resetPresentation:true)
+        }
     }
 }
 private final class Memory {
@@ -478,14 +483,11 @@ private final class DeckRuntime {
         let wrapper = try singleton("wrapper", "<Instance>k__BackingField")
         try connectionAndMessages(wrapper)
         try checkPopup(activeServices(["popup_manager"])["popup_manager"]!)
-        for field in ["_layoutChangeCoroutine", "_settingCardsCoroutine"] {
-            guard try memory.pointer(nav + profile.offset("draft_controller", field), nullable: true) == 0 else { throw ReadFailure("changing", "Arena is arranging the new pack.") }
-        }
-        guard try flag(nav, "draft_controller", "_okToPickCard") else { throw ReadFailure("changing", "Waiting for Arena's current pack.") }
+        guard try flag(nav, "draft_controller", "_okToPickCard") else { throw ReadFailure("changing", "Waiting for Arena's current pack.", resetPresentation:true) }
         let holder = try field(nav, "draft_controller", "_draftPackHolder", "draft_holder")
-        guard try flag(holder, "draft_holder", "_isInitialized") && !flag(holder, "draft_holder", "<IsAnimating>k__BackingField") && memory.pointer(holder + profile.offset("draft_holder", "_pendingPackCollection"), nullable: true) == 0 else { throw ReadFailure("changing", "Arena is animating the pack.") }
+        guard try flag(holder, "draft_holder", "_isInitialized") && memory.pointer(holder + profile.offset("draft_holder", "_pendingPackCollection"), nullable: true) == 0 else { throw ReadFailure("changing", "Arena is changing packs.", resetPresentation:true) }
         let pack = try field(nav, "draft_controller", "_packCollection", "card_collection")
-        guard try memory.pointer(holder + profile.offset("draft_holder", "_packCollection")) == pack else { throw ReadFailure("changing", "Arena is changing packs.") }
+        guard try memory.pointer(holder + profile.offset("draft_holder", "_packCollection")) == pack else { throw ReadFailure("changing", "Arena is changing packs.", resetPresentation:true) }
         let expected = try collection(pack, maximum: 30)
         let views = try listObjects(memory.pointer(holder + profile.offset("draft_holder", "_allCardViews")), maximum: 30)
         var ids: [UInt64] = []
@@ -507,12 +509,18 @@ private final class DeckRuntime {
         let side = try collection(field(deck, "draft_deck", "_sideboard", "card_collection"), maximum: 300)
         var picked: [UInt64: UInt64] = [:]
         for row in main + side { picked[row[0], default: 0] += row[1] }
-        let session = hash(Data((nonce + ":draft:\(nav):\(manager)").utf8))
+        let session = hash(Data((nonce + ":draft:\(nav):\(manager):\(pack)").utf8))
         // These layout records are kept inside the process until live projection
         // and clipping are verified. Local/world positions are not screen bounds.
         var result: [String: Any] = ["status": "draft_ready", "editor_session": session, "cards": ids,
                 "picked": picked.keys.sorted().map { [$0, picked[$0]!] }]
-        do { result["geometry"] = try ArenaGeometry(self).pack(views) }
+        do {
+            for field in ["_layoutChangeCoroutine", "_settingCardsCoroutine"] {
+                guard try memory.pointer(nav + profile.offset("draft_controller", field), nullable:true) == 0 else { throw ReadFailure("changing","Arena is arranging card positions.") }
+            }
+            guard try !flag(holder,"draft_holder","<IsAnimating>k__BackingField") else { throw ReadFailure("changing","Arena is animating card positions.") }
+            result["geometry"] = try ArenaGeometry(self).pack(views)
+        }
         catch { result["geometry_reason"] = failure(error)["reason"] }
         return result
     }
@@ -523,22 +531,28 @@ private final class DeckRuntime {
         let nav = try memory.pointer(scene + profile.offset("scene", "<CurrentNavContent>k__BackingField"), nullable: true)
         if try nav != 0 && identity(memory.pointer(nav)) == ("DraftContentController", "Wotc.Mtga.Wrapper.Draft") {
             let a = try draftSnapshot(nav), b = try draftSnapshot(nav)
+            var identityA=a, identityB=b
+            for key in ["geometry","geometry_reason"] { identityA.removeValue(forKey:key);identityB.removeValue(forKey:key) }
             guard try memory.pointer(scene + profile.offset("scene", "<CurrentNavContent>k__BackingField")) == nav,
-                  NSDictionary(dictionary: a).isEqual(to: b) else { throw ReadFailure("changing", "Arena is updating the draft.") }
+                  NSDictionary(dictionary: identityA).isEqual(to: identityB) else { throw ReadFailure("changing", "Arena is changing the draft pack.", resetPresentation:true) }
             try target?.validate()
-            return b
+            var result=b
+            result["elapsed_ms"]=Int((ProcessInfo.processInfo.systemUptime-memory.started)*1000)
+            return result
         }
         for _ in 0..<3 {
             do {
                 let a = try roots(), main = try quantities(a[4]), side = try quantities(a[5]), pool = try quantities(a[6], pool: true)
-                let geometry = try? ArenaGeometry(self).deck(a[0])
+                var geometry: [String:Any]?, geometryReason: String?
+                do { geometry=try ArenaGeometry(self).deck(a[0]) }
+                catch { geometryReason=failure(error)["reason"] as? String }
                 guard try a == roots() && main == quantities(a[4]) && side == quantities(a[5]) && pool == quantities(a[6], pool: true) else { throw ReadFailure("changing", "Arena is updating the deck.") }
                 try target?.validate()
                 let session = hash(Data((nonce + ":" + a.prefix(4).map(String.init).joined(separator: ":")).utf8))
                 var result: [String: Any] = ["status": "ready", "editor_session": session, "main": main, "sideboard": side, "pool": pool,
                         "total": main.reduce(UInt64(0)) { $0 + $1[1] }, "elapsed_ms": Int((ProcessInfo.processInfo.systemUptime - memory.started) * 1000)]
-                if let geometry = geometry, let repeated = try? ArenaGeometry(self).deck(a[0]),
-                    NSDictionary(dictionary: geometry).isEqual(to: repeated) { result["geometry"] = repeated }
+                if let geometry=geometry { result["geometry"]=geometry }
+                if let reason=geometryReason { result["geometry_reason"]=reason }
                 result["elapsed_ms"] = Int((ProcessInfo.processInfo.systemUptime - memory.started) * 1000)
                 return result
             } catch let error as ReadFailure where error.status == "changing" { continue }

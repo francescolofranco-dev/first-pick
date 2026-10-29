@@ -9,6 +9,7 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.doubleOrNull
+import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
@@ -47,12 +48,13 @@ internal data class ArenaMemoryDeck(
 internal data class ArenaMemoryPack(val editorSession: String, val cards: List<Int>, val picked: List<ArenaCardQuantity>,
     val geometry: ArenaCardGeometry? = null)
 internal enum class MemoryUnavailableKind { ACCESS_REQUIRED, UNSUPPORTED, WAITING }
+internal data class ArenaMemoryDiagnostics(val elapsedMs: Int? = null, val geometryReason: String? = null)
 
 internal sealed interface ArenaMemoryRead {
-    data class Ready(val deck: ArenaMemoryDeck) : ArenaMemoryRead
-    data class PackReady(val pack: ArenaMemoryPack) : ArenaMemoryRead
-    data class Paused(val reason: String, val outsideBuilder: Boolean = false) : ArenaMemoryRead
-    data class Unavailable(val reason: String, val kind: MemoryUnavailableKind = MemoryUnavailableKind.WAITING) : ArenaMemoryRead
+    data class Ready(val deck: ArenaMemoryDeck, val diagnostics: ArenaMemoryDiagnostics = ArenaMemoryDiagnostics()) : ArenaMemoryRead
+    data class PackReady(val pack: ArenaMemoryPack, val diagnostics: ArenaMemoryDiagnostics = ArenaMemoryDiagnostics()) : ArenaMemoryRead
+    data class Paused(val reason: String, val outsideBuilder: Boolean = false, val resetPresentation: Boolean = false) : ArenaMemoryRead
+    data class Unavailable(val reason: String, val kind: MemoryUnavailableKind = MemoryUnavailableKind.WAITING, val resetPresentation: Boolean = false) : ArenaMemoryRead
 }
 
 /** Only typed deck snapshots cross the production socket. No raw-address API. */
@@ -82,6 +84,7 @@ class ArenaMemoryReader(
             if (current != null) {
                 session = null
                 removeDirectory(current)
+                synchronized(this) { stopWorker() }
                 state.value = LiveDeckAccess(LiveDeckAccessStatus.ACCESS_REQUIRED, "The Arena connection ended. Grant access again to reconnect.")
             }
             return ArenaMemoryRead.Unavailable("Grant Arena access in FirstPick to reconnect the overlay.", MemoryUnavailableKind.ACCESS_REQUIRED)
@@ -91,14 +94,14 @@ class ArenaMemoryReader(
             "ready", "draft_ready", "blocked", "outside_builder", "changing" -> if (!granting.get()) {
                 state.value = LiveDeckAccess(LiveDeckAccessStatus.CONNECTED, "Live Arena access is connected.")
             }
-            "access_required" -> if (!granting.get() && state.value.status !in setOf(LiveDeckAccessStatus.FAILED, LiveDeckAccessStatus.UNSUPPORTED)) {
+            "access_required" -> if (!granting.get()) {
                 state.value = LiveDeckAccess(LiveDeckAccessStatus.ACCESS_REQUIRED, "Grant read-only access to enable Arena's live overlay.")
             }
             "unsupported_build" -> if (!granting.get()) {
                 state.value = LiveDeckAccess(LiveDeckAccessStatus.UNSUPPORTED, "This Arena build is not supported yet. The overlay is paused.")
             }
             "arena_closed" -> {
-                if (current != null) { session = null; removeDirectory(current) }
+                if (current != null) { session = null; removeDirectory(current); synchronized(this) { stopWorker() } }
                 if (!granting.get()) state.value = LiveDeckAccess(LiveDeckAccessStatus.CHECKING, "Open Arena to connect live deck sync.")
             }
         }
@@ -247,6 +250,10 @@ class ArenaMemoryReader(
 internal fun parseArenaMemoryRead(objectValue: JsonObject): ArenaMemoryRead = runCatching {
     val status = objectValue["status"]?.jsonPrimitive?.contentOrNull
     val reason = objectValue["reason"]?.jsonPrimitive?.contentOrNull.orEmpty().take(240)
+    val diagnostics = ArenaMemoryDiagnostics(
+        objectValue["elapsed_ms"]?.jsonPrimitive?.intOrNull?.takeIf { it in 0..2500 },
+        objectValue["geometry_reason"]?.jsonPrimitive?.contentOrNull?.take(240),
+    )
     fun pile(field: String, maxCopies: Int): List<ArenaCardQuantity> {
         val rows = objectValue[field] as? JsonArray ?: error("Missing pile")
         require(rows.size <= 2048)
@@ -280,7 +287,7 @@ internal fun parseArenaMemoryRead(objectValue: JsonObject): ArenaMemoryRead = ru
                     source.any { it.grpId == card.grpId && it.count >= card.count }
                 }
             }
-            ArenaMemoryRead.Ready(ArenaMemoryDeck(key, main, pool, total, geometry))
+            ArenaMemoryRead.Ready(ArenaMemoryDeck(key, main, pool, total, geometry), diagnostics)
         }
         "draft_ready" -> {
             val key = objectValue["editor_session"]?.jsonPrimitive?.contentOrNull ?: error("No draft identity")
@@ -291,14 +298,15 @@ internal fun parseArenaMemoryRead(objectValue: JsonObject): ArenaMemoryRead = ru
             val geometry = parseMemoryCardGeometry(objectValue["geometry"] as? JsonObject)?.takeIf { frame ->
                 frame.cards.all { it.zone == ArenaCardZone.PACK && it.count == 1 } && frame.cards.map { it.grpId } == cards
             }
-            ArenaMemoryRead.PackReady(ArenaMemoryPack(key, cards, pile("picked", 300), geometry))
+            ArenaMemoryRead.PackReady(ArenaMemoryPack(key, cards, pile("picked", 300), geometry), diagnostics)
         }
-        "blocked", "changing" -> ArenaMemoryRead.Paused(reason.ifBlank { "Checking recent Arena changes." })
+        "blocked", "changing" -> ArenaMemoryRead.Paused(reason.ifBlank { "Checking recent Arena changes." },
+            resetPresentation = status == "blocked" || objectValue["presentation_reset"]?.jsonPrimitive?.booleanOrNull == true)
         "outside_builder" -> ArenaMemoryRead.Paused(reason, outsideBuilder = true)
         "access_required" -> ArenaMemoryRead.Unavailable("Grant Arena access in FirstPick to enable the overlay.", MemoryUnavailableKind.ACCESS_REQUIRED)
-        "unsupported_build" -> ArenaMemoryRead.Unavailable(reason.ifBlank { "This Arena build is not supported yet. The overlay is paused." }, MemoryUnavailableKind.UNSUPPORTED)
-        "arena_closed" -> ArenaMemoryRead.Unavailable("Open Arena to enable the live overlay.")
-        else -> ArenaMemoryRead.Unavailable(reason.ifBlank { "Waiting for a fresh Arena reading." })
+        "unsupported_build" -> ArenaMemoryRead.Unavailable("FirstPick could not verify this Arena build. Check FirstPick for an update.", MemoryUnavailableKind.UNSUPPORTED)
+        "arena_closed" -> ArenaMemoryRead.Unavailable("Open Arena to enable the live overlay.", resetPresentation = true)
+        else -> ArenaMemoryRead.Unavailable("Waiting for a fresh Arena reading.")
     }
 }.getOrElse { ArenaMemoryRead.Unavailable("Arena returned an incomplete or inconsistent snapshot.") }
 

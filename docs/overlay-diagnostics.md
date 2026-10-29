@@ -19,7 +19,9 @@ Kotlin tests reject incomplete snapshots, unsupported builds, incorrect pack
 multisets, stale pools, duplicate-count mistakes, different editors and read gaps.
 The compiled Swift helper reads synthetic IL2CPP graphs to verify exact deck and
 pack IDs, quantities, card view order, and blocking during animations, dragging,
-settings, dialogs and disconnection. These tests do not prove live draft access.
+settings, dialogs and disconnection. Position-only draft animation preserves
+complete card identity while geometry can be withheld independently. These
+tests do not prove live draft access.
 Draft view fixtures must model `DraftPackCardView.CurrentCard` as an
 `ICardCollectionItem`, whose `Card` field contains `CardData`. Treating the view's
 item as a printing caused the `Unexpected Arena object: card_printing` error;
@@ -62,6 +64,9 @@ can appear.
 
 ## Positioned badges (3.2.0)
 
+This section records the 3.2.0–3.2.1 placement milestones. See the 3.3.0 update
+below for the current presentation and retention behavior.
+
 The native reader verifies UnityPlayer's complete fingerprint, loaded header and
 reviewed code anchors before reading native UI geometry. It follows actual card
 colliders/row rectangles through their parent TRS hierarchy into the root
@@ -100,3 +105,51 @@ user's final visual acceptance of the revised labels.
 Draft projection also has native synthetic graph tests for duplicate IDs,
 visibility, invalid transforms and dirty layout state. A real draft-pack visual
 acceptance test remains deferred at the user's request.
+
+## Steady full-card highlights (3.3.0)
+
+Pool additions use a translucent green wash across the complete visible card.
+Vertical deck entries use a complete green Add or red Cut row. In horizontal
+stacks, covered cards use their exposed region; the front card uses its full
+collider, including single-card columns. Every mark is clipped to the actual
+viewport and bound to its exact card ID and quantity. The renderer adds no
+individual +1/+2 labels. The compact bar contains aggregate Add/Cut counts and
+named basic-land instructions once; a verified match confirms briefly and fades
+after 2.4 seconds. Full named copy changes are available in FirstPick's deck tab.
+
+Pack stabilization compares semantic identity without geometry and uses the
+actual pack collection in its session identity. Native double observations
+compare complete pack/pool state without demanding identical animated positions.
+Card data/quantity is checked around each native projection. Deck quantities
+remain checked before and after geometry extraction. Scrolling itself is no
+longer treated as loss of the deck's complete identity.
+
+Presentation retains verified advice through a single transient read gap.
+Semantic freshness and position freshness have separate 1.2-second bounds;
+continued count readings do not keep missing positions alive indefinitely.
+Confirmed pack/editor changes, scene exits, blocking dialogs and access loss
+invalidate the previous presentation. The initial notice is delayed 500 ms.
+After stabilization, faster polls do not repeatedly restart validation. Window
+metadata includes the display backing scale so a same-aspect resize cannot
+reuse old pixel geometry. Counts remain usable during position reacquisition.
+
+The optimized installed 3.3.0 artifact passes 475 Kotlin tests and 16 native
+tests, with renderer coverage for full cards, rows, exposed bands and front
+cards. Deterministic interaction tests cover retained advice through isolated
+hover/read interruptions, real identity changes and independently stale positions.
+These checks are not a measured end-to-end interaction benchmark.
+
+Arena process restarts end the process-bound read connection. The native reader
+now reports an exited process as `arena_closed`, rather than leaving a cached
+unsupported result. FirstPick discards its stale worker and restores the access
+grant when a supported process returns. A scripted reader regression test checks
+that an earlier unsupported response cannot permanently hide the grant button.
+
+For bounded local diagnostics, launch with `FIRSTPICK_OVERLAY_TRACE=1`. Up to
+512 observation records per overlay instance include helper time, read time and
+position failure reasons; foreground composition records report
+`read_to_compose_ms` and `validation_to_compose_ms`. The trace contains no card
+names, account IDs, session tokens, raw memory or screenshots. Composition timing
+is not OS frame presentation or input-to-visible-update latency. The agreed
+95%-within-500-ms target still requires a controlled live interaction measurement;
+a real draft-pack visual check remains deferred until a pack is available.

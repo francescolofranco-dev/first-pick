@@ -20,7 +20,12 @@ if let list = CGWindowListCopyWindowInfo([.optionOnScreenOnly], kCGNullWindowID)
         if area > bestArea { bestArea = area; best = (x, y, ww, hh) }
     }
     if let (x, y, ww, hh) = best {
-        out = "{\"found\":true,\"x\":\(x),\"y\":\(y),\"w\":\(ww),\"h\":\(hh),\"frontmost\":\(frontmost)}"
+        let center = CGPoint(x:Double(x)+Double(ww)/2,y:Double(y)+Double(hh)/2)
+        let scale = NSScreen.screens.first { screen in
+            guard let id = screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? NSNumber else { return false }
+            return CGDisplayBounds(CGDirectDisplayID(id.uint32Value)).contains(center)
+        }?.backingScaleFactor ?? 1
+        out = "{\"found\":true,\"x\":\(x),\"y\":\(y),\"w\":\(ww),\"h\":\(hh),\"frontmost\":\(frontmost),\"backingScale\":\(scale)}"
     }
 }
 print(out)

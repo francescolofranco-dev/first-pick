@@ -5,7 +5,7 @@ import com.firstpick.cards.isBasicLandName
 
 internal sealed interface MemoryPackValidation {
     data class Ready(val cards: List<OverlayCard>) : MemoryPackValidation
-    data class Rejected(val reason: String) : MemoryPackValidation
+    data class Rejected(val reason: String, val settling: Boolean = false) : MemoryPackValidation
 }
 
 /** Complete multisets prevent a grade from following a different card or draft. */
@@ -36,17 +36,20 @@ internal class MemoryPackGuidanceSession(
 ) {
     private var candidate: ArenaMemoryPack? = null
     private var candidateAtMs = 0L
+    private var confirmed = false
 
     fun observe(raw: ArenaMemoryPack, cards: List<OverlayCard>, pool: List<DeckCardCount>, nowMs: Long): MemoryPackValidation {
         val current = validateMemoryPack(raw, cards, pool, resolver(raw.picked.mapTo(HashSet()) { it.grpId }))
         if (current !is MemoryPackValidation.Ready) { invalidate(); return current }
-        if (candidate != raw || nowMs - candidateAtMs > 900) {
-            candidate = raw; candidateAtMs = nowMs
-            return MemoryPackValidation.Rejected("Checking the new pack in Arena.")
+        val identity = raw.copy(geometry = null)
+        if (candidate != identity || nowMs - candidateAtMs > 2000) {
+            candidate = identity; candidateAtMs = nowMs; confirmed = false
+            return MemoryPackValidation.Rejected("Checking the new pack in Arena.", settling = true)
         }
-        if (nowMs - candidateAtMs < 120) return MemoryPackValidation.Rejected("Checking the new pack in Arena.")
+        if (!confirmed && nowMs - candidateAtMs < 120) return MemoryPackValidation.Rejected("Checking the new pack in Arena.", settling = true)
+        confirmed = true
         candidateAtMs = nowMs
         return current
     }
-    fun invalidate() { candidate = null; candidateAtMs = 0 }
+    fun invalidate() { candidate = null; candidateAtMs = 0; confirmed = false }
 }

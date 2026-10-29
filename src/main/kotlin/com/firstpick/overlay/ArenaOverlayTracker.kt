@@ -36,74 +36,65 @@ fun ArenaOverlayTracker(
     onHealthChanged: (OverlayHealth) -> Unit = {},
 ) {
     val loc = remember { locator }
-    val session = remember(sessionKey, cards, draftPool) { MemoryPackGuidanceSession() }
-    var verified by remember(session) { mutableStateOf<List<OverlayCard>>(emptyList()) }
-    var geometry by remember(session) { mutableStateOf<ArenaCardGeometry?>(null) }
-    var notice by remember { mutableStateOf("Waiting for a live draft pack." ) }
-    var health by remember { mutableStateOf(OverlayHealth(OverlayHealthState.READING, notice)) }
+    val session = remember(sessionKey, draftPool) { MemoryPackGuidanceSession() }
+    val currentCards by rememberUpdatedState(cards)
+    val presentation = remember(session) { MemoryOverlayPresentation<List<OverlayCard>>() }
+    val trace = remember(presentation) { OverlayTimingTrace("draft") }
+    var frame by remember(presentation) { mutableStateOf(MemoryOverlayFrame<List<OverlayCard>>()) }
     var visible by remember { mutableStateOf(true) }
     var frontmost by remember { mutableStateOf(false) }
     val currentFrontmost by rememberUpdatedState(frontmost)
-    var lastReadMs by remember { mutableStateOf(0L) }
-    LaunchedEffect(session) {
+    LaunchedEffect(presentation) {
         while (true) {
             delay(100)
-            if (System.nanoTime() / 1_000_000L - lastReadMs > 900) {
-                verified = emptyList()
-                geometry = null
-                notice = "Waiting for a fresh live pack reading."
-                health = OverlayHealth(OverlayHealthState.READING, notice)
-            }
+            frame = presentation.expire(System.nanoTime() / 1_000_000L)
         }
     }
-    LaunchedEffect(session) {
+    LaunchedEffect(presentation) {
         while (true) {
+            val readStarted = System.nanoTime()
             val read = withContext(Dispatchers.IO) { memoryReader.read() }
+            val readEnded = System.nanoTime()
             val now = System.nanoTime() / 1_000_000L
             visible = read !is ArenaMemoryRead.Paused || !read.outsideBuilder
-            when (read) {
-                is ArenaMemoryRead.PackReady -> when (val result = withContext(Dispatchers.IO) { session.observe(read.pack, cards, draftPool, now) }) {
-                    is MemoryPackValidation.Ready -> {
-                        verified = result.cards
-                        geometry = read.pack.geometry
-                        notice = "Reading live card positions…"
-                        health = if (geometry != null) OverlayHealth(OverlayHealthState.ACTIVE, "The live pack, drafted pool and card positions are synced.")
-                            else OverlayHealth(OverlayHealthState.READING, notice)
+            if (read is ArenaMemoryRead.Ready) visible = false
+            frame = when (read) {
+                is ArenaMemoryRead.PackReady -> {
+                    val validation = withContext(Dispatchers.IO) { session.observe(read.pack, currentCards, draftPool, now) }
+                    val identity = read.pack.copy(geometry = null)
+                    when (validation) {
+                        is MemoryPackValidation.Ready -> presentation.accepted(identity, read.pack.editorSession,
+                            validation.cards, read.pack.geometry, now)
+                        is MemoryPackValidation.Rejected -> if (validation.settling)
+                            presentation.settling(identity, read.pack.editorSession, read.pack.geometry, now, newPack = true)
+                        else presentation.clear(now, OverlayHealth(OverlayHealthState.READING, validation.reason))
                     }
-                    is MemoryPackValidation.Rejected -> {
-                        verified = emptyList()
-                        geometry = null
-                        notice = result.reason
-                        health = OverlayHealth(OverlayHealthState.READING, notice)
-                    }
+                }
+                is ArenaMemoryRead.Ready -> {
+                    session.invalidate()
+                    presentation.clear(now)
                 }
                 else -> {
-                    verified = emptyList()
-                    geometry = null
-                    session.invalidate()
-                    notice = when (read) {
-                        is ArenaMemoryRead.Paused -> read.reason
-                        is ArenaMemoryRead.Unavailable -> read.reason
-                        else -> "Open the draft's current pack to see live pick advice."
-                    }
-                    health = if (read is ArenaMemoryRead.Unavailable) memoryReadHealth(read)
-                        else OverlayHealth(OverlayHealthState.READING, notice)
-                    if (read is ArenaMemoryRead.Ready) visible = false
+                    if (read.resetsPresentation()) session.invalidate()
+                    presentation.interrupted(read, now)
                 }
             }
-            lastReadMs = System.nanoTime() / 1_000_000L
-            delay(if (currentFrontmost) 150 else 500)
+            trace.observed(read, frame, readStarted, readEnded)
+            delay(if (currentFrontmost) 100 else 400)
         }
     }
-    ArenaMemoryOverlayWindow("FirstPick Arena Tracker", health, visible, loc,
+    ArenaMemoryOverlayWindow("FirstPick Arena Tracker", frame.health, visible, loc,
+        geometry = frame.geometry,
         onForegroundChanged = { frontmost = it }, onHealthChanged = onHealthChanged) { arena ->
+        SideEffect { trace.composed(frame, frontmost) }
         Box(Modifier.size(arena.w.dp, arena.h.dp)) {
-            val marks = draftScoreMarks(verified, geometry?.inWindow(arena).orEmpty())
+            val marks = draftScoreMarks(frame.content.orEmpty(), frame.geometry?.inWindow(arena).orEmpty())
             DraftScoreBadges(marks, arena.w.dp, arena.h.dp)
-            if (marks.isEmpty()) Box(Modifier.align(Alignment.TopEnd).padding(24.dp).widthIn(max = (arena.w * .6).dp)
+            if (marks.isEmpty() && frame.showNotice) Box(Modifier.align(Alignment.TopEnd).padding(24.dp).widthIn(max = (arena.w * .6).dp)
                 .background(DeckGuidanceOverlayPalette.PillBackground, RoundedCornerShape(12.dp))
                 .border(1.dp, DeckGuidanceOverlayPalette.ReadingAccent, RoundedCornerShape(12.dp)).padding(9.dp)) {
-                Text(notice, color = DeckGuidanceOverlayPalette.PillText, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                Text(if (frame.content != null && frame.geometry != null) "Updating card positions…" else frame.health.detail,
+                    color = DeckGuidanceOverlayPalette.PillText, fontSize = 12.sp, fontWeight = FontWeight.Bold)
             }
         }
     }

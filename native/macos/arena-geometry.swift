@@ -135,7 +135,6 @@ private final class ArenaGeometry {
     }
     func clip(_ scroll: UInt64) throws -> ArenaRect {
         try r.check(scroll,"scroll_rect")
-        guard try !r.flag(scroll,"scroll_rect","m_Dragging") else { throw ReadFailure("changing","Arena is scrolling the deck.") }
         var view=try m.pointer(scroll + p.offset("scroll_rect","m_Viewport"),nullable:true)
         if view == 0 { view=try m.pointer(scroll+p.offset("scroll_rect","m_ViewRect"),nullable:true) }
         let t=try view == 0 ? transform(native(scroll)) : native(view)
@@ -143,7 +142,7 @@ private final class ArenaGeometry {
     }
     func append(_ id: UInt64, _ count: UInt64, _ zone: String, _ bounds: ArenaRect, clip: ArenaRect? = nil) throws {
         guard let canvas=canvasRect, let visible=bounds.intersection(clip ?? canvas)?.intersection(canvas),
-              abs(visible.top-bounds.top)<0.5, visible.w >= bounds.w*0.98 else { return }
+              zone != "pack" || (abs(visible.top-bounds.top)<0.5 && visible.w >= bounds.w*0.98) else { return }
         let x=(visible.x-canvas.x)/canvas.w, y=(canvas.top-visible.top)/canvas.h, w=visible.w/canvas.w, h=visible.h/canvas.h
         guard x >= 0 && y >= 0 && w > 0 && h > 0 && x+w <= 1.000001 && y+h <= 1.000001 else { return }
         rows.append([id,count,zone,x,y,w,h])
@@ -155,6 +154,8 @@ private final class ArenaGeometry {
             let item=try r.field(view,"draft_card_view","<CurrentCard>k__BackingField","card_collection_item")
             let card=try r.field(item,"card_collection_item","<Card>k__BackingField","card_data")
             let q=try cardRect(view)
+            guard try m.pointer(view+p.offset("draft_card_view","<CurrentCard>k__BackingField")) == item,
+                  try m.pointer(item+p.offset("card_collection_item","<Card>k__BackingField")) == card else { throw ReadFailure("changing","Arena is replacing a displayed card.") }
             try append(r.cardID(card),1,"pack",q)
         }
         try require(rows.count == views.count, "Arena's pack is outside the current viewport.")
@@ -163,7 +164,6 @@ private final class ArenaGeometry {
     func deck(_ nav: UInt64) throws -> [String: Any] {
         let widget=try r.field(nav,"editor","_deckbuilder","widget")
         let pool=try r.field(widget,"widget","_poolCardHolder","pool_holder")
-        guard try !r.flag(pool,"pool_holder","_isScrolling") else { throw ReadFailure("changing","Arena is changing card pages.") }
         let pages=try r.listObjects(m.pointer(pool+p.offset("pool_holder","_pages")),maximum:12)
         for page in pages {
             try r.check(page,"pool_page")
@@ -175,6 +175,7 @@ private final class ArenaGeometry {
                 if card == 0 { continue }
                 if try r.flag(view,"meta_card_view","<IsDragging>k__BackingField") { throw ReadFailure("changing","A card is being moved.") }
                 let q=try cardRect(view)
+                guard try m.pointer(view+p.offset("meta_card_view","_cardData")) == card else { throw ReadFailure("changing","Arena is replacing a pool card.") }
                 let area=try uiRect(native(m.pointer(pool+p.offset("pool_holder","_rectTransform"))))
                 try append(r.cardID(card),1,"pool",q,clip:area)
             }
@@ -190,6 +191,8 @@ private final class ArenaGeometry {
                 if count <= 0 { continue }
                 let card=try m.pointer(view+p.offset("meta_card_view","_cardData"))
                 let q=try uiRect(transform(native(view)))
+                guard try m.pointer(view+p.offset("meta_card_view","_cardData")) == card,
+                      try integer(m.read(view+p.offset("list_row","<Quantity>k__BackingField"),4),0,Int32.self) == count else { throw ReadFailure("changing","Arena is updating a deck row.") }
                 try append(r.cardID(card),UInt64(count),"deck",q,clip:area)
             }
         }
@@ -197,7 +200,6 @@ private final class ArenaGeometry {
         if try active(native(columns)) {
             let manager=try r.field(columns,"column_view","MainHolder","draft_column_holder")
             let area=try clip(m.pointer(manager+p.offset("column_manager","scrollRect")))
-            var groups: [[(UInt64,UInt64,ArenaRect)]]=[], spacing: Double?
             for column in try r.listObjects(m.pointer(manager+p.offset("column_manager","_allColumns")),maximum:16) {
                 try r.check(column,"column_holder")
                 var cards: [(UInt64,UInt64,ArenaRect)]=[]
@@ -208,19 +210,20 @@ private final class ArenaGeometry {
                     if count <= 0 { continue }
                     guard try !r.flag(view,"meta_card_view","<IsDragging>k__BackingField") else { throw ReadFailure("changing","A card is being moved.") }
                     let card=try m.pointer(view+p.offset("meta_card_view","_cardData"))
-                    cards.append((try r.cardID(card),UInt64(count),try cardRect(view)))
+                    let q=try cardRect(view)
+                    guard try m.pointer(view+p.offset("meta_card_view","_cardData")) == card,
+                          try integer(m.read(view+p.offset("column_card","_quantity"),4),0,Int32.self) == count else { throw ReadFailure("changing","Arena is updating a deck card.") }
+                    cards.append((try r.cardID(card),UInt64(count),q))
                 }
                 cards.sort { $0.2.top > $1.2.top }
-                for pair in zip(cards,cards.dropFirst()) {
-                    let delta=pair.0.2.top-pair.1.2.top
-                    if delta > 1 { spacing=min(spacing ?? delta,delta) }
+                for (index,card) in cards.enumerated() {
+                    let (id,count,q)=card
+                    // Only the next card occludes this entry. The front card,
+                    // including a single-card column, keeps its full collider.
+                    let height=index+1 < cards.count ? min(q.h,q.top-cards[index+1].2.top) : q.h
+                    guard height > 0.5 else { throw ReadFailure("changing","Arena is arranging the deck columns.") }
+                    try append(id,count,"column",ArenaRect(x:q.x,y:q.top-height,w:q.w,h:height),clip:area)
                 }
-                groups.append(cards)
-            }
-            if let spacing=spacing {
-                for cards in groups { for (id,count,q) in cards {
-                    try append(id,count,"column",ArenaRect(x:q.x,y:q.top-min(q.h,spacing),w:q.w,h:min(q.h,spacing)),clip:area)
-                } }
             }
         }
         return result()

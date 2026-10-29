@@ -3,7 +3,7 @@ package com.firstpick.overlay
 import com.firstpick.core.Log
 import java.io.File
 
-data class WindowBounds(val x: Int, val y: Int, val w: Int, val h: Int, val frontmost: Boolean = false)
+data class WindowBounds(val x: Int, val y: Int, val w: Int, val h: Int, val frontmost: Boolean = false, val backingScale: Double? = null)
 
 class WindowLocator(
     private val appName: String = "MTGA",
@@ -31,7 +31,9 @@ class WindowLocator(
             val w = int("w") ?: return null
             val h = int("h") ?: return null
             val frontmost = json.contains("\"frontmost\":true")
-            return WindowBounds(x, y, w, h, frontmost)
+            val scale = Regex("\"backingScale\"\\s*:\\s*([0-9.]+)").find(json)?.groupValues?.get(1)
+                ?.toDoubleOrNull()?.takeIf { it.isFinite() && it in 1.0..4.0 }
+            return WindowBounds(x, y, w, h, frontmost, scale)
         }
 
         private fun extractHelper(): File? = NativeHelpers.extract(RESOURCE, "window-locator")

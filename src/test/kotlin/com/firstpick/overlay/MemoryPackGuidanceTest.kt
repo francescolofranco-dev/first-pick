@@ -46,7 +46,20 @@ class MemoryPackGuidanceTest {
         session.invalidate()
         assertIs<MemoryPackValidation.Rejected>(session.observe(raw, cards, pool, 450))
         assertIs<MemoryPackValidation.Ready>(session.observe(raw, cards, pool, 600))
-        assertIs<MemoryPackValidation.Rejected>(session.observe(raw, cards, pool, 1600))
+        assertIs<MemoryPackValidation.Ready>(session.observe(raw, cards, pool, 1600))
+        assertIs<MemoryPackValidation.Rejected>(session.observe(raw, cards, pool, 4000))
+    }
+
+    @Test fun movingGeometryAndFastPollingDoNotRevalidateAnUnchangedPack() {
+        val session = MemoryPackGuidanceSession { names }
+        session.observe(raw, cards, pool, 0)
+        assertIs<MemoryPackValidation.Ready>(session.observe(raw, cards, pool, 150))
+        for (time in 250L..2000L step 100) {
+            val geometry = ArenaCardGeometry(2560, 1440, raw.cards.mapIndexed { i, id ->
+                ArenaVisibleCard(id, 1, ArenaCardZone.PACK, NormalizedRect(.1 + i * .2, .2 + time / 100000.0, .1, .3))
+            })
+            assertIs<MemoryPackValidation.Ready>(session.observe(raw.copy(geometry = geometry), cards, pool, time))
+        }
     }
 
     @Test fun boundedDraftPayloadsAllowDuplicatesButRejectPartialAndInvalidIds() {

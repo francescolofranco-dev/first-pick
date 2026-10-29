@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "verified_at_utc": "2026-10-29T20:20:04.189706+00:00",
+  "firstpick_version": "3.3.0",
+  "arena_version": "2026.64.50",
+  "architecture": "arm64",
+  "read_api": "task_read_for_pid",
+  "verification": {
+    "app_tests": {
+      "tests": 475,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "native_tests_passed": 16,
+    "optimized_production_build_passed": true,
+    "installed_signature_verified": true,
+    "installed_artifacts": {
+      "Contents/Helpers/arena-memory": {
+        "sha256": "0dbef0a686d9e61fb769eca621c0d22b35990858d04ba54262ad58fdb4fd44ea",
+        "cdhash": "aaee5025e41bd403017189ab5df054ebe130b02f",
+        "code_directory_matches_tested_build": true
+      },
+      "Contents/Helpers/window-locator": {
+        "sha256": "cccf25b735a9b6238385d4f8129ddaf757c7a892a64cb9310c5cf62b51530046",
+        "cdhash": "cbce93387e8560b50908944f3f17da279633d6b7",
+        "code_directory_matches_tested_build": true
+      },
+      "Contents/app/FirstPick-3.3.0-e68cefaf5b2e7f97185f5fb5a5f149fe.jar": {
+        "sha256": "a487c5edf0ea764f3c46159e6926390762ff049d869d160d8f9044172f0e8075",
+        "all_entries_match_tested_build": true
+      }
+    },
+    "artifact_comparison_note": "Repackaging changes ZIP timestamps and signature envelopes; all JAR entries and both native CodeDirectory hashes match.",
+    "screen_recognition_helpers_absent": true,
+    "authorized_typed_connection_live_status": "outside_builder",
+    "card_edits_during_verification": false
+  },
+  "coverage": [
+    "Native synthetic horizontal exposed bands, full front cards and single-card columns",
+    "Native synthetic complete vertical rows, clipped viewports, exact card identities and quantities",
+    "Renderer full-card and row tint opacity, boundary containment and aggregate named-land summary",
+    "Semantic validation independent of positions, retained advice through isolated misses, real pack/editor invalidation",
+    "Independent position expiry and same-aspect resize rejection",
+    "Reconnection button recovery after an unsupported response"
+  ],
+  "limits": [
+    "Live deck-layout visual acceptance is pending: Arena remains at Home and OS metadata reports it as background despite automation activation attempts.",
+    "Live positioned-draft acceptance remains deferred until an open pack is available.",
+    "The agreed 95%-within-500-ms input-to-visible target is unmeasured. Opt-in diagnostics report read-to-composition timing only.",
+    "Fullscreen, alternate window sizes and live hover/scroll acceptance have not been exercised with version 3.3.0."
+  ]
+}

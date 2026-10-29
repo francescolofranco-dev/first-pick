@@ -10,7 +10,7 @@ import kotlin.test.assertTrue
 
 class DeckBadgeRenderTest {
     @Test
-    fun badgesRenderOutsideCardNamesAndArtwork() {
+    fun highlightsFillCardsRowsAndFrontCardsWithoutDetachedLabels() {
         val model = DeckGuidanceOverlayModel(
             status = DeckGuidanceStatus.NEEDS_CHANGES,
             remainingAdds = 2,
@@ -20,7 +20,8 @@ class DeckBadgeRenderTest {
                 DeckGuidanceVisualMark.AddCard(NormalizedRect(0.78, 0.40, 0.21, 0.04), inDeckList = true),
                 DeckGuidanceVisualMark.RemoveRow(NormalizedRect(0.78, 0.45, 0.21, 0.04), 2),
                 DeckGuidanceVisualMark.AddCard(NormalizedRect(0.03, 0.28, 0.13, 0.33)),
-                DeckGuidanceVisualMark.RemoveRow(NormalizedRect(0.54, 0.40, 0.01, 0.035), 1, compact = true),
+                DeckGuidanceVisualMark.RemoveRow(NormalizedRect(0.54, 0.40, 0.1, 0.035), 1, compact = true),
+                DeckGuidanceVisualMark.RemoveRow(NormalizedRect(0.54, 0.5, 0.1, 0.25), 1, compact = true),
             ),
         )
         val output = File("build/reports/deck-badges.png")
@@ -31,15 +32,11 @@ class DeckBadgeRenderTest {
             image.encodeToData()!!.use { output.writeBytes(it.bytes) }
         }
         val image = ImageIO.read(output)
-        // Card interiors and names stay completely clear, including pool artwork.
-        for ((x, y) in listOf(1040 to 310, 1040 to 345, 90 to 250, 90 to 400)) {
-            assertEquals(0, image.getRGB(x, y) ushr 24)
+        for ((x, y) in listOf(1040 to 310, 1040 to 345, 90 to 250, 90 to 400, 720 to 308, 720 to 420)) {
+            assertTrue(image.getRGB(x, y) ushr 24 in 40..60)
         }
-        assertTrue(image.getRGB(980, 310) ushr 24 > 0)
-        assertTrue(image.getRGB(980, 344) ushr 24 > 0)
-        assertTrue(image.getRGB(60, 191) ushr 24 > 0)
-        assertTrue(image.getRGB(698, 308) ushr 24 > 0)
-        assertEquals(0, image.getRGB(687, 308) ushr 24)
-        assertEquals(0, image.getRGB(720, 308) ushr 24)
+        for ((x,y) in listOf(980 to 310, 980 to 344, 60 to 191, 687 to 308, 850 to 420))
+            assertEquals(0, image.getRGB(x,y) ushr 24)
+        assertEquals("Add 2 cards · Cut 1 card · Add 1 Forest", summaryText(model).text)
     }
 }

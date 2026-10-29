@@ -5,7 +5,7 @@ import com.firstpick.cards.isBasicLandName
 
 internal sealed interface MemoryDeckValidation {
     data class Ready(val editorSession: String, val deck: DeckSnapshot, val names: Map<Int, String> = emptyMap()) : MemoryDeckValidation
-    data class Rejected(val reason: String) : MemoryDeckValidation
+    data class Rejected(val reason: String, val settling: Boolean = false) : MemoryDeckValidation
 }
 
 /** Full pool equality binds a live editor to this draft; a shared card name is insufficient. */
@@ -41,27 +41,29 @@ internal fun validateMemoryDeck(
     return MemoryDeckValidation.Ready(snapshot.editorSession, DeckSnapshot(cards, snapshot.total), names)
 }
 
-/** Require a second stable poll before publishing an edit; never retain old instructions across a gap. */
+/** Confirm semantic edits independently of position updates. */
 internal class MemoryDeckGuidanceSession(
     private val resolver: (Set<Int>) -> Map<Int, String> = ArenaCardNameResolver()::resolveAll,
 ) {
     private var candidate: MemoryDeckValidation.Ready? = null
     private var candidateAtMs = 0L
+    private var confirmed = false
 
     fun observe(raw: ArenaMemoryDeck, pool: List<DeckCardCount>, nowMs: Long): MemoryDeckValidation {
         val ids = (raw.main + raw.pool).mapTo(HashSet()) { it.grpId }
         val current = validateMemoryDeck(raw, pool, resolver(ids))
         if (current !is MemoryDeckValidation.Ready) { invalidate(); return current }
         if (candidate != current || nowMs - candidateAtMs > 2000) {
-            candidate = current; candidateAtMs = nowMs
-            return MemoryDeckValidation.Rejected("Checking recent changes in Arena.")
+            candidate = current; candidateAtMs = nowMs; confirmed = false
+            return MemoryDeckValidation.Rejected("Checking recent changes in Arena.", settling = true)
         }
-        if (nowMs - candidateAtMs < 120) return MemoryDeckValidation.Rejected("Checking recent changes in Arena.")
+        if (!confirmed && nowMs - candidateAtMs < 120) return MemoryDeckValidation.Rejected("Checking recent changes in Arena.", settling = true)
+        confirmed = true
         candidateAtMs = nowMs
         return current
     }
 
-    fun invalidate() { candidate = null; candidateAtMs = 0 }
+    fun invalidate() { candidate = null; candidateAtMs = 0; confirmed = false }
 }
 
 internal fun memoryGuidanceModel(target: List<DeckCardCount>, deck: DeckSnapshot): DeckGuidanceOverlayModel {
