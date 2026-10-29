@@ -16,12 +16,14 @@ unanswered recommendations in this document.
 - Attach small Add/Cut markers to relevant deck-builder cards.
 - Identify the specific basic lands to add or cut.
 - Make the overlay accurate, responsive and steady during ordinary interaction.
+- This pass improves overlay quality without changing the card-ranking or
+  deck-recommendation algorithms (Q1 confirmed by the user).
 
 ## Design tree
 
 - Scope and success criteria
   - Q1: Improve overlay quality while preserving recommendation algorithms?
-    - Pending user decision.
+    - Confirmed: Yes. Focus on overlay quality.
     - Next: define measurable accuracy, stability and response-time gates.
 - Interaction boundary
   - Q2: Keep all in-game marks click-through and put controls in FirstPick?
@@ -75,7 +77,7 @@ unanswered recommendations in this document.
 
 Q1: Should this pass improve stability, readability and responsiveness while
 keeping ranking and deck-recommendation algorithms unchanged?
-Recommendation: Yes. Answer: pending.
+Recommendation: Yes. Answer: Yes—focus on overlay quality.
 
 Q2: Should the in-game overlay remain entirely click-through, with controls,
 explanations and troubleshooting in FirstPick?
