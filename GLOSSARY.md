@@ -41,6 +41,6 @@ The grade and numerical advisor score displayed beside an individual draft card.
 FirstPick's contextual assessment of a card as a draft choice, taking the
 player's drafted cards into account.
 
-**Add/Cut marker**:
-The instruction attached to a card that needs to be added to or removed from the
-current deck.
+**Add/Cut highlight**:
+A translucent marking across a card's name area: green indicates copies to add
+to the current deck, and red indicates copies to cut.

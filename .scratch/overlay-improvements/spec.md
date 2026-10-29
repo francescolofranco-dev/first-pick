@@ -13,7 +13,9 @@ unanswered recommendations in this document.
 - Support both horizontal and vertical deck layouts automatically.
 - Put draft grades and scores at the bottom of individual cards using the score
   badge presentation.
-- Attach small Add/Cut markers to relevant deck-builder cards.
+- Highlight the full name area of relevant deck-builder cards with a
+  translucent green background for Add and red for Cut, keeping Arena's name
+  readable. This supersedes the earlier request for small detached labels.
 - Identify the specific basic lands to add or cut.
 - Make the overlay accurate, responsive and steady during ordinary interaction.
 - This pass improves overlay quality without changing the card-ranking or
@@ -37,9 +39,13 @@ unanswered recommendations in this document.
     - Confirmed for this iteration. In-game hover explanations are deferred.
     - Controls, explanations and troubleshooting belong in FirstPick for now.
 - Presentation, anchored by the settled card-attached design
-  - Q4: Show exact copy differences with compact alternatives in tight spaces?
-    - Pending user decision.
-    - Next: settle behavior when no readable, non-overlapping placement fits.
+  - Q4 presentation: use translucent green/red Add/Cut highlights over names?
+    - Confirmed by the user. Replace detached labels in the deck builder;
+      draft score badges remain unchanged.
+  - Q4 copy precision: include exact copy differences with these highlights?
+    - Pending user decision; do not assume the visual-style decision settles it.
+    - Next: settle placement, clipping and crowded-name behavior using verified
+      title-area geometry for both layouts and pool cards.
   - Q5: Use compact summaries and fade successful completion?
     - Pending user decision.
     - Next: define discovery of needed cards hidden by scrolling or filtering.
@@ -83,7 +89,19 @@ unanswered recommendations in this document.
   presentation for these cases. See
   ../../src/main/kotlin/com/firstpick/overlay/DeckGuidanceOverlay.kt and
   ../../native/macos/arena-geometry.swift.
-- Deck guidance knows exact copy differences but its card-attached markers omit
+- Precise title-area rectangles are not exposed by the production snapshot.
+  Vertical whole-row and frame-image rectangles have live evidence; installed
+  static metadata also identifies a separate name-text field. For pool and
+  stacked cards, static metadata identifies renderer parts and Title/AltTitle
+  text fillers. These are candidates for a memory-only title-geometry prototype,
+  not proven live title positions. Validate the active title/face and clipping
+  before claiming support for precise name-area highlights.
+- The external overlay draws above Arena's rendered content; it cannot insert
+  a background layer beneath Arena's own text. Use a translucent tint over the
+  name area and verify legibility on different card frames, selection and hover
+  states. The intended visual effect is a highlighted nameplate, without
+  changing Arena's text or covering its quantity counter and mana symbols.
+- Deck guidance knows exact copy differences but its current card markers omit
   those numbers. Filters can hide cards that need adding while the aggregate
   summary remains correct. The need for a discovery aid is an open design
   question, not a decision to restore the previously removed permanent list.
@@ -125,6 +143,13 @@ open.
 
 Q4: Should deck markers show exact copy changes, using Add 2/Cut 1 when space
 allows and +2/−1 in tight spaces, without covering names, counters or controls?
+The user instead specified a stronger visual presentation: a translucent green
+or red background wrapping the whole card name area for Add or Cut. Adopt that
+presentation instead of detached labels. The separate question of displaying
+exact copy changes remains open.
+
+Q4 follow-up: Should a highlighted card also have a small +2/−1 copy-change
+indicator, leaving its name and Arena's existing quantity counter readable?
 Recommendation: Yes. Answer: pending.
 
 Q5: Should normal drafting show score badges only and deck building show
