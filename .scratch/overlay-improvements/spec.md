@@ -27,6 +27,9 @@ unanswered recommendations in this document.
   the overlay to blink. Keep verified advice steady and replace it only when a
   confirmed card or position change requires an update. Routine clearing and
   reappearing is not acceptable (Q3 clarified by the user).
+- Use a compact deck summary with named basic-land changes. When the current
+  deck matches the suggested build, briefly confirm success and fade that
+  summary; detailed lists and troubleshooting stay in FirstPick (Q5 confirmed).
 
 ## Design tree
 
@@ -47,7 +50,8 @@ unanswered recommendations in this document.
     - Next: settle placement, clipping and crowded-name behavior using verified
       title-area geometry for both layouts and pool cards.
   - Q5: Use compact summaries and fade successful completion?
-    - Pending user decision.
+    - Confirmed: Yes. Show named land changes; briefly confirm and fade when
+      the deck matches. Keep detailed lists and troubleshooting in FirstPick.
     - Next: define discovery of needed cards hidden by scrolling or filtering.
 - Transitions and recovery
   - Q3: Maintain steady advice throughout ordinary interaction?
@@ -156,4 +160,4 @@ Q5: Should normal drafting show score badges only and deck building show
 markers plus a compact summary with named basic-land changes? Briefly confirm a
 matching deck and then fade that message; keep detailed lists and troubleshooting
 in FirstPick.
-Recommendation: Yes. Answer: pending.
+Recommendation: Yes. Answer: Yes, confirmed explicitly for question five.
