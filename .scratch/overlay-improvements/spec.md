@@ -30,6 +30,12 @@ unanswered recommendations in this document.
 - Use a compact deck summary with named basic-land changes. When the current
   deck matches the suggested build, briefly confirm success and fade that
   summary; detailed lists and troubleshooting stay in FirstPick (Q5 confirmed).
+- Include the exact remaining copy change, such as +2 or −1, alongside each
+  Add/Cut highlight, keeping the name and Arena's quantity counter readable
+  (Q4 confirmed). This is the change to make, not the current quantity.
+- Withdraw affected advice for actual card/editor changes or a sustained loss
+  of trustworthy data, never merely for hovering or one missed reading. Use
+  small, plain-language recovery notices with details in FirstPick (Q6 confirmed).
 
 ## Design tree
 
@@ -46,23 +52,31 @@ unanswered recommendations in this document.
     - Confirmed by the user. Replace detached labels in the deck builder;
       draft score badges remain unchanged.
   - Q4 copy precision: include exact copy differences with these highlights?
-    - Pending user decision; do not assume the visual-style decision settles it.
-    - Next: settle placement, clipping and crowded-name behavior using verified
-      title-area geometry for both layouts and pool cards.
+    - Confirmed: Yes. Use a small signed copy-change indicator clear of names
+      and Arena's quantity counters.
+    - Q7: settle behavior when a needed highlight cannot be shown readably.
+      Precise title-area geometry is a technical verification task.
   - Q5: Use compact summaries and fade successful completion?
     - Confirmed: Yes. Show named land changes; briefly confirm and fade when
       the deck matches. Keep detailed lists and troubleshooting in FirstPick.
-    - Next: define discovery of needed cards hidden by scrolling or filtering.
+    - Q7: show accurate totals and a pointer to FirstPick when needed changes
+      are off-screen, filtered out or cannot be shown readably?
+      - Pending user decision.
 - Transitions and recovery
   - Q3: Maintain steady advice throughout ordinary interaction?
     - Confirmed with a correction: do not use brief disappearance and recovery
       as the default behavior. Only confirmed changes should update the overlay.
-    - Next: distinguish real pack/editor changes and lost access from ordinary
-      motion; decide exceptional stale-advice handling and recovery thresholds.
+    - Q6: withdraw affected advice only for actual card/editor changes or a
+      sustained loss of trustworthy data, using compact recovery notices?
+      - Confirmed: Yes. Ordinary motion and a single missed read are not
+        reasons to withdraw advice.
 - Acceptance
-  - Depends on Q3–Q5: agree on measurable coverage and release gates for
-    drafting and both deck layouts, including resizing and actual interaction
-    sequences.
+  - Q8: verify normal interaction across drafting and both deck layouts, with
+    zero incorrect card/copy markings or routine blinking and a measured target
+    of 95% of updates within 500 ms after Arena settles?
+    - Pending user decision. These are proposed targets, not measured results.
+    - Live positioned draft-badge acceptance remains pending until a pack is
+      available, as the user previously requested.
 
 ## Deferred enhancements
 
@@ -107,8 +121,8 @@ unanswered recommendations in this document.
   changing Arena's text or covering its quantity counter and mana symbols.
 - Deck guidance knows exact copy differences but its current card markers omit
   those numbers. Filters can hide cards that need adding while the aggregate
-  summary remains correct. The need for a discovery aid is an open design
-  question, not a decision to restore the previously removed permanent list.
+  summary remains correct. Q7 addresses a discovery aid without assuming a
+  return to the previously removed permanent in-game list.
 - Score badges use the same contextual advisor score as FirstPick's pack view.
   That score can incorporate the drafted pool and optional PickNet reranking;
   it is not the rating another companion prints inside Arena.
@@ -154,10 +168,31 @@ exact copy changes remains open.
 
 Q4 follow-up: Should a highlighted card also have a small +2/−1 copy-change
 indicator, leaving its name and Arena's existing quantity counter readable?
-Recommendation: Yes. Answer: pending.
+Recommendation: Yes. Answer: Yes, confirmed after question five was settled.
 
 Q5: Should normal drafting show score badges only and deck building show
 markers plus a compact summary with named basic-land changes? Briefly confirm a
 matching deck and then fade that message; keep detailed lists and troubleshooting
 in FirstPick.
 Recommendation: Yes. Answer: Yes, confirmed explicitly for question five.
+
+## Round 3
+
+Q6: Should affected advice be withdrawn only when cards/editor actually change
+or trustworthy data is lost for a sustained period, never for ordinary hovering
+or one missed reading? Use small, plain-language recovery notices with details
+in FirstPick. This does not relax the no-blinking requirement for normal use.
+Recommendation: Yes. Answer: Yes—use this behavior.
+
+Q7: If needed changes are off-screen, filtered out or have no readable highlight
+placement, should the compact summary still count them and point to the full
+named list in FirstPick, while preserving card-name and counter legibility?
+Recommendation: Yes. Answer: pending.
+
+Q8: Should acceptance cover drafting and both deck layouts during hovering,
+scrolling, resizing, filtering, duplicate-copy edits and layout changes, requiring
+zero incorrect card/copy markings and no interaction-triggered blinking? Proposed
+response-time target: at least 95% of confirmed updates visible within 500 ms
+after Arena settles. Measure this target; do not present it as achieved in
+advance. Live draft acceptance remains pending until a pack is available.
+Recommendation: Yes. Answer: pending.

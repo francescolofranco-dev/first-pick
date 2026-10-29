@@ -43,4 +43,9 @@ player's drafted cards into account.
 
 **Add/Cut highlight**:
 A translucent marking across a card's name area: green indicates copies to add
-to the current deck, and red indicates copies to cut.
+to the current deck, and red indicates copies to cut. Its signed copy change
+shows how many copies need changing.
+
+**Copy change**:
+The remaining difference between a card's quantity in the current deck and in
+the selected suggested build: +2 means add two copies, and −1 means cut one.
