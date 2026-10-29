@@ -15,7 +15,9 @@ examples as the next step. Hover interactions remain deferred.
   badge presentation.
 - In the pool, highlight the whole card green when copies should be added.
   In the deck, highlight the whole row green for Add or red for Cut; use the
-  exposed entry band in the horizontal stacked layout. Preserve readability.
+  exposed entry band for covered cards in the horizontal stacked layout. Tint
+  the whole card when it is the fully exposed front card of a horizontal stack,
+  including a stack containing just one card. Preserve readability.
   This visual-review decision supersedes name-only tints and detached labels.
 - Identify the specific basic lands to add or cut.
 - Make the overlay accurate, responsive and steady during ordinary interaction.
@@ -54,7 +56,8 @@ examples as the next step. Hover interactions remain deferred.
 - Presentation, anchored by the settled card-attached design
   - Q4 presentation, revised during visual review:
     - Confirmed: whole pool cards green; whole deck rows green/red. In the
-      horizontal layout, tint the full exposed deck-entry band.
+      horizontal layout, tint the exposed band for covered cards and the whole
+      fully exposed front card, green or red as appropriate.
     - Remove individual signed copy-change badges. This supersedes the initial
       Q4 approval of +2/−1 indicators. Draft score badges remain unchanged.
     - Verify full card/entry bounds and clipping, rather than requiring exact
@@ -218,7 +221,9 @@ The confirmed work sequence and acceptance matrix are in
 The conversation examples show the vertical deck builder, horizontal deck
 builder and draft score badges. Following user feedback, the updated deck
 examples use a full-card green wash in the pool and full-row green/red washes
-in the deck, with no individual copy-change badges. Local design options cover
+in the deck, with no individual copy-change badges. After a further correction,
+the horizontal view also tints the whole fully exposed front card in each stack;
+covered entries keep their exposed-band tint. Local design options cover
 tint strength, fine edging and deck completion. The aggregate Add/Cut top bar
 stays compact and does not list individual non-basic card names. The previously
 requested named basic-land instruction remains. Cards and scores are
@@ -228,5 +233,6 @@ or application performance.
 Preview checks cover carousel navigation, no horizontal overflow at 320-pixel
 content width, coherent example deck totals and remaining changes, completion
 highlight removal, whole-card/row tint coverage, removal of individual change
-badges, and tint/draft-badge-size controls. Production acceptance remains the
-work described in the implementation plan.
+badges, full front-card versus covered-band tint coverage, and tint/draft-badge-size
+controls. Production acceptance remains the work described in the implementation
+plan.

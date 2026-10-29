@@ -34,6 +34,11 @@ card columns.
 Arena's deck-builder arrangement with the card pool on the left and the deck
 list on the right.
 
+**Front card**:
+The card at the front of a stack in the horizontal deck layout, uncovered by
+other deck cards.
+_Avoid_: First row
+
 **Score badge**:
 The grade and numerical advisor score displayed beside an individual draft card.
 

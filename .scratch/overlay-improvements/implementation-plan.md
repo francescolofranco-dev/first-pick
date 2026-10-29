@@ -12,8 +12,9 @@ the design interview or preview work.
 Drafting keeps a grade and score badge at the bottom of each card. Deck building
 uses a translucent green highlight over whole pool cards that need adding and
 over whole deck rows needing additional copies; deck rows needing cuts are red.
-The horizontal deck layout uses the full exposed entry band. There are no
-individual +1/+2/−1 badges. Both layouts remain click-through and preserve
+The horizontal deck layout tints covered entries across their exposed band and
+tints the whole fully exposed front card, including single-card stacks. There
+are no individual +1/+2/−1 badges. Both layouts remain click-through and preserve
 readable native names, quantities and mana symbols.
 
 Ordinary interaction must not make the overlay blink. Confirmed advice stays
@@ -79,8 +80,10 @@ prerequisite for this presentation.
 2. Validate complete pool-card bounds and clip the green wash to the card and
    actual pool viewport. A pool-only card must never receive a red deck-cut cue.
 3. Validate the full exposed deck-entry bands in horizontal stacks. Handle
-   sparse columns and columns containing one card explicitly; the current
-   spacing-derived geometry must not silently omit these entries.
+   the frontmost fully exposed card as a full-card tint, not a header band.
+   Validate actual stack order and occlusion; do not let an exposed-band cap
+   truncate that front card. Single-card stacks also use their whole card.
+   The current spacing-derived geometry must not silently omit sparse entries.
 4. Keep exact card ID, quantity, viewport and geometry in a coherent observation.
    Include typed reasons for unavailable geometry for both draft and deck views.
 5. Verify full bounds and clipping during scrolling, selection/hover, resizing,
@@ -100,6 +103,9 @@ from screenshots or fixed fractions and claim the highlight is finished.
 - Replace detached deck labels with the agreed translucent whole-card/row
   treatment. Arena's text is already rendered beneath the external overlay;
   choose tint opacity and a restrained edge treatment that preserve legibility.
+- In horizontal stacks, apply that tint to the entire fully exposed front card
+  and only the exposed portion of covered cards. Apply this identically to
+  green additions and red cuts, clipped to the actual viewport.
 - Remove individual signed copy-change indicators, keeping Arena's native
   quantity counters and mana symbols readable through the tint.
 - Continue computing exact remaining copy differences for the aggregate bar
@@ -145,7 +151,7 @@ performance results already achieved.
 | --- | --- |
 | Drafting | Hover, selection, card movement, actual next-pack transition, identical copies, pick-two fixtures, score/ID association and unrated cards |
 | Vertical deck layout | Scrolling, filtering, duplicates, single-copy and last-copy changes, basic-land changes, truncated names and readable full-card/row tint |
-| Horizontal deck layout | The same edits, sparse/single-card columns, stacked overlap, exposed-entry clipping and pool scrolling |
+| Horizontal deck layout | The same edits, sparse/single-card columns, full front-card green/red tint, stacked overlap, exposed-entry clipping and pool scrolling |
 | Window and recovery | Window movement, supported size/scale changes, fullscreen, layout switch, focus changes, genuine scene exit, isolated read failures and sustained loss/recovery |
 
 Acceptance requirements:
