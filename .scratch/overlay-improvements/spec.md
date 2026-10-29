@@ -21,6 +21,10 @@ unanswered recommendations in this document.
 - Keep the in-game overlay click-through for this iteration. Interactive
   elements, especially hovering a score badge to explain its rating, are a
   future enhancement (Q2 confirmed by the user).
+- Ordinary hovering, clicking, scrolling and other interaction must not cause
+  the overlay to blink. Keep verified advice steady and replace it only when a
+  confirmed card or position change requires an update. Routine clearing and
+  reappearing is not acceptable (Q3 clarified by the user).
 
 ## Design tree
 
@@ -40,9 +44,11 @@ unanswered recommendations in this document.
     - Pending user decision.
     - Next: define discovery of needed cards hidden by scrolling or filtering.
 - Transitions and recovery
-  - Q3: Keep unaffected advice steady and hide only uncertain positions?
-    - Pending user decision.
-    - Next: define delay thresholds, longer interruptions and lost-access recovery.
+  - Q3: Maintain steady advice throughout ordinary interaction?
+    - Confirmed with a correction: do not use brief disappearance and recovery
+      as the default behavior. Only confirmed changes should update the overlay.
+    - Next: distinguish real pack/editor changes and lost access from ordinary
+      motion; decide exceptional stale-advice handling and recovery thresholds.
 - Acceptance
   - Depends on Q3–Q5: agree on measurable coverage and release gates for
     drafting and both deck layouts, including resizing and actual interaction
@@ -103,11 +109,19 @@ interactive elements and hover explanations for card ratings later.
 
 ## Round 2
 
-Q3: During scrolling, resizing or animations, should unchanged badges stay
-steady, labels with uncertain positions disappear briefly and recover
-automatically, and a small Updating indicator appear only for noticeable delays?
-Reserve prominent warnings for problems requiring user action.
-Recommendation: Yes. Answer: pending.
+Q3 initially proposed brief disappearance of labels with uncertain positions.
+The user rejected interaction-triggered blinking: the overlay should stay
+steady and only change when a change is confirmed. This supersedes treating
+brief hide-and-restore cycles as normal operation. Ordinary movement alone must
+not be treated as a new pack or trigger a reset of verified advice. Genuine
+pack/editor transitions and longer unavailable readings remain to be designed;
+this decision does not establish that stale ratings may be shown on new cards.
+
+Acceptance requirement: no visible clearing/reappearing cycles caused solely by
+ordinary interaction with unchanged card identities and still-valid positions.
+When positions genuinely change, update the corresponding marks coherently
+without resetting unchanged advice. Exact timing and measurement gates remain
+open.
 
 Q4: Should deck markers show exact copy changes, using Add 2/Cut 1 when space
 allows and +2/−1 in tight spaces, without covering names, counters or controls?
