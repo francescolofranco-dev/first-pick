@@ -18,6 +18,9 @@ unanswered recommendations in this document.
 - Make the overlay accurate, responsive and steady during ordinary interaction.
 - This pass improves overlay quality without changing the card-ranking or
   deck-recommendation algorithms (Q1 confirmed by the user).
+- Keep the in-game overlay click-through for this iteration. Interactive
+  elements, especially hovering a score badge to explain its rating, are a
+  future enhancement (Q2 confirmed by the user).
 
 ## Design tree
 
@@ -27,16 +30,30 @@ unanswered recommendations in this document.
     - Next: define measurable accuracy, stability and response-time gates.
 - Interaction boundary
   - Q2: Keep all in-game marks click-through and put controls in FirstPick?
-    - Pending user decision.
-    - Next: decide where explanations, settings and recovery actions belong.
+    - Confirmed for this iteration. In-game hover explanations are deferred.
+    - Controls, explanations and troubleshooting belong in FirstPick for now.
 - Presentation, anchored by the settled card-attached design
-  - Next: define information density, visual hierarchy and crowded-card behavior.
+  - Q4: Show exact copy differences with compact alternatives in tight spaces?
+    - Pending user decision.
+    - Next: settle behavior when no readable, non-overlapping placement fits.
+  - Q5: Use compact summaries and fade successful completion?
+    - Pending user decision.
+    - Next: define discovery of needed cards hidden by scrolling or filtering.
 - Transitions and recovery
-  - Next: decide presentation during scrolling, animations, layout changes,
-    stale reads, focus changes and lost access.
+  - Q3: Keep unaffected advice steady and hide only uncertain positions?
+    - Pending user decision.
+    - Next: define delay thresholds, longer interruptions and lost-access recovery.
 - Acceptance
-  - Next: agree on coverage for drafting and both deck layouts, including
-    resizing and actual interaction sequences.
+  - Depends on Q3–Q5: agree on measurable coverage and release gates for
+    drafting and both deck layouts, including resizing and actual interaction
+    sequences.
+
+## Deferred enhancements
+
+- Hovering a score badge to explain the advisor score and its contributing
+  factors. The user explicitly wants to keep the current iteration simple;
+  this is not authorization to introduce in-game interaction now.
+- Other interactive overlay elements, to be designed separately when needed.
 
 ## Current evidence
 
@@ -81,4 +98,23 @@ Recommendation: Yes. Answer: Yes—focus on overlay quality.
 
 Q2: Should the in-game overlay remain entirely click-through, with controls,
 explanations and troubleshooting in FirstPick?
+Recommendation: Yes. Answer: Keep it simple and click-through for now; consider
+interactive elements and hover explanations for card ratings later.
+
+## Round 2
+
+Q3: During scrolling, resizing or animations, should unchanged badges stay
+steady, labels with uncertain positions disappear briefly and recover
+automatically, and a small Updating indicator appear only for noticeable delays?
+Reserve prominent warnings for problems requiring user action.
+Recommendation: Yes. Answer: pending.
+
+Q4: Should deck markers show exact copy changes, using Add 2/Cut 1 when space
+allows and +2/−1 in tight spaces, without covering names, counters or controls?
+Recommendation: Yes. Answer: pending.
+
+Q5: Should normal drafting show score badges only and deck building show
+markers plus a compact summary with named basic-land changes? Briefly confirm a
+matching deck and then fade that message; keep detailed lists and troubleshooting
+in FirstPick.
 Recommendation: Yes. Answer: pending.

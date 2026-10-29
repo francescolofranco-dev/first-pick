@@ -35,7 +35,11 @@ Arena's deck-builder arrangement with the card pool on the left and the deck
 list on the right.
 
 **Score badge**:
-The grade and numerical score displayed beside an individual draft card.
+The grade and numerical advisor score displayed beside an individual draft card.
+
+**Advisor score**:
+FirstPick's contextual assessment of a card as a draft choice, taking the
+player's drafted cards into account.
 
 **Add/Cut marker**:
 The instruction attached to a card that needs to be added to or removed from the
