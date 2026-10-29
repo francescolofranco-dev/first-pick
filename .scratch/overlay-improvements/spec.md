@@ -36,6 +36,9 @@ unanswered recommendations in this document.
 - Withdraw affected advice for actual card/editor changes or a sustained loss
   of trustworthy data, never merely for hovering or one missed reading. Use
   small, plain-language recovery notices with details in FirstPick (Q6 confirmed).
+- Count changes for off-screen cards in the compact summary. Show their full
+  names and exact copy changes in FirstPick, so scrolling does not hide the
+  remaining work or imply the deck matches (Q7 confirmed after clarification).
 
 ## Design tree
 
@@ -61,7 +64,8 @@ unanswered recommendations in this document.
       the deck matches. Keep detailed lists and troubleshooting in FirstPick.
     - Q7: show accurate totals and a pointer to FirstPick when needed changes
       are off-screen, filtered out or cannot be shown readably?
-      - Pending user decision.
+      - Confirmed after the concrete off-screen example: keep Add 2 cards in
+        the compact overlay and list which cards/how many copies in FirstPick.
 - Transitions and recovery
   - Q3: Maintain steady advice throughout ordinary interaction?
     - Confirmed with a correction: do not use brief disappearance and recovery
@@ -187,7 +191,9 @@ Recommendation: Yes. Answer: Yes—use this behavior.
 Q7: If needed changes are off-screen, filtered out or have no readable highlight
 placement, should the compact summary still count them and point to the full
 named list in FirstPick, while preserving card-name and counter legibility?
-Recommendation: Yes. Answer: pending.
+The user requested clarification. Concrete example: two needed cards are below
+the current pool view; the overlay still says Add 2 cards and FirstPick shows
+which cards/how many copies. Answer: Yes to that clarified behavior.
 
 Q8: Should acceptance cover drafting and both deck layouts during hovering,
 scrolling, resizing, filtering, duplicate-copy edits and layout changes, requiring
@@ -196,3 +202,9 @@ response-time target: at least 95% of confirmed updates visible within 500 ms
 after Arena settles. Measure this target; do not present it as achieved in
 advance. Live draft acceptance remains pending until a pack is available.
 Recommendation: Yes. Answer: pending.
+
+## Implementation proposal
+
+The concrete work sequence and acceptance matrix are in
+[implementation-plan.md](implementation-plan.md). Q8 and confirmation that this
+plan reflects the shared design remain pending before application changes.
