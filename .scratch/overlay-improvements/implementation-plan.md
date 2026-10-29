@@ -1,11 +1,11 @@
 # Overlay improvement implementation proposal
 
-Status: needs-info
+Status: ready-for-agent
 
-This proposal implements the decisions in [spec.md](spec.md). Product behavior
-is agreed through Q7; Q8's verification targets and confirmation of shared
-understanding remain pending. No application behavior has changed during the
-interview.
+This plan implements the confirmed decisions in [spec.md](spec.md), including
+Q8's acceptance targets. The user requested visual examples next. Those examples
+illustrate the proposed appearance; no application behavior has changed during
+the design interview or preview work.
 
 ## Intended result
 
@@ -137,7 +137,7 @@ pixel assertions alone do not establish readability.
 
 ## 6. Acceptance and timing
 
-The following coverage and numerical target are proposed in Q8; they are not
+The following coverage and numerical target were confirmed in Q8; they are not
 performance results already achieved.
 
 | Surface | Required scenarios |
@@ -156,7 +156,7 @@ Acceptance requirements:
 - Card names, Arena quantity counters and mana symbols remain readable; all
   highlights are clipped to the correct card and viewport.
 - Off-screen changes remain counted; success occurs only on a verified match.
-- Proposed response target: at least 95% of confirmed updates appear within
+- Agreed response target: at least 95% of confirmed updates appear within
   500 ms after Arena settles. Record sampling and measurement boundaries, and
   report read-to-render timing separately from action-to-visible-update timing.
 - Test results identify the build, layouts, window sizes and real scenarios
@@ -178,7 +178,9 @@ Acceptance requirements:
   performance-ready without implying the response-time target has passed before
   the interaction benchmark is run.
 
-## Decision still needed
+## Design confirmation
 
-Q8: accept the verification coverage and proposed response target, and confirm
-that this proposal reflects the shared overlay design before implementation.
+The user confirmed the verification coverage, response target and shared
+design, and requested visual examples of the appearance. All interview decisions
+are settled. The examples do not replace the memory-geometry proof, real
+interaction measurements or production acceptance described above.

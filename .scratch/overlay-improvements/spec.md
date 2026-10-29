@@ -1,10 +1,10 @@
 # Overlay improvement design interview
 
-Status: needs-info
+Status: ready-for-agent
 
-This is a working design record for the user's grill-with-docs session. It is
-not an approved implementation plan. No application changes are authorized by
-unanswered recommendations in this document.
+This is the design record for the user's grill-with-docs session. The user has
+confirmed the shared design and Q8's verification targets, and requested visual
+examples as the next step. Hover interactions remain deferred.
 
 ## Settled requirements from the conversation
 
@@ -78,7 +78,7 @@ unanswered recommendations in this document.
   - Q8: verify normal interaction across drafting and both deck layouts, with
     zero incorrect card/copy markings or routine blinking and a measured target
     of 95% of updates within 500 ms after Arena settles?
-    - Pending user decision. These are proposed targets, not measured results.
+    - Confirmed: Yes. These are acceptance targets, not measured results.
     - Live positioned draft-badge acceptance remains pending until a pack is
       available, as the user previously requested.
 
@@ -133,8 +133,8 @@ unanswered recommendations in this document.
 - Native error messages can reach the user directly. Draft geometry failure
   reasons and native elapsed times are not consumed by Kotlin; the deck reader
   does not expose an equivalent geometry failure reason.
-- Response-time targets and live interaction benchmarks have not been agreed
-  or measured for this improvement session.
+- The Q8 response-time target is agreed; live interaction benchmarks have not
+  yet been measured for this improvement session.
 
 ## Round 1
 
@@ -201,10 +201,24 @@ zero incorrect card/copy markings and no interaction-triggered blinking? Propose
 response-time target: at least 95% of confirmed updates visible within 500 ms
 after Arena settles. Measure this target; do not present it as achieved in
 advance. Live draft acceptance remains pending until a pack is available.
-Recommendation: Yes. Answer: pending.
+Recommendation: Yes. Answer: Yes. The user also requested visual examples of the
+agreed design before the next implementation work.
 
 ## Implementation proposal
 
-The concrete work sequence and acceptance matrix are in
-[implementation-plan.md](implementation-plan.md). Q8 and confirmation that this
-plan reflects the shared design remain pending before application changes.
+The confirmed work sequence and acceptance matrix are in
+[implementation-plan.md](implementation-plan.md).
+
+## Visual examples
+
+The conversation examples show the vertical deck builder, horizontal deck
+builder and draft score badges. Deck examples use the same translucent title
+treatment and exact copy changes, with local design options for tint strength,
+fine edging and deck completion. Cards and scores are illustrative, not live
+recommendations. The previews do not prove live title geometry or application
+performance.
+
+Preview checks cover carousel navigation, no horizontal overflow at 320-pixel
+content width, coherent example deck totals and remaining changes, completion
+highlight removal, and tint/badge-size controls. Production acceptance remains
+the work described in the implementation plan.
