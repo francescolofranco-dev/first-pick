@@ -10,10 +10,11 @@ the design interview or preview work.
 ## Intended result
 
 Drafting keeps a grade and score badge at the bottom of each card. Deck building
-uses a translucent green name-area highlight for copies to add and red for
-copies to cut, with a signed change such as +2 or −1. These work in both Arena
-deck layouts, remain click-through, and preserve readable names, quantities and
-mana symbols.
+uses a translucent green highlight over whole pool cards that need adding and
+over whole deck rows needing additional copies; deck rows needing cuts are red.
+The horizontal deck layout uses the full exposed entry band. There are no
+individual +1/+2/−1 badges. Both layouts remain click-through and preserve
+readable native names, quantities and mana symbols.
 
 Ordinary interaction must not make the overlay blink. Confirmed advice stays
 steady; changes to card state and positions update coherently. A compact deck
@@ -65,46 +66,46 @@ preserve advice, and actual identity changes invalidate the affected advice.
 Check both focus recovery and window/viewport alignment, rather than validating
 counts while accidentally rendering them in an old window rectangle.
 
-## 3. Prove precise title geometry through memory
+## 3. Validate complete card and deck-entry geometry through memory
 
-Current production snapshots expose card/row bounds, not precise title-area
-bounds. Treat this as a technical proof before implementing the final tint.
+The latest visual review replaces name-only tints with whole-card and whole-row
+highlights. Production already has live evidence for pool-card colliders and
+complete vertical deck-row bounds, so exact title-text mapping is no longer a
+prerequisite for this presentation.
 
-1. Start with the vertical deck list. Its full row and frame-image rectangles
-   already have live evidence. Review and project the separate name-text field
-   identified in the installed metadata; distinguish text bounds, surrounding
-   nameplate, quantity counter and mana area.
-2. Map the active title renderer for pool cards and horizontal stacked cards.
-   Installed metadata identifies card rendering parts and Title/AltTitle
-   fillers, but the full chain is not yet live-verified. Select the correct
-   active title/face by identity and field type, never the first text object.
-3. Return title/nameplate bounds with the same exact card ID, quantity and
-   observation as the deck state. Include typed reasons for unavailable geometry
-   in both draft and deck observations.
-4. Clip against the actual viewport and exposed stacked-card area. Support sparse
-   columns and columns containing one card without depending on the spacing of
-   other cards to invent a title height.
-5. Validate both layouts, full pool cards, truncated names, alternate faces,
-   selection/hover states and resizing. Reject geometry belonging to another
-   card or a stale viewport.
+1. Validate complete vertical row bounds, including the native quantity and mana
+   regions. Apply a translucent tint over the row rather than adding labels in
+   the gap beside it.
+2. Validate complete pool-card bounds and clip the green wash to the card and
+   actual pool viewport. A pool-only card must never receive a red deck-cut cue.
+3. Validate the full exposed deck-entry bands in horizontal stacks. Handle
+   sparse columns and columns containing one card explicitly; the current
+   spacing-derived geometry must not silently omit these entries.
+4. Keep exact card ID, quantity, viewport and geometry in a coherent observation.
+   Include typed reasons for unavailable geometry for both draft and deck views.
+5. Verify full bounds and clipping during scrolling, selection/hover, resizing,
+   alternate faces and layout switches. Reject another card's geometry or a
+   stale viewport. Do not tint neighboring rows or obscured stacked areas.
 
 Use the existing authorized read-only connection when available. If a process
 restart ends it, the user completes the existing macOS grant flow; this proposal
 does not introduce broader permissions or an alternative screen reader.
 
-If exact title geometry cannot be demonstrated on a surface, keep that support
-explicitly incomplete. Do not approximate its position from screenshots or fixed
-fractions and claim the requested precise highlight is finished.
+If complete, correctly clipped entry geometry cannot be demonstrated on a
+surface, keep that support explicitly incomplete. Do not approximate positions
+from screenshots or fixed fractions and claim the highlight is finished.
 
-## 4. Render name highlights and exact copy changes
+## 4. Render full-card and full-row highlights
 
-- Replace detached deck labels with the agreed translucent green/red name-area
+- Replace detached deck labels with the agreed translucent whole-card/row
   treatment. Arena's text is already rendered beneath the external overlay;
   choose tint opacity and a restrained edge treatment that preserve legibility.
-- Keep quantities and mana symbols clear. Place the signed copy-change indicator
-  in a verified readable area, including at narrow supported window sizes.
-- Show the remaining delta, not the deck's current quantity. Adding one of two
-  required copies changes +2 to +1; matching the target removes that highlight.
+- Remove individual signed copy-change indicators, keeping Arena's native
+  quantity counters and mana symbols readable through the tint.
+- Continue computing exact remaining copy differences for the aggregate bar
+  and FirstPick's detailed comparison. Adding one of two required copies leaves
+  the green highlight in place; adding the second removes it. The aggregate
+  count updates after each confirmed edit.
 - Apply green Add guidance to needed pool cards and red Cut guidance to excess
   deck copies. Existing deck entries needing more copies may also show their
   positive remaining change. Do not mark a sideboard/pool-only card as a deck cut.
@@ -143,14 +144,15 @@ performance results already achieved.
 | Surface | Required scenarios |
 | --- | --- |
 | Drafting | Hover, selection, card movement, actual next-pack transition, identical copies, pick-two fixtures, score/ID association and unrated cards |
-| Vertical deck layout | Scrolling, filtering, duplicates, single-copy and last-copy changes, basic-land changes, truncated names and readable title tint |
-| Horizontal deck layout | The same edits, sparse/single-card columns, stacked overlap, exposed-title clipping and pool scrolling |
+| Vertical deck layout | Scrolling, filtering, duplicates, single-copy and last-copy changes, basic-land changes, truncated names and readable full-card/row tint |
+| Horizontal deck layout | The same edits, sparse/single-card columns, stacked overlap, exposed-entry clipping and pool scrolling |
 | Window and recovery | Window movement, supported size/scale changes, fullscreen, layout switch, focus changes, genuine scene exit, isolated read failures and sustained loss/recovery |
 
 Acceptance requirements:
 
-- No incorrect card association, add/cut direction or copy delta in the test
-  corpus; no stale draft score attached to a new card.
+- No incorrect card association, add/cut direction, aggregate copy total or
+  detailed FirstPick copy delta in the test corpus; no stale draft score
+  attached to a new card. No individual change badges appear in Arena.
 - No visible clearing/reappearing cycles caused solely by normal interaction
   with unchanged card state and still-valid positions.
 - Card names, Arena quantity counters and mana symbols remain readable; all

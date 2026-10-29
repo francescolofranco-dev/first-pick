@@ -42,10 +42,9 @@ FirstPick's contextual assessment of a card as a draft choice, taking the
 player's drafted cards into account.
 
 **Add/Cut highlight**:
-A translucent marking across a card's name area: green indicates copies to add
-to the current deck, and red indicates copies to cut. Its signed copy change
-shows how many copies need changing.
+A translucent marking over a whole pool card or deck entry. Green indicates
+copies to add to the current deck, and red indicates deck copies to cut.
 
 **Copy change**:
-The remaining difference between a card's quantity in the current deck and in
-the selected suggested build: +2 means add two copies, and −1 means cut one.
+The number of copies of a card that must be added or cut to make the current
+deck match the selected suggested build.

@@ -13,9 +13,10 @@ examples as the next step. Hover interactions remain deferred.
 - Support both horizontal and vertical deck layouts automatically.
 - Put draft grades and scores at the bottom of individual cards using the score
   badge presentation.
-- Highlight the full name area of relevant deck-builder cards with a
-  translucent green background for Add and red for Cut, keeping Arena's name
-  readable. This supersedes the earlier request for small detached labels.
+- In the pool, highlight the whole card green when copies should be added.
+  In the deck, highlight the whole row green for Add or red for Cut; use the
+  exposed entry band in the horizontal stacked layout. Preserve readability.
+  This visual-review decision supersedes name-only tints and detached labels.
 - Identify the specific basic lands to add or cut.
 - Make the overlay accurate, responsive and steady during ordinary interaction.
 - This pass improves overlay quality without changing the card-ranking or
@@ -30,9 +31,9 @@ examples as the next step. Hover interactions remain deferred.
 - Use a compact deck summary with named basic-land changes. When the current
   deck matches the suggested build, briefly confirm success and fade that
   summary; detailed lists and troubleshooting stay in FirstPick (Q5 confirmed).
-- Include the exact remaining copy change, such as +2 or −1, alongside each
-  Add/Cut highlight, keeping the name and Arena's quantity counter readable
-  (Q4 confirmed). This is the change to make, not the current quantity.
+- Do not show individual +1/+2/−1 copy-change badges in Arena. The user removed
+  those badges during visual review. Keep aggregate Add/Cut totals in the top
+  bar and exact named changes in FirstPick; native Arena quantity counters stay.
 - Withdraw affected advice for actual card/editor changes or a sustained loss
   of trustworthy data, never merely for hovering or one missed reading. Use
   small, plain-language recovery notices with details in FirstPick (Q6 confirmed).
@@ -51,14 +52,13 @@ examples as the next step. Hover interactions remain deferred.
     - Confirmed for this iteration. In-game hover explanations are deferred.
     - Controls, explanations and troubleshooting belong in FirstPick for now.
 - Presentation, anchored by the settled card-attached design
-  - Q4 presentation: use translucent green/red Add/Cut highlights over names?
-    - Confirmed by the user. Replace detached labels in the deck builder;
-      draft score badges remain unchanged.
-  - Q4 copy precision: include exact copy differences with these highlights?
-    - Confirmed: Yes. Use a small signed copy-change indicator clear of names
-      and Arena's quantity counters.
-    - Q7: settle behavior when a needed highlight cannot be shown readably.
-      Precise title-area geometry is a technical verification task.
+  - Q4 presentation, revised during visual review:
+    - Confirmed: whole pool cards green; whole deck rows green/red. In the
+      horizontal layout, tint the full exposed deck-entry band.
+    - Remove individual signed copy-change badges. This supersedes the initial
+      Q4 approval of +2/−1 indicators. Draft score badges remain unchanged.
+    - Verify full card/entry bounds and clipping, rather than requiring exact
+      title-text rectangles for the revised design.
   - Q5: Use compact summaries and fade successful completion?
     - Confirmed: Yes. Show named land changes; briefly confirm and fade when
       the deck matches. Keep detailed lists and troubleshooting in FirstPick.
@@ -111,18 +111,20 @@ examples as the next step. Hover interactions remain deferred.
   presentation for these cases. See
   ../../src/main/kotlin/com/firstpick/overlay/DeckGuidanceOverlay.kt and
   ../../native/macos/arena-geometry.swift.
-- Precise title-area rectangles are not exposed by the production snapshot.
+- For the earlier name-only design, precise title-area rectangles were not
+  exposed by the production snapshot.
   Vertical whole-row and frame-image rectangles have live evidence; installed
   static metadata also identifies a separate name-text field. For pool and
   stacked cards, static metadata identifies renderer parts and Title/AltTitle
   text fillers. These are candidates for a memory-only title-geometry prototype,
-  not proven live title positions. Validate the active title/face and clipping
-  before claiming support for precise name-area highlights.
+  not proven live title positions. The revised whole-card/whole-row design no
+  longer requires this title-filler mapping; validate complete entry bounds
+  and clipping instead.
 - The external overlay draws above Arena's rendered content; it cannot insert
   a background layer beneath Arena's own text. Use a translucent tint over the
-  name area and verify legibility on different card frames, selection and hover
-  states. The intended visual effect is a highlighted nameplate, without
-  changing Arena's text or covering its quantity counter and mana symbols.
+  full card or row and verify legibility on different card frames, selection and
+  hover states. Arena's own names, quantity counters and mana symbols remain
+  visible through the tint; there are no added per-card quantity labels.
 - Deck guidance knows exact copy differences but its current card markers omit
   those numbers. Filters can hide cards that need adding while the aggregate
   summary remains correct. Q7 addresses a discovery aid without assuming a
@@ -173,6 +175,8 @@ exact copy changes remains open.
 Q4 follow-up: Should a highlighted card also have a small +2/−1 copy-change
 indicator, leaving its name and Arena's existing quantity counter readable?
 Recommendation: Yes. Answer: Yes, confirmed after question five was settled.
+Superseded during visual review: remove those individual badges; use full-card
+and full-row highlights plus the aggregate top bar.
 
 Q5: Should normal drafting show score badges only and deck building show
 markers plus a compact summary with named basic-land changes? Briefly confirm a
@@ -212,13 +216,17 @@ The confirmed work sequence and acceptance matrix are in
 ## Visual examples
 
 The conversation examples show the vertical deck builder, horizontal deck
-builder and draft score badges. Deck examples use the same translucent title
-treatment and exact copy changes, with local design options for tint strength,
-fine edging and deck completion. Cards and scores are illustrative, not live
-recommendations. The previews do not prove live title geometry or application
-performance.
+builder and draft score badges. Following user feedback, the updated deck
+examples use a full-card green wash in the pool and full-row green/red washes
+in the deck, with no individual copy-change badges. Local design options cover
+tint strength, fine edging and deck completion. The aggregate Add/Cut top bar
+stays compact and does not list individual non-basic card names. The previously
+requested named basic-land instruction remains. Cards and scores are
+illustrative, not live recommendations. The previews do not prove live geometry
+or application performance.
 
 Preview checks cover carousel navigation, no horizontal overflow at 320-pixel
 content width, coherent example deck totals and remaining changes, completion
-highlight removal, and tint/badge-size controls. Production acceptance remains
-the work described in the implementation plan.
+highlight removal, whole-card/row tint coverage, removal of individual change
+badges, and tint/draft-badge-size controls. Production acceptance remains the
+work described in the implementation plan.
