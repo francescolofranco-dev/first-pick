@@ -139,6 +139,17 @@ cards. Deterministic interaction tests cover retained advice through isolated
 hover/read interruptions, real identity changes and independently stale positions.
 These checks are not a measured end-to-end interaction benchmark.
 
+A subsequent live horizontal-layout check verified the complete 40-card deck
+with seven visible pool cards and 27 deck entries across seven columns. Every
+geometry record matched the authoritative card IDs and quantities. Covered bands
+do not overlap; each front entry extends below its covered bands and is clipped
+to the viewport. FirstPick reported `Overlay · Synced` and displayed the full
+named changes, including specific basic lands. No cards were changed. The typed
+geometry is saved in `prototypes/arena-memory/verified-steady-overlay-macos-arm64.json`.
+Arena's per-window capture omits the separate overlay window, so this observation
+does not establish final composite appearance. The 3.3.0 vertical follow-up and
+live motion/appearance checks remain pending.
+
 Arena process restarts end the process-bound read connection. The native reader
 now reports an exited process as `arena_closed`, rather than leaving a cached
 unsupported result. FirstPick discards its stale worker and restores the access

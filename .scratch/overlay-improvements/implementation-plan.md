@@ -212,8 +212,16 @@ interaction measurements or production acceptance described above.
 - Added opt-in, bounded read-to-composition diagnostics. No end-to-end latency
   result is claimed. The 95%-within-500-ms target remains unmeasured, and the
   real positioned-draft check remains deferred until a pack is available.
-- The installed application has reconnected through its authorized typed socket.
-  Live deck-layout acceptance is pending Arena foreground activation: it remains
-  at Home, and OS metadata reports it as background despite automation attempts.
-  No cards have been changed. Evidence and explicit untested scenarios are in
+- The subsequent live horizontal check verified the complete 40-card deck,
+  seven pool cards and 27 deck entries across seven columns through the installed
+  application's authorized socket. Every position matched authoritative IDs and
+  quantities. Front entries extend beyond the covered bands and remain clipped
+  to the viewport; exposed entries do not overlap. FirstPick reported
+  `Overlay · Synced` and displayed the complete named copy changes. No cards
+  were changed. Evidence and explicit untested scenarios are in
   `prototypes/arena-memory/verified-steady-overlay-macos-arm64.json`.
+- Arena's capture omits FirstPick's separate overlay window, so the above does
+  not establish final composite appearance. The resumed session found Arena in
+  a match and the previous connection ended. Vertical-layout follow-up, live
+  motion and appearance checks require returning to the deck builder and
+  reconnecting through the existing grant flow.
