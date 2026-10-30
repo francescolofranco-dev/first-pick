@@ -225,3 +225,10 @@ interaction measurements or production acceptance described above.
   a match and the previous connection ended. Vertical-layout follow-up, live
   motion and appearance checks require returning to the deck builder and
   reconnecting through the existing grant flow.
+- A real Quick Draft Pack 1, Pick 1 is now available. After renewing the existing
+  read grant, 500 observations each returned all 14 card IDs and matching ordered
+  rectangles. Catalog names match the visible pack. Native helper times were
+  14 ms median / 17 ms p95 / 24 ms maximum. No picks were made. This verifies the
+  live pack reader; the foreground-probed observations all reported background
+  status. Badge appearance, live motion, alternate layouts and next-pack
+  transitions remain pending, as does the end-to-end response target.

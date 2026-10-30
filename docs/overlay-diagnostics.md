@@ -150,6 +150,17 @@ Arena's per-window capture omits the separate overlay window, so this observatio
 does not establish final composite appearance. The 3.3.0 vertical follow-up and
 live motion/appearance checks remain pending.
 
+The subsequent real Quick Draft pack check recorded 500 typed observations of
+Pack 1, Pick 1. Every reading returned the same complete 14-card pack and 14
+ordered projected rectangles, with an empty picked pool. IDs resolved through
+Arena's local catalog matched all visible names and their pack order. There
+were no missing-position samples. Helper elapsed time was 14 ms median, 17 ms
+at the 95th percentile and 24 ms maximum. These are native observation timings,
+excluding app polling, validation and drawing. All 350 foreground-probed samples
+reported Arena in the background, so this is a static reader check rather than
+foreground visual or hover acceptance. No pick was made. The sanitized results
+and exact geometry are in the same evidence file under `live_draft_followup`.
+
 Arena process restarts end the process-bound read connection. The native reader
 now reports an exited process as `arena_closed`, rather than leaving a cached
 unsupported result. FirstPick discards its stale worker and restores the access

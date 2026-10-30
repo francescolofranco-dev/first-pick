@@ -46,7 +46,7 @@
   ],
   "limits": [
     "Live horizontal typed geometry and Synced health are verified. Final composite highlight appearance, vertical-layout follow-up and live motion checks remain pending.",
-    "Live positioned-draft acceptance remains deferred until an open pack is available.",
+    "Live draft identities and projected bounds passed 500 complete-pack observations. Foreground badge appearance, hover/motion, alternate layouts and next-pack transitions remain unverified.",
     "The agreed 95%-within-500-ms input-to-visible target is unmeasured. Opt-in diagnostics report read-to-composition timing only.",
     "Fullscreen, alternate window sizes and live hover/scroll acceptance have not been exercised with version 3.3.0."
   ],
@@ -398,5 +398,186 @@
       ]
     },
     "visual_limit": "Arena window capture omits the separate FirstPick overlay. This verifies typed positions and app health, not the final composite appearance."
+  },
+  "live_draft_followup": {
+    "recorded_at_utc": "2026-10-30T20:04:58.645259+00:00",
+    "source": "Installed production 3.3.0 helper through its authorized typed socket",
+    "format": "Quick Draft",
+    "pack": 1,
+    "pick": 1,
+    "sample_count": 500,
+    "complete_pack_samples": 500,
+    "ordered_identity_and_geometry_match_samples": 500,
+    "card_count": 14,
+    "picked_count": 0,
+    "identity_variants": 1,
+    "geometry_variants": 1,
+    "screen": [
+      2560,
+      1440
+    ],
+    "card_names_in_order": [
+      "Extrapolate the Impossible",
+      "Koth of the Homestead",
+      "Koth, the Geomancer",
+      "Edgar, Moonlit Sovereign",
+      "Fatehold Charm",
+      "Eye of Jace",
+      "Shatterwing Pegasus",
+      "Mindseeker Oculus",
+      "Protege's Awakening",
+      "Solve for Disappointment",
+      "Chandra's Emberling",
+      "Budding Insurgent",
+      "Konstrari Improviser",
+      "Innovative Commons"
+    ],
+    "geometry": {
+      "cards": [
+        [
+          106284,
+          1,
+          "pack",
+          0.14390124722997974,
+          0.1696958390647893,
+          0.09339808583894112,
+          0.23094437762603662
+        ],
+        [
+          106444,
+          1,
+          "pack",
+          0.245992733982013,
+          0.1696958390647893,
+          0.09339808583894112,
+          0.23094437762603662
+        ],
+        [
+          106493,
+          1,
+          "pack",
+          0.3480842207340462,
+          0.1696958390647893,
+          0.09339808583894112,
+          0.23094437762603662
+        ],
+        [
+          106502,
+          1,
+          "pack",
+          0.45017570748607943,
+          0.1696958390647893,
+          0.09339808583894112,
+          0.23094437762603662
+        ],
+        [
+          106368,
+          1,
+          "pack",
+          0.5522671942381127,
+          0.1696958390647893,
+          0.09339808583894112,
+          0.23094437762603662
+        ],
+        [
+          106415,
+          1,
+          "pack",
+          0.14390124722997974,
+          0.417863806861115,
+          0.09339808583894112,
+          0.23094437762603662
+        ],
+        [
+          106246,
+          1,
+          "pack",
+          0.245992733982013,
+          0.417863806861115,
+          0.09339808583894112,
+          0.23094437762603662
+        ],
+        [
+          106259,
+          1,
+          "pack",
+          0.3480842207340462,
+          0.417863806861115,
+          0.09339808583894112,
+          0.23094437762603662
+        ],
+        [
+          106263,
+          1,
+          "pack",
+          0.45017570748607943,
+          0.417863806861115,
+          0.09339808583894112,
+          0.23094437762603662
+        ],
+        [
+          106296,
+          1,
+          "pack",
+          0.5522671942381127,
+          0.417863806861115,
+          0.09339808583894112,
+          0.23094437762603662
+        ],
+        [
+          106306,
+          1,
+          "pack",
+          0.14390124722997974,
+          0.6660317746574407,
+          0.09339808583894112,
+          0.23094437762603662
+        ],
+        [
+          106332,
+          1,
+          "pack",
+          0.245992733982013,
+          0.6660317746574407,
+          0.09339808583894112,
+          0.23094437762603662
+        ],
+        [
+          106376,
+          1,
+          "pack",
+          0.3480842207340462,
+          0.6660317746574407,
+          0.09339808583894112,
+          0.23094437762603662
+        ],
+        [
+          106427,
+          1,
+          "pack",
+          0.45017570748607943,
+          0.6660317746574407,
+          0.09339808583894112,
+          0.23094437762603662
+        ]
+      ],
+      "screen": [
+        2560,
+        1440
+      ]
+    },
+    "helper_elapsed_ms": {
+      "min": 8,
+      "median": 14.0,
+      "p95": 17,
+      "max": 24
+    },
+    "timing_scope": "Native helper observation only; excludes polling, Kotlin validation, composition and OS presentation. Not an end-to-end benchmark.",
+    "foreground_probe": {
+      "samples": 350,
+      "arena_frontmost_samples": 0
+    },
+    "picks_or_deck_edits_performed": false,
+    "visual_acceptance": "Pending user confirmation: Arena window capture omits the separate FirstPick overlay."
   }
 }
