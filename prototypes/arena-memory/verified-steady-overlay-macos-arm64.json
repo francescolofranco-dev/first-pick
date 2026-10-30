@@ -46,7 +46,7 @@
   ],
   "limits": [
     "Live horizontal typed geometry and Synced health are verified. Final composite highlight appearance, vertical-layout follow-up and live motion checks remain pending.",
-    "Live draft identities and projected bounds passed 500 complete-pack observations. Foreground badge appearance, hover/motion, alternate layouts and next-pack transitions remain unverified.",
+    "Live draft reader and user-reported badge readability/steadiness passed for this 14-card pack. Alternate layouts, actual next-pack transitions and instrumented motion/frame-latency acceptance remain unverified.",
     "The agreed 95%-within-500-ms input-to-visible target is unmeasured. Opt-in diagnostics report read-to-composition timing only.",
     "Fullscreen, alternate window sizes and live hover/scroll acceptance have not been exercised with version 3.3.0."
   ],
@@ -578,6 +578,13 @@
       "arena_frontmost_samples": 0
     },
     "picks_or_deck_edits_performed": false,
-    "visual_acceptance": "Pending user confirmation: Arena window capture omits the separate FirstPick overlay."
+    "visual_acceptance": {
+      "recorded_at_utc": "2026-10-30T20:10:29.088119+00:00",
+      "source": "User observation of the actual foreground overlay",
+      "result": "All 14 were readable and steady",
+      "requested_check": "Keep Arena foreground for about 30 seconds and move across a few cards",
+      "independent_followup_snapshot": "Same complete 14-card pack and empty picked pool; ordered geometry still matches",
+      "instrumented_foreground_motion_or_frame_latency_measurement": false
+    }
   }
 }

@@ -161,6 +161,13 @@ reported Arena in the background, so this is a static reader check rather than
 foreground visual or hover acceptance. No pick was made. The sanitized results
 and exact geometry are in the same evidence file under `live_draft_followup`.
 
+The user subsequently confirmed that all 14 score badges were readable and
+steady during the requested foreground check. A follow-up typed snapshot still
+returned the same complete pack and empty picked pool, with matching ordered
+positions. This supplies visual acceptance for that pack, reported by the user;
+it does not establish next-pack behavior, alternate layouts or instrumented
+motion/frame latency.
+
 Arena process restarts end the process-bound read connection. The native reader
 now reports an exited process as `arena_closed`, rather than leaving a cached
 unsupported result. FirstPick discards its stale worker and restores the access

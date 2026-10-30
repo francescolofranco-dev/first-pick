@@ -230,5 +230,8 @@ interaction measurements or production acceptance described above.
   rectangles. Catalog names match the visible pack. Native helper times were
   14 ms median / 17 ms p95 / 24 ms maximum. No picks were made. This verifies the
   live pack reader; the foreground-probed observations all reported background
-  status. Badge appearance, live motion, alternate layouts and next-pack
-  transitions remain pending, as does the end-to-end response target.
+  status. The user subsequently confirmed all 14 badges were readable and steady
+  during the requested foreground check. A fresh snapshot still matched that
+  complete pack and empty picked pool. Alternate layouts, actual next-pack
+  transitions and instrumented motion checks remain pending, as does the
+  end-to-end response target.
