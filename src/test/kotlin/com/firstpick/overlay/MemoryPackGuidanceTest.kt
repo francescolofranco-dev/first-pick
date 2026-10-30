@@ -5,6 +5,36 @@ import kotlinx.serialization.json.JsonObject
 import kotlin.test.*
 
 class MemoryPackGuidanceTest {
+    @Test fun liveThirteenCardSecondPackRecoversWithoutDroppingOtherScores() {
+        val ids = listOf(106424, 106454, 106250, 106463, 106480, 106314, 106240, 106265, 106285, 106305, 106350, 106411, 75022)
+        val snapshot = ArenaMemoryPack("b".repeat(64), ids, listOf(ArenaCardQuantity(106259, 1)))
+        val recommendations = ids.mapIndexed { index, id ->
+            OverlayCard(if (id == 75022) null else 50.0 + index, null,
+                if (id == 75022) "Island" else "Card $id", originalIndex = index,
+                grpId = if (id == 75022) 106528 else id)
+        }.reversed()
+        val session = MemoryPackGuidanceSession { mapOf(106259 to "Mindseeker Oculus", 75022 to "Island", 106528 to "Island") }
+        val picked = listOf(DeckCardCount("Mindseeker Oculus", 1))
+        session.observe(snapshot, recommendations, picked, 0)
+        for (time in 200L..2000L step 100) {
+            val ready = assertIs<MemoryPackValidation.Ready>(session.observe(snapshot, recommendations, picked, time))
+            assertEquals(ids, ready.cards.map { it.grpId })
+            assertEquals((0..11).map { 50.0 + it } + null, ready.cards.map { it.value })
+        }
+        assertIs<MemoryPackValidation.Rejected>(session.observe(snapshot.copy(cards = ids.toMutableList().apply { this[0] = 999 }), recommendations, picked, 2100))
+    }
+    @Test fun nextPackWithAnArenaSubstitutedBasicPrintingStillPublishesAllBadges() {
+        val next = ArenaMemoryPack("b".repeat(64), listOf(106424, 75022), listOf(ArenaCardQuantity(106259, 1)))
+        val recommendations = listOf(OverlayCard(65.0, null, "Countersculpt", grpId = 106424),
+            OverlayCard(null, null, "Island", grpId = 106528))
+        val session = MemoryPackGuidanceSession { mapOf(106259 to "Mindseeker Oculus", 75022 to "Island", 106528 to "Island") }
+        val picked = listOf(DeckCardCount("Mindseeker Oculus", 1))
+        session.observe(next, recommendations, picked, 0)
+        val ready = assertIs<MemoryPackValidation.Ready>(session.observe(next, recommendations, picked, 200))
+        assertEquals(next.cards, ready.cards.map { it.grpId })
+        assertEquals(listOf(65.0, null), ready.cards.map { it.value })
+        assertIs<MemoryPackValidation.Rejected>(session.observe(next.copy(cards = listOf(106424, 75023)), recommendations, picked, 400))
+    }
     private val cards = listOf(
         OverlayCard(70.0, null, "One", originalIndex = 0, grpId = 1),
         OverlayCard(40.0, null, "Two", originalIndex = 1, grpId = 2),

@@ -15,9 +15,20 @@ internal fun validateMemoryPack(
     pool: List<DeckCardCount>,
     names: Map<Int, String>,
 ): MemoryPackValidation {
-    if (cards.isEmpty() || cards.any { it.grpId <= 0 } ||
-        raw.cards.groupingBy { it }.eachCount() != cards.groupingBy { it.grpId }.eachCount()) {
+    if (cards.isEmpty() || cards.any { it.grpId <= 0 } || raw.cards.size != cards.size) {
         return MemoryPackValidation.Rejected("Waiting for recommendations for Arena's complete current pack.")
+    }
+    val available = cards.sortedBy(OverlayCard::originalIndex).toMutableList()
+    val ordered = raw.cards.map { id ->
+        var index = available.indexOfFirst { it.grpId == id }
+        if (index < 0) {
+            // Arena can display the player's preferred basic-land printing instead
+            // of the printing offered by the draft log. Verify both catalog names.
+            val basic = names[id]?.takeIf(::isBasicLandName)
+            if (basic != null) index = available.indexOfFirst { names[it.grpId] == basic }
+        }
+        if (index < 0) return MemoryPackValidation.Rejected("Waiting for recommendations for Arena's complete current pack.")
+        available.removeAt(index).copy(grpId = id)
     }
     val baseline = pool.filterNot { it.isBasicLand || isBasicLandName(it.name) }
     if (baseline.isEmpty()) {
@@ -27,8 +38,7 @@ internal fun validateMemoryPack(
         !is MemoryDeckValidation.Ready) {
         return MemoryPackValidation.Rejected("Waiting for this draft's current card pool.")
     }
-    val available = cards.groupBy { it.grpId }.mapValues { it.value.sortedBy(OverlayCard::originalIndex).toMutableList() }
-    return MemoryPackValidation.Ready(raw.cards.map { available.getValue(it).removeAt(0) })
+    return MemoryPackValidation.Ready(ordered)
 }
 
 internal class MemoryPackGuidanceSession(
@@ -39,7 +49,8 @@ internal class MemoryPackGuidanceSession(
     private var confirmed = false
 
     fun observe(raw: ArenaMemoryPack, cards: List<OverlayCard>, pool: List<DeckCardCount>, nowMs: Long): MemoryPackValidation {
-        val current = validateMemoryPack(raw, cards, pool, resolver(raw.picked.mapTo(HashSet()) { it.grpId }))
+        val ids = (raw.picked.map { it.grpId } + raw.cards + cards.map { it.grpId }).filter { it > 0 }.toSet()
+        val current = validateMemoryPack(raw, cards, pool, resolver(ids))
         if (current !is MemoryPackValidation.Ready) { invalidate(); return current }
         val identity = raw.copy(geometry = null)
         if (candidate != identity || nowMs - candidateAtMs > 2000) {

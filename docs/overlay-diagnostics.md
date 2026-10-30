@@ -168,6 +168,30 @@ positions. This supplies visual acceptance for that pack, reported by the user;
 it does not establish next-pack behavior, alternate layouts or instrumented
 motion/frame latency.
 
+## Preferred basic printing during a pack transition (3.3.1)
+
+The live second pack exposed a missing case: its log contained Island ID 106528,
+but Arena displayed the preferred Island printing 75022. Both resolve to Island
+in Arena's local catalog. Exact pack-ID equality rejected all recommendations,
+including the twelve other cards. Validation now consumes every recommendation
+once, using exact IDs first and allowing only catalog-verified basic-land
+printing equivalence. Published badge IDs use the actual displayed printing.
+Different non-basic IDs, different basic names and mismatched picked pools still
+fail validation.
+
+The freshness watchdog also replaced an explicit recommendation-waiting reason
+after the presentation had been cleared, alternating the two visible messages.
+With no previous verified advice to expire, it now preserves the explicit reason.
+Regression tests reproduced both failures before the fix and passed afterwards;
+a replay of the actual thirteen-card second-pack IDs preserves all twelve
+numerical scores and the unrated Island across repeated polls.
+
+The optimized 3.3.1 build passes 478 app tests and 16 native tests. Its installed
+JAR and helpers match the tested build and its signature verifies. Rebuilding
+ended the previous process-bound connection; the live visual recheck awaits the
+existing macOS reconnect prompt. Evidence is recorded in
+`prototypes/arena-memory/verified-basic-printing-transition-macos-arm64.json`.
+
 Arena process restarts end the process-bound read connection. The native reader
 now reports an exited process as `arena_closed`, rather than leaving a cached
 unsupported result. FirstPick discards its stale worker and restores the access

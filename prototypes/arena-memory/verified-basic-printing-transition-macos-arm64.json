@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-10-30T20:19:03.899290+00:00",
+  "firstpick_version": "3.3.1",
+  "arena_version": "2026.64.50",
+  "reproduction": {
+    "format": "Quick Draft",
+    "pack": 1,
+    "pick": 2,
+    "displayed_ids": [
+      106424,
+      106454,
+      106250,
+      106463,
+      106480,
+      106314,
+      106240,
+      106265,
+      106285,
+      106305,
+      106350,
+      106411,
+      75022
+    ],
+    "log_basic_id": 106528,
+    "displayed_basic_id": 75022,
+    "both_catalog_names": "Island",
+    "picked_ids": [
+      [
+        106259,
+        1
+      ]
+    ],
+    "symptoms": [
+      "No rating badges after next pack",
+      "Recommendation wait reason alternated with freshness wait reason"
+    ]
+  },
+  "verification": {
+    "regression_tests_failed_before_fix": 2,
+    "full_thirteen_card_replay_passed": true,
+    "numeric_scores_preserved": 12,
+    "unrated_basics_preserved": 1,
+    "different_card_ids_still_rejected": true,
+    "explicit_wait_reason_survives_watchdog": true,
+    "app_tests_passed": 478,
+    "native_tests_passed": 16,
+    "production_build_installed_and_restarted": true,
+    "installed_jar_and_helpers_match_tested_build": true,
+    "signature_verified": true
+  },
+  "live_verification": "Pending completion of the rebuilt app read-only reconnect prompt; no further picks made by the agent."
+}

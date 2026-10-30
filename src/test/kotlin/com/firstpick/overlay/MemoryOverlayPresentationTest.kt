@@ -3,6 +3,13 @@ package com.firstpick.overlay
 import kotlin.test.*
 
 class MemoryOverlayPresentationTest {
+    @Test fun waitingForRecommendationsDoesNotAlternateWithTheFreshReadWatchdog() {
+        val presenter = MemoryOverlayPresentation<String>()
+        val reason = OverlayHealth(OverlayHealthState.READING, "Waiting for recommendations for Arena's complete current pack.")
+        presenter.clear(0, reason)
+        assertEquals(reason, presenter.expire(100).health)
+        assertEquals(reason, presenter.expire(1500).health)
+    }
     private val rect = NormalizedRect(.1, .2, .12, .3)
     private val geometry = ArenaCardGeometry(2560, 1440, listOf(ArenaVisibleCard(1, 1, ArenaCardZone.PACK, rect)))
 

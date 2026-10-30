@@ -55,10 +55,10 @@ internal class MemoryOverlayPresentation<T>(private val retentionMs: Long = 1200
     }
 
     fun expire(nowMs: Long): MemoryOverlayFrame<T> {
-        if (verifiedAt?.let { nowMs - it <= retentionMs } != true) {
+        if (verifiedAt != null && verifiedAt?.let { nowMs - it <= retentionMs } != true) {
             frame = frame.copy(content = null, geometry = null,
                 health = if (frame.health.needsAttention) frame.health else OverlayHealth(OverlayHealthState.READING, "Waiting for a fresh Arena reading…"))
-        } else if (!positionsFresh(nowMs)) {
+        } else if (frame.content != null && !positionsFresh(nowMs)) {
             frame = frame.copy(geometry = null,
                 health = OverlayHealth(OverlayHealthState.READING, "Card counts are verified; reading card positions…"))
         }
