@@ -62,7 +62,7 @@ class OverlayScoreLayoutTest {
                     assertTrue(node.boundsInRoot.left >= 0 && node.boundsInRoot.right <= 800)
                     assertTrue(node.boundsInRoot.top >= 0 && node.boundsInRoot.bottom <= 500)
                 }
-                for (text in listOf("AI preference: #4 of 6 in this pack", "Grade before AI adjustment: B+")) {
+                for (text in listOf("AI preference: #4 of 6 in this pack", "Score before AI adjustment: 71.2")) {
                     val node = nodes.first { node ->
                         node.config.getOrElse(SemanticsProperties.Text) { emptyList() }.any { it.text == text }
                     }

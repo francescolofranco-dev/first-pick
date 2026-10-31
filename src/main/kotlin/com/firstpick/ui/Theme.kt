@@ -380,7 +380,7 @@ data class ModelExplain(
 
 fun modelExplainLines(m: ModelExplain): List<String> = listOfNotNull(
     "AI preference: #${m.rank} of ${m.packSize} in this pack",
-    m.soloValue?.let { "Grade before AI adjustment: ${letterGrade(it)}" },
+    m.soloValue?.let { "Score before AI adjustment: ${"%.1f".format(it)}" },
 )
 
 val TierInk = Color(0xFF090A0F)
