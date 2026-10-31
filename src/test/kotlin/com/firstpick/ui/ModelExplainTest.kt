@@ -5,32 +5,26 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class ModelExplainTest {
-
     @Test
-    fun explainsRankPreModelGradeAndPickTiming() {
-        val lines = modelExplainLines(ModelExplain(rank = 1, packSize = 14, soloValue = 30.6, ata = 2.3, alsa = 5.0))
-        assertEquals("Model rank #1 of 14 · without model F", lines[0])
-        assertEquals("Drafters usually take it ~pick 2", lines[1])
+    fun explainsPackPreferenceAndGradeBeforeAdjustment() {
+        val lines = modelExplainLines(ModelExplain(rank = 1, packSize = 14, soloValue = 30.6))
+        assertEquals(listOf("AI preference: #1 of 14 in this pack", "Grade before AI adjustment: F"), lines)
     }
 
     @Test
-    fun demotedBombShowsItsOwnHighGrade() {
-
-        val lines = modelExplainLines(ModelExplain(rank = 7, packSize = 14, soloValue = 84.9, ata = null, alsa = 4.6))
-        assertTrue(lines[0].endsWith("without model A+"), lines[0])
-
-        assertEquals("Usually still there ~pick 5", lines[1])
+    fun demotedBombShowsItsGradeBeforeAdjustment() {
+        val lines = modelExplainLines(ModelExplain(rank = 7, packSize = 14, soloValue = 84.9))
+        assertEquals(listOf("AI preference: #7 of 14 in this pack", "Grade before AI adjustment: A+"), lines)
     }
 
     @Test
-    fun omitsTimingWhenNoStats() {
-        val lines = modelExplainLines(ModelExplain(rank = 2, packSize = 8, soloValue = 60.0, ata = null, alsa = null))
-        assertEquals(1, lines.size)
+    fun omitsGradeWhenUnavailable() {
+        assertEquals(listOf("AI preference: #2 of 8 in this pack"),
+            modelExplainLines(ModelExplain(rank = 2, packSize = 8, soloValue = null)))
     }
 
     @Test
     fun bombTierGatesTheStar() {
-
         assertTrue(isBombTier(85.0))
         assertTrue(!isBombTier(52.6))
     }

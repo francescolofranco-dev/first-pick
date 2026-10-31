@@ -200,7 +200,7 @@ internal fun overlayCards(packCards: List<PackCardUi>): List<OverlayCard> =
             grpId = it.grpId,
             breakdown = it.breakdown,
             model = it.breakdown?.takeIf { b -> b.modelShift != 0.0 && it.modelRank != null }?.let { b ->
-                com.firstpick.ui.ModelExplain(it.modelRank!!, packCards.size, it.value?.minus(b.modelShift), it.ata, it.alsa)
+                com.firstpick.ui.ModelExplain(it.modelRank!!, packCards.size, it.value?.minus(b.modelShift))
             },
         )
     }

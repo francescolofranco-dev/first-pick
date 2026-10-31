@@ -875,7 +875,7 @@ fun BreakdownTooltip(b: ValueBreakdown, model: ModelExplain? = null) {
             if (b.guideAdjustment != 0.0) BreakdownRow("Guide constraint", String.format("%+.1f", b.guideAdjustment), delta = b.guideAdjustment)
             if (b.scoreCap != 0.0) BreakdownRow(if (b.scoreCap < 0.0) "Capped at 100" else "Floored at 0", String.format("%+.1f", b.scoreCap), delta = b.scoreCap)
             if (b.modelShift != 0.0) {
-                BreakdownRow("Model adjustment", String.format("%+.1f", b.modelShift), delta = b.modelShift)
+                BreakdownRow("AI pick adjustment", String.format("%+.1f", b.modelShift), delta = b.modelShift)
                 if (model != null) {
                     Column(
                         Modifier

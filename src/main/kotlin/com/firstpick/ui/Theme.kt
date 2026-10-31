@@ -376,19 +376,12 @@ data class ModelExplain(
     val rank: Int,
     val packSize: Int,
     val soloValue: Double?,
-    val ata: Double?,
-    val alsa: Double?,
 )
 
-fun modelExplainLines(m: ModelExplain): List<String> {
-    val rankLine = "Model rank #${m.rank} of ${m.packSize} · without model ${letterGrade(m.soloValue)}"
-    val timing = when {
-        m.ata != null -> "Drafters usually take it ~pick ${"%.0f".format(m.ata)}"
-        m.alsa != null -> "Usually still there ~pick ${"%.0f".format(m.alsa)}"
-        else -> null
-    }
-    return listOfNotNull(rankLine, timing)
-}
+fun modelExplainLines(m: ModelExplain): List<String> = listOfNotNull(
+    "AI preference: #${m.rank} of ${m.packSize} in this pack",
+    m.soloValue?.let { "Grade before AI adjustment: ${letterGrade(it)}" },
+)
 
 val TierInk = Color(0xFF090A0F)
 

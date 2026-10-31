@@ -318,8 +318,6 @@ private fun HeroPickCard(
             rank = card.modelRank!!,
             packSize = packSize,
             soloValue = card.value?.minus(b.modelShift),
-            ata = card.ata,
-            alsa = card.alsa,
         )
     }
     val bestPickLabel = when {
@@ -519,8 +517,6 @@ private fun PackBentoCard(
             rank = card.modelRank!!,
             packSize = packSize,
             soloValue = card.value?.minus(b.modelShift),
-            ata = card.ata,
-            alsa = card.alsa,
         )
     }
 

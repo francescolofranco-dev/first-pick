@@ -26,7 +26,7 @@ class MainTest {
         assertNull(overlay[0].breakdown)
         assertNull(overlay[0].model)
         assertEquals(breakdown, overlay[1].breakdown)
-        assertEquals(com.firstpick.ui.ModelExplain(1, 2, 65.0, 3.0, 4.0), overlay[1].model)
+        assertEquals(com.firstpick.ui.ModelExplain(1, 2, 65.0), overlay[1].model)
     }
 
     @Test

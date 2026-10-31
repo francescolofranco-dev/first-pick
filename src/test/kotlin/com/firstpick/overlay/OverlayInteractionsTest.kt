@@ -8,7 +8,7 @@ class OverlayInteractionsTest {
     @Test fun verifiedCardKeepsItsOwnExplanationAcrossDuplicateIds() {
         val a = ValueBreakdown(50.0, 2.0, 3.0, -1.0, 1.0, 55.0)
         val b = a.copy(baseScore = 60.0, finalScore = 65.0)
-        val model = ModelExplain(1, 2, 50.0, 3.0, 4.0)
+        val model = ModelExplain(1, 2, 50.0)
         val cards = listOf(OverlayCard(55.0, null, grpId = 7, breakdown = a, model = model),
             OverlayCard(65.0, null, grpId = 7, breakdown = b))
         val placements = listOf(.1, .4).map { ArenaVisibleCard(7, 1, ArenaCardZone.PACK, NormalizedRect(it, .2, .2, .4)) }

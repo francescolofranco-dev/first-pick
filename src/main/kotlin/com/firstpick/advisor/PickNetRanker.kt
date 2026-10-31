@@ -50,5 +50,5 @@ object PickNetRanker {
             candidateOrder.filterNot { it.guardrail.modelPromotable }
     }
 
-    const val MODEL_PICK_REASON = "Model pick"
+    const val MODEL_PICK_REASON = "AI-recommended pick"
 }

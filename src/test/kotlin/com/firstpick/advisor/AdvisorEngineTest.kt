@@ -978,7 +978,7 @@ class AdvisorEngineTest {
             assertEquals(score.value - b.scoreCap, score.rawValue, 1e-9)
             assertEquals(null, score.modelRank)
             assertEquals(0.0, b.modelShift)
-            assertFalse("Model pick" in score.reasons)
+            assertFalse(PickNetRanker.MODEL_PICK_REASON in score.reasons)
         }
     }
 

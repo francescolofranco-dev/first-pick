@@ -12,6 +12,7 @@ import androidx.compose.ui.semantics.SemanticsNode
 import androidx.compose.ui.semantics.SemanticsProperties
 import com.firstpick.advisor.ValueBreakdown
 import com.firstpick.ui.AppTheme
+import com.firstpick.ui.ModelExplain
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.swing.Swing
 import kotlinx.coroutines.delay
@@ -25,7 +26,8 @@ class OverlayScoreLayoutTest {
     @Test fun breakdownIsReadableWhenBadgeWindowIsOnlyOneHundredPixelsWide() = runBlocking {
         withContext(Dispatchers.Swing) {
             val mark = DraftScoreMark(NormalizedRect(.2, .2, .2, .4), 75.0, true,
-                ValueBreakdown(65.0, 3.0, 5.0, -2.0, 4.0, 75.0))
+                ValueBreakdown(65.0, 3.0, 5.0, -2.0, 4.0, 75.0, modelShift = 3.8),
+                ModelExplain(rank = 4, packSize = 6, soloValue = 71.2))
             val hovered = mutableStateOf(false)
             val badgeScene = ImageComposeScene(100, 100) {
                 AppTheme { OverlayScoreBadge(mark, 100f) { hovered.value = it } }
@@ -47,7 +49,7 @@ class OverlayScoreLayoutTest {
                     image.encodeToData()!!.use { data -> java.nio.file.Files.write(preview, data.bytes) }
                 }
                 val nodes = overlayScene.semanticsOwners.flatMap { allNodes(it.rootSemanticsNode) }
-                for (text in listOf("SCORE BREAKDOWN", "Base power", "Final score")) {
+                for (text in listOf("SCORE BREAKDOWN", "Base power", "AI pick adjustment", "Final score")) {
                     val node = nodes.first { node ->
                         node.config.getOrElse(SemanticsProperties.Text) { emptyList() }.any { it.text == text }
                     }
@@ -59,6 +61,19 @@ class OverlayScoreLayoutTest {
                         "$text must fit within its measured width (allowing pixel rounding)")
                     assertTrue(node.boundsInRoot.left >= 0 && node.boundsInRoot.right <= 800)
                     assertTrue(node.boundsInRoot.top >= 0 && node.boundsInRoot.bottom <= 500)
+                }
+                for (text in listOf("AI preference: #4 of 6 in this pack", "Grade before AI adjustment: B+")) {
+                    val node = nodes.first { node ->
+                        node.config.getOrElse(SemanticsProperties.Text) { emptyList() }.any { it.text == text }
+                    }
+                    val layouts = mutableListOf<TextLayoutResult>()
+                    node.config[SemanticsActions.GetTextLayoutResult].action!!.invoke(layouts)
+                    val layout = layouts.single()
+                    assertTrue(!layout.didOverflowHeight, "$text must fit vertically")
+                    for (line in 0 until layout.lineCount) {
+                        assertTrue(layout.getLineRight(line) - layout.getLineLeft(line) <= layout.size.width + 1f,
+                            "$text must fit within its measured width (allowing pixel rounding)")
+                    }
                 }
                 badgeScene.sendPointerEvent(PointerEventType.Exit, Offset(-1f, -1f), type = PointerType.Mouse)
                 badgeScene.render().close()
@@ -75,7 +90,8 @@ class OverlayScoreLayoutTest {
         withContext(Dispatchers.Swing) {
             for (x in listOf(0.0, .8)) for (y in listOf(0.0, .6)) {
                 val mark = DraftScoreMark(NormalizedRect(x, y, .2, .4), 75.0, true,
-                    ValueBreakdown(65.0, 3.0, 5.0, -2.0, 4.0, 75.0))
+                    ValueBreakdown(65.0, 3.0, 5.0, -2.0, 4.0, 75.0, modelShift = 3.8),
+                    ModelExplain(rank = 4, packSize = 6, soloValue = 71.2))
                 val scene = ImageComposeScene(800, 500) { AppTheme { OverlayScoreDetails(mark, 800f, 500f) } }
                 try {
                     scene.render().close()
