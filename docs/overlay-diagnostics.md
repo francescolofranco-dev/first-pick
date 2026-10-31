@@ -236,3 +236,13 @@ which wrapped the header and hid the calculation. Rendering regressions hover
 a 100-pixel badge, verify complete single-line labels on the separate overlay,
 check dismissal on exit, and keep the panel visible at all viewport corners.
 The rendered acceptance preview is `build/reports/overlay-score-hover.png`.
+
+Version 3.4.2 disposes the complete overlay window tree when Arena is not
+frontmost. Merely setting the large window invisible suspended its composition
+and left independent badge/access windows on top of other apps. A missing Arena
+observation also clears foreground visibility immediately, while retaining only
+geometry during the short lookup grace period. The macOS native lifecycle test
+creates the actual layer, badge, and access windows, verifies all disappear on
+focus loss, return on focus regain, and disappear when the locator returns no
+window. It requests no real Arena access and is skipped on headless/non-macOS
+hosts.

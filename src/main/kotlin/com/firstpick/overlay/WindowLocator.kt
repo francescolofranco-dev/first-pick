@@ -5,11 +5,15 @@ import java.io.File
 
 data class WindowBounds(val x: Int, val y: Int, val w: Int, val h: Int, val frontmost: Boolean = false, val backingScale: Double? = null)
 
+fun interface ArenaWindowLocator {
+    fun locate(): WindowBounds?
+}
+
 class WindowLocator(
     private val appName: String = "MTGA",
     private val helper: File? = extractHelper(),
-) {
-    fun locate(): WindowBounds? {
+) : ArenaWindowLocator {
+    override fun locate(): WindowBounds? {
         val bin = helper ?: return null
         return runCatching {
             val proc = ProcessBuilder(bin.absolutePath, appName).redirectErrorStream(true).start()

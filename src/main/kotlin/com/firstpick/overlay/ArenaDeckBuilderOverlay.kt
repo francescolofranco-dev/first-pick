@@ -12,7 +12,7 @@ fun ArenaDeckBuilderOverlay(
     target: List<DeckCardCount>,
     draftPool: List<DeckCardCount>,
     sessionKey: String? = null,
-    locator: WindowLocator = WindowLocator(),
+    locator: ArenaWindowLocator = WindowLocator(),
     memoryReader: ArenaMemoryReader,
     onHealthChanged: (OverlayHealth) -> Unit = {},
     onGrantArenaAccess: () -> Unit = {},

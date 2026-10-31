@@ -34,7 +34,7 @@ fun ArenaOverlayTracker(
     draftPool: List<DeckCardCount>,
     sessionKey: String?,
     memoryReader: ArenaMemoryReader,
-    locator: WindowLocator = WindowLocator(),
+    locator: ArenaWindowLocator = WindowLocator(),
     onHealthChanged: (OverlayHealth) -> Unit = {},
     onGrantArenaAccess: () -> Unit = {},
 ) {

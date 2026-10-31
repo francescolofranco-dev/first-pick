@@ -17,7 +17,7 @@ internal fun ArenaMemoryOverlayWindow(
     title: String,
     work: OverlayHealth,
     contentVisible: Boolean = true,
-    locator: WindowLocator,
+    locator: ArenaWindowLocator,
     geometry: ArenaCardGeometry? = null,
     onForegroundChanged: (Boolean) -> Unit,
     onHealthChanged: (OverlayHealth) -> Unit,
@@ -33,7 +33,11 @@ internal fun ArenaMemoryOverlayWindow(
             val now = System.nanoTime() / 1_000_000L
             if (found != null && found.w > 0 && found.h > 0) {
                 bounds = found; lastSeen = now
-            } else if (now - lastSeen > 1_000) bounds = null
+            } else {
+                // Retain geometry briefly, but never retain permission to show over another app.
+                bounds = bounds?.copy(frontmost = false)
+                if (now - lastSeen > 1_000) bounds = null
+            }
             delay(200)
         }
     }
@@ -56,7 +60,10 @@ internal fun ArenaMemoryOverlayWindow(
         state.size = DpSize(arena.w.dp, arena.h.dp)
     }
     val visible = arena.frontmost && contentVisible && !clickThroughFailed
-    Window(onCloseRequest = {}, visible = visible, state = state, title = title,
+    // Compose suspends a hidden window's content, so its independent input windows
+    // would otherwise remain visible. Dispose the whole window tree on focus loss.
+    if (!visible) return
+    Window(onCloseRequest = {}, state = state, title = title,
         transparent = true, undecorated = true, alwaysOnTop = true, focusable = false, resizable = false) {
         DisposableEffect(window) {
             clickThroughApplied = false
