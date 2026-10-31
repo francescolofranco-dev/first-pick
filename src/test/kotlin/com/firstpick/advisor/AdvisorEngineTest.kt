@@ -60,6 +60,42 @@ class AdvisorEngineTest {
     private fun scoreOf(result: List<ScoredCard>, name: String) = result.first { it.card.name == name }
 
     @Test
+    fun firstPackCanReplaceATentativeSecondColorWithAStrongerCard() {
+        val pool = listOf(
+            card(100, "Countersculpt", 0.56, "U"),
+            card(101, "Mindseeker Oculus", 0.56, "U"),
+            card(102, "Murmuring Volume", 0.55),
+            card(103, "Flickering Hound", 0.55, "W"),
+            card(104, "Protege's Awakening", 0.56, "U"),
+            card(105, "Bestial Incursion", 0.55, "G"),
+            card(106, "Way of the Mind Sculptor", 0.56, "U"),
+            card(107, "Wrecking Gecko", 0.55, "G"),
+        )
+        val pack = listOf(
+            card(1, "Budding Insurgent", 0.508, "G", alsa = 7.1),
+            card(2, "Eye of Jace", 0.494),
+            card(3, "Fatehold Charm", 0.575, "WU"),
+        )
+        val metadata: (String) -> CardMeta? = { name ->
+            CardMeta(name, 3, false, false, coloredPips = when (name) {
+                "Fatehold Charm" -> mapOf('W' to 1, 'U' to 1)
+                "Budding Insurgent" -> mapOf('G' to 1)
+                else -> emptyMap()
+            })
+        }
+
+        val early = run(pack, pool, 1, 9, meta = metadata)
+        assertEquals("Fatehold Charm", early.first().card.name)
+        assertTrue(scoreOf(early, "Fatehold Charm").guardrail.modelPromotable)
+        assertTrue(scoreOf(early, "Fatehold Charm").breakdown!!.penalty < 0.0,
+            "tentative colors should still carry a soft switching cost")
+
+        val late = run(pack, pool, 3, 9, meta = metadata)
+        assertFalse(scoreOf(late, "Fatehold Charm").guardrail.modelPromotable,
+            "an unsupported splash must still be constrained late")
+    }
+
+    @Test
     fun higherWinRateScoresHigherWithEmptyPool() {
         val pack = listOf(card(1, "Strong", 0.61, "U"), card(2, "Weak", 0.49, "U"))
         val result = run(pack, pool = emptyList(), packNumber = 1, pickNumber = 1)
@@ -681,7 +717,7 @@ class AdvisorEngineTest {
     }
 
     @Test
-    fun colorConstraintsStartAtTheConfiguredCommitmentBoundary() {
+    fun softColorPenaltyPrecedesHardConstraintsUntilPackTwo() {
         val config = AdvisorEngine.Config(totalPicks = 40, penaltyRampStart = 0.15)
         val advisor = AdvisorEngine(config)
         val pool = List(6) { card(100 + it, "Base$it", 0.58, if (it % 2 == 0) "W" else "U") }
@@ -699,18 +735,22 @@ class AdvisorEngineTest {
         assertEquals(0.0, scoreOf(before, "BlackOption").breakdown!!.guideAdjustment)
 
         val boundary = score(7) // Six picks taken: progress exactly 0.15.
-        val constrained = scoreOf(boundary, "BlackOption")
-        assertEquals("WhiteOption", boundary.first().card.name)
-        assertEquals(ModelPromotionStatus.CONSTRAINED, constrained.guardrail.status)
-        assertEquals(0.0, constrained.breakdown!!.penalty, 1e-9)
-        assertTrue(constrained.breakdown!!.guideAdjustment < 0.0,
-            "hard feasibility starts at commitment even before the gradual color penalty grows")
-        assertEquals(ModelPromotionStatus.ON_PLAN, boundary.first().guardrail.status)
+        assertEquals("BlackOption", boundary.first().card.name)
+        assertTrue(boundary.all { it.guardrail == PickGuardrail.OPEN })
+        assertEquals(0.0, scoreOf(boundary, "BlackOption").breakdown!!.penalty, 1e-9)
+        assertEquals(0.0, scoreOf(boundary, "BlackOption").breakdown!!.guideAdjustment)
 
         val after = score(8)
-        assertEquals("WhiteOption", after.first().card.name)
-        assertEquals(ModelPromotionStatus.CONSTRAINED, scoreOf(after, "BlackOption").guardrail.status)
+        assertEquals("BlackOption", after.first().card.name)
+        assertTrue(after.all { it.guardrail == PickGuardrail.OPEN })
         assertTrue(scoreOf(after, "BlackOption").breakdown!!.penalty < 0.0)
+
+        val secondPack = advisor.score(pack, pool, 2, 1, metrics, lane, meta = meta)
+        assertEquals("WhiteOption", secondPack.first().card.name)
+        val constrained = scoreOf(secondPack, "BlackOption")
+        assertEquals(ModelPromotionStatus.CONSTRAINED, constrained.guardrail.status)
+        assertTrue(constrained.breakdown!!.guideAdjustment < 0.0)
+
     }
 
     @Test

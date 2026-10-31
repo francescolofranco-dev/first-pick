@@ -39,16 +39,16 @@ class OpeningDraftPolicyTest {
         assertTrue(picks.all { it.breakdown!!.penalty == 0.0 && it.breakdown.themeBonus == 0.0 })
     }
 
-    @Test fun repeatedColorsInfluencePickSixButNotPickFive() {
+    @Test fun repeatedColorsStayFlexibleAtPickSix() {
         val pool = listOf(card("U1"), card("U2"), card("W1", color = "W"), card("W2", color = "W"))
         val pack = listOf(card("Off", 0.57, "R"), card("On", 0.565))
         val fifth = score(pool, pack)
         assertEquals("Off", fifth.first().card.name)
         assertTrue(fifth.all { it.guardrail == PickGuardrail.OPEN })
         val sixth = score(pool + card("U3"), pack)
-        assertEquals("On", sixth.first().card.name)
+        assertEquals("Off", sixth.first().card.name)
         assertTrue(sixth.first().guardrail.modelPromotable)
-        assertFalse(sixth.last().guardrail.modelPromotable)
+        assertTrue(sixth.all { it.guardrail == PickGuardrail.OPEN })
     }
 
     @Test fun fiveScatteredPicksDoNotForceAColorPair() {

@@ -121,7 +121,7 @@ class AdvisorEngine(
 
         val heuristicOrder = pack.map { card ->
             val fit = if (fitW > 0.0) deckFit?.invoke(card) else null
-            evaluate(card, scoringLane, metrics, archetypeRating, meta, progress, needs, theme, poolCounts[card.name] ?: 0, splashColors, fit, fitW, picksPerChoice == 1, opening)
+            evaluate(card, scoringLane, metrics, archetypeRating, meta, progress, needs, theme, poolCounts[card.name] ?: 0, splashColors, fit, fitW, picksPerChoice == 1, opening, picksTaken < config.picksPerPack)
         }.sortedWith(compareByDescending<ScoredCard> { it.rawValue }.thenBy { it.card.displayName })
         // Hard guide feasibility applies even when PickNet is unavailable or
         // lacks enough pack coverage to run.
@@ -172,6 +172,7 @@ class AdvisorEngine(
         fitWeight: Double,
         useWheelHeuristic: Boolean,
         opening: Boolean,
+        flexibleColors: Boolean,
     ): ScoredCard {
         val reasons = mutableListOf<String>()
         val globalWr = card.gihWr
@@ -251,7 +252,10 @@ class AdvisorEngine(
             }
             colorDenom = colors.size
         }
-        val guardrail = pickGuardrail(lane, offColors, cardMeta, identityKnown, isFixingLand, isBomb, fit)
+        // Pack-one color changes are potential pivots, not necessarily splashes.
+        // Retain the soft switching penalty without imposing a feasibility cap.
+        val guardrail = if (flexibleColors) PickGuardrail.OPEN else
+            pickGuardrail(lane, offColors, cardMeta, identityKnown, isFixingLand, isBomb, fit)
         val onColor = colors.isNotEmpty() && lane.isEstablished && offColors.isEmpty()
         val splashable = offColors.size <= 1 || needs.fixing > 0
         val penaltyScale = when {

@@ -35,6 +35,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.firstpick.advisor.DeckNeeds
+import com.firstpick.guide.LimitedPolicy
+
+internal fun hasSettledLane(state: DraftUiState): Boolean {
+    val picksTaken = if (state.picksPerChoice == 2) state.poolSize else
+        (state.pack - 1).coerceAtLeast(0) * LimitedPolicy.PICKS_PER_PACK + (state.pick - 1).coerceAtLeast(0)
+    return state.lanePair != null && state.laneColors.size >= 2 && picksTaken >= LimitedPolicy.PICKS_PER_PACK
+}
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -104,7 +111,7 @@ internal fun Sidebar(state: DraftUiState, modifier: Modifier = Modifier.width(25
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun LaneBentoCard(state: DraftUiState) {
-    val settled = state.lanePair != null && state.laneColors.size >= 2
+    val settled = hasSettledLane(state)
     Column(
         Modifier
             .fillMaxWidth()
@@ -171,7 +178,7 @@ private fun LaneBentoCard(state: DraftUiState) {
                 }
                 val currentStatusSummary = when {
                     settled -> "Committed to a two-color pair — prioritize on-color playables, curve gaps, and synergy."
-                    state.laneColors.isNotEmpty() -> "Anchored in a primary color while the second color remains flexible."
+                    state.laneColors.isNotEmpty() -> "Colors are emerging; a stronger card can still change your direction, especially during pack one."
                     else -> "No color commitment yet — take the strongest card in the pack."
                 }
                 AppTooltip(
@@ -180,7 +187,7 @@ private fun LaneBentoCard(state: DraftUiState) {
                         append(currentStatusSummary)
                         append("\n\nPossible states:\n")
                         append("• OPEN — Early picks; prioritize raw card power.\n")
-                        append("• LEANING — Primary color emerging; second color still open.\n")
+                        append("• LEANING — Colors emerging; stronger picks can still change your direction.\n")
                         append("• SETTLED — Committed two-color lane; prioritize on-color fit and curve needs.")
                     },
                     width = 268.dp,

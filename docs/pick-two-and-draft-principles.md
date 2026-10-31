@@ -34,6 +34,17 @@ After five selections, color pressure and deck-fit scoring begin when repeated p
 
 Release validation for 1.9.1: all 501 tests passed. The production replay visibly retained the strongest heuristic opening option ahead of a much weaker model-preferred card. Normal Arena-log tracking was restored after verification.
 
+## Tentative colors during pack one (3.3.2)
+
+A supported pair describes the current pool without committing the draft to it.
+After the first five cards, the gradual color-switching penalty still applies,
+but hard splash feasibility caps wait until 15 cards have been selected. The
+sidebar shows an early supported pair as LEANING rather than SETTLED. Pick Two
+uses acquired card count for the same boundary. This is a tuning rule: it lets
+a substantially stronger card replace a tentative second color during pack one,
+while keeping later source-aware splash constraints. It is not a measured
+win-rate improvement.
+
 ## Simplified draft support (2.0.0)
 
 The data-source selector and separate pick-mode chips are replaced by one header dropdown: Draft picks — Auto, One, Two. Premier ratings and learned models are used for every supported draft, including Quick and Pick Two. Legacy ratings overrides in saved settings are ignored. Alternative ratings datasets are rejected before cache/network access. Traditional Draft recognition and data loading are removed; a confirmed unsupported event join suppresses subsequent unnamed draft packets until a supported named draft appears. Traditional can be designed again in the future alongside actual best-of-three and sideboard advice.
