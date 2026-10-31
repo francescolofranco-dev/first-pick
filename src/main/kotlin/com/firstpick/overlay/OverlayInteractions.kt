@@ -2,6 +2,11 @@ package com.firstpick.overlay
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -91,24 +96,41 @@ internal fun OverlayAccessNotice(
     onGrant: () -> Unit,
 ) {
     if (!showOverlayAccessNotice(health, access)) return
-    val width = minOf(264f, arena.w * .6f)
-    OverlayPanelWindow("FirstPick Arena Access", arena.x + (arena.w - width) / 2f,
-        arena.y + 36f, width, 48f) {
+    val width = minOf(260f, arena.w * .24f)
+    OverlayPanelWindow("FirstPick Arena Access", arena.x + arena.w * .55f - width / 2f,
+        arena.y + 34f, width, 36f) {
         OverlayAccessNoticeContent(access, onGrant)
     }
 }
 
 @Composable
 internal fun OverlayAccessNoticeContent(access: LiveDeckAccess, onGrant: () -> Unit) {
-    // Keep the backplate opaque even when the button dims while connecting.
-    Box(Modifier.fillMaxSize().background(AppTheme.colors.surface, RoundedCornerShape(AppTheme.radii.md))) {
-        AppButton(onClick = onGrant, enabled = access.canGrant, modifier = Modifier.fillMaxSize(),
-            variant = AppButtonVariant.Tonal, contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)) {
-            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text("FirstPick · Live advice", style = AppTheme.typography.micro,
-                    color = AppTheme.colors.textSecondary)
-                Text(if (access.status == LiveDeckAccessStatus.GRANTING) "Connecting…" else "Grant Arena access",
-                    color = AppTheme.colors.accent, style = AppTheme.typography.caption)
+    val connecting = access.status == LiveDeckAccessStatus.GRANTING
+    val shape = RoundedCornerShape(10.dp)
+    BoxWithConstraints(Modifier.fillMaxSize().background(AppTheme.colors.surface, shape)
+        .border(1.dp, AppTheme.colors.borderDefault, shape)) {
+        val compact = maxWidth < 240.dp
+        Row(Modifier.fillMaxSize().padding(horizontal = 10.dp, vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(1.dp)) {
+                Text("FirstPick", style = AppTheme.typography.caption.copy(fontSize = 11.sp,
+                    fontWeight = FontWeight.SemiBold), color = AppTheme.colors.textPrimary, maxLines = 1)
+                if (!compact) Row(verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                    Box(Modifier.size(4.dp).background(AppTheme.colors.warning, CircleShape))
+                    Text(if (connecting) "Awaiting macOS" else "Access required",
+                        style = AppTheme.typography.micro.copy(fontSize = 9.sp),
+                        color = AppTheme.colors.textSecondary, maxLines = 1)
+                }
+            }
+            AppButton(onClick = onGrant, enabled = access.canGrant,
+                modifier = Modifier.width(106.dp), variant = AppButtonVariant.Primary,
+                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)) {
+                Text(if (connecting) "Connecting…" else "Grant access",
+                    color = if (access.canGrant) AppTheme.colors.textOnAccent else AppTheme.colors.textPrimary,
+                    style = AppTheme.typography.caption.copy(fontSize = 11.sp, fontWeight = FontWeight.SemiBold),
+                    maxLines = 1)
             }
         }
     }
