@@ -837,7 +837,7 @@ internal fun ScoreBreakdownTrigger(
 }
 
 @Composable
-fun BreakdownTooltip(b: ValueBreakdown, model: ModelExplain? = null) {
+fun BreakdownTooltip(b: ValueBreakdown, model: ModelExplain? = null, gihWr: Double? = null) {
     Box(
         modifier = Modifier
             .padding(4.dp)
@@ -863,6 +863,10 @@ fun BreakdownTooltip(b: ValueBreakdown, model: ModelExplain? = null) {
             }
             Box(Modifier.width(216.dp).height(1.dp).background(AppTheme.colors.borderSubtle))
             Spacer(Modifier.height(1.dp))
+            if (gihWr != null) {
+                BreakdownRow("GIH win rate", "${gihWr.asPct()}%")
+                Box(Modifier.width(216.dp).height(1.dp).background(AppTheme.colors.borderSubtle))
+            }
             BreakdownRow("Base power", String.format("%.1f", b.baseScore))
             if (b.archetypeShift != 0.0) BreakdownRow("Archetype shift", String.format("%+.1f", b.archetypeShift), delta = b.archetypeShift)
             if (b.synergyBonus != 0.0) BreakdownRow("Synergy bonus", String.format("%+.1f", b.synergyBonus), delta = b.synergyBonus)

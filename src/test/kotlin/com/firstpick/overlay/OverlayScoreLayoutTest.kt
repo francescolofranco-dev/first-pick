@@ -27,7 +27,7 @@ class OverlayScoreLayoutTest {
         withContext(Dispatchers.Swing) {
             val mark = DraftScoreMark(NormalizedRect(.2, .2, .2, .4), 75.0, true,
                 ValueBreakdown(65.0, 3.0, 5.0, -2.0, 4.0, 75.0, modelShift = 3.8),
-                ModelExplain(rank = 4, packSize = 6, soloValue = 71.2))
+                ModelExplain(rank = 4, packSize = 6, soloValue = 71.2), gihWr = .575)
             val hovered = mutableStateOf(false)
             val badgeScene = ImageComposeScene(100, 100) {
                 AppTheme { OverlayScoreBadge(mark, 100f) { hovered.value = it } }
@@ -37,6 +37,9 @@ class OverlayScoreLayoutTest {
             }
             try {
                 badgeScene.render().close()
+                assertTrue(badgeScene.semanticsOwners.flatMap { allNodes(it.rootSemanticsNode) }
+                    .none { it.config.getOrElse(SemanticsProperties.Text) { emptyList() }.any { it.text.contains("GIH") || it.text.contains("%") } },
+                    "GIH belongs only in hover details, not the card badge")
                 overlayScene.render().close()
                 badgeScene.sendPointerEvent(PointerEventType.Enter, Offset(50f, 50f), type = PointerType.Mouse)
                 badgeScene.sendPointerEvent(PointerEventType.Move, Offset(51f, 50f), type = PointerType.Mouse)
@@ -49,7 +52,7 @@ class OverlayScoreLayoutTest {
                     image.encodeToData()!!.use { data -> java.nio.file.Files.write(preview, data.bytes) }
                 }
                 val nodes = overlayScene.semanticsOwners.flatMap { allNodes(it.rootSemanticsNode) }
-                for (text in listOf("SCORE BREAKDOWN", "Base power", "AI pick adjustment", "Final score")) {
+                for (text in listOf("SCORE BREAKDOWN", "GIH win rate", "57.5%", "Base power", "AI pick adjustment", "Final score")) {
                     val node = nodes.first { node ->
                         node.config.getOrElse(SemanticsProperties.Text) { emptyList() }.any { it.text == text }
                     }
@@ -91,7 +94,7 @@ class OverlayScoreLayoutTest {
             for (x in listOf(0.0, .8)) for (y in listOf(0.0, .6)) {
                 val mark = DraftScoreMark(NormalizedRect(x, y, .2, .4), 75.0, true,
                     ValueBreakdown(65.0, 3.0, 5.0, -2.0, 4.0, 75.0, modelShift = 3.8),
-                    ModelExplain(rank = 4, packSize = 6, soloValue = 71.2))
+                    ModelExplain(rank = 4, packSize = 6, soloValue = 71.2), gihWr = .575)
                 val scene = ImageComposeScene(800, 500) { AppTheme { OverlayScoreDetails(mark, 800f, 500f) } }
                 try {
                     scene.render().close()

@@ -34,6 +34,7 @@ internal data class DraftScoreMark(
     val bounds: NormalizedRect, val value: Double?, val isBest: Boolean,
     val breakdown: com.firstpick.advisor.ValueBreakdown? = null,
     val model: com.firstpick.ui.ModelExplain? = null,
+    val gihWr: Double? = null,
 )
 
 @Composable

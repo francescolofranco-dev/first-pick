@@ -9,11 +9,12 @@ class OverlayInteractionsTest {
         val a = ValueBreakdown(50.0, 2.0, 3.0, -1.0, 1.0, 55.0)
         val b = a.copy(baseScore = 60.0, finalScore = 65.0)
         val model = ModelExplain(1, 2, 50.0)
-        val cards = listOf(OverlayCard(55.0, null, grpId = 7, breakdown = a, model = model),
-            OverlayCard(65.0, null, grpId = 7, breakdown = b))
+        val cards = listOf(OverlayCard(55.0, null, grpId = 7, breakdown = a, model = model, gihWr = .55),
+            OverlayCard(65.0, null, grpId = 7, breakdown = b, gihWr = .60))
         val placements = listOf(.1, .4).map { ArenaVisibleCard(7, 1, ArenaCardZone.PACK, NormalizedRect(it, .2, .2, .4)) }
         val marks = draftScoreMarks(cards, placements)
         assertEquals(listOf(a, b), marks.map { it.breakdown })
+        assertEquals(listOf(.55, .60), marks.map { it.gihWr })
         assertEquals(listOf(model, null), marks.map { it.model })
         assertTrue(draftScoreMarks(cards, placements.drop(1)).isEmpty())
     }

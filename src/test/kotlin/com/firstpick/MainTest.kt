@@ -21,10 +21,12 @@ class MainTest {
     @Test
     fun overlayCardsKeepTheMainAppScoreAndModelExplanation() {
         val breakdown = com.firstpick.advisor.ValueBreakdown(60.0, 2.0, 3.0, -1.0, 1.0, 70.0, modelShift = 5.0)
-        val rated = card("Rated", 1, 70.0).copy(breakdown = breakdown, modelRank = 1, ata = 3.0, alsa = 4.0)
+        val rated = card("Rated", 1, 70.0).copy(breakdown = breakdown, modelRank = 1, ata = 3.0, alsa = 4.0, gihWr = .575)
         val overlay = overlayCards(listOf(rated, card("Unrated", 0, null)))
         assertNull(overlay[0].breakdown)
         assertNull(overlay[0].model)
+        assertNull(overlay[0].gihWr)
+        assertEquals(.575, overlay[1].gihWr)
         assertEquals(breakdown, overlay[1].breakdown)
         assertEquals(com.firstpick.ui.ModelExplain(1, 2, 65.0), overlay[1].model)
     }

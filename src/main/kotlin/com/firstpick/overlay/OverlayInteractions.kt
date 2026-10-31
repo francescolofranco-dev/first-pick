@@ -195,7 +195,7 @@ internal fun OverlayScoreDetailsWindow(mark: DraftScoreMark, arena: WindowBounds
 internal fun OverlayScoreDetails(mark: DraftScoreMark, width: Float, height: Float) {
     val breakdown = mark.breakdown ?: return
     val badge = scoreBadgeBounds(mark, width, height) ?: return
-    Layout(content = { BreakdownTooltip(breakdown, mark.model) }) { children, _ ->
+    Layout(content = { BreakdownTooltip(breakdown, mark.model, gihWr = mark.gihWr) }) { children, _ ->
         val viewportWidth = width.dp.roundToPx()
         val viewportHeight = height.dp.roundToPx()
         val gap = 8.dp.roundToPx()
