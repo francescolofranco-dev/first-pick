@@ -229,3 +229,10 @@ For live acceptance, also move/resize Arena, switch apps, toggle the overlay,
 and change packs: the input windows and tooltips must follow or disappear with
 the verified advice. Automated geometry/data checks and production packaging
 do not replace live hover/click acceptance or measured performance benchmarks.
+
+Version 3.4.1 draws hovered score details on the full Arena-sized click-through
+layer. A popup inside a small badge window inherited that window's constraints,
+which wrapped the header and hid the calculation. Rendering regressions hover
+a 100-pixel badge, verify complete single-line labels on the separate overlay,
+check dismissal on exit, and keep the panel visible at all viewport corners.
+The rendered acceptance preview is `build/reports/overlay-score-hover.png`.

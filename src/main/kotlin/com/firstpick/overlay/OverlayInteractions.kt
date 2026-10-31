@@ -1,11 +1,14 @@
 package com.firstpick.overlay
 
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.TooltipArea
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.onPointerEvent
+import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
@@ -80,19 +83,64 @@ internal fun scoreBadgeBounds(mark: DraftScoreMark, width: Float, height: Float)
         rect.top + rect.height - BADGE_CARD_OVERLAP * badge, badge, badge)
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun DraftScoreInteractions(marks: List<DraftScoreMark>, arena: WindowBounds) {
+    var hovered by remember { mutableStateOf<Int?>(null) }
+    // A changed pack or reading must never retain the previous card's explanation.
+    LaunchedEffect(marks.map { it.breakdown to it.model }) { hovered = null }
+    val hoveredMark = hovered?.let { marks.getOrNull(it) }
+    if (hoveredMark?.breakdown != null) {
+        OverlayScoreDetails(hoveredMark, arena.w.toFloat(), arena.h.toFloat())
+    }
     for ((index, mark) in marks.withIndex()) {
-        val breakdown = mark.breakdown ?: continue
+        if (mark.breakdown == null) continue
         val rect = scoreBadgeBounds(mark, arena.w.toFloat(), arena.h.toFloat()) ?: continue
-        key(index, breakdown, mark.model) {
+        key(index, mark.breakdown, mark.model) {
             OverlayInteractionWindow("FirstPick Score ${index + 1}", arena.x + rect.left,
                 arena.y + rect.top, rect.width, rect.height) {
-                TooltipArea(delayMillis = 160, tooltip = { BreakdownTooltip(breakdown, mark.model) }) {
-                    ScoreBadge(mark.value, rect.width)
+                OverlayScoreBadge(mark, rect.width) { inside ->
+                    if (inside) hovered = index else if (hovered == index) hovered = null
                 }
             }
         }
+    }
+}
+
+@OptIn(ExperimentalComposeUiApi::class)
+@Composable
+internal fun OverlayScoreBadge(mark: DraftScoreMark, size: Float, onHoverChanged: (Boolean) -> Unit) {
+    var inside by remember { mutableStateOf(false) }
+    val callback by rememberUpdatedState(onHoverChanged)
+    DisposableEffect(Unit) { onDispose { callback(false) } }
+    LaunchedEffect(inside) {
+        if (inside) delay(160)
+        callback(inside)
+    }
+    Box(Modifier.onPointerEvent(PointerEventType.Enter) { inside = true }
+        .onPointerEvent(PointerEventType.Exit) { inside = false }) {
+        ScoreBadge(mark.value, size)
+    }
+}
+
+/** Render on the Arena-sized click-through layer, never inside the tiny input window. */
+@Composable
+internal fun OverlayScoreDetails(mark: DraftScoreMark, width: Float, height: Float) {
+    val breakdown = mark.breakdown ?: return
+    val badge = scoreBadgeBounds(mark, width, height) ?: return
+    Layout(content = { BreakdownTooltip(breakdown, mark.model) }) { children, _ ->
+        val viewportWidth = width.dp.roundToPx()
+        val viewportHeight = height.dp.roundToPx()
+        val gap = 8.dp.roundToPx()
+        val panel = children.single().measure(Constraints(
+            maxWidth = minOf(248.dp.roundToPx(), (viewportWidth - gap * 2).coerceAtLeast(0)),
+            maxHeight = (viewportHeight - gap * 2).coerceAtLeast(0),
+        ))
+        val left = (badge.left.dp.roundToPx() + (badge.width.dp.roundToPx() - panel.width) / 2)
+            .coerceIn(gap, (viewportWidth - panel.width - gap).coerceAtLeast(gap))
+        val above = badge.top.dp.roundToPx() - panel.height - gap
+        val below = (badge.top + badge.height).dp.roundToPx() + gap
+        val top = (if (above >= gap) above else below)
+            .coerceIn(gap, (viewportHeight - panel.height - gap).coerceAtLeast(gap))
+        layout(viewportWidth, viewportHeight) { panel.place(left, top) }
     }
 }
