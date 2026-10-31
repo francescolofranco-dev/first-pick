@@ -46,7 +46,8 @@ fun ArenaOverlayTracker(
     val presentation = remember(session) { MemoryOverlayPresentation<List<OverlayCard>>() }
     val trace = remember(presentation) { OverlayTimingTrace("draft") }
     var frame by remember(presentation) { mutableStateOf(MemoryOverlayFrame<List<OverlayCard>>()) }
-    var visible by remember { mutableStateOf(true) }
+    val screenVisibility = remember(presentation) { OverlayScreenVisibility(OverlayScreen.DRAFT) }
+    var visible by remember(presentation) { mutableStateOf(screenVisibility.visible) }
     var frontmost by remember { mutableStateOf(false) }
     val currentFrontmost by rememberUpdatedState(frontmost)
     LaunchedEffect(presentation) {
@@ -61,8 +62,7 @@ fun ArenaOverlayTracker(
             val read = withContext(Dispatchers.IO) { memoryReader.read() }
             val readEnded = System.nanoTime()
             val now = System.nanoTime() / 1_000_000L
-            visible = read !is ArenaMemoryRead.Paused || !read.outsideBuilder
-            if (read is ArenaMemoryRead.Ready) visible = false
+            visible = screenVisibility.observe(read)
             frame = when (read) {
                 is ArenaMemoryRead.PackReady -> {
                     val validation = withContext(Dispatchers.IO) { session.observe(read.pack, currentCards, draftPool, now) }

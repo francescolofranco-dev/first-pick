@@ -24,7 +24,8 @@ fun ArenaDeckBuilderOverlay(
     val presentation = remember(session, target) { MemoryOverlayPresentation<VerifiedDeckOverlay>() }
     val trace = remember(presentation) { OverlayTimingTrace("deck") }
     var frame by remember(presentation) { mutableStateOf(MemoryOverlayFrame<VerifiedDeckOverlay>()) }
-    var contentVisible by remember { mutableStateOf(true) }
+    val screenVisibility = remember(presentation) { OverlayScreenVisibility(OverlayScreen.DECK) }
+    var contentVisible by remember(presentation) { mutableStateOf(screenVisibility.visible) }
     var frontmost by remember { mutableStateOf(false) }
     val currentFrontmost by rememberUpdatedState(frontmost)
     val guidanceCallback by rememberUpdatedState(onGuidanceChanged)
@@ -42,8 +43,7 @@ fun ArenaDeckBuilderOverlay(
             val read = withContext(Dispatchers.IO) { memoryReader.read() }
             val readEnded = System.nanoTime()
             val now = System.nanoTime() / 1_000_000L
-            contentVisible = read !is ArenaMemoryRead.Paused || !read.outsideBuilder
-            if (read is ArenaMemoryRead.PackReady) contentVisible = false
+            contentVisible = screenVisibility.observe(read)
             frame = when (read) {
                 is ArenaMemoryRead.Ready -> {
                     val validation = withContext(Dispatchers.IO) { session.observe(read.deck, draftPool, now) }
