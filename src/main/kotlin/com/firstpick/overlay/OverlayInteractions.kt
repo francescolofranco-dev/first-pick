@@ -11,11 +11,10 @@ import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.unit.Constraints
-import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Window
-import androidx.compose.ui.window.WindowPosition
-import androidx.compose.ui.window.rememberWindowState
+import androidx.compose.ui.awt.SwingWindow
+import androidx.compose.ui.awt.ComposeWindow
+import kotlin.math.roundToInt
 import com.firstpick.ui.AppButton
 import com.firstpick.ui.AppTheme
 import com.firstpick.ui.BreakdownTooltip
@@ -35,13 +34,29 @@ private fun OverlayInteractionWindow(
     height: Float,
     content: @Composable () -> Unit,
 ) {
-    val state = rememberWindowState(position = WindowPosition(x.dp, y.dp), size = DpSize(width.dp, height.dp))
-    LaunchedEffect(x, y, width, height) {
-        state.position = WindowPosition(x.dp, y.dp)
-        state.size = DpSize(width.dp, height.dp)
-    }
-    Window(onCloseRequest = {}, state = state, title = title,
-        transparent = true, undecorated = true, alwaysOnTop = true, focusable = false, resizable = false) {
+    SwingWindow(
+        create = {
+            ComposeWindow().apply {
+                // A normal non-focusable NSWindow still activates its application on click.
+                // AWT POPUP creates an NSPanel with NSWindowStyleMaskNonactivatingPanel.
+                isUndecorated = true
+                type = java.awt.Window.Type.POPUP
+                focusableWindowState = false
+                isAutoRequestFocus = false
+                isAlwaysOnTop = true
+                isResizable = false
+                isTransparent = true
+                this.title = title
+                setLocation(x.roundToInt(), y.roundToInt())
+                setSize(width.roundToInt(), height.roundToInt())
+            }
+        },
+        update = {
+            it.setLocation(x.roundToInt(), y.roundToInt())
+            it.setSize(width.roundToInt(), height.roundToInt())
+        },
+        dispose = { it.dispose() },
+    ) {
         LaunchedEffect(window) {
             repeat(40) {
                 if (withContext(Dispatchers.IO) { MacOverlay.setClickThrough(window, false) }) return@LaunchedEffect

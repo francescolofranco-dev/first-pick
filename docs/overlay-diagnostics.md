@@ -246,3 +246,11 @@ creates the actual layer, badge, and access windows, verifies all disappear on
 focus loss, return on focus regain, and disappear when the locator returns no
 window. It requests no real Arena access and is skipped on headless/non-macOS
 hosts.
+
+Version 3.4.4 creates interactive controls as AWT popup windows before their native
+peers exist. On macOS this selects an NSPanel with the non-activating style mask;
+merely disabling keyboard focus on a normal window still allowed a click to
+activate FirstPick and raise its main window. Controls also disable automatic
+focus requests. The native lifecycle regression verifies both the Java settings
+and the actual Cocoa panel class/style mask without opening an authorization
+prompt. The system-owned password prompt remains part of the existing grant flow.
