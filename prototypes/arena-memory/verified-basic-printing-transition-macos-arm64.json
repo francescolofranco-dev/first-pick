@@ -49,5 +49,15 @@
     "installed_jar_and_helpers_match_tested_build": true,
     "signature_verified": true
   },
-  "live_verification": "Pending completion of the rebuilt app read-only reconnect prompt; no further picks made by the agent."
+  "live_verification": {
+    "recorded_at_utc": "2026-10-31T08:25:47.584356+00:00",
+    "source": "Installed optimized 3.3.1 app and authorized typed reader",
+    "same_previously_failing_thirteen_card_pack": true,
+    "substituted_island_id": 75022,
+    "complete_pack_and_geometry_samples": 40,
+    "app_overlay_health_before_and_after_sample": "Overlay \u00b7 Synced",
+    "read_access": "Connected",
+    "picks_made_by_agent": false,
+    "scope": "App synchronization and typed geometry verified; Arena capture omits the separate overlay window."
+  }
 }

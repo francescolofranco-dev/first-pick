@@ -188,8 +188,12 @@ numerical scores and the unrated Island across repeated polls.
 
 The optimized 3.3.1 build passes 478 app tests and 16 native tests. Its installed
 JAR and helpers match the tested build and its signature verifies. Rebuilding
-ended the previous process-bound connection; the live visual recheck awaits the
-existing macOS reconnect prompt. Evidence is recorded in
+ended the previous process-bound connection. After the user reconnected, the
+same formerly failing thirteen-card pack returned complete ordered geometry in
+40 consecutive observations, including the substituted Island ID 75022. The
+installed app reported `Overlay · Synced` before and after the sample. No picks
+were made by the agent. This verifies production synchronization; the separate
+overlay is still omitted from Arena's per-window capture. Evidence is recorded in
 `prototypes/arena-memory/verified-basic-printing-transition-macos-arm64.json`.
 
 Arena process restarts end the process-bound read connection. The native reader
