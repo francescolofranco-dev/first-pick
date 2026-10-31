@@ -65,13 +65,17 @@ object MacOverlay {
         val send = msgSend ?: return false
         val setSel = sel("setIgnoresMouseEvents:") ?: return false
         val getSel = sel("ignoresMouseEvents") ?: return false
+        val moveSel = sel("setAcceptsMouseMovedEvents:") ?: return false
+        val getMoveSel = sel("acceptsMouseMovedEvents") ?: return false
         val handle = runCatching { window.windowHandle }.getOrDefault(0L)
         if (handle == 0L) return false
         val nsWindow = Pointer(handle)
 
         val apply = {
             send.invokeVoid(arrayOf<Any>(nsWindow, setSel, (if (enabled) 1 else 0).toByte()))
-            (send.invokeInt(arrayOf<Any>(nsWindow, getSel)) and 0xFF != 0) == enabled
+            send.invokeVoid(arrayOf<Any>(nsWindow, moveSel, (if (enabled) 0 else 1).toByte()))
+            ((send.invokeInt(arrayOf<Any>(nsWindow, getSel)) and 0xFF != 0) == enabled) &&
+                ((send.invokeInt(arrayOf<Any>(nsWindow, getMoveSel)) and 0xFF != 0) == !enabled)
         }
 
         val queue = mainQueue

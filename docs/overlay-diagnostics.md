@@ -210,3 +210,22 @@ names, account IDs, session tokens, raw memory or screenshots. Composition timin
 is not OS frame presentation or input-to-visible-update latency. The agreed
 95%-within-500-ms target still requires a controlled live interaction measurement;
 a real draft-pack visual check remains deferred until a pack is available.
+
+## Interactive overlay (3.4.0)
+
+The Arena-sized window remains click-through. Small non-focusable windows over
+rating badges and the access notice receive mouse events without activating
+FirstPick. Hovering a rated badge shows the main app's score breakdown, including
+model details when available. Unrated badges remain click-through. The whole
+access notice invokes the same grant callback as the main app and is disabled
+while connecting. Both draft and deck guidance expose this action.
+
+Run `./gradlew overlayInteractionProbe` for a synthetic native-window fixture.
+Click the access notice and check its Connecting state; click the game target
+and check its counter; hover the grade to inspect the score breakdown. This
+fixture never requests real Arena permissions. The fixture's Inspect interaction
+windows button hides its background window for inspecting the floating windows.
+For live acceptance, also move/resize Arena, switch apps, toggle the overlay,
+and change packs: the input windows and tooltips must follow or disappear with
+the verified advice. Automated geometry/data checks and production packaging
+do not replace live hover/click acceptance or measured performance benchmarks.

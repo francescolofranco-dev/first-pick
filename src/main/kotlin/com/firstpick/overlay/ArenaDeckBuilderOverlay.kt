@@ -15,8 +15,10 @@ fun ArenaDeckBuilderOverlay(
     locator: WindowLocator = WindowLocator(),
     memoryReader: ArenaMemoryReader,
     onHealthChanged: (OverlayHealth) -> Unit = {},
+    onGrantArenaAccess: () -> Unit = {},
     onGuidanceChanged: (DeckGuidanceOverlayModel?) -> Unit = {},
 ) {
+    val access by memoryReader.access.collectAsState()
     val loc = remember { locator }
     val session = remember(sessionKey, draftPool) { MemoryDeckGuidanceSession() }
     val presentation = remember(session, target) { MemoryOverlayPresentation<VerifiedDeckOverlay>() }
@@ -71,10 +73,11 @@ fun ArenaDeckBuilderOverlay(
         geometry = frame.geometry,
         onForegroundChanged = { frontmost = it }, onHealthChanged = onHealthChanged) { arena ->
         SideEffect { trace.composed(frame, frontmost) }
+        OverlayAccessNotice(arena, frame.health, access, onGrantArenaAccess)
         val verified = frame.content
         if (verified != null) {
             DeckGuidanceOverlay(verified.model.withMemoryMarks(frame.geometry?.inWindow(arena).orEmpty(), verified.names), arena.w.dp, arena.h.dp)
-        } else if (frame.showNotice) {
+        } else if (frame.showNotice && !showOverlayAccessNotice(frame.health, access)) {
             DeckGuidanceOverlay(DeckGuidanceOverlayModel(DeckGuidanceStatus.READING, notice = frame.health.detail), arena.w.dp, arena.h.dp)
         }
     }

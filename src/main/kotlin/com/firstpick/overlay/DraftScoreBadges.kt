@@ -30,31 +30,32 @@ import kotlin.math.roundToInt
 import androidx.compose.ui.unit.Dp
 
 /** Exact card IDs and normalized rectangles from the same Arena observation. */
-internal data class DraftScoreMark(val bounds: NormalizedRect, val value: Double?, val isBest: Boolean)
+internal data class DraftScoreMark(
+    val bounds: NormalizedRect, val value: Double?, val isBest: Boolean,
+    val breakdown: com.firstpick.advisor.ValueBreakdown? = null,
+    val model: com.firstpick.ui.ModelExplain? = null,
+)
 
 @Composable
 internal fun DraftScoreBadges(marks: List<DraftScoreMark>, width: Dp, height: Dp) {
     Box(androidx.compose.ui.Modifier.size(width, height)) {
         for (mark in marks) {
-            val rect = mark.bounds.inViewport(width.value, height.value) ?: continue
-            GradeSeal(ScoreRect(rect.left, rect.top, rect.width, rect.height, mark.value, mark.isBest))
+            val rect = scoreBadgeBounds(mark, width.value, height.value) ?: continue
+            GradeSeal(mark, rect)
         }
     }
 }
 
-private data class ScoreRect(val x: Float, val y: Float, val w: Float, val h: Float, val value: Double?, val isBest: Boolean)
-
-private const val BADGE_SCALE = 0.52f
-private const val BADGE_MIN_SIZE = 48f
-private const val BADGE_MAX_SIZE = 118f
-private const val BADGE_CARD_OVERLAP = 0.86f
+internal const val BADGE_SCALE = 0.52f
+internal const val BADGE_MIN_SIZE = 48f
+internal const val BADGE_MAX_SIZE = 118f
+internal const val BADGE_CARD_OVERLAP = 0.86f
 
 @Composable
-private fun GradeSeal(m: ScoreRect) {
-    val badge = (m.w * BADGE_SCALE).coerceIn(BADGE_MIN_SIZE, BADGE_MAX_SIZE)
-    val cx = m.x + m.w / 2f
-    val top = m.y + m.h - BADGE_CARD_OVERLAP * badge
-    val accent = valueTierColor(m.value)
+private fun GradeSeal(m: DraftScoreMark, rect: GuidanceViewportRect) {
+    val badge = rect.width
+    val cx = rect.left + badge / 2f
+    val top = rect.top
 
     if (m.isBest) {
         val haloColor = if (isBombTier(m.value)) Color(0xFFFFC02E) else Color(0xFF7FD1C4)
@@ -68,10 +69,18 @@ private fun GradeSeal(m: ScoreRect) {
         )
     }
 
-    Box(Modifier.offset((cx - badge / 2f).dp, top.dp).size(badge.dp)) {
+    if (m.breakdown == null) Box(Modifier.offset((cx - badge / 2f).dp, top.dp)) {
+        ScoreBadge(m.value, badge)
+    }
+}
+
+@Composable
+internal fun ScoreBadge(value: Double?, badge: Float) {
+    val accent = valueTierColor(value)
+    Box(Modifier.size(badge.dp)) {
         PickCrest(accent, Modifier.fillMaxSize())
 
-        if (m.value == null) {
+        if (value == null) {
             Text(
                 "—",
                 modifier = Modifier.align(Alignment.Center).offset(y = (-0.02f * badge).dp),
@@ -86,7 +95,7 @@ private fun GradeSeal(m: ScoreRect) {
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
-                    letterGrade(m.value),
+                    letterGrade(value),
                     color = accent,
                     fontWeight = FontWeight.ExtraBold,
                     fontSize = (0.245f * badge).sp,
@@ -94,7 +103,7 @@ private fun GradeSeal(m: ScoreRect) {
                     maxLines = 1,
                 )
                 Text(
-                    m.value.roundToInt().toString(),
+                    value.roundToInt().toString(),
                     color = Color(0xFFF2E9D8),
                     fontFamily = FontFamily.Monospace,
                     fontWeight = FontWeight.Bold,

@@ -39,7 +39,7 @@ internal fun draftScoreMarks(cards: List<OverlayCard>, placements: List<ArenaVis
     val best = bestRatedOverlayCard(cards, cards.indices.toList())
     val paired = cards.any { it.recommendedPair }
     return cards.mapIndexed { index, card ->
-        DraftScoreMark(pack[index].bounds, card.value, if (paired) card.recommendedPair else index == best)
+        DraftScoreMark(pack[index].bounds, card.value, if (paired) card.recommendedPair else index == best, card.breakdown, card.model)
     }
 }
 

@@ -23,6 +23,8 @@ data class OverlayCard(
     val isRoom: Boolean = false,
     val recommendedPair: Boolean = false,
     val grpId: Int = 0,
+    val breakdown: com.firstpick.advisor.ValueBreakdown? = null,
+    val model: com.firstpick.ui.ModelExplain? = null,
 )
 
 /** Exact IDs and card rectangles share one coherent Arena memory observation. */
@@ -34,7 +36,9 @@ fun ArenaOverlayTracker(
     memoryReader: ArenaMemoryReader,
     locator: WindowLocator = WindowLocator(),
     onHealthChanged: (OverlayHealth) -> Unit = {},
+    onGrantArenaAccess: () -> Unit = {},
 ) {
+    val access by memoryReader.access.collectAsState()
     val loc = remember { locator }
     val session = remember(sessionKey, draftPool) { MemoryPackGuidanceSession() }
     val currentCards by rememberUpdatedState(cards)
@@ -90,7 +94,9 @@ fun ArenaOverlayTracker(
         Box(Modifier.size(arena.w.dp, arena.h.dp)) {
             val marks = draftScoreMarks(frame.content.orEmpty(), frame.geometry?.inWindow(arena).orEmpty())
             DraftScoreBadges(marks, arena.w.dp, arena.h.dp)
-            if (marks.isEmpty() && frame.showNotice) Box(Modifier.align(Alignment.TopEnd).padding(24.dp).widthIn(max = (arena.w * .6).dp)
+            DraftScoreInteractions(marks, arena)
+            OverlayAccessNotice(arena, frame.health, access, onGrantArenaAccess)
+            if (marks.isEmpty() && frame.showNotice && !showOverlayAccessNotice(frame.health, access)) Box(Modifier.align(Alignment.TopEnd).padding(24.dp).widthIn(max = (arena.w * .6).dp)
                 .background(DeckGuidanceOverlayPalette.PillBackground, RoundedCornerShape(12.dp))
                 .border(1.dp, DeckGuidanceOverlayPalette.ReadingAccent, RoundedCornerShape(12.dp)).padding(9.dp)) {
                 Text(if (frame.content != null && frame.geometry != null) "Updating card positions…" else frame.health.detail,

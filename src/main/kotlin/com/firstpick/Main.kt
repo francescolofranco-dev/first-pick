@@ -98,6 +98,8 @@ fun main() {
             else -> OverlayHealth(OverlayHealthState.INACTIVE, "Overlay is turned off.")
         }
 
+        val grantArenaAccess: () -> Unit = { appScope.launch(Dispatchers.IO) { liveDeckReader.grantAccess() }; Unit }
+
         FirstPickAboutMenu(onOpenAbout = { isAboutOpen = true })
 
         Window(
@@ -127,7 +129,7 @@ fun main() {
                 liveDeckGuidance = liveDeckGuidance,
                 onToggleOverlay = { isOverlayOpen = !isOverlayOpen },
                 liveDeckAccess = liveDeckAccess,
-                onGrantArenaAccess = { appScope.launch(Dispatchers.IO) { liveDeckReader.grantAccess() } },
+                onGrantArenaAccess = grantArenaAccess,
                 committedDeck = selectedDeck,
                 onUseDeck = {
                     if (state.phase == DraftPhase.COMPLETE) {
@@ -162,6 +164,7 @@ fun main() {
                     draftPool = draftPool,
                     sessionKey = state.sessionKey,
                     memoryReader = liveDeckReader,
+                    onGrantArenaAccess = grantArenaAccess,
                     onHealthChanged = { deckOverlayHealth = it },
                     onGuidanceChanged = { liveDeckGuidance = it },
                 )
@@ -176,6 +179,7 @@ fun main() {
                     draftPool = deckGuidancePool(state.draftPool),
                     sessionKey = "${state.sessionKey}:${state.pack}:${state.pick}",
                     memoryReader = liveDeckReader,
+                    onGrantArenaAccess = grantArenaAccess,
                     onHealthChanged = { draftOverlayHealth = it },
                 )
             }
@@ -194,6 +198,10 @@ internal fun overlayCards(packCards: List<PackCardUi>): List<OverlayCard> =
             isRoom = it.isRoom,
             recommendedPair = it.recommendedPair,
             grpId = it.grpId,
+            breakdown = it.breakdown,
+            model = it.breakdown?.takeIf { b -> b.modelShift != 0.0 && it.modelRank != null }?.let { b ->
+                com.firstpick.ui.ModelExplain(it.modelRank!!, packCards.size, it.value?.minus(b.modelShift), it.ata, it.alsa)
+            },
         )
     }
 

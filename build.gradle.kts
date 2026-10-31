@@ -284,3 +284,12 @@ tasks.register<Test>("deckAudit") {
     systemProperty("firstpick.audit.seedStart", providers.gradleProperty("auditSeedStart").orElse("0").get())
     outputs.upToDateWhen { false }
 }
+
+// Test-only native fixture: no Arena reads or authorization prompts.
+tasks.register<JavaExec>("overlayInteractionProbe") {
+    group = "verification"
+    description = "Open synthetic Arena controls to manually check overlay clicks, hover details, and click-through."
+    dependsOn("testClasses")
+    mainClass.set("com.firstpick.overlay.OverlayInteractionProbeKt")
+    classpath = sourceSets["test"].runtimeClasspath
+}

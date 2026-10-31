@@ -74,7 +74,7 @@ internal fun ArenaMemoryOverlayWindow(
             }
             clickThroughFailed = true
         }
-        content(arena)
+        if (visible && clickThroughApplied) content(arena)
     }
 }
 
