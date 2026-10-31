@@ -1,6 +1,8 @@
 package com.firstpick.overlay
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -61,14 +63,22 @@ internal fun OverlayAccessNotice(
     onGrant: () -> Unit,
 ) {
     if (!showOverlayAccessNotice(health, access)) return
-    val width = minOf(330f, arena.w * .6f)
-    OverlayInteractionWindow("FirstPick Arena Access", arena.x + arena.w - width - 24f,
-        arena.y + 24f, width, 112f) {
+    val width = minOf(264f, arena.w * .6f)
+    OverlayInteractionWindow("FirstPick Arena Access", arena.x + (arena.w - width) / 2f,
+        arena.y + 36f, width, 48f) {
+        OverlayAccessNoticeContent(access, onGrant)
+    }
+}
+
+@Composable
+internal fun OverlayAccessNoticeContent(access: LiveDeckAccess, onGrant: () -> Unit) {
+    // Keep the backplate opaque even when the button dims while connecting.
+    Box(Modifier.fillMaxSize().background(AppTheme.colors.surface, RoundedCornerShape(AppTheme.radii.md))) {
         AppButton(onClick = onGrant, enabled = access.canGrant, modifier = Modifier.fillMaxSize(),
-            variant = AppButtonVariant.Tonal, contentPadding = PaddingValues(12.dp)) {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("Connect Arena to show live advice", style = AppTheme.typography.caption,
-                    color = AppTheme.colors.textPrimary)
+            variant = AppButtonVariant.Tonal, contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text("FirstPick · Live advice", style = AppTheme.typography.micro,
+                    color = AppTheme.colors.textSecondary)
                 Text(if (access.status == LiveDeckAccessStatus.GRANTING) "Connecting…" else "Grant Arena access",
                     color = AppTheme.colors.accent, style = AppTheme.typography.caption)
             }
