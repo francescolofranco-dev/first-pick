@@ -254,3 +254,12 @@ activate FirstPick and raise its main window. Controls also disable automatic
 focus requests. The native lifecycle regression verifies both the Java settings
 and the actual Cocoa panel class/style mask without opening an authorization
 prompt. The system-owned password prompt remains part of the existing grant flow.
+
+Version 3.4.6 gives expanded score details their own full-size, non-activating,
+click-through panel one native window level above popup controls. Rendering the
+panel on the lower base layer allowed neighboring badges to cover its text.
+The transient panel is configured before becoming visible so it cannot intercept
+the pointer and cancel its own hover. Existing layout/edge checks still apply;
+the native regression additionally compares actual Cocoa levels against both
+badges and the access notice, verifies mouse pass-through, and checks that all
+layers disappear when Arena loses focus.

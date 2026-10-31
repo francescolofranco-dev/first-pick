@@ -28,15 +28,17 @@ class OverlayFocusLifecycleTest {
             val app = launchApplication {
                 ArenaMemoryOverlayWindow(title, OverlayHealth(OverlayHealthState.ACCESS_REQUIRED, "Grant access"),
                     locator = locator, onForegroundChanged = {}, onHealthChanged = {}) { arena ->
+                    OverlayScoreDetailsWindow(DraftScoreMark(NormalizedRect(.2, .2, .2, .4), 75.0, true,
+                        ValueBreakdown(65.0, 3.0, 5.0, -2.0, 4.0, 75.0)), arena)
                     DraftScoreInteractions(listOf(DraftScoreMark(NormalizedRect(.2, .2, .2, .4), 75.0, true,
                         ValueBreakdown(65.0, 3.0, 5.0, -2.0, 4.0, 75.0))), arena)
                     OverlayAccessNotice(arena, OverlayHealth(OverlayHealthState.ACCESS_REQUIRED, "Grant access"),
                         LiveDeckAccess(LiveDeckAccessStatus.ACCESS_REQUIRED)) {}
                 }
             }
-            fun windows() = Frame.getFrames().filter { it.title == title || it.title == "FirstPick Arena Access" || it.title == "FirstPick Score 1" }
+            fun windows() = Frame.getFrames().filter { it.title == title || it.title == "FirstPick Arena Access" || it.title == "FirstPick Score 1" || it.title == "FirstPick Score Details" }
             suspend fun awaitWindows() = withTimeout(5000) {
-                while (windows().count { it.isVisible } != 3) delay(25)
+                while (windows().count { it.isVisible && it.title != "FirstPick Score Details" } != 3) delay(25)
             }
             try {
                 awaitWindows()
@@ -47,6 +49,14 @@ class OverlayFocusLifecycleTest {
                     assertFalse(control.focusableWindowState)
                     assertNativeNonActivatingPanel(control as ComposeWindow)
                 }
+                delay(200)
+                val details = windows().firstOrNull { it.title == "FirstPick Score Details" }
+                    ?: windows().single { it.title == title }
+                val controls = windows().filter { it.title != title && it.title != "FirstPick Score Details" }
+                assertTrue(controls.all { nativeWindowLevel(details as ComposeWindow) > nativeWindowLevel(it as ComposeWindow) },
+                    "Hover details must be above neighboring rating badges and other overlay controls")
+                assertTrue(nativeIgnoresMouseEvents(details as ComposeWindow),
+                    "The details layer must pass pointer events through to the badges and Arena")
                 reading.set(foreground.copy(frontmost = false))
                 delay(600)
                 assertFalse(windows().any { it.isVisible }, "Interactive notice must not survive the hidden Arena overlay")
@@ -57,6 +67,18 @@ class OverlayFocusLifecycleTest {
                 assertFalse(windows().any { it.isVisible }, "An unavailable Arena observation must not retain foreground visibility")
             } finally { app.cancelAndJoin() }
         }
+    }
+
+    private fun nativeIgnoresMouseEvents(window: ComposeWindow): Boolean {
+        val objc = NativeLibrary.getInstance("objc")
+        val selector = objc.getFunction("sel_registerName").invokePointer(arrayOf("ignoresMouseEvents"))
+        return objc.getFunction("objc_msgSend").invokeInt(arrayOf(Pointer(window.windowHandle), selector)) != 0
+    }
+
+    private fun nativeWindowLevel(window: ComposeWindow): Long {
+        val objc = NativeLibrary.getInstance("objc")
+        val selector = objc.getFunction("sel_registerName").invokePointer(arrayOf("level"))
+        return objc.getFunction("objc_msgSend").invokeLong(arrayOf(Pointer(window.windowHandle), selector))
     }
 
     private fun assertNativeNonActivatingPanel(window: ComposeWindow) {

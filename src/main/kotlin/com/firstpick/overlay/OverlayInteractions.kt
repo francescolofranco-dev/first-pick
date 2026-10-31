@@ -26,15 +26,19 @@ import kotlinx.coroutines.withContext
 
 /** Small non-activating windows receive input; the full Arena-sized layer stays click-through. */
 @Composable
-private fun OverlayInteractionWindow(
+private fun OverlayPanelWindow(
     title: String,
     x: Float,
     y: Float,
     width: Float,
     height: Float,
+    clickThrough: Boolean = false,
+    aboveOverlayControls: Boolean = false,
     content: @Composable () -> Unit,
 ) {
+    var prepared by remember { mutableStateOf(!clickThrough) }
     SwingWindow(
+        visible = prepared,
         create = {
             ComposeWindow().apply {
                 // A normal non-focusable NSWindow still activates its application on click.
@@ -49,6 +53,12 @@ private fun OverlayInteractionWindow(
                 this.title = title
                 setLocation(x.roundToInt(), y.roundToInt())
                 setSize(width.roundToInt(), height.roundToInt())
+                if (clickThrough) {
+                    // Configure before showing: a full-size transient panel must never intercept
+                    // the pointer and cause its own badge's hover to end.
+                    addNotify()
+                    prepared = MacOverlay.setClickThrough(this, true, aboveOverlayControls)
+                }
             }
         },
         update = {
@@ -59,7 +69,10 @@ private fun OverlayInteractionWindow(
     ) {
         LaunchedEffect(window) {
             repeat(40) {
-                if (withContext(Dispatchers.IO) { MacOverlay.setClickThrough(window, false) }) return@LaunchedEffect
+                if (withContext(Dispatchers.IO) { MacOverlay.setClickThrough(window, clickThrough, aboveOverlayControls) }) {
+                    prepared = true
+                    return@LaunchedEffect
+                }
                 delay(150)
             }
         }
@@ -79,7 +92,7 @@ internal fun OverlayAccessNotice(
 ) {
     if (!showOverlayAccessNotice(health, access)) return
     val width = minOf(264f, arena.w * .6f)
-    OverlayInteractionWindow("FirstPick Arena Access", arena.x + (arena.w - width) / 2f,
+    OverlayPanelWindow("FirstPick Arena Access", arena.x + (arena.w - width) / 2f,
         arena.y + 36f, width, 48f) {
         OverlayAccessNoticeContent(access, onGrant)
     }
@@ -115,13 +128,13 @@ internal fun DraftScoreInteractions(marks: List<DraftScoreMark>, arena: WindowBo
     LaunchedEffect(marks.map { it.breakdown to it.model }) { hovered = null }
     val hoveredMark = hovered?.let { marks.getOrNull(it) }
     if (hoveredMark?.breakdown != null) {
-        OverlayScoreDetails(hoveredMark, arena.w.toFloat(), arena.h.toFloat())
+        OverlayScoreDetailsWindow(hoveredMark, arena)
     }
     for ((index, mark) in marks.withIndex()) {
         if (mark.breakdown == null) continue
         val rect = scoreBadgeBounds(mark, arena.w.toFloat(), arena.h.toFloat()) ?: continue
         key(index, mark.breakdown, mark.model) {
-            OverlayInteractionWindow("FirstPick Score ${index + 1}", arena.x + rect.left,
+            OverlayPanelWindow("FirstPick Score ${index + 1}", arena.x + rect.left,
                 arena.y + rect.top, rect.width, rect.height) {
                 OverlayScoreBadge(mark, rect.width) { inside ->
                     if (inside) hovered = index else if (hovered == index) hovered = null
@@ -147,7 +160,15 @@ internal fun OverlayScoreBadge(mark: DraftScoreMark, size: Float, onHoverChanged
     }
 }
 
-/** Render on the Arena-sized click-through layer, never inside the tiny input window. */
+@Composable
+internal fun OverlayScoreDetailsWindow(mark: DraftScoreMark, arena: WindowBounds) {
+    OverlayPanelWindow("FirstPick Score Details", arena.x.toFloat(), arena.y.toFloat(),
+        arena.w.toFloat(), arena.h.toFloat(), clickThrough = true, aboveOverlayControls = true) {
+        OverlayScoreDetails(mark, arena.w.toFloat(), arena.h.toFloat())
+    }
+}
+
+/** Shared layout for the full-size transient details layer and rendering regression fixtures. */
 @Composable
 internal fun OverlayScoreDetails(mark: DraftScoreMark, width: Float, height: Float) {
     val breakdown = mark.breakdown ?: return
