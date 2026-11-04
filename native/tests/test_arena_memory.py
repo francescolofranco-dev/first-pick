@@ -109,6 +109,18 @@ def read(g):
         return json.loads(result.stdout)
 
 
+def deck_details(g, owner, key, field, active=True):
+    popup = g.object('deck_details_popup')
+    component = g.m.alloc(128)
+    game_object = g.m.alloc(128)
+    g.m.put(popup + 16, 'Q', component)
+    g.m.put(component + 0x20, 'Q', game_object)
+    g.m.put(game_object + 0x47, 'B', int(active))
+    g.field(owner, key, field, popup)
+    g.field(popup, 'popup_base', '<IsShowing>k__BackingField', 1, 'B')
+    return popup
+
+
 def draft_geometry_graph():
     g = draft_graph()
     layout = g.profile['unity_geometry']
@@ -154,11 +166,14 @@ def draft_geometry_graph():
 
 
 class NativeDeckReaderTests(unittest.TestCase):
+    def test_hidden_deck_details_do_not_suppress_live_deck_guidance(self):
+        g = graph()
+        deck_details(g, g.widget, 'widget', '_detailsPopup', active=False)
+        self.assertEqual('ready', read(g)['status'])
+
     def test_deck_details_hide_guidance_until_closed(self):
         g = graph()
-        popup = g.object('deck_details_popup')
-        g.field(g.widget, 'widget', '_detailsPopup', popup)
-        g.field(popup, 'popup_base', '<IsShowing>k__BackingField', 1, 'B')
+        popup = deck_details(g, g.widget, 'widget', '_detailsPopup')
         value = read(g)
         self.assertEqual('blocked', value['status'])
         self.assertNotIn('main', value)
@@ -198,11 +213,17 @@ class NativeDeckReaderTests(unittest.TestCase):
 
 
 class NativeDraftReaderTests(unittest.TestCase):
+    def test_hidden_deck_details_do_not_suppress_the_live_pack(self):
+        g = draft_geometry_graph()
+        deck_details(g, g.draft_controller, 'draft_controller', '_deckDetailsPopup', active=False)
+        value = read(g)
+        self.assertEqual('draft_ready', value['status'])
+        self.assertEqual(3, len(value['cards']))
+        self.assertEqual(3, len(value['geometry']['cards']))
+
     def test_deck_details_hide_advice_even_with_a_retained_active_pack(self):
         g = draft_geometry_graph()
-        popup = g.object('deck_details_popup')
-        g.field(g.draft_controller, 'draft_controller', '_deckDetailsPopup', popup)
-        g.field(popup, 'popup_base', '<IsShowing>k__BackingField', 1, 'B')
+        popup = deck_details(g, g.draft_controller, 'draft_controller', '_deckDetailsPopup')
         value = read(g)
         self.assertEqual('blocked', value['status'])
         self.assertNotIn('cards', value)

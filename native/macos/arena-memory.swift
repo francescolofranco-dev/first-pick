@@ -408,7 +408,17 @@ private final class DeckRuntime {
         if popup != 0 {
             try check(popup, "deck_details_popup")
             if try flag(popup, "popup_base", "<IsShowing>k__BackingField") {
-                throw ReadFailure("blocked", "Close Arena's deck details to resume card advice.")
+                // Arena retains the popup and its IsShowing flag after disabling
+                // its GameObject. Only a live, active native popup obscures cards.
+                let component = try memory.pointer(popup + 16, nullable: true)
+                if component != 0 {
+                    let owner = try memory.pointer(component + 0x20)
+                    let active = try memory.read(owner + 0x47, 1)[0]
+                    try require(active <= 1, "Invalid Arena popup activity.")
+                    if active == 1 {
+                        throw ReadFailure("blocked", "Close Arena's deck details to resume card advice.")
+                    }
+                }
             }
         }
     }

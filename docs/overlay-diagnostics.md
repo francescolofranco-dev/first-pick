@@ -1,5 +1,23 @@
 # Memory overlay verification
 
+## Hidden deck-details recovery (3.7.1)
+
+Arena can retain a hidden `DeckDetailsPopup` with `IsShowing` still set. Checking
+only that flag blocked the entire pack before any screen could be verified,
+leaving saved access connected and the overlay reading indefinitely. The reader
+now checks the popup's native GameObject activity as well. Active dialogs still
+suppress advice; inactive or destroyed popups do not.
+
+The native regression reproduced `blocked` for a hidden popup before the fix.
+Draft and deck fixtures now cover hidden popups alongside the existing visible
+dialog checks. The optimized, signed 3.7.1 build passed 499 app tests and 20
+native tests. On 2026-11-04, the installed reader changed from repeated false
+deck-details blocks to complete eight-card pack readings with eight matching
+positions on the same Quick Draft pack 3, pick 7. Saved access reconnected and
+the foreground app reported `Overlay · Synced`. No draft pick was made. This
+verifies live synchronization; Arena's per-window screenshot does not establish
+the final composite appearance of the separate overlay windows.
+
 The production overlay is memory-only from 3.0.0. Screenshot capture, OCR,
 artwork matching, calibration, screen replay and recording commands were removed.
 Historical image fixtures are retained as research evidence; they do not run in
