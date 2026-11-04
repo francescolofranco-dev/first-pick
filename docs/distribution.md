@@ -20,7 +20,7 @@ This document is the runbook for turning it on.
 - [x] `packageVersion` overridable via `-PpackageVersion` (release sets it from the tag)
 - [x] `.github/workflows/release.yml` — signed tag releases plus unsigned manual packaging tests
 - [x] `packaging/homebrew/Casks/firstpick.rb` — cask template
-- [ ] **Apple Developer Program enrollment** (you — ~$99/yr)
+- [x] **Apple Developer Program enrollment** and Developer ID Application certificate
 - [ ] **Repo secrets** added (you)
 - [ ] **`homebrew-firstpick` tap repo** created (you)
 
@@ -40,7 +40,7 @@ This document is the runbook for turning it on.
    → Sign-In and Security → App-Specific Passwords. (`altool` is retired; the build
    uses `notarytool`.)
 5. **Note** your 10-character **Team ID** and the Apple ID email used for notarization.
-6. **Register the App ID** `com.firstpick.app` (Identifiers in the developer portal).
+6. Keep the bundle identifier `com.firstpick.app`. Register an App ID if you add capabilities that require a provisioning profile.
 
 ## Repo secrets (Settings → Secrets and variables → Actions)
 
@@ -69,16 +69,48 @@ workflow**. That produces `FirstPick-1.0.0-<arch>-unsigned.dmg` artifacts for se
 days. These manual artifacts still trigger Gatekeeper and are not suitable for a
 public release. A partially configured secret set is always treated as an error.
 
-Locally you can produce the same artifact after importing the Developer ID
-certificate into your keychain and setting the environment variables:
+For local notarization, keep the app-specific password in Keychain rather than
+in shell history or a repository file. Configure a profile once (the command
+prompts securely for the password):
+
 ```bash
-MACOS_SIGNING_IDENTITY="Developer ID Application: … (TEAMID)" \
-NOTARIZATION_APPLE_ID="you@example.com" \
-NOTARIZATION_PASSWORD="abcd-efgh-ijkl-mnop" \
-NOTARIZATION_TEAM_ID="TEAMID" \
-./gradlew notarizeDmg -PpackageVersion=1.0.0 -PnativeArchitecture=universal
-# → build/compose/binaries/main/dmg/FirstPick-1.0.0.dmg
+xcrun notarytool store-credentials FirstPick-notary \
+  --apple-id 'YOUR_APPLE_ACCOUNT_EMAIL' --team-id 'YOUR_TEAM_ID'
 ```
+
+Then build with the exact Developer ID identity shown by
+`security find-identity -v -p codesigning`, submit the app, and staple its ticket:
+
+```bash
+MACOS_SIGNING_IDENTITY='Developer ID Application: Your Name (TEAMID)' \
+  ./gradlew buildProduction
+firstpick_version="$(cat VERSION)"
+firstpick_app='build/compose/binaries/main/app/FirstPick.app'
+firstpick_archive="build/FirstPick-${firstpick_version}-DeveloperID.zip"
+ditto -c -k --keepParent "$firstpick_app" "$firstpick_archive"
+xcrun notarytool submit "$firstpick_archive" \
+  --keychain-profile FirstPick-notary --wait
+xcrun stapler staple "$firstpick_app"
+xcrun stapler validate "$firstpick_app"
+spctl --assess --type execute --verbose=2 "$firstpick_app"
+```
+
+Wait for an **Accepted** result before stapling or installing. A submission that
+is still **In Progress** has not passed notarization. The local setup was verified
+on 2026-11-04: the certificate/private-key pair is valid, the official Developer ID
+G2 intermediate is installed, the Keychain profile authenticates with Apple, and
+an optimized signed 3.7.0 app has been submitted. No passwords or private keys are
+stored in this repository.
+
+For the existing CI `.dmg` workflow, configure all six repository secrets listed
+above. `notarizeDmg` uses these environment variables directly. Manual workflow
+runs produce temporary artifacts without publishing a GitHub release.
+
+Switching from the previous local signing certificate to Developer ID changes
+the identity trusted by the installed Arena access broker. Revoke access using
+the old signed app before replacing it, then approve the new signed app once.
+Subsequent updates signed by the same approved Developer ID identity reconnect
+without another administrator prompt.
 
 Packaging compiles the native helpers and runs unit tests before creating the
 app. For everyday local use, `./gradlew buildProduction` uses only this Mac's
