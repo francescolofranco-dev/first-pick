@@ -21,7 +21,7 @@ This document is the runbook for turning it on.
 - [x] `.github/workflows/release.yml` — signed tag releases plus unsigned manual packaging tests
 - [x] `packaging/homebrew/Casks/firstpick.rb` — cask template
 - [x] **Apple Developer Program enrollment** and Developer ID Application certificate
-- [ ] **Repo secrets** added (you)
+- [x] **Repo secrets** added and Developer ID import verified on both CI architectures
 - [ ] **`homebrew-firstpick` tap repo** created (you)
 
 ## One-time prerequisites (you)
@@ -83,7 +83,8 @@ Then build with the exact Developer ID identity shown by
 
 ```bash
 MACOS_SIGNING_IDENTITY='Developer ID Application: Your Name (TEAMID)' \
-  ./gradlew buildProduction
+  ./gradlew buildProduction \
+    -Pcompose.desktop.mac.signing.keychain="$HOME/Library/Keychains/login.keychain-db"
 firstpick_version="$(cat VERSION)"
 firstpick_app='build/compose/binaries/main/app/FirstPick.app'
 firstpick_archive="build/FirstPick-${firstpick_version}-DeveloperID.zip"
@@ -103,7 +104,10 @@ an optimized signed 3.7.0 app has been submitted. No passwords or private keys a
 stored in this repository.
 
 For the existing CI `.dmg` workflow, configure all six repository secrets listed
-above. `notarizeDmg` uses these environment variables directly. Manual workflow
+above. `notarizeDmg` uses these environment variables directly. Run it with
+`--no-configuration-cache`: the current Compose plugin exposes a deprecated
+`ascProvider` property that fails during configuration-cache serialization.
+Normal development and production-build tasks retain their cache. Manual workflow
 runs produce temporary artifacts without publishing a GitHub release.
 
 Switching from the previous local signing certificate to Developer ID changes

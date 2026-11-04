@@ -171,6 +171,7 @@ jobs:
           NOTARIZATION_TEAM_ID: ${{ secrets.NOTARIZATION_TEAM_ID }}
         run: >-
           ./gradlew notarizeDmg
+          --no-configuration-cache
           -PnativeArchitecture=universal
           -PpackageVersion=${{ steps.ver.outputs.version }}
           -PcomposeJdk="$JAVA_HOME"
