@@ -21,12 +21,15 @@ class DraftScoreBadgeRenderTest {
             image.encodeToData()!!.use { file.writeBytes(it.bytes) }
         }
         val image = ImageIO.read(file)
-        val clearAlpha = image.getRGB(66, 250) ushr 24
-        val softAlpha = image.getRGB(321, 250) ushr 24
+        val clearAlpha = image.getRGB(56, 250) ushr 24
+        val softAlpha = image.getRGB(312, 250) ushr 24
         assertTrue(clearAlpha > softAlpha && softAlpha > 0)
         assertEquals(0, image.getRGB(577, 250) ushr 24)
-        // The card artwork stays visible beneath the light wash.
-        assertTrue(image.getRGB(160, 250) ushr 24 < 30)
+        // The glow stays outside the card: no wash over artwork or rules.
+        assertEquals(0, image.getRGB(160, 250) ushr 24)
+        assertTrue(image.getRGB(62, 250) ushr 24 > 220)
+        // The frame encloses the footer too, instead of ending at the printed rules box.
+        assertTrue(image.getRGB(235, 463) ushr 24 > 200)
     }
 
     @Test fun scoreCrestsSitAtCardBottomsAndLeaveTitlesClear() {

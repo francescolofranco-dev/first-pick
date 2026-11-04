@@ -350,6 +350,33 @@ def hover_preview(g, active=True):
 
 
 class NativeGeometryTests(unittest.TestCase):
+    def test_separate_screen_space_canvases_keep_pack_and_preview_geometry(self):
+        g = draft_geometry_graph()
+        hover_preview(g)
+        old_hierarchy = struct.unpack_from('<Q', g.m.data, g.geometry_root + 0x28)[0]
+        hierarchy = g.m.alloc()
+        g.m.data[hierarchy:hierarchy+64] = g.m.data[old_hierarchy:old_hierarchy+64]
+        root = g.m.alloc()
+        g.m.data[root:root+256] = g.m.data[g.geometry_root:g.geometry_root+256]
+        g.m.put(root + 0x28, 'Q', hierarchy)
+        canvas = g.m.alloc(1024)
+        g.m.put(canvas, 'Q', g.profile['unity_geometry']['canvas_vtable_vm'])
+        g.m.put(canvas + 0x2c, 'I', 1)
+        owner = g.m.alloc(); components = g.m.alloc(32)
+        g.m.put(owner + 0x20, 'Q', components); g.m.put(owner + 0x30, 'I', 2)
+        for i, component in enumerate([root, canvas]):
+            g.m.put(components + i * 16 + 8, 'Q', component)
+            g.m.put(component + 0x20, 'Q', owner)
+        # One pack card and the preview use a different but valid Canvas hierarchy.
+        transform = g.geometry_transforms[2]
+        g.m.put(transform + 0x28, 'Q', hierarchy)
+        g.m.put(transform + 0x68, 'Q', root)
+        value = read(g)
+        self.assertEqual('draft_ready', value['status'])
+        self.assertIn('geometry', value, value.get('geometry_reason'))
+        self.assertEqual(['pack', 'pack', 'pack', 'preview'], [row[2] for row in value['geometry']['cards']])
+        self.assertAlmostEqual(400 / 1920, value['geometry']['cards'][-1][5])
+
     def test_hover_preview_keeps_pack_and_reads_enlarged_card_identity_and_bounds(self):
         g = draft_geometry_graph()
         hover_preview(g)

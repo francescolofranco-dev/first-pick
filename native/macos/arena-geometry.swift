@@ -54,7 +54,12 @@ private final class ArenaGeometry {
         try m.read(m.pointer(component + 0x20) + 0x47, 1)[0] == 1
     }
     func establishCanvas(_ transform: UInt64) throws {
-        if root != 0 { return }
+        if root != 0 {
+            // Hover previews and pack cards can live under separate screen-space canvases.
+            // Re-establish that canvas rather than applying the previous canvas's transform.
+            if try m.pointer(transform + 0x28) == m.pointer(root + 0x28) { return }
+            root = 0; canvasRect = nil
+        }
         var current = transform, visited = Set<UInt64>()
         for _ in 0..<48 {
             try require(visited.insert(current).inserted, "Invalid Arena parent chain.")

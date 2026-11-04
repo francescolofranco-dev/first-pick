@@ -17,7 +17,6 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import com.firstpick.ui.PickHighlight
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.lerp
@@ -25,7 +24,6 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.firstpick.ui.isBombTier
 import com.firstpick.ui.letterGrade
 import com.firstpick.ui.valueTierColor
 import kotlin.math.roundToInt
@@ -63,7 +61,7 @@ private fun GradeSeal(m: DraftScoreMark, rect: GuidanceViewportRect) {
     val top = rect.top
 
     if (m.highlight != PickHighlight.NONE) {
-        val haloColor = if (isBombTier(m.value)) Color(0xFFFFC02E) else Color(0xFF7FD1C4)
+        val haloColor = arcaneAccent(m.highlight)
         val haloD = badge * 1.18f
         val haloCenterY = top + badge * 0.49f
         Box(
@@ -202,25 +200,4 @@ private fun DrawScope.drawPickCrest(accent: Color) {
         size = Size(frontWidth - 2f * faceInset, frontHeight - 2f * faceInset),
         cornerRadius = CornerRadius(frontWidth * 0.065f),
     )
-}
-
-@Composable
-private fun DraftCardHighlights(marks: List<DraftScoreMark>) {
-    Canvas(Modifier.fillMaxSize()) {
-        for (mark in marks) {
-            if (mark.highlight == PickHighlight.NONE || !mark.bounds.isValid()) continue
-            val clear = mark.highlight == PickHighlight.CLEAR
-            val accent = if (clear) Color(0xFFFFD36A) else Color(0xFF7FD1C4)
-            val rect = mark.bounds
-            val stroke = (if (clear) 4.dp else 2.dp).toPx()
-            val inset = stroke / 2f
-            val origin = Offset((rect.x * size.width).toFloat() + inset, (rect.y * size.height).toFloat() + inset)
-            val cardSize = Size((rect.width * size.width).toFloat() - stroke, (rect.height * size.height).toFloat() - stroke)
-            if (cardSize.width <= 0f || cardSize.height <= 0f) continue
-            val radius = CornerRadius(8.dp.toPx())
-            drawRoundRect(accent.copy(alpha = if (clear) 0.09f else 0.035f), origin, cardSize, radius)
-            drawRoundRect(Color(0xFF070B0A).copy(alpha = 0.8f), origin, cardSize, radius, style = Stroke(stroke + 2.dp.toPx()))
-            drawRoundRect(accent.copy(alpha = if (clear) 1f else 0.65f), origin, cardSize, radius, style = Stroke(stroke))
-        }
-    }
 }
