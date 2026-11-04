@@ -43,6 +43,7 @@ internal data class ArenaCardGeometry(
 internal fun draftScoreMarks(
     cards: List<OverlayCard>, placements: List<ArenaVisibleCard>,
     viewportWidth: Float = 1920f, viewportHeight: Float = 1080f,
+    includeCovered: Boolean = false,
 ): List<DraftScoreMark> {
     val pack = placements.filter { it.zone == ArenaCardZone.PACK }
     if (pack.map { it.grpId } != cards.map { it.grpId } || pack.any { it.count != 1 || !it.bounds.isValid() }) return emptyList()
@@ -50,25 +51,26 @@ internal fun draftScoreMarks(
     val paired = cards.any { it.recommendedPair }
     val previews = placements.filter { it.zone == ArenaCardZone.PREVIEW }
     val marks = cards.mapIndexed { index, card ->
-        DraftScoreMark(pack[index].bounds, card.value, if (paired) card.recommendedPair else index == best, card.breakdown, card.model, card.gihWr, card.highlight)
+        DraftScoreMark(pack[index].bounds, card.value, if (paired) card.recommendedPair else index == best, card.breakdown, card.model, card.gihWr, card.highlight, slot = index)
     }
-    fun uncovered(mark: DraftScoreMark, blockers: List<NormalizedRect>): DraftScoreMark? {
+    fun applyOcclusion(mark: DraftScoreMark, blockers: List<NormalizedRect>): DraftScoreMark? {
         // Card borders and score badges have different footprints. A tooltip over
         // artwork must not hide a score that remains below the tooltip.
         val visible = if (blockers.any(mark.bounds::overlaps)) mark.copy(highlight = com.firstpick.ui.PickHighlight.NONE) else mark
         val badge = scoreBadgeBounds(visible, viewportWidth, viewportHeight) ?: return null
         val footprint = NormalizedRect((badge.left / viewportWidth).toDouble(), (badge.top / viewportHeight).toDouble(),
             (badge.width / viewportWidth).toDouble(), (badge.height / viewportHeight).toDouble())
-        return visible.takeIf { blockers.none(footprint::overlaps) }
+        return visible.copy(covered = blockers.any(footprint::overlaps))
     }
-    return marks.mapIndexedNotNull { index, mark ->
-        uncovered(mark, pack[index].occlusions + previews.map { it.bounds })
-    } + previews.mapNotNull { preview ->
+    val all = marks.mapIndexedNotNull { index, mark ->
+        applyOcclusion(mark, pack[index].occlusions + previews.map { it.bounds })
+    } + previews.mapIndexedNotNull { previewIndex, preview ->
         val index = preview.sourceIndex?.takeIf { cards.getOrNull(it)?.grpId == preview.grpId }
             ?: cards.indexOfFirst { it.grpId == preview.grpId }
-        if (index < 0 || !preview.bounds.isValid()) null else uncovered(marks[index].copy(bounds = preview.bounds),
+        if (index < 0 || !preview.bounds.isValid()) null else applyOcclusion(marks[index].copy(bounds = preview.bounds, slot = -previewIndex - 1),
             preview.occlusions + previews.filter { it !== preview }.map { it.bounds })
     }
+    return if (includeCovered) all else all.filterNot { it.covered }
 }
 
 internal fun NormalizedRect.overlaps(other: NormalizedRect): Boolean =

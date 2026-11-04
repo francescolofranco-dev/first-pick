@@ -36,13 +36,16 @@ internal data class DraftScoreMark(
     val model: com.firstpick.ui.ModelExplain? = null,
     val gihWr: Double? = null,
     val highlight: PickHighlight = PickHighlight.NONE,
+    val slot: Int? = null,
+    val covered: Boolean = false,
 )
 
 @Composable
 internal fun DraftScoreBadges(marks: List<DraftScoreMark>, width: Dp, height: Dp) {
     Box(androidx.compose.ui.Modifier.size(width, height)) {
-        DraftCardHighlights(marks)
+        DraftCardHighlights(marks.filterNot { it.covered })
         for (mark in marks) {
+            if (mark.covered) continue
             val rect = scoreBadgeBounds(mark, width.value, height.value) ?: continue
             GradeSeal(mark, rect)
         }

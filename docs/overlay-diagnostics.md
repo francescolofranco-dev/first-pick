@@ -1,5 +1,48 @@
 # Memory overlay verification
 
+## Hover responsiveness (3.8.3)
+
+Frame inspection of the supplied 11.22-second recording found a representative
+hover-exit gap around 7.38–7.53 seconds: Arena's enlarged card was gone while its
+score and the previous occlusion state remained for roughly 150 ms. The old
+read loop waited 100 ms *after* completing each read. Occlusion also removed
+native input windows and restored them with shifting list-index keys.
+
+The foreground loop now targets a 33 ms start-to-start interval, including read
+and validation time. Background reads remain throttled to 400 ms. Slow reads
+finish before another starts, with a minimum coroutine yield and no queued
+catch-up reads. Both draft and deck guidance use the shared scheduler.
+
+Normal score input windows have stable pack slots and remain allocated while
+covered; their visibility and pointer handling are disabled until uncovered.
+The preview has a separate stable slot while it moves. The shared drawing layer
+skips covered badges and highlights. This avoids native-window creation and
+click-through setup work when the same cards disappear and return during hover.
+
+The native draft reader still verifies card identity twice, but computes
+geometry only on the second pass; the discarded first geometry pass was
+redundant. All existing coherence and modal guards remain in effect.
+
+A local reader check used ten warm-up requests followed by 110 measured requests
+with 33 ms pauses. All requests returned `draft_ready` in both runs:
+
+| RPC round-trip | 3.8.2 | 3.8.3 |
+| --- | ---: | ---: |
+| Median | 14.72 ms | 11.22 ms |
+| 95th percentile | 18.84 ms | 15.44 ms |
+| Maximum | 31.40 ms | 58.24 ms |
+
+This short sample used uncontrolled desktop load. It measures reader wall time,
+not game-event-to-display latency; the higher maximum is not a latency bound.
+The 33 ms target is verified with a virtual clock, not claimed as a measured
+end-to-end frame rate. New tests cover foreground deadlines, background
+throttling, slow-read serialization, retained input slots, and transparent
+rendering of covered slots. The complete suite passed 512 app tests and 30
+native fixtures. The signed optimized production app was installed and
+restarted as 3.8.3 with saved Arena access connected and the overlay enabled.
+Per-window screenshots cannot independently establish final compositor timing.
+
+
 ## Selective, atomic hover occlusion (3.8.2)
 
 The first hover implementation could withhold the entire geometry frame when

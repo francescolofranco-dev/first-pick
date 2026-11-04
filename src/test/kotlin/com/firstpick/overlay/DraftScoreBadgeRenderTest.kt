@@ -23,6 +23,18 @@ class DraftScoreBadgeRenderTest {
             "Interactive score badges must be drawn atomically in the shared overlay, not separate fading windows")
     }
 
+    @Test fun retainedCoveredInputSlotsDoNotPaintBadgesOrHighlights() {
+        val mark = DraftScoreMark(NormalizedRect(.1, .2, .2, .4), 70.0, false,
+            highlight = com.firstpick.ui.PickHighlight.CLEAR, covered = true)
+        val file = File("build/reports/covered-score-frame.png")
+        file.parentFile.mkdirs()
+        renderComposeScene(1000, 700) { DraftScoreBadges(listOf(mark), 1000.dp, 700.dp) }.use { image ->
+            image.encodeToData()!!.use { file.writeBytes(it.bytes) }
+        }
+        val image = ImageIO.read(file)
+        assertTrue((0 until image.height).all { y -> (0 until image.width).all { x -> image.getRGB(x, y) ushr 24 == 0 } })
+    }
+
     @Test fun fullCardBordersDistinguishClearAndSharedChoices() {
         val marks = listOf(
             DraftScoreMark(NormalizedRect(.05, .22, .16, .4), 80.0, true, highlight = com.firstpick.ui.PickHighlight.CLEAR),

@@ -38,7 +38,7 @@ fun ArenaDeckBuilderOverlay(
         }
     }
     LaunchedEffect(presentation) {
-        while (true) {
+        runOverlayReadLoop({ currentFrontmost }) {
             val readStarted = System.nanoTime()
             val read = withContext(Dispatchers.IO) { memoryReader.read() }
             val readEnded = System.nanoTime()
@@ -66,7 +66,6 @@ fun ArenaDeckBuilderOverlay(
                 }
             }
             trace.observed(read, frame, readStarted, readEnded)
-            delay(if (currentFrontmost) 100 else 400)
         }
     }
     ArenaMemoryOverlayWindow("FirstPick Deck Guidance", frame.health, contentVisible, loc,

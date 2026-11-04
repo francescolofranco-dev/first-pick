@@ -132,6 +132,17 @@ class MemoryCardGeometryTest {
             "Geist, Emberling and Phytomedic stay visible; only covered scores disappear, and the preview repeats Geist")
     }
 
+    @Test fun coveredInputSlotsSurviveHoverTransitionsForWindowReuse() {
+        val cards = listOf(OverlayCard(80.0, null, grpId = 1), OverlayCard(70.0, null, grpId = 2))
+        val pack = listOf(placement(1), placement(2, rect = b))
+        val preview = ArenaVisibleCard(1, 1, ArenaCardZone.PREVIEW, b)
+        val before = draftScoreMarks(cards, pack, includeCovered = true)
+        val during = draftScoreMarks(cards, pack + preview, includeCovered = true)
+        assertEquals(before.map { it.slot }, during.filter { (it.slot ?: -1) >= 0 }.map { it.slot },
+            "Occlusion must hide the existing input panel rather than remove and recreate its native window")
+        assertTrue(during.single { it.slot == 1 }.covered)
+    }
+
     @Test fun duplicatePreviewPreservesTheHoveredCopysRecommendationAndDetails() {
         val cards = listOf(OverlayCard(80.0, null, grpId = 1, recommendedPair = false),
             OverlayCard(80.0, null, grpId = 1, recommendedPair = true))

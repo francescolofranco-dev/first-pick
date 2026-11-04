@@ -58,7 +58,7 @@ fun ArenaOverlayTracker(
         }
     }
     LaunchedEffect(presentation) {
-        while (true) {
+        runOverlayReadLoop({ currentFrontmost }) {
             val readStarted = System.nanoTime()
             val read = withContext(Dispatchers.IO) { memoryReader.read() }
             val readEnded = System.nanoTime()
@@ -86,7 +86,6 @@ fun ArenaOverlayTracker(
                 }
             }
             trace.observed(read, frame, readStarted, readEnded)
-            delay(if (currentFrontmost) 100 else 400)
         }
     }
     ArenaMemoryOverlayWindow("FirstPick Arena Tracker", frame.health, visible, loc,
@@ -95,7 +94,7 @@ fun ArenaOverlayTracker(
         onForegroundChanged = { frontmost = it }, onHealthChanged = onHealthChanged) { arena ->
         SideEffect { trace.composed(frame, frontmost) }
         Box(Modifier.size(arena.w.dp, arena.h.dp)) {
-            val marks = if (visible) draftScoreMarks(frame.content.orEmpty(), frame.geometry?.inWindow(arena).orEmpty(), arena.w.toFloat(), arena.h.toFloat()) else emptyList()
+            val marks = if (visible) draftScoreMarks(frame.content.orEmpty(), frame.geometry?.inWindow(arena).orEmpty(), arena.w.toFloat(), arena.h.toFloat(), includeCovered = true) else emptyList()
             DraftScoreBadges(marks, arena.w.dp, arena.h.dp)
             DraftScoreInteractions(marks, arena)
             OverlayAccessNotice(arena, frame.health, access, onGrantArenaAccess)

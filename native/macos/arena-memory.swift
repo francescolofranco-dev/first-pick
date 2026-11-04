@@ -497,7 +497,7 @@ private final class DeckRuntime {
         try require(counts.values.reduce(0, +) <= maximum, "Draft collection exceeds its copy limit.")
         return counts.keys.sorted().map { [$0, counts[$0]!] }
     }
-    func draftSnapshot(_ nav: UInt64) throws -> [String: Any] {
+    func draftSnapshot(_ nav: UInt64, includeGeometry: Bool = true) throws -> [String: Any] {
         try check(nav, "draft_controller")
         guard try flag(nav, "draft_controller", "_active") else { throw ReadFailure("outside_builder", "The draft screen is inactive.") }
         try checkDeckDetails(nav, "draft_controller", "_deckDetailsPopup")
@@ -535,14 +535,16 @@ private final class DeckRuntime {
         // and clipping are verified. Local/world positions are not screen bounds.
         var result: [String: Any] = ["status": "draft_ready", "editor_session": session, "cards": ids,
                 "picked": picked.keys.sorted().map { [$0, picked[$0]!] }]
-        do {
-            for field in ["_layoutChangeCoroutine", "_settingCardsCoroutine"] {
-                guard try memory.pointer(nav + profile.offset("draft_controller", field), nullable:true) == 0 else { throw ReadFailure("changing","Arena is arranging card positions.") }
+        if includeGeometry {
+            do {
+                for field in ["_layoutChangeCoroutine", "_settingCardsCoroutine"] {
+                    guard try memory.pointer(nav + profile.offset("draft_controller", field), nullable:true) == 0 else { throw ReadFailure("changing","Arena is arranging card positions.") }
+                }
+                guard try !flag(holder,"draft_holder","<IsAnimating>k__BackingField") else { throw ReadFailure("changing","Arena is animating card positions.") }
+                result["geometry"] = try ArenaGeometry(self).pack(views)
             }
-            guard try !flag(holder,"draft_holder","<IsAnimating>k__BackingField") else { throw ReadFailure("changing","Arena is animating card positions.") }
-            result["geometry"] = try ArenaGeometry(self).pack(views)
+            catch { result["geometry_reason"] = failure(error)["reason"] }
         }
-        catch { result["geometry_reason"] = failure(error)["reason"] }
         return result
     }
     func snapshot() throws -> [String: Any] {
@@ -551,7 +553,7 @@ private final class DeckRuntime {
         let scene = try field(wrapper, "wrapper", "<SceneLoader>k__BackingField", "scene")
         let nav = try memory.pointer(scene + profile.offset("scene", "<CurrentNavContent>k__BackingField"), nullable: true)
         if try nav != 0 && identity(memory.pointer(nav)) == ("DraftContentController", "Wotc.Mtga.Wrapper.Draft") {
-            let a = try draftSnapshot(nav), b = try draftSnapshot(nav)
+            let a = try draftSnapshot(nav, includeGeometry:false), b = try draftSnapshot(nav)
             var identityA=a, identityB=b
             for key in ["geometry","geometry_reason"] { identityA.removeValue(forKey:key);identityB.removeValue(forKey:key) }
             guard try memory.pointer(scene + profile.offset("scene", "<CurrentNavContent>k__BackingField")) == nav,

@@ -37,13 +37,14 @@ private fun OverlayPanelWindow(
     y: Float,
     width: Float,
     height: Float,
+    visible: Boolean = true,
     clickThrough: Boolean = false,
     aboveOverlayControls: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     var prepared by remember { mutableStateOf(!clickThrough) }
     SwingWindow(
-        visible = prepared,
+        visible = visible && prepared,
         create = {
             ComposeWindow().apply {
                 // A normal non-focusable NSWindow still activates its application on click.
@@ -148,17 +149,17 @@ internal fun DraftScoreInteractions(marks: List<DraftScoreMark>, arena: WindowBo
     var hovered by remember { mutableStateOf<Int?>(null) }
     // A changed pack or reading must never retain the previous card's explanation.
     LaunchedEffect(marks.map { it.breakdown to it.model }) { hovered = null }
-    val hoveredMark = hovered?.let { marks.getOrNull(it) }
+    val hoveredMark = hovered?.let { marks.getOrNull(it) }?.takeUnless { it.covered }
     if (hoveredMark?.breakdown != null) {
         OverlayScoreDetailsWindow(hoveredMark, arena)
     }
     for ((index, mark) in marks.withIndex()) {
         if (mark.breakdown == null) continue
         val rect = scoreBadgeBounds(mark, arena.w.toFloat(), arena.h.toFloat()) ?: continue
-        key(index, mark.breakdown, mark.model) {
+        key(mark.slot ?: index) {
             OverlayPanelWindow("FirstPick Score ${index + 1}", arena.x + rect.left,
-                arena.y + rect.top, rect.width, rect.height) {
-                OverlayScoreBadge(mark, rect.width, drawBadge = false) { inside ->
+                arena.y + rect.top, rect.width, rect.height, visible = !mark.covered) {
+                OverlayScoreBadge(mark, rect.width, drawBadge = false, enabled = !mark.covered) { inside ->
                     if (inside) hovered = index else if (hovered == index) hovered = null
                 }
             }
@@ -168,15 +169,20 @@ internal fun DraftScoreInteractions(marks: List<DraftScoreMark>, arena: WindowBo
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-internal fun OverlayScoreBadge(mark: DraftScoreMark, size: Float, drawBadge: Boolean = true, onHoverChanged: (Boolean) -> Unit) {
+internal fun OverlayScoreBadge(mark: DraftScoreMark, size: Float, drawBadge: Boolean = true, enabled: Boolean = true, onHoverChanged: (Boolean) -> Unit) {
     var inside by remember { mutableStateOf(false) }
     val callback by rememberUpdatedState(onHoverChanged)
     DisposableEffect(Unit) { onDispose { callback(false) } }
-    LaunchedEffect(inside) {
-        if (inside) delay(160)
-        callback(inside)
+    LaunchedEffect(inside, enabled) {
+        if (!enabled) {
+            inside = false
+            callback(false)
+        } else {
+            if (inside) delay(160)
+            callback(inside)
+        }
     }
-    Box(Modifier.size(size.dp).onPointerEvent(PointerEventType.Enter) { inside = true }
+    Box(Modifier.size(size.dp).onPointerEvent(PointerEventType.Enter) { inside = enabled }
         .onPointerEvent(PointerEventType.Exit) { inside = false }) {
         if (drawBadge) ScoreBadge(mark.value, size)
     }
