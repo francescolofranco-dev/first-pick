@@ -339,3 +339,13 @@ sockets with a scripted reader, foreground native-window lifecycle tests, native
 memory fixtures, and signature checks on the optimized production helper. These
 checks do not replace live acceptance of the initial administrator approval,
 automatic reconnection, or helper replacement across installed app updates.
+
+Live acceptance on 2026-11-04: the user completed the initial administrator
+approval and FirstPick reported that approval was saved. The installed broker
+was root-owned with mode 0755 and its registration was scoped to the current
+user. Restarting into the final optimized 3.7.0 build, then enabling the overlay,
+automatically updated the earlier broker binary and reconnected without another
+administrator prompt. The installed broker's SHA-256 matched the final packaged
+helper, and the UI again showed saved access with Revoke access available.
+Arena itself was not restarted, and revocation was exercised in the scripted
+regression rather than removing the user's newly approved live grant.
