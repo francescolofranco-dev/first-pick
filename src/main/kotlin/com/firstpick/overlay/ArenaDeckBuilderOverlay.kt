@@ -70,10 +70,12 @@ fun ArenaDeckBuilderOverlay(
         }
     }
     ArenaMemoryOverlayWindow("FirstPick Deck Guidance", frame.health, contentVisible, loc,
+        accessNoticeVisible = showOverlayAccessNotice(frame.health, access),
         geometry = frame.geometry,
         onForegroundChanged = { frontmost = it }, onHealthChanged = onHealthChanged) { arena ->
         SideEffect { trace.composed(frame, frontmost) }
         OverlayAccessNotice(arena, frame.health, access, onGrantArenaAccess)
+        if (!contentVisible) return@ArenaMemoryOverlayWindow
         val verified = frame.content
         if (verified != null) {
             DeckGuidanceOverlay(verified.model.withMemoryMarks(frame.geometry?.inWindow(arena).orEmpty(), verified.names), arena.w.dp, arena.h.dp)

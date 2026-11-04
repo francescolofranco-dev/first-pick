@@ -581,29 +581,12 @@ private func sameToken(_ a: String, _ b: String) -> Bool {
 private func shellQuote(_ text: String) -> String { "'" + text.replacingOccurrences(of: "'", with: "'\"'\"'") + "'" }
 private func authorizationScript(_ command: String) -> NSAppleScript? {
     let escaped = command.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "\"", with: "\\\"")
-    return NSAppleScript(source: "with timeout of 28860 seconds\n do shell script \"\(escaped)\" with administrator privileges with prompt \"FirstPick needs read-only access to your live Arena deck while this Arena session is open.\"\nend timeout")
+    return NSAppleScript(source: "with timeout of 28860 seconds\n do shell script \"\(escaped)\" with administrator privileges with prompt \"FirstPick needs read-only access to your live Arena deck by installing a helper that remembers your approval. You can remove it later in FirstPick.\"\nend timeout")
 }
 private func validateDirectory(_ path: String, _ uid: uid_t) throws {
     var info = stat()
     let directory = URL(fileURLWithPath: path).deletingLastPathComponent().path
     try require(path.hasPrefix("/tmp/fp-live-") && path.hasSuffix("/read.sock") && path.utf8.count < 104 && lstat(directory, &info) == 0 && info.st_uid == uid && info.st_mode & S_IFMT == S_IFDIR && info.st_mode & 0o777 == 0o700, "The private session directory could not be verified.")
-}
-private func grant(_ path: String, _ token: String, _ parent: pid_t) throws -> [String: Any] {
-    try require(getuid() != 0 && validToken(token), "Invalid access request.")
-    try validateDirectory(path, getuid())
-    let target = try Target()
-    let binary = URL(fileURLWithPath: CommandLine.arguments[0]).resolvingSymlinksInPath().path
-    let args = [binary, "--authorized", path, token, String(parent), String(getuid()), String(getgid()), String(target.pid)]
-    // Keep the authorization call attached to its child. Detaching here can
-    // discard launch failures (or the child itself) when the privileged shell ends.
-    // The app observes socket readiness concurrently; no UI thread waits on this.
-    let command = args.map(shellQuote).joined(separator: " ")
-    var error: NSDictionary?
-    let script = authorizationScript(command)
-    guard let result = script?.executeAndReturnError(&error), error == nil else { return ["status": "access_required", "reason": "Access was not granted. Grant Arena access to enable the overlay."] }
-    if let text = result.stringValue, text.utf8.count <= 4096,
-       let data = text.data(using: .utf8), let response = try? JSONSerialization.jsonObject(with: data) as? [String: Any] { return response }
-    return ["status": "closed"]
 }
 private func serveAuthorized(_ args: [String]) throws {
     try require(args.count == 6 && geteuid() == 0 && validToken(args[1]), "Invalid authorized session.")
@@ -614,6 +597,8 @@ private func serveAuthorized(_ args: [String]) throws {
     // write any startup diagnostics only after permanently dropping privileges.
     let acquired = Result { () throws -> (Target, Memory) in
         let target = try Target(pid: pid)
+        try require(target.launch.pbi_uid == uid && target.launch.pbi_ruid == uid,
+                    "Arena belongs to another user.")
         return (target, try Memory(target.pid))
     }
     try require(setgroups(0, nil) == 0 && setgid(gid) == 0 && setuid(uid) == 0 && getuid() == uid && geteuid() == uid && getgid() == gid && getegid() == gid, "Could not drop administrator privileges.")
@@ -690,10 +675,21 @@ private let mode = CommandLine.arguments.dropFirst().first ?? "--worker"
 do {
     switch mode {
     case "--authorized": try serveAuthorized(Array(CommandLine.arguments.dropFirst(2)))
-    case "--grant":
+    case "--revoke-access":
+        print(String(decoding: json(try revokeAccessService()), as: UTF8.self))
+    case "--check-access-signature":
+        guard CommandLine.arguments.count == 3 else { throw ReadFailure("unavailable", "Invalid signature check.") }
+        let (requirement, _) = try readerRequirement()
+        try verifiedReader(CommandLine.arguments[2], requirement: requirement)
+        print("{\"status\":\"signature_verified\"}")
+    case "--access-service": try runAccessService()
+    case "--install-access-service":
+        guard CommandLine.arguments.count == 3, let uid = uid_t(CommandLine.arguments[2]) else { throw ReadFailure("unavailable", "Invalid installation owner.") }
+        try installAccessService(uid)
+    case "--grant", "--connect":
         let args = Array(CommandLine.arguments.dropFirst(2))
         guard args.count == 3, let parent = pid_t(args[2]) else { throw ReadFailure("unavailable", "Invalid grant request.") }
-        print(String(decoding: json(try grant(args[0], args[1], parent)), as: UTF8.self))
+        print(String(decoding: json(try persistentGrant(args[0], args[1], parent, allowInstall: mode == "--grant")), as: UTF8.self))
     case "--inspect":
         _ = try Target(); print("{\"status\":\"supported\"}")
     case "--fixture":
@@ -722,9 +718,13 @@ do {
                     try candidate!.validate()
                     runtime = try DeckRuntime(candidate!, Memory(candidate!.pid))
                 }
-                print(String(decoding: json(try runtime!.snapshot()), as: UTF8.self))
+                var result = try runtime!.snapshot()
+                result["approval_saved"] = FileManager.default.fileExists(atPath: installedReader)
+                print(String(decoding: json(result), as: UTF8.self))
             } catch {
-                let result = failure(error)
+                var result = failure(error)
+                result["approval_saved"] = FileManager.default.fileExists(atPath: installedReader)
+                if result["status"] as? String == "access_required" && FileManager.default.fileExists(atPath: installedReader) { result["status"] = "saved_access" }
                 if result["status"] as? String == "arena_closed" { runtime = nil; candidate = nil }
                 print(String(decoding: json(result), as: UTF8.self))
             }

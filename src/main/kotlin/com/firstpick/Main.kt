@@ -130,6 +130,7 @@ fun main() {
                 onToggleOverlay = { isOverlayOpen = !isOverlayOpen },
                 liveDeckAccess = liveDeckAccess,
                 onGrantArenaAccess = grantArenaAccess,
+                onRevokeArenaAccess = { appScope.launch(Dispatchers.IO) { liveDeckReader.revokeAccess() }; Unit },
                 committedDeck = selectedDeck,
                 onUseDeck = {
                     if (state.phase == DraftPhase.COMPLETE) {

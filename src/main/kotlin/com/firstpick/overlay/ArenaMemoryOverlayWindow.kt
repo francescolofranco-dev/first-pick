@@ -18,6 +18,7 @@ internal fun ArenaMemoryOverlayWindow(
     work: OverlayHealth,
     contentVisible: Boolean = true,
     locator: ArenaWindowLocator,
+    accessNoticeVisible: Boolean = false,
     geometry: ArenaCardGeometry? = null,
     onForegroundChanged: (Boolean) -> Unit,
     onHealthChanged: (OverlayHealth) -> Unit,
@@ -59,7 +60,8 @@ internal fun ArenaMemoryOverlayWindow(
         state.position = WindowPosition(arena.x.dp, arena.y.dp)
         state.size = DpSize(arena.w.dp, arena.h.dp)
     }
-    val visible = arena.frontmost && contentVisible && !clickThroughFailed
+    // Authorization must be reachable before memory access can verify a screen.
+    val visible = arena.frontmost && (contentVisible || accessNoticeVisible) && !clickThroughFailed
     // Compose suspends a hidden window's content, so its independent input windows
     // would otherwise remain visible. Dispose the whole window tree on focus loss.
     if (!visible) return

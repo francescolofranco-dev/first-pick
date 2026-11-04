@@ -8,6 +8,7 @@ import com.firstpick.advisor.ValueBreakdown
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import org.junit.Assume.assumeTrue
+import java.nio.file.Files
 import java.awt.Frame
 import java.awt.GraphicsEnvironment
 import java.util.concurrent.atomic.AtomicReference
@@ -67,6 +68,45 @@ class OverlayFocusLifecycleTest {
                 assertFalse(windows().any { it.isVisible }, "An unavailable Arena observation must not retain foreground visibility")
             } finally { app.cancelAndJoin() }
         }
+    }
+
+    @Test fun accessControlAppearsBeforeAScreenCanBeVerified() = runBlocking {
+        assumeTrue(System.getProperty("os.name").contains("Mac") && !GraphicsEnvironment.isHeadless())
+        val directory = Files.createTempDirectory("firstpick-access-overlay").toFile()
+        val helper = directory.resolve("reader").apply {
+            writeText("""
+                |#!/bin/sh
+                |while IFS= read -r request; do
+                |  printf '%s\n' '{"status":"access_required"}'
+                |done
+            """.trimMargin())
+            check(setExecutable(true))
+        }
+        try {
+            for (deckMode in listOf(false, true)) ArenaMemoryReader(helper).use { reader ->
+                withContext(Dispatchers.Swing) {
+                    val bounds = AtomicReference(WindowBounds(200, 200, 800, 500, true))
+                    val locator = ArenaWindowLocator { bounds.get() }
+                    val app = launchApplication {
+                        if (deckMode) ArenaDeckBuilderOverlay(emptyList(), emptyList(), locator = locator,
+                            memoryReader = reader)
+                        else ArenaOverlayTracker(emptyList(), emptyList(), null, reader, locator)
+                    }
+                    fun accessVisible() = Frame.getFrames().any { it.title == "FirstPick Arena Access" && it.isVisible }
+                    try {
+                        withTimeout(5000) { while (!accessVisible()) delay(25) }
+                        assertFalse(Frame.getFrames().any { it.title.startsWith("FirstPick Score ") && it.isVisible },
+                            "An access prompt must not expose unverified card advice")
+                        bounds.set(bounds.get().copy(frontmost = false))
+                        delay(600)
+                        assertFalse(accessVisible(), "The access control must disappear outside Arena")
+                        bounds.set(bounds.get().copy(frontmost = true))
+                        withTimeout(5000) { while (!accessVisible()) delay(25) }
+                    } finally { app.cancelAndJoin() }
+                    assertFalse(accessVisible(), "Disabling the overlay must dispose the access control")
+                }
+            }
+        } finally { directory.deleteRecursively() }
     }
 
     private fun nativeIgnoresMouseEvents(window: ComposeWindow): Boolean {

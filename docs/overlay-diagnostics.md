@@ -294,3 +294,48 @@ This verifies live identity and geometry on the new build, not interaction or
 end-to-end rendering latency. The foreground metadata probe reported Arena in
 the background during agent verification, so foreground badge appearance still
 requires user acceptance.
+
+## Saved Arena authorization (3.7.0)
+
+The Grant access control is independent of verified card advice. Before access
+has been granted, FirstPick cannot determine the current Arena screen, so the
+small access control can appear anywhere in foreground Arena when the overlay
+is enabled. Card advice and reading notices still require a verified draft or
+deck screen. All windows disappear outside foreground Arena. A native regression
+exercises both production trackers from an initial `access_required` reading.
+
+One administrator approval now installs a certificate-signed, root-owned broker
+at `/Library/PrivilegedHelperTools/com.firstpick.arena-reader`, registered by
+`/Library/LaunchDaemons/com.firstpick.arena-reader.plist`. This uses a conventional
+launch daemon, which supports locally signed builds; the SMAppService registration
+probe on this Mac was rejected with error 1, and Developer ID/notarization was
+not configured. No password is stored and no system privacy or trust settings
+are relaxed.
+
+The broker accepts XPC connections only from the reader's designated signing
+requirement and the UID explicitly approved at installation. Its interface can
+start a bounded, app-owned reader session, install a signed reader update, or
+revoke the grant. It cannot execute arbitrary commands, accept arbitrary reader
+arguments, or return raw process memory. It derives the caller's UID/GID from
+the XPC connection and verifies that both the app and Arena belong to that user.
+Each child acquires only an Arena read right, then permanently drops root before
+runtime discovery, socket handling, and typed snapshots, as before.
+
+App and Arena restarts end their read session, but retain the installed grant.
+FirstPick automatically reconnects with `--connect`, which cannot install a
+helper or open an administrator prompt. Signed app updates replace the broker
+through a root-owned staging file verified against the approved signing
+requirement. This relies on retaining the local signing certificate (or the
+release signing identity); changing identity requires explicit reauthorization.
+The root broker never launches a binary from the user's app directory.
+
+Revoke access in the main app stops active sessions and removes the broker and
+launch-daemon registration. Subsequent connections require explicit approval.
+Only helper installation requests a macOS administrator prompt. Routine
+reconnection, signed updates, and revocation use the authenticated broker.
+
+Verification includes app/Arena restart and revocation tests using real private
+sockets with a scripted reader, foreground native-window lifecycle tests, native
+memory fixtures, and signature checks on the optimized production helper. These
+checks do not replace live acceptance of the initial administrator approval,
+automatic reconnection, or helper replacement across installed app updates.

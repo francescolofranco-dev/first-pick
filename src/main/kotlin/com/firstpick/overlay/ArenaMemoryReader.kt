@@ -33,6 +33,7 @@ enum class LiveDeckAccessStatus { CHECKING, ACCESS_REQUIRED, GRANTING, CONNECTED
 data class LiveDeckAccess(
     val status: LiveDeckAccessStatus = LiveDeckAccessStatus.CHECKING,
     val detail: String = "Checking Arena access.",
+    val savedApproval: Boolean = false,
 ) {
     val canGrant: Boolean get() = status == LiveDeckAccessStatus.ACCESS_REQUIRED || status == LiveDeckAccessStatus.FAILED
 }
@@ -70,6 +71,7 @@ class ArenaMemoryReader(
     private val closed = AtomicBoolean(false)
     @Volatile private var session: Session? = null
     @Volatile private var grantProcess: Process? = null
+    private var nextReconnectAt = 0L
     private var worker: Process? = null
     private var workerInput: java.io.BufferedWriter? = null
     private var workerOutput: java.io.BufferedReader? = null
@@ -82,6 +84,7 @@ class ArenaMemoryReader(
             if (current != null) rpc(current, "snapshot") else workerSnapshot()
         } catch (_: Exception) {
             if (current != null) {
+                grantProcess?.destroy(); grantProcess = null
                 session = null
                 removeDirectory(current)
                 synchronized(this) { stopWorker() }
@@ -89,10 +92,20 @@ class ArenaMemoryReader(
             }
             return ArenaMemoryRead.Unavailable("Grant Arena access in FirstPick to reconnect the overlay.", MemoryUnavailableKind.ACCESS_REQUIRED)
         }
+        if ((payload["status"] as? JsonPrimitive)?.contentOrNull == "saved_access" && !granting.get()) {
+            val now = System.nanoTime()
+            if (now >= nextReconnectAt) {
+                nextReconnectAt = now + TimeUnit.SECONDS.toNanos(5)
+                grantAccess(allowInstall = false)
+            }
+            if (session != null) { nextReconnectAt = 0L; return read() }
+            return ArenaMemoryRead.Unavailable(state.value.detail, MemoryUnavailableKind.ACCESS_REQUIRED)
+        }
+        val savedApproval = payload["approval_saved"]?.jsonPrimitive?.booleanOrNull ?: state.value.savedApproval
         val result = parseArenaMemoryRead(payload)
         when ((payload["status"] as? JsonPrimitive)?.contentOrNull) {
             "ready", "draft_ready", "blocked", "outside_builder", "changing" -> if (!granting.get()) {
-                state.value = LiveDeckAccess(LiveDeckAccessStatus.CONNECTED, "Live Arena access is connected.")
+                state.value = LiveDeckAccess(LiveDeckAccessStatus.CONNECTED, "Live Arena access is connected. Approval is saved on this Mac.", savedApproval = true)
             }
             "access_required" -> if (!granting.get()) {
                 state.value = LiveDeckAccess(LiveDeckAccessStatus.ACCESS_REQUIRED, "Grant read-only access to enable Arena's live overlay.")
@@ -101,25 +114,29 @@ class ArenaMemoryReader(
                 state.value = LiveDeckAccess(LiveDeckAccessStatus.UNSUPPORTED, "This Arena build is not supported yet. The overlay is paused.")
             }
             "arena_closed" -> {
-                if (current != null) { session = null; removeDirectory(current); synchronized(this) { stopWorker() } }
+                if (current != null) {
+                    grantProcess?.destroy(); grantProcess = null
+                    session = null; removeDirectory(current); synchronized(this) { stopWorker() }
+                }
                 if (!granting.get()) state.value = LiveDeckAccess(LiveDeckAccessStatus.CHECKING, "Open Arena to connect live deck sync.")
             }
         }
+        state.value = state.value.copy(savedApproval = savedApproval)
         return result
     }
 
-    /** Called only by the explicit Grant Arena access button. macOS owns the password prompt. */
-    fun grantAccess() {
+    /** Installation requires an explicit grant. Saved access reconnects without an administrator prompt. */
+    fun grantAccess(allowInstall: Boolean = true) {
         if (closed.get() || !granting.compareAndSet(false, true)) return
         var candidate: Session? = null
         try {
             val binary = helper ?: error("Native reader is unavailable")
-            state.value = LiveDeckAccess(LiveDeckAccessStatus.GRANTING, "Complete the macOS permission prompt to connect Arena.")
+            state.value = LiveDeckAccess(LiveDeckAccessStatus.GRANTING, if (allowInstall) "Approve the read-only Arena helper once to remember access on this Mac." else "Reconnecting with saved Arena access…")
             val directory = Files.createTempDirectory(Path.of("/tmp"), "fp-live-", PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rwx------")))
             val token = ByteArray(32).also(SecureRandom()::nextBytes).joinToString("") { "%02x".format(it.toInt() and 255) }
             val pendingSession = Session(directory, token)
             candidate = pendingSession
-            val process = ProcessBuilder(binary.absolutePath, "--grant", pendingSession.socket.toString(), token,
+            val process = ProcessBuilder(binary.absolutePath, if (allowInstall) "--grant" else "--connect", pendingSession.socket.toString(), token,
                 ProcessHandle.current().pid().toString()).redirectError(ProcessBuilder.Redirect.DISCARD).start()
             grantProcess = process
             val deadline = System.nanoTime() + TimeUnit.MINUTES.toNanos(5)
@@ -140,7 +157,7 @@ class ArenaMemoryReader(
                         session?.let { runCatching { rpc(it, "close") }; removeDirectory(it) }
                         session = pendingSession
                         candidate = null
-                        state.value = LiveDeckAccess(LiveDeckAccessStatus.CONNECTED, "Live Arena access is connected.")
+                        state.value = LiveDeckAccess(LiveDeckAccessStatus.CONNECTED, "Live Arena access is connected. Approval is saved on this Mac.", savedApproval = true)
                         return
                     }
                     if (status == "unsupported_build") {
@@ -173,6 +190,24 @@ class ArenaMemoryReader(
             if (candidate != null || session == null) grantProcess = null
             granting.set(false)
         }
+    }
+
+    fun revokeAccess() {
+        if (closed.get() || !granting.compareAndSet(false, true)) return
+        try {
+            val binary = helper ?: error("Native reader is unavailable")
+            val process = ProcessBuilder(binary.absolutePath, "--revoke-access")
+                .redirectError(ProcessBuilder.Redirect.DISCARD).start()
+            if (!process.waitFor(15, TimeUnit.SECONDS)) { process.destroyForcibly(); error("Revoke timed out") }
+            val answer = parseObject(process.inputStream.bufferedReader().readText().take(65536))
+            check(answer["status"]?.jsonPrimitive?.contentOrNull == "revoked")
+            grantProcess?.destroy(); grantProcess = null
+            session?.let { removeDirectory(it) }; session = null
+            synchronized(this) { stopWorker() }
+            state.value = LiveDeckAccess(LiveDeckAccessStatus.ACCESS_REQUIRED, "Saved Arena access was removed from this Mac.")
+        } catch (_: Exception) {
+            state.value = LiveDeckAccess(LiveDeckAccessStatus.FAILED, "Saved Arena access could not be removed. Try again.", savedApproval = true)
+        } finally { granting.set(false) }
     }
 
     @Synchronized

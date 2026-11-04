@@ -90,15 +90,16 @@ fun ArenaOverlayTracker(
         }
     }
     ArenaMemoryOverlayWindow("FirstPick Arena Tracker", frame.health, visible, loc,
+        accessNoticeVisible = showOverlayAccessNotice(frame.health, access),
         geometry = frame.geometry,
         onForegroundChanged = { frontmost = it }, onHealthChanged = onHealthChanged) { arena ->
         SideEffect { trace.composed(frame, frontmost) }
         Box(Modifier.size(arena.w.dp, arena.h.dp)) {
-            val marks = draftScoreMarks(frame.content.orEmpty(), frame.geometry?.inWindow(arena).orEmpty())
+            val marks = if (visible) draftScoreMarks(frame.content.orEmpty(), frame.geometry?.inWindow(arena).orEmpty()) else emptyList()
             DraftScoreBadges(marks, arena.w.dp, arena.h.dp)
             DraftScoreInteractions(marks, arena)
             OverlayAccessNotice(arena, frame.health, access, onGrantArenaAccess)
-            if (marks.isEmpty() && frame.showNotice && !showOverlayAccessNotice(frame.health, access)) Box(Modifier.align(Alignment.TopEnd).padding(24.dp).widthIn(max = (arena.w * .6).dp)
+            if (visible && marks.isEmpty() && frame.showNotice && !showOverlayAccessNotice(frame.health, access)) Box(Modifier.align(Alignment.TopEnd).padding(24.dp).widthIn(max = (arena.w * .6).dp)
                 .background(DeckGuidanceOverlayPalette.PillBackground, RoundedCornerShape(12.dp))
                 .border(1.dp, DeckGuidanceOverlayPalette.ReadingAccent, RoundedCornerShape(12.dp)).padding(9.dp)) {
                 Text(if (frame.content != null && frame.geometry != null) "Updating card positions…" else frame.health.detail,

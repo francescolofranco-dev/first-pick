@@ -2,7 +2,7 @@ package com.firstpick.overlay
 
 internal enum class OverlayScreen { DRAFT, DECK }
 
-/** Gates the whole window tree, including notices and interactive child windows. */
+/** Gates verified advice and reading notices. Authorization has a separate foreground-only gate. */
 internal class OverlayScreenVisibility(private val screen: OverlayScreen) {
     var visible: Boolean = false
         private set

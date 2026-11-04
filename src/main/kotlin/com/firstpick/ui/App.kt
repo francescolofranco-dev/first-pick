@@ -61,6 +61,7 @@ fun App(
     liveDeckGuidance: com.firstpick.overlay.DeckGuidanceOverlayModel? = null,
     liveDeckAccess: LiveDeckAccess = LiveDeckAccess(),
     onGrantArenaAccess: () -> Unit = {},
+    onRevokeArenaAccess: () -> Unit = {},
     onToggleOverlay: () -> Unit = {},
     committedDeck: DeckOptionUi? = null,
     onUseDeck: (DeckOptionUi) -> Unit = {},
@@ -121,7 +122,7 @@ fun App(
                         Text(it, style = AppTheme.typography.caption, color = AppTheme.colors.danger)
                     }
                     if (isOverlayOpen) {
-                        LiveDeckAccessBanner(liveDeckAccess, onGrantArenaAccess)
+                        LiveDeckAccessBanner(liveDeckAccess, onGrantArenaAccess, onRevokeArenaAccess)
                     }
 
                     // Bento Main Workspace
@@ -193,7 +194,7 @@ fun App(
 }
 
 @Composable
-private fun LiveDeckAccessBanner(access: LiveDeckAccess, onGrant: () -> Unit) {
+private fun LiveDeckAccessBanner(access: LiveDeckAccess, onGrant: () -> Unit, onRevoke: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth().background(AppTheme.colors.surface, RoundedCornerShape(8.dp)).padding(10.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -203,9 +204,12 @@ private fun LiveDeckAccessBanner(access: LiveDeckAccess, onGrant: () -> Unit) {
             Text("Live Arena access", style = AppTheme.typography.caption, color = AppTheme.colors.textPrimary)
             Text(access.detail, style = AppTheme.typography.micro, color = AppTheme.colors.textSecondary)
             if (access.canGrant) Text(
-                "macOS will ask for administrator permission. Access is read-only and ends when FirstPick or Arena closes.",
+                "Approve the read-only helper once. Access is remembered across restarts and updates; revoke it here anytime.",
                 style = AppTheme.typography.micro, color = AppTheme.colors.textMuted,
             )
+        }
+        if (access.savedApproval) {
+            AppButton(onClick = onRevoke) { Text("Revoke access") }
         }
         if (access.canGrant || access.status == LiveDeckAccessStatus.GRANTING) {
             AppButton(onClick = onGrant, enabled = access.canGrant) {
