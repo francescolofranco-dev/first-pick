@@ -192,6 +192,8 @@ internal fun PackPane(
         val unrated = hasUnratedCards(state.packCards)
         val showBestPick = !unrated && state.picksPerChoice == 1
         val conf = remember(state.packCards) { packConfidence(state.packCards) }
+        val highlights = remember(state.packCards, state.picksPerChoice) { packHighlights(state.packCards, state.picksPerChoice) }
+        fun highlight(card: PackCardUi) = highlights[state.packCards.indexOf(card)]
         val packSize = state.packCards.size
         val heroCard = state.packCards.first()
         val restCards = state.packCards.drop(1)
@@ -247,6 +249,7 @@ internal fun PackPane(
                         packSize = packSize,
                         confidence = if (state.picksPerChoice == 1) conf else null,
                         showBestPick = showBestPick,
+                        highlight = highlight(heroCard),
                     )
                 }
 
@@ -263,7 +266,7 @@ internal fun PackPane(
                                 PackBentoCard(
                                     card = first,
                                     packSize = packSize,
-                                    highlight = first.recommendedPair,
+                                    highlight = highlight(first),
                                     modifier = Modifier.weight(1f).fillMaxHeight(),
                                 )
                                 if (pair.size > 1) {
@@ -271,7 +274,7 @@ internal fun PackPane(
                                     PackBentoCard(
                                         card = second,
                                         packSize = packSize,
-                                        highlight = second.recommendedPair,
+                                        highlight = highlight(second),
                                         modifier = Modifier.weight(1f).fillMaxHeight(),
                                     )
                                 } else {
@@ -284,7 +287,7 @@ internal fun PackPane(
                             PackBentoCard(
                                 card = card,
                                 packSize = packSize,
-                                highlight = card.recommendedPair,
+                                highlight = highlight(card),
                                 modifier = Modifier.fillMaxWidth(),
                             )
                         }
@@ -310,6 +313,7 @@ private fun HeroPickCard(
     packSize: Int,
     confidence: PickConfidence?,
     showBestPick: Boolean,
+    highlight: PickHighlight,
 ) {
     val bombConsistent = card.isBomb && isBombTier(card.value)
     val tierColor = valueTierColor(card.value)
@@ -336,7 +340,7 @@ private fun HeroPickCard(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .appHeroCard(accentColor = bannerColor, radius = AppTheme.radii.xl)
+            .packPickCard(highlight)
             .padding(horizontal = 14.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -354,9 +358,9 @@ private fun HeroPickCard(
                     title = "Pick Confidence",
                     tooltip = buildString {
                         append("Score gap between #1 and #2 in this pack.\n\n")
-                        append("• BEST PICK (+3.0+ pts) — Clear standout card.\n")
-                        append("• CLOSE CALL (1.5–3.0 pts) — Slight edge to #1.\n")
-                        append("• TOSS-UP (<1.5 pts) — Top contenders are nearly tied; consider open color signals.")
+                        append("• BEST PICK (+7.0+ pts) — Clear standout card.\n")
+                        append("• CLOSE CALL (3.0–7.0 pts) — Slight edge to #1.\n")
+                        append("• TOSS-UP (<3.0 pts) — Top contenders are nearly tied; consider open color signals.")
                     },
                     width = 264.dp,
                 ) {
@@ -507,7 +511,7 @@ private fun HeroPickCard(
 private fun PackBentoCard(
     card: PackCardUi,
     packSize: Int,
-    highlight: Boolean,
+    highlight: PickHighlight,
     modifier: Modifier = Modifier,
 ) {
     val bombConsistent = card.isBomb && isBombTier(card.value)
@@ -523,7 +527,7 @@ private fun PackBentoCard(
     Row(
         modifier = modifier
             .alpha(if (card.guideConstrained) 0.52f else 1f)
-            .appCard(selected = highlight, radius = AppTheme.radii.xl)
+            .packPickCard(highlight)
             .padding(horizontal = 11.dp, vertical = 9.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -540,7 +544,7 @@ private fun PackBentoCard(
                 Text(
                     if (card.value == null) "—" else "#${card.rank}",
                     style = AppTheme.typography.monoSmall.copy(fontWeight = FontWeight.Bold),
-                    color = if (highlight) AppTheme.colors.accent else AppTheme.colors.textSecondary,
+                    color = if (highlight != PickHighlight.NONE) AppTheme.colors.accent else AppTheme.colors.textSecondary,
                 )
                 PipRow(card.color.ifEmpty { "C" }.toList(), size = 14.dp)
                 CardPreview(card.imageUrl, description = card.name, modifier = Modifier.weight(1f, fill = false)) {
@@ -725,3 +729,15 @@ private fun DemoSetButton(set: String, recommended: Boolean, onClick: () -> Unit
         )
     }
 }
+
+private fun Modifier.packPickCard(highlight: PickHighlight): Modifier =
+    appCard(
+        selected = highlight == PickHighlight.CONTENDER,
+        active = highlight == PickHighlight.CLEAR,
+        accentColor = if (highlight == PickHighlight.CLEAR) AppTheme.colors.warning else AppTheme.colors.accent,
+        radius = AppTheme.radii.xl,
+    ).then(
+        if (highlight == PickHighlight.CLEAR) {
+            Modifier.border(3.dp, AppTheme.colors.warning, RoundedCornerShape(AppTheme.radii.xl))
+        } else Modifier,
+    )

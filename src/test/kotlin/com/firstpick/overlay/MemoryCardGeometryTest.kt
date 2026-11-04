@@ -10,6 +10,17 @@ class MemoryCardGeometryTest {
     private fun placement(id: Int, zone: ArenaCardZone = ArenaCardZone.PACK, rect: NormalizedRect = a) =
         ArenaVisibleCard(id, 1, zone, rect)
 
+    @Test fun recommendationEmphasisFollowsExactCardGeometry() {
+        val cards = listOf(
+            OverlayCard(80.0, null, grpId = 1, highlight = com.firstpick.ui.PickHighlight.CONTENDER),
+            OverlayCard(78.0, null, grpId = 2, highlight = com.firstpick.ui.PickHighlight.CONTENDER),
+            OverlayCard(60.0, null, grpId = 3),
+        )
+        val marks = draftScoreMarks(cards, listOf(placement(1), placement(2, rect = b), placement(3)))
+        assertEquals(cards.map { it.highlight }, marks.map { it.highlight })
+        assertEquals(b, marks[1].bounds)
+    }
+
     @Test fun clientCoordinatesAccountForTitleBarAndRetinaScaling() {
         val geometry = ArenaCardGeometry(2560, 1440, listOf(placement(1)))
         val adjusted = geometry.inWindow(WindowBounds(0, 0, 1280, 748)).single().bounds

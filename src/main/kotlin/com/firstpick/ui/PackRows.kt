@@ -62,3 +62,24 @@ internal fun packConfidence(cards: List<PackCardUi>): PickConfidence? {
     val values = viable.ifEmpty { cards }.mapNotNull { it.value }
     return if (values.size >= 2) Confidence.of(values) else null
 }
+
+/** Emphasis describes recommendation certainty, independently of a card's power tier. */
+enum class PickHighlight { NONE, CLEAR, CONTENDER }
+
+internal fun packHighlights(cards: List<PackCardUi>, picksPerChoice: Int = 1): List<PickHighlight> {
+    if (picksPerChoice == 2 || cards.any { it.recommendedPair }) {
+        return cards.map { if (it.recommendedPair) PickHighlight.CONTENDER else PickHighlight.NONE }
+    }
+    if (hasUnratedCards(cards)) return cards.map { PickHighlight.NONE }
+    val rated = cards.filter { !it.isBasicLand && it.value?.isFinite() == true }
+    val viable = rated.filterNot { it.guideConstrained }.ifEmpty { rated }
+    val best = viable.maxOfOrNull { it.value!! } ?: return cards.map { PickHighlight.NONE }
+    val contenders = viable.filter { best - it.value!! < Confidence.LEAN_GAP }
+    return cards.map {
+        when {
+            it !in contenders -> PickHighlight.NONE
+            contenders.size == 1 -> PickHighlight.CLEAR
+            else -> PickHighlight.CONTENDER
+        }
+    }
+}

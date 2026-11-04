@@ -171,8 +171,8 @@ fun main() {
             }
 
             isOverlayOpen && (state.phase == DraftPhase.DRAFTING || state.phase == DraftPhase.IDLE) -> {
-                val cards = remember(state.packCards) {
-                    overlayCards(state.packCards)
+                val cards = remember(state.packCards, state.picksPerChoice) {
+                    overlayCards(state.packCards, state.picksPerChoice)
                 }
                 ArenaOverlayTracker(
                     cards = cards,
@@ -188,10 +188,13 @@ fun main() {
     }
 }
 
-internal fun overlayCards(packCards: List<PackCardUi>): List<OverlayCard> =
-    packCards.sortedBy(PackCardUi::originalIndex).map {
+internal fun overlayCards(packCards: List<PackCardUi>, picksPerChoice: Int = 1): List<OverlayCard> {
+    val highlights = com.firstpick.ui.packHighlights(packCards, picksPerChoice)
+    return packCards.indices.sortedBy { packCards[it].originalIndex }.map { index ->
+        val it = packCards[index]
         OverlayCard(
             value = it.value,
+            highlight = highlights[index],
             imageUrl = it.imageUrl,
             name = it.name,
             originalIndex = it.originalIndex,
@@ -205,6 +208,7 @@ internal fun overlayCards(packCards: List<PackCardUi>): List<OverlayCard> =
             },
         )
     }
+}
 
 internal fun deckGuidanceTarget(deck: DeckOptionUi): List<DeckCardCount> =
     deckGuidancePool(deck.spells + deck.lands)

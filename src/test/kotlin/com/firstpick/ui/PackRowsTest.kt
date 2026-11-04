@@ -35,6 +35,40 @@ class PackRowsTest {
     )
 
     @Test
+    fun `clear winner and exact seven point boundary get exclusive emphasis`() {
+        val rows = packRows(listOf(ratedScore(1, 80.0), ratedScore(2, 73.0)), emptyList(), listOf(1, 2))
+        assertEquals(listOf(PickHighlight.CLEAR, PickHighlight.NONE), packHighlights(rows))
+    }
+
+    @Test
+    fun `two and three close choices share softer emphasis in original order`() {
+        val rows = packRows(listOf(ratedScore(1, 80.0), ratedScore(2, 77.0), ratedScore(3, 74.0), ratedScore(4, 65.0)), emptyList(), listOf(4, 3, 2, 1))
+        assertEquals(listOf(PickHighlight.CONTENDER, PickHighlight.CONTENDER, PickHighlight.CONTENDER, PickHighlight.NONE), packHighlights(rows))
+        assertEquals(listOf(PickHighlight.CONTENDER, PickHighlight.CONTENDER), packHighlights(rows.take(2).reversed()))
+        assertEquals(listOf(PickHighlight.CONTENDER, PickHighlight.CONTENDER), packHighlights(rows.take(2).map { it.copy(value = 80.0) }))
+        val overlay = com.firstpick.overlayCards(rows)
+        assertEquals(listOf(4, 3, 2, 1), overlay.map { it.grpId })
+        assertEquals(listOf(PickHighlight.NONE, PickHighlight.CONTENDER, PickHighlight.CONTENDER, PickHighlight.CONTENDER), overlay.map { it.highlight })
+    }
+
+    @Test
+    fun `unknown power suppresses emphasis while basic land and constrained cards cannot contend`() {
+        val rows = packRows(listOf(ratedScore(1, 80.0), ratedScore(2, 79.0, PickGuardrail(ModelPromotionStatus.CONSTRAINED))), listOf(card(3, "Island")), listOf(1, 2, 3))
+        assertEquals(listOf(PickHighlight.CLEAR, PickHighlight.NONE, PickHighlight.NONE), packHighlights(rows))
+        assertTrue(packHighlights(rows + rows[0].copy(grpId = 4, value = null)).all { it == PickHighlight.NONE })
+        assertEquals(emptyList(), packHighlights(emptyList()))
+        assertEquals(listOf(PickHighlight.CLEAR), packHighlights(rows.take(1)))
+    }
+
+    @Test
+    fun `pick two preserves only the suggested pair without claiming a clear solo winner`() {
+        val rows = packRows(listOf(ratedScore(1, 80.0), ratedScore(2, 60.0), ratedScore(3, 50.0)), emptyList(), listOf(1, 2, 3))
+        assertTrue(packHighlights(rows, picksPerChoice = 2).all { it == PickHighlight.NONE })
+        val pair = rows.mapIndexed { index, row -> row.copy(recommendedPair = index != 1) }
+        assertEquals(listOf(PickHighlight.CONTENDER, PickHighlight.NONE, PickHighlight.CONTENDER), packHighlights(pair, picksPerChoice = 2))
+    }
+
+    @Test
     fun `catalog first pick does not present alphabetical ties as power grades`() {
         val pack = listOf(card(1, "Z catalog card"), card(2, "A catalog card"))
         val scored = AdvisorEngine().score(

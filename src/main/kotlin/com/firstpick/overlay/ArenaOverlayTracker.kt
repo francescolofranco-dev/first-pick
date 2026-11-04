@@ -26,6 +26,7 @@ data class OverlayCard(
     val breakdown: com.firstpick.advisor.ValueBreakdown? = null,
     val model: com.firstpick.ui.ModelExplain? = null,
     val gihWr: Double? = null,
+    val highlight: com.firstpick.ui.PickHighlight = com.firstpick.ui.PickHighlight.NONE,
 )
 
 /** Exact IDs and card rectangles share one coherent Arena memory observation. */
