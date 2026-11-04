@@ -1,5 +1,40 @@
 # Memory overlay verification
 
+## Selective, atomic hover occlusion (3.8.2)
+
+The first hover implementation could withhold the entire geometry frame when
+Arena's preview used a separate transform hierarchy. The shared canvas fix
+from 3.8.1 is included here. Brief animation-read gaps again retain verified
+positions rather than clearing every badge immediately.
+
+Visible scores now render together in the main click-through overlay. Separate
+input panels contain only transparent hit areas, so creating or disposing them
+cannot make badges fade away one at a time. Occlusion checks use each score
+badge's actual viewport rectangle. A tooltip covering a card title can suppress
+that card's highlight while leaving its uncovered score visible.
+
+The reader projects individual active ability/flavor tooltip items instead of
+their potentially screen-height layout parent. It also reads static enlarged
+card hangers, secondary-face previews, and the general TooltipSystem's active
+rectangle. Unsupported scenes and actual modal dialogs keep their existing
+blocking behavior.
+
+Validation: 507 app tests and 30 compiled native-reader fixtures pass. Live
+checks on Arena 2026.65.0 exercised ordinary Geist hover, enlarged details,
+Adventure-card hover, and a deck-list Unsummon hover without losing the complete
+eight-card pack. The captured Geist geometry has one preview and two separate
+tooltip rectangles. Its replay retains the three uncovered original badges,
+adds the enlarged Geist score, and hides only the five covered originals.
+The sanitized fixture is `src/test/resources/overlay/arena-hover-preview.json`.
+General tooltips and secondary faces additionally have native synthetic tests.
+
+The combined signed production app was installed and restarted as 3.8.2, and
+its reader matched the built artifact. Per-window Arena screenshots verify the
+game's preview layout; the shared-layer render regression verifies atomic score
+rendering. Per-window capture does not independently prove the OS's composite
+of all application windows. These are functional checks, not measured benchmarks.
+
+
 ## Hover-preview layering (3.8.0)
 
 The memory reader now projects Arena's rollover and enlarged-detail card

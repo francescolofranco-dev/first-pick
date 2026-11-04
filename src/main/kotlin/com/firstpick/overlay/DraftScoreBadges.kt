@@ -72,7 +72,7 @@ private fun GradeSeal(m: DraftScoreMark, rect: GuidanceViewportRect) {
         )
     }
 
-    if (m.breakdown == null) Box(Modifier.offset((cx - badge / 2f).dp, top.dp)) {
+    Box(Modifier.offset((cx - badge / 2f).dp, top.dp)) {
         ScoreBadge(m.value, badge)
     }
 }

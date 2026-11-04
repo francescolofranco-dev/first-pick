@@ -9,6 +9,20 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class DraftScoreBadgeRenderTest {
+    @Test fun interactiveBadgesRenderInTheSameFrameAsAllOtherMarks() {
+        val mark = DraftScoreMark(NormalizedRect(.1, .2, .2, .4), 70.0, false,
+            breakdown = com.firstpick.advisor.ValueBreakdown(70.0, 0.0, 0.0, 0.0, 0.0, 70.0))
+        val file = File("build/reports/interactive-score-frame.png")
+        file.parentFile.mkdirs()
+        renderComposeScene(1000, 700) { DraftScoreBadges(listOf(mark), 1000.dp, 700.dp) }.use { image ->
+            image.encodeToData()!!.use { file.writeBytes(it.bytes) }
+        }
+        val image = ImageIO.read(file)
+        val badge = scoreBadgeBounds(mark, 1000f, 700f)!!
+        assertTrue(image.getRGB((badge.left + badge.width / 2).toInt(), (badge.top + badge.height / 2).toInt()) ushr 24 > 0,
+            "Interactive score badges must be drawn atomically in the shared overlay, not separate fading windows")
+    }
+
     @Test fun fullCardBordersDistinguishClearAndSharedChoices() {
         val marks = listOf(
             DraftScoreMark(NormalizedRect(.05, .22, .16, .4), 80.0, true, highlight = com.firstpick.ui.PickHighlight.CLEAR),

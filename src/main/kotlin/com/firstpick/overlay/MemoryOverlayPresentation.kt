@@ -16,9 +16,9 @@ internal class MemoryOverlayPresentation<T>(private val retentionMs: Long = 1200
     private var startedAt: Long? = null
     private var frame = MemoryOverlayFrame<T>()
 
-    fun accepted(key: Any, editorSession: String, content: T, geometry: ArenaCardGeometry?, nowMs: Long, retainGeometry: Boolean = true): MemoryOverlayFrame<T> {
+    fun accepted(key: Any, editorSession: String, content: T, geometry: ArenaCardGeometry?, nowMs: Long): MemoryOverlayFrame<T> {
         if (identity != key) positionedAt = null
-        val positions = geometry ?: frame.geometry.takeIf { retainGeometry && identity == key && positionsFresh(nowMs) }
+        val positions = geometry ?: frame.geometry.takeIf { identity == key && positionsFresh(nowMs) }
         if (geometry != null) positionedAt = nowMs
         identity = key; editor = editorSession; verifiedAt = nowMs
         frame = MemoryOverlayFrame(content, positions,
@@ -28,12 +28,12 @@ internal class MemoryOverlayPresentation<T>(private val retentionMs: Long = 1200
         return frame
     }
 
-    fun settling(key: Any, editorSession: String, geometry: ArenaCardGeometry?, nowMs: Long, newPack: Boolean = false, retainGeometry: Boolean = true): MemoryOverlayFrame<T> {
+    fun settling(key: Any, editorSession: String, geometry: ArenaCardGeometry?, nowMs: Long, newPack: Boolean = false): MemoryOverlayFrame<T> {
         if (editor != editorSession || (newPack && identity != key)) return clear(nowMs)
         if (geometry != null && frame.content != null) {
             positionedAt = nowMs
             frame = frame.copy(geometry = geometry)
-        } else if (identity != key || !retainGeometry) {
+        } else if (identity != key) {
             positionedAt = null
             frame = frame.copy(geometry = null)
         }

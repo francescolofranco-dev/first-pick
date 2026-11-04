@@ -70,9 +70,9 @@ fun ArenaOverlayTracker(
                     val identity = read.pack.copy(geometry = null)
                     when (validation) {
                         is MemoryPackValidation.Ready -> presentation.accepted(identity, read.pack.editorSession,
-                            validation.cards, read.pack.geometry, now, retainGeometry = read.diagnostics.geometryReason == null)
+                            validation.cards, read.pack.geometry, now)
                         is MemoryPackValidation.Rejected -> if (validation.settling)
-                            presentation.settling(identity, read.pack.editorSession, read.pack.geometry, now, newPack = true, retainGeometry = read.diagnostics.geometryReason == null)
+                            presentation.settling(identity, read.pack.editorSession, read.pack.geometry, now, newPack = true)
                         else presentation.clear(now, OverlayHealth(OverlayHealthState.READING, validation.reason))
                     }
                 }
@@ -95,7 +95,7 @@ fun ArenaOverlayTracker(
         onForegroundChanged = { frontmost = it }, onHealthChanged = onHealthChanged) { arena ->
         SideEffect { trace.composed(frame, frontmost) }
         Box(Modifier.size(arena.w.dp, arena.h.dp)) {
-            val marks = if (visible) draftScoreMarks(frame.content.orEmpty(), frame.geometry?.inWindow(arena).orEmpty()) else emptyList()
+            val marks = if (visible) draftScoreMarks(frame.content.orEmpty(), frame.geometry?.inWindow(arena).orEmpty(), arena.w.toFloat(), arena.h.toFloat()) else emptyList()
             DraftScoreBadges(marks, arena.w.dp, arena.h.dp)
             DraftScoreInteractions(marks, arena)
             OverlayAccessNotice(arena, frame.health, access, onGrantArenaAccess)

@@ -36,12 +36,12 @@ class MemoryOverlayPresentationTest {
         assertEquals(OverlayHealthState.READING, stale.health.state)
     }
 
-    @Test fun anUncertainHoverReadingClearsPositionsWithoutLosingAdvice() {
+    @Test fun transientHoverGeometryFailureKeepsVerifiedPositionsUntilRecovery() {
         val presenter = MemoryOverlayPresentation<String>()
         presenter.accepted("pack", "editor", "Advice", geometry, 0)
-        val missing = presenter.accepted("pack", "editor", "Advice", null, 100, retainGeometry = false)
+        val missing = presenter.accepted("pack", "editor", "Advice", null, 100)
         assertEquals("Advice", missing.content)
-        assertNull(missing.geometry)
+        assertEquals(geometry, missing.geometry)
         assertEquals(geometry, presenter.accepted("pack", "editor", "Advice", geometry, 200).geometry)
     }
 

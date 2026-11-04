@@ -11,6 +11,7 @@ internal data class ArenaVisibleCard(
     val bounds: NormalizedRect,
     val occluded: Boolean = false,
     val sourceIndex: Int? = null,
+    val occlusions: List<NormalizedRect> = emptyList(),
 )
 
 /** Coordinates describe Arena's client viewport, excluding the macOS title bar. */
@@ -31,12 +32,18 @@ internal data class ArenaCardGeometry(
             val rect = card.bounds
             val adjusted = NormalizedRect(rect.x, (topInset.coerceAtLeast(0.0) + rect.y * contentHeight) / window.h,
                 rect.width, rect.height * contentHeight / window.h)
-            adjusted.takeIf(NormalizedRect::isValid)?.let { card.copy(bounds = it, occluded = occlusions.any(rect::overlaps)) }
+            adjusted.takeIf(NormalizedRect::isValid)?.let { card.copy(bounds = it, occluded = occlusions.any(rect::overlaps),
+                occlusions = occlusions.map { region -> NormalizedRect(region.x,
+                    (topInset.coerceAtLeast(0.0) + region.y * contentHeight) / window.h,
+                    region.width, region.height * contentHeight / window.h) }) }
         }
     }
 }
 
-internal fun draftScoreMarks(cards: List<OverlayCard>, placements: List<ArenaVisibleCard>): List<DraftScoreMark> {
+internal fun draftScoreMarks(
+    cards: List<OverlayCard>, placements: List<ArenaVisibleCard>,
+    viewportWidth: Float = 1920f, viewportHeight: Float = 1080f,
+): List<DraftScoreMark> {
     val pack = placements.filter { it.zone == ArenaCardZone.PACK }
     if (pack.map { it.grpId } != cards.map { it.grpId } || pack.any { it.count != 1 || !it.bounds.isValid() }) return emptyList()
     val best = bestRatedOverlayCard(cards, cards.indices.toList())
@@ -45,10 +52,22 @@ internal fun draftScoreMarks(cards: List<OverlayCard>, placements: List<ArenaVis
     val marks = cards.mapIndexed { index, card ->
         DraftScoreMark(pack[index].bounds, card.value, if (paired) card.recommendedPair else index == best, card.breakdown, card.model, card.gihWr, card.highlight)
     }
-    return marks.filterIndexed { index, mark -> !pack[index].occluded && previews.none { mark.bounds.overlaps(it.bounds) } } + previews.mapNotNull { preview ->
+    fun uncovered(mark: DraftScoreMark, blockers: List<NormalizedRect>): DraftScoreMark? {
+        // Card borders and score badges have different footprints. A tooltip over
+        // artwork must not hide a score that remains below the tooltip.
+        val visible = if (blockers.any(mark.bounds::overlaps)) mark.copy(highlight = com.firstpick.ui.PickHighlight.NONE) else mark
+        val badge = scoreBadgeBounds(visible, viewportWidth, viewportHeight) ?: return null
+        val footprint = NormalizedRect((badge.left / viewportWidth).toDouble(), (badge.top / viewportHeight).toDouble(),
+            (badge.width / viewportWidth).toDouble(), (badge.height / viewportHeight).toDouble())
+        return visible.takeIf { blockers.none(footprint::overlaps) }
+    }
+    return marks.mapIndexedNotNull { index, mark ->
+        uncovered(mark, pack[index].occlusions + previews.map { it.bounds })
+    } + previews.mapNotNull { preview ->
         val index = preview.sourceIndex?.takeIf { cards.getOrNull(it)?.grpId == preview.grpId }
             ?: cards.indexOfFirst { it.grpId == preview.grpId }
-        if (index < 0 || preview.occluded || !preview.bounds.isValid()) null else marks[index].copy(bounds = preview.bounds)
+        if (index < 0 || !preview.bounds.isValid()) null else uncovered(marks[index].copy(bounds = preview.bounds),
+            preview.occlusions + previews.filter { it !== preview }.map { it.bounds })
     }
 }
 

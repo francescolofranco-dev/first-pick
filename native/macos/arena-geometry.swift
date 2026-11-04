@@ -158,6 +158,7 @@ private final class ArenaGeometry {
     }
     func result() throws -> [String: Any] {
         try hoverPreview()
+        try tooltipOcclusion()
         return ["screen":screen,"cards":rows,"occlusions":occlusions]
     }
     func hoverPreview() throws {
@@ -179,14 +180,14 @@ private final class ArenaGeometry {
                 rows[rows.count-1].append(hovered[0].offset)
             }
             if key == "rollover_zoom" {
-                let hanger = try m.pointer(zoom + p.offset(key,"_abilityHanger"),nullable:true)
-                if hanger != 0, try r.flag(hanger,"hanger_base","<Active>k__BackingField") {
-                    let view = try m.pointer(hanger + p.offset("ability_hanger","_view"))
-                    try r.check(view,"ability_hanger_view")
-                    if try active(native(view)), let canvas=canvasRect,
-                       let visible = try uiRect(transform(native(view))).intersection(canvas) {
-                        occlusions.append([(visible.x-canvas.x)/canvas.w,(canvas.top-visible.top)/canvas.h,visible.w/canvas.w,visible.h/canvas.h])
-                    }
+                try abilityOcclusions(m.pointer(zoom + p.offset(key,"_abilityHanger"),nullable:true))
+                try faceOcclusion(m.pointer(zoom + p.offset(key,"_faceHanger"),nullable:true))
+            } else {
+                let controller = try m.pointer(zoom + p.offset(key,"_staticHangerController"),nullable:true)
+                if controller != 0 {
+                    try r.check(controller,"static_hanger")
+                    try abilityOcclusions(m.pointer(controller + p.offset("static_hanger","_abilityHanger"),nullable:true))
+                    try faceOcclusion(m.pointer(controller + p.offset("static_hanger","_faceHanger"),nullable:true))
                 }
             }
             guard try r.flag(zoom,"rollover_base","<IsActive>k__BackingField"),
@@ -195,6 +196,40 @@ private final class ArenaGeometry {
                 throw ReadFailure("changing","Arena is changing its card preview.")
             }
         }
+    }
+    func occlude(_ bounds: ArenaRect) {
+        guard let canvas=canvasRect, let visible=bounds.intersection(canvas) else { return }
+        occlusions.append([(visible.x-canvas.x)/canvas.w,(canvas.top-visible.top)/canvas.h,visible.w/canvas.w,visible.h/canvas.h])
+    }
+    func abilityOcclusions(_ hanger: UInt64) throws {
+        guard hanger != 0, try r.flag(hanger,"hanger_base","<Active>k__BackingField") else { return }
+        let view = try m.pointer(hanger + p.offset("ability_hanger","_view"))
+        try r.check(view,"ability_hanger_view")
+        guard try active(native(view)) else { return }
+        let items = try m.pointer(view + p.offset("ability_hanger_view","_activeHangerItems"),nullable:true)
+        if items == 0 { return }
+        // The layout parent can span most of the screen. Only the visible
+        // tooltip items cover cards; empty layout space must not hide badges.
+        for item in try r.listObjects(items,maximum:64) {
+            try r.check(item,"ability_hanger_item")
+            if try active(native(item)) { occlude(try uiRect(transform(native(item)))) }
+        }
+    }
+    func faceOcclusion(_ hanger: UInt64) throws {
+        guard hanger != 0, try r.flag(hanger,"hanger_base","<Active>k__BackingField") else { return }
+        try r.check(hanger,"face_hanger")
+        let card = try m.pointer(hanger + p.offset("face_hanger","_faceCard"),nullable:true)
+        guard card != 0, try active(native(card)) else { return }
+        try r.check(card,"meta_cdc")
+        occlude(try colliderRect(native(m.pointer(card + p.offset("base_cdc","<Collider>k__BackingField")))))
+    }
+    func tooltipOcclusion() throws {
+        guard let system = try r.activeServices(["tooltip_system"],required:false)["tooltip_system"] else { return }
+        let tooltip = try m.pointer(system + p.offset("tooltip_system","_activeTooltip"),nullable:true)
+        if tooltip == 0 { return }
+        try r.check(tooltip,"tooltip")
+        let rect = try native(m.pointer(tooltip + p.offset("tooltip","<Rect>k__BackingField")))
+        if try active(rect) { occlude(try uiRect(rect)) }
     }
     func pack(_ views: [UInt64]) throws -> [String: Any] {
         packViews = views

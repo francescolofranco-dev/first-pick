@@ -158,7 +158,7 @@ internal fun DraftScoreInteractions(marks: List<DraftScoreMark>, arena: WindowBo
         key(index, mark.breakdown, mark.model) {
             OverlayPanelWindow("FirstPick Score ${index + 1}", arena.x + rect.left,
                 arena.y + rect.top, rect.width, rect.height) {
-                OverlayScoreBadge(mark, rect.width) { inside ->
+                OverlayScoreBadge(mark, rect.width, drawBadge = false) { inside ->
                     if (inside) hovered = index else if (hovered == index) hovered = null
                 }
             }
@@ -168,7 +168,7 @@ internal fun DraftScoreInteractions(marks: List<DraftScoreMark>, arena: WindowBo
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-internal fun OverlayScoreBadge(mark: DraftScoreMark, size: Float, onHoverChanged: (Boolean) -> Unit) {
+internal fun OverlayScoreBadge(mark: DraftScoreMark, size: Float, drawBadge: Boolean = true, onHoverChanged: (Boolean) -> Unit) {
     var inside by remember { mutableStateOf(false) }
     val callback by rememberUpdatedState(onHoverChanged)
     DisposableEffect(Unit) { onDispose { callback(false) } }
@@ -176,9 +176,9 @@ internal fun OverlayScoreBadge(mark: DraftScoreMark, size: Float, onHoverChanged
         if (inside) delay(160)
         callback(inside)
     }
-    Box(Modifier.onPointerEvent(PointerEventType.Enter) { inside = true }
+    Box(Modifier.size(size.dp).onPointerEvent(PointerEventType.Enter) { inside = true }
         .onPointerEvent(PointerEventType.Exit) { inside = false }) {
-        ScoreBadge(mark.value, size)
+        if (drawBadge) ScoreBadge(mark.value, size)
     }
 }
 

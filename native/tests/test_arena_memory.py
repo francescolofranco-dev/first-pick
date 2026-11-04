@@ -328,12 +328,12 @@ class NativeDraftReaderTests(unittest.TestCase):
                 value=read(g);self.assertEqual('blocked',value['status']);self.assertNotIn('cards',value)
 
 
-def hover_preview(g, active=True):
+def hover_preview(g, active=True, static=False):
     service = g.object('zoom_delegator')
-    zoom = g.object('rollover_zoom')
+    zoom = g.object('static_rollover_zoom' if static else 'rollover_zoom')
     card = g.object('meta_cdc')
     model = struct.unpack_from('<Q', g.m.data, g.view_items[0] + g.profile['types']['card_collection_item']['fields']['<Card>k__BackingField'])[0]
-    g.field(service, 'zoom_delegator', '_cardRolloverZoom', zoom)
+    g.field(service, 'zoom_delegator', '_cardDetailsZoom' if static else '_cardRolloverZoom', zoom)
     g.field(zoom, 'rollover_base', '<IsActive>k__BackingField', int(active), 'B')
     g.field(zoom, 'rollover_base', '_zoomCard', card)
     g.field(card, 'base_cdc', '_model', model)
@@ -398,6 +398,9 @@ class NativeGeometryTests(unittest.TestCase):
         g.field(g.zoom, 'rollover_zoom', '_abilityHanger', hanger)
         g.field(hanger, 'hanger_base', '<Active>k__BackingField', 1, 'B')
         g.field(hanger, 'ability_hanger', '_view', view)
+        item = g.object('ability_hanger_item')
+        g.field(view, 'ability_hanger_view', '_activeHangerItems', g.objects([item]))
+        g.m.put(item + 16, 'Q', struct.unpack_from('<Q', g.m.data, g.views[1] + 16)[0])
         g.m.put(view + 16, 'Q', struct.unpack_from('<Q', g.m.data, g.views[1] + 16)[0])
         transform = g.geometry_transforms[1]
         g.m.put(transform, 'Q', g.profile['unity_geometry']['rect_transform_vtable_vm'])
@@ -405,6 +408,102 @@ class NativeGeometryTests(unittest.TestCase):
         geometry = read(g)['geometry']
         self.assertEqual(1, len(geometry['occlusions']))
         self.assertEqual(geometry['cards'][1][3:7], geometry['occlusions'][0])
+
+    def test_general_hover_tooltip_only_reports_its_visible_rectangle(self):
+        g = draft_geometry_graph()
+        system = g.object('tooltip_system')
+        tooltip = g.object('tooltip')
+        rect = g.m.alloc()
+        g.field(system, 'tooltip_system', '_activeTooltip', tooltip)
+        g.field(tooltip, 'tooltip', '<Rect>k__BackingField', rect)
+        transform = g.geometry_transforms[1]
+        g.m.put(rect + 16, 'Q', transform)
+        g.m.put(transform, 'Q', g.profile['unity_geometry']['rect_transform_vtable_vm'])
+        g.m.put(transform + 0xb8, '4f', -100, -40, 200, 80)
+        g.field(g.container, 'container', '_references', g.dictionary([(g.m.alloc(), obj) for obj in g.services + [system]], 'services'))
+        geometry = read(g)['geometry']
+        self.assertEqual(3, len(geometry['cards']))
+        self.assertEqual(1, len(geometry['occlusions']))
+        self.assertAlmostEqual(80 / 1080, geometry['occlusions'][0][3])
+
+    def test_enlarged_details_uses_static_hanger_items_not_its_layout_parent(self):
+        g = draft_geometry_graph()
+        hover_preview(g, static=True)
+        controller = g.object('static_hanger')
+        hanger = g.object('ability_hanger')
+        view = g.object('ability_hanger_view')
+        item = g.object('ability_hanger_item')
+        g.field(g.zoom, 'static_rollover_zoom', '_staticHangerController', controller)
+        g.field(controller, 'static_hanger', '_abilityHanger', hanger)
+        g.field(hanger, 'hanger_base', '<Active>k__BackingField', 1, 'B')
+        g.field(hanger, 'ability_hanger', '_view', view)
+        g.field(view, 'ability_hanger_view', '_activeHangerItems', g.objects([item]))
+        behaviour = struct.unpack_from('<Q', g.m.data, g.views[1] + 16)[0]
+        g.m.put(item + 16, 'Q', behaviour)
+        g.m.put(view + 16, 'Q', g.geometry_root)
+        transform = g.geometry_transforms[1]
+        g.m.put(transform, 'Q', g.profile['unity_geometry']['rect_transform_vtable_vm'])
+        g.m.put(transform + 0xb8, '4f', -100, -40, 200, 80)
+        geometry = read(g)['geometry']
+        self.assertEqual(4, len(geometry['cards']))
+        self.assertEqual(1, len(geometry['occlusions']))
+        self.assertAlmostEqual(80 / 1080, geometry['occlusions'][0][3])
+
+    def test_secondary_face_preview_reports_an_occluding_card(self):
+        g = draft_geometry_graph()
+        hover_preview(g)
+        hanger = g.object('face_hanger')
+        g.field(g.zoom, 'rollover_zoom', '_faceHanger', hanger)
+        g.field(hanger, 'hanger_base', '<Active>k__BackingField', 1, 'B')
+        g.field(hanger, 'face_hanger', '_faceCard', g.zoom_card)
+        geometry = read(g)['geometry']
+        self.assertEqual(1, len(geometry['occlusions']))
+        self.assertEqual(geometry['cards'][-1][3:7], geometry['occlusions'][0])
+
+    def test_preview_on_a_separate_canvas_keeps_pack_geometry(self):
+        g = draft_geometry_graph()
+        hover_preview(g)
+        layout = g.profile['unity_geometry']
+        hierarchy = g.m.alloc()
+        data = g.m.alloc(96)
+        parents = g.m.alloc(8)
+        g.m.put(hierarchy + 0x18, 'QQ', data, parents)
+        g.m.put(parents, '2i', -1, 0)
+        for index in range(2):
+            g.m.put(data + index * 48, '12f', 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0)
+        root = g.m.alloc()
+        canvas = g.m.alloc(1024)
+        transform = g.m.alloc()
+        behaviour = g.m.alloc()
+        collider = g.m.alloc()
+        g.m.put(transform, 'Q', g.m.alloc())
+        g.m.put(behaviour, 'Q', g.m.alloc())
+        g.m.put(root, 'Q', layout['rect_transform_vtable_vm'])
+        g.m.put(root + 0xb8, '4f', -960, -540, 1920, 1080)
+        g.m.put(canvas, 'Q', layout['canvas_vtable_vm'])
+        g.m.put(canvas + 0x2c, 'I', 1)
+        g.m.put(collider, 'Q', layout['box_collider_vtable_vm'])
+        g.m.put(collider + 0x60, '6f', 0, 0, 0, 400, 560, .1)
+        for index, t, components in [(0, root, [root, canvas]), (1, transform, [transform, behaviour, collider])]:
+            owner = g.m.alloc()
+            array = g.m.alloc(len(components) * 16)
+            g.m.put(owner + 0x20, 'Q', array)
+            g.m.put(owner + 0x30, 'I', len(components))
+            g.m.put(owner + 0x47, 'B', 1)
+            for j, component in enumerate(components):
+                g.m.put(array + j * 16 + 8, 'Q', component)
+                g.m.put(component + 0x20, 'Q', owner)
+            g.m.put(t + 0x28, 'Q', hierarchy)
+            g.m.put(t + 0x30, 'I', index)
+            g.m.put(t + 0x68, 'Q', root if index else 0)
+        managed = g.m.alloc()
+        g.m.put(managed + 16, 'Q', collider)
+        g.field(g.zoom_card, 'base_cdc', '<Collider>k__BackingField', managed)
+        value = read(g)
+        self.assertIn('geometry', value, value.get('geometry_reason'))
+        rows = value['geometry']['cards']
+        self.assertEqual(['pack', 'pack', 'pack', 'preview'], [row[2] for row in rows])
+        self.assertAlmostEqual(400 / 1920, rows[-1][5])
 
     def test_closed_preview_does_not_reuse_its_retained_card(self):
         g = draft_geometry_graph()

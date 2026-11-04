@@ -112,6 +112,26 @@ class MemoryCardGeometryTest {
         assertEquals(b, mark.bounds)
     }
 
+    @Test fun aHoverCoveringCardTitlesKeepsEveryUncoveredScoreBadge() {
+        val cards = listOf(OverlayCard(80.0, null, grpId = 1), OverlayCard(70.0, null, grpId = 2))
+        val titleTooltip = ArenaVisibleCard(9, 1, ArenaCardZone.PREVIEW, NormalizedRect(0.0, .2, 1.0, .1))
+        val marks = draftScoreMarks(cards, listOf(placement(1), placement(2, rect = b), titleTooltip))
+        assertEquals(listOf(80.0, 70.0), marks.map { it.value }, "Only covered badge footprints should disappear")
+    }
+
+    @Test fun capturedArenaHoverPreservesUncoveredBadgesAndAddsThePreviewScore() {
+        val fixture = Json.parseToJsonElement(javaClass.getResource("/overlay/arena-hover-preview.json")!!.readText()) as JsonObject
+        val read = assertIs<ArenaMemoryRead.PackReady>(parseArenaMemoryRead(Json.parseToJsonElement(
+            """{"status":"draft_ready","editor_session":"${"a".repeat(64)}","cards":${fixture["cards"]},"picked":[],"geometry":${fixture["geometry"]}}"""
+        ) as JsonObject))
+        val geometry = assertNotNull(read.pack.geometry)
+        assertEquals(2, geometry.occlusions.size)
+        val cards = read.pack.cards.mapIndexed { index, id -> OverlayCard(80.0 - index, null, grpId = id) }
+        val marks = draftScoreMarks(cards, geometry.inWindow(WindowBounds(0, 0, 1280, 748, backingScale = 2.0)), 1280f, 748f)
+        assertEquals(listOf(80.0, 76.0, 75.0, 80.0), marks.map { it.value },
+            "Geist, Emberling and Phytomedic stay visible; only covered scores disappear, and the preview repeats Geist")
+    }
+
     @Test fun duplicatePreviewPreservesTheHoveredCopysRecommendationAndDetails() {
         val cards = listOf(OverlayCard(80.0, null, grpId = 1, recommendedPair = false),
             OverlayCard(80.0, null, grpId = 1, recommendedPair = true))

@@ -487,7 +487,9 @@
       "index": 1060,
       "name": "StaticCardRolloverZoom",
       "namespace": "",
-      "fields": {}
+      "fields": {
+        "_staticHangerController": 248
+      }
     },
     "rollover_base": {
       "index": 1021,
@@ -534,7 +536,48 @@
       "index": 855,
       "name": "AbilityHangerView",
       "namespace": "",
+      "fields": {
+        "_activeHangerItems": 216
+      }
+    },
+    "ability_hanger_item": {
+      "index": 852,
+      "name": "AbilityHangerItem",
+      "namespace": "",
       "fields": {}
+    },
+    "static_hanger": {
+      "index": 871,
+      "name": "StaticHangerController",
+      "namespace": "",
+      "fields": {
+        "_abilityHanger": 64,
+        "_faceHanger": 32
+      }
+    },
+    "face_hanger": {
+      "index": 862,
+      "name": "FaceHanger",
+      "namespace": "",
+      "fields": {
+        "_faceCard": 152
+      }
+    },
+    "tooltip_system": {
+      "index": 5273,
+      "name": "TooltipSystem",
+      "namespace": "",
+      "fields": {
+        "_activeTooltip": 120
+      }
+    },
+    "tooltip": {
+      "index": 5268,
+      "name": "Tooltip",
+      "namespace": "",
+      "fields": {
+        "<Rect>k__BackingField": 16
+      }
     }
   },
   "field_offsets_vm": 150754504,
