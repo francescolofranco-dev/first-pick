@@ -263,3 +263,34 @@ the pointer and cancel its own hover. Existing layout/edge checks still apply;
 the native regression additionally compares actual Cocoa levels against both
 badges and the access notice, verifies mouse pass-through, and checks that all
 layers disappear when Arena loses focus.
+
+## Arena 2026.65.0 compatibility (3.5.2)
+
+Arena's update changed all three pinned file fingerprints, moved the IL2CPP
+class table and field-offset table, and shifted several reviewed type indices
+and native functions. Version 3.5.2 updates the pinned arm64 profile after
+reviewing those locations against the installed metadata and native code.
+All selected managed field offsets remain unchanged. The thirteen Unity
+geometry code anchors remain byte-identical at their existing locations.
+Unknown builds continue to fail closed.
+
+Run `python3 scripts/verify-arena-layout.py` to check the installed Arena against
+the production profile without process access. It verifies complete fingerprints,
+all 47 selected type identities and their fields, eight assembly code anchors,
+and thirteen Unity code anchors. It independently decodes the class-table
+location from the reviewed native lookup. This is a static compatibility check,
+not proof of a live pack/deck read or measured overlay performance.
+
+The signed optimized 3.5.2 production build passes 490 app tests and 16 native
+reader tests. The installed native `--inspect` check reports `supported` for
+Arena 2026.65.0; the previous installed reader reported `unsupported_build`.
+
+After installing and restarting 3.5.2, the app reported `Live Arena access is
+connected`. Forty consecutive authorized snapshots of the live Quick Draft
+Pack 1, Pick 1 returned `draft_ready`, the complete 14-card pack, an empty picked
+pool, and 14 in-bounds card rectangles whose ID multiset exactly matched the
+pack on every read. Median native snapshot time was 16 ms. No picks were made.
+This verifies live identity and geometry on the new build, not interaction or
+end-to-end rendering latency. The foreground metadata probe reported Arena in
+the background during agent verification, so foreground badge appearance still
+requires user acceptance.

@@ -1,47 +1,47 @@
 {
-  "app_version": "2026.64.50",
-  "metadata_sha256": "4e49778e395728b0bb23a18118856376cd7511742f23fb0801b5528e28b0ce23",
-  "assembly_sha256": "c74857bc83b4bbe11b54d876b8cf3567b7ed4c7930fb1e20b5af032399721c39",
-  "class_table_vm": 156340208,
+  "app_version": "2026.65.0",
+  "metadata_sha256": "4475a40912db90bf5b805ea74aa5693e97d2d29ddb850621b23c196c2971c30d",
+  "assembly_sha256": "d5580da8d2313a0f9709d0a19074c7ed4074c001a2d51c67b44f9619fef6f714",
+  "class_table_vm": 156934520,
   "code_anchors": [
     {
-      "vm": 10960128,
-      "hex": "ff8302d1f85f06a9f65707a9f44f08a9fd7b09a9fd4302911f04003180080054f30300aa285504b016f947f9d4da60f8bf3903d5741900b5345504d094623f91",
+      "vm": 10966860,
+      "hex": "ff8302d1f85f06a9f65707a9f44f08a9fd7b09a9fd4302911f04003180080054f30300aaa85904b016bd40f9d4da60f8bf3903d5741900b5b45904d094820591",
       "purpose": "Type-definition class table lookup"
     },
     {
-      "vm": 11053948,
+      "vm": 11060680,
       "hex": "002c40f9c0035fd6",
       "purpose": "Class parent offset"
     },
     {
-      "vm": 10888824,
+      "vm": 10895556,
       "hex": "000840f9c0035fd6",
       "purpose": "Class name offset"
     },
     {
-      "vm": 10888816,
+      "vm": 10895548,
       "hex": "000c40f9c0035fd6",
       "purpose": "Class namespace offset"
     },
     {
-      "vm": 10587028,
+      "vm": 10593760,
       "hex": "005c40f9c0035fd6",
       "purpose": "Static field storage offset"
     },
     {
-      "vm": 11051408,
+      "vm": 11058140,
       "hex": "210200b4f44fbea9fd7b01a9fd430091f30300aa280040f9a80100b400810091684240f9694a42790815098b1f0008eb22020054200000f9fd7b41a9f44fc2a8c0035fd6000080d2c0035fd6f40301aae00313aa0c000094684a4279c8000034604240f9800200f9fd7b41a9f44fc2a8",
       "purpose": "Field array and count layout"
     },
     {
-      "vm": 16133472,
-      "hex": "f44fbea9fd7b01a9fd430091732c04f068b27339140c04b094620091c8000037000c04b000600091c7e1ea972800805268b23339800240f9fd7b41a9f44fc2a8bfe05814",
+      "vm": 16135884,
+      "hex": "f44fbea9fd7b01a9fd430091f33004f068ee6539341004d094823491c8000037201004d000803491ffe5ea972800805268ee2539800240f9fd7b41a9f44fc2a823165914",
       "purpose": "DeckBuilderWidget model provider via Pantry"
     },
     {
-      "vm": 39432348,
-      "hex": "f44fbea9fd7b01a9fd430091f30300aa081c40f9880100b5a05603b000800f91fa009297c056039000402491f7009297205c03f000c01391f4009297681e40f9c80100b4a85603b008810f91080140f9085d40f9000140f9000200b4681e40f9030540f92100805202008052fd7b41a9f44fc2a81151ed17",
+      "vm": 39489432,
+      "hex": "f44fbea9fd7b01a9fd430091f30300aa081c40f9880100b5605a03d000601a91cecf9197805a03b000803291cbcf9197006003b000a02891c8cf9197681e40f9c80100b4685a03d008611a91080140f9085d40f9000140f9000200b4681e40f9030540f92100805202008052fd7b41a9f44fc2a8064ded17",
       "purpose": "Pantry singleton service lookup"
     }
   ],
@@ -86,7 +86,7 @@
       }
     },
     "pantry": {
-      "index": 8112,
+      "index": 8118,
       "name": "Pantry",
       "namespace": "Wizards.Mtga",
       "fields": {
@@ -94,7 +94,7 @@
       }
     },
     "container": {
-      "index": 17138,
+      "index": 17156,
       "name": "PantryContainer",
       "namespace": "SharedClientCore.SharedClientCore.Code",
       "fields": {
@@ -102,7 +102,7 @@
       }
     },
     "model_provider": {
-      "index": 9543,
+      "index": 9553,
       "name": "DeckBuilderModelProvider",
       "namespace": "Core.Code.Decks",
       "fields": {
@@ -110,7 +110,7 @@
       }
     },
     "context_provider": {
-      "index": 9534,
+      "index": 9544,
       "name": "DeckBuilderContextProvider",
       "namespace": "Core.Code.Decks",
       "fields": {
@@ -145,7 +145,7 @@
       }
     },
     "connection_wrapper": {
-      "index": 17332,
+      "index": 17350,
       "name": "AwsFrontDoorConnectionServiceWrapper",
       "namespace": "Wotc.Mtga.Network.ServiceWrappers",
       "fields": {
@@ -153,7 +153,7 @@
       }
     },
     "connection": {
-      "index": 16242,
+      "index": 16262,
       "name": "FrontDoorConnectionAWS",
       "namespace": "",
       "fields": {
@@ -161,7 +161,7 @@
       }
     },
     "tcp": {
-      "index": 37656,
+      "index": 37882,
       "name": "TcpConnection",
       "namespace": "Wizards.Arena.TcpConnection",
       "fields": {
@@ -169,7 +169,7 @@
       }
     },
     "tcp_state": {
-      "index": 37648,
+      "index": 37874,
       "name": "TcpConnectionState",
       "namespace": "Wizards.Arena.TcpConnection",
       "fields": {
@@ -202,7 +202,7 @@
       }
     },
     "popup_manager": {
-      "index": 9363,
+      "index": 9373,
       "name": "PopupManager",
       "namespace": "Core.Meta.MainNavigation.PopUps",
       "fields": {
@@ -218,7 +218,7 @@
       }
     },
     "draft_controller": {
-      "index": 10367,
+      "index": 10381,
       "name": "DraftContentController",
       "namespace": "Wotc.Mtga.Wrapper.Draft",
       "fields": {
@@ -232,7 +232,7 @@
       }
     },
     "draft_holder": {
-      "index": 10386,
+      "index": 10400,
       "name": "DraftPackHolder",
       "namespace": "Wotc.Mtga.Wrapper.Draft",
       "fields": {
@@ -262,7 +262,7 @@
       }
     },
     "draft_deck_manager": {
-      "index": 10369,
+      "index": 10383,
       "name": "DraftDeckManager",
       "namespace": "Wotc.Mtga.Wrapper.Draft",
       "fields": {
@@ -296,7 +296,7 @@
       }
     },
     "card_data": {
-      "index": 16432,
+      "index": 16452,
       "name": "CardData",
       "namespace": "GreClient.CardData",
       "fields": {
@@ -304,7 +304,7 @@
       }
     },
     "card_printing": {
-      "index": 16436,
+      "index": 16456,
       "name": "CardPrintingData",
       "namespace": "GreClient.CardData",
       "fields": {
@@ -312,7 +312,7 @@
       }
     },
     "card_printing_record": {
-      "index": 17433,
+      "index": 17451,
       "name": "CardPrintingRecord",
       "namespace": "Wotc.Mtga.Cards.Database",
       "fields": {
@@ -390,7 +390,7 @@
       "fields": {}
     },
     "graphic": {
-      "index": 30861,
+      "index": 31090,
       "name": "Graphic",
       "namespace": "UnityEngine.UI",
       "fields": {
@@ -399,7 +399,7 @@
       }
     },
     "scroll_rect": {
-      "index": 30930,
+      "index": 31159,
       "name": "ScrollRect",
       "namespace": "UnityEngine.UI",
       "fields": {
@@ -457,8 +457,8 @@
       }
     }
   },
-  "field_offsets_vm": 150212352,
-  "unity_sha256": "8f11cf5dc3cbdedea50189f5095dac41924d02b242a5df035c14d28b15b7fd72",
+  "field_offsets_vm": 150754504,
+  "unity_sha256": "5299102112c419f0890250f47ea58ddf21f984b1eb9ea5866e46e42b49c034b5",
   "unity_geometry": {
     "screen_manager_vm": 29705088,
     "canvas_vtable_vm": 28767856,
