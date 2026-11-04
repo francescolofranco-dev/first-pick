@@ -318,6 +318,7 @@ internal fun parseArenaMemoryRead(objectValue: JsonObject): ArenaMemoryRead = ru
                         ArenaCardZone.DECK, ArenaCardZone.COLUMN -> main
                         ArenaCardZone.POOL -> pool
                         ArenaCardZone.PACK -> emptyList()
+                        ArenaCardZone.PREVIEW -> listOf(ArenaCardQuantity(card.grpId, 1))
                     }
                     source.any { it.grpId == card.grpId && it.count >= card.count }
                 }
@@ -331,7 +332,8 @@ internal fun parseArenaMemoryRead(objectValue: JsonObject): ArenaMemoryRead = ru
                 ?: error("Missing draft cards")
             require(cards.size in 1..30 && cards.all { it > 0 })
             val geometry = parseMemoryCardGeometry(objectValue["geometry"] as? JsonObject)?.takeIf { frame ->
-                frame.cards.all { it.zone == ArenaCardZone.PACK && it.count == 1 } && frame.cards.map { it.grpId } == cards
+                frame.cards.all { it.zone in setOf(ArenaCardZone.PACK, ArenaCardZone.PREVIEW) && it.count == 1 } &&
+                    frame.cards.filter { it.zone == ArenaCardZone.PACK }.map { it.grpId } == cards
             }
             ArenaMemoryRead.PackReady(ArenaMemoryPack(key, cards, pile("picked", 300), geometry), diagnostics)
         }
@@ -357,7 +359,7 @@ internal fun parseMemoryCardGeometry(value: JsonObject?): ArenaCardGeometry? = r
     require(rows.size <= 128)
     val positions = rows.map { entry ->
         val row = entry as? JsonArray ?: error("Invalid position")
-        require(row.size == 7)
+        require(row.size in 7..8)
         val id = row[0].jsonPrimitive.intOrNull ?: error("Invalid identity")
         val count = row[1].jsonPrimitive.intOrNull ?: error("Invalid count")
         val zone = ArenaCardZone.entries.firstOrNull { it.name.equals(row[2].jsonPrimitive.contentOrNull, ignoreCase = true) }
@@ -365,7 +367,17 @@ internal fun parseMemoryCardGeometry(value: JsonObject?): ArenaCardGeometry? = r
         val coordinates = (0..3).map { row[it + 3].jsonPrimitive.doubleOrNull ?: error("Invalid bounds") }
         val rect = NormalizedRect(coordinates[0], coordinates[1], coordinates[2], coordinates[3])
         require(id > 0 && count in 1..300 && rect.isValid())
-        ArenaVisibleCard(id, count, zone, rect)
+        val sourceIndex = if (row.size == 8) {
+            require(zone == ArenaCardZone.PREVIEW)
+            (row[7].jsonPrimitive.intOrNull ?: error("Invalid preview source")).also { require(it in 0..29) }
+        } else null
+        ArenaVisibleCard(id, count, zone, rect, sourceIndex = sourceIndex)
     }
-    ArenaCardGeometry(width, height, positions)
+    val occlusions = (value["occlusions"] as? JsonArray)?.also { require(it.size <= 16) }?.map { entry ->
+        val coordinates = entry as? JsonArray ?: error("Invalid occlusion")
+        require(coordinates.size == 4)
+        val q = coordinates.map { it.jsonPrimitive.doubleOrNull ?: error("Invalid occlusion bounds") }
+        NormalizedRect(q[0], q[1], q[2], q[3]).also { require(it.isValid()) }
+    }.orEmpty()
+    ArenaCardGeometry(width, height, positions, occlusions)
 }.getOrNull()

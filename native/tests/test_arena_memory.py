@@ -46,6 +46,8 @@ def graph():
     refs = g.dictionary([(g.m.alloc(), obj) for obj in [g.model_provider, g.context_provider, popup]], 'services')
     container = g.object('container')
     g.field(container, 'container', '_references', refs)
+    g.container = container
+    g.services = [g.model_provider, g.context_provider, popup]
     g.m.put(g.pantry + 16, 'Q', g.dictionary([(4, container)], 'scopes'))
     pool = g.object('card_list')
     g.field(pool, 'card_list', '_grpQuantityTable', g.dictionary([(1001, 2), (1002, 1), (1003, 1), (1004, 2), (2001, 17)], 'quantities'))
@@ -326,7 +328,89 @@ class NativeDraftReaderTests(unittest.TestCase):
                 value=read(g);self.assertEqual('blocked',value['status']);self.assertNotIn('cards',value)
 
 
+def hover_preview(g, active=True):
+    service = g.object('zoom_delegator')
+    zoom = g.object('rollover_zoom')
+    card = g.object('meta_cdc')
+    model = struct.unpack_from('<Q', g.m.data, g.view_items[0] + g.profile['types']['card_collection_item']['fields']['<Card>k__BackingField'])[0]
+    g.field(service, 'zoom_delegator', '_cardRolloverZoom', zoom)
+    g.field(zoom, 'rollover_base', '<IsActive>k__BackingField', int(active), 'B')
+    g.field(zoom, 'rollover_base', '_zoomCard', card)
+    g.field(card, 'base_cdc', '_model', model)
+    # Reuse a real synthetic collider/transform, scaled like Arena's preview.
+    behaviour = struct.unpack_from('<Q', g.m.data, g.views[2] + 16)[0]
+    collider = struct.unpack_from('<Q', g.m.data, g.views[2] + g.profile['types']['cdc_meta']['fields']['_cardCollider'])[0]
+    g.m.put(zoom + 16, 'Q', behaviour)
+    g.m.put(card + 16, 'Q', behaviour)
+    g.field(card, 'base_cdc', '<Collider>k__BackingField', collider)
+    g.m.put(g.geometry_data + 3 * 48 + 8 * 4, '3f', 2, 2, 2)
+    g.field(g.container, 'container', '_references', g.dictionary([(g.m.alloc(), obj) for obj in g.services + [service]], 'services'))
+    g.zoom = zoom
+    g.zoom_card = card
+
+
 class NativeGeometryTests(unittest.TestCase):
+    def test_hover_preview_keeps_pack_and_reads_enlarged_card_identity_and_bounds(self):
+        g = draft_geometry_graph()
+        hover_preview(g)
+        g.field(g.views[0], 'meta_card_view', '<IsMouseOver>k__BackingField', 1, 'B')
+        value = read(g)
+        self.assertEqual('draft_ready', value['status'])
+        rows = value['geometry']['cards']
+        self.assertEqual(['pack', 'pack', 'pack', 'preview'], [row[2] for row in rows])
+        self.assertEqual(1002, rows[-1][0])
+        self.assertAlmostEqual(400 / 1920, rows[-1][5])
+        self.assertAlmostEqual(560 / 1080, rows[-1][6])
+        self.assertEqual(0, rows[-1][7])
+
+    def test_preview_tooltip_reports_its_own_occluding_rectangle(self):
+        g = draft_geometry_graph()
+        hover_preview(g)
+        hanger = g.object('ability_hanger')
+        view = g.object('ability_hanger_view')
+        g.field(g.zoom, 'rollover_zoom', '_abilityHanger', hanger)
+        g.field(hanger, 'hanger_base', '<Active>k__BackingField', 1, 'B')
+        g.field(hanger, 'ability_hanger', '_view', view)
+        g.m.put(view + 16, 'Q', struct.unpack_from('<Q', g.m.data, g.views[1] + 16)[0])
+        transform = g.geometry_transforms[1]
+        g.m.put(transform, 'Q', g.profile['unity_geometry']['rect_transform_vtable_vm'])
+        g.m.put(transform + 0xb8, '4f', -100, -140, 200, 280)
+        geometry = read(g)['geometry']
+        self.assertEqual(1, len(geometry['occlusions']))
+        self.assertEqual(geometry['cards'][1][3:7], geometry['occlusions'][0])
+
+    def test_closed_preview_does_not_reuse_its_retained_card(self):
+        g = draft_geometry_graph()
+        hover_preview(g, active=False)
+        self.assertEqual(['pack'] * 3, [row[2] for row in read(g)['geometry']['cards']])
+
+    def test_retained_inactive_preview_does_not_hide_the_pack(self):
+        g = draft_geometry_graph()
+        hover_preview(g)
+        # The preview's native card can be disabled independently of its zoom controller.
+        behaviour = g.m.alloc(128)
+        owner = g.m.alloc(128)
+        g.m.put(behaviour + 0x20, 'Q', owner)
+        g.m.put(owner + 0x47, 'B', 1)
+        g.m.put(g.zoom + 16, 'Q', behaviour)
+        # Keep all regular pack views active; use a separate inactive preview component.
+        inactive = g.m.alloc(128)
+        inactive_owner = g.m.alloc(128)
+        g.m.put(inactive + 0x20, 'Q', inactive_owner)
+        g.m.put(g.zoom_card + 16, 'Q', inactive)
+        value = read(g)
+        self.assertEqual(['pack'] * 3, [row[2] for row in value['geometry']['cards']])
+
+    def test_unreadable_active_preview_withholds_geometry_but_keeps_pack(self):
+        g = draft_geometry_graph()
+        hover_preview(g)
+        g.field(g.zoom_card, 'base_cdc', '_model', 0)
+        value = read(g)
+        self.assertEqual('draft_ready', value['status'])
+        self.assertNotIn('geometry', value)
+        self.assertIn('geometry_reason', value)
+
+
     def test_horizontal_front_and_single_cards_keep_full_bounds(self):
         for amount in [1,2]:
             g=draft_geometry_graph()

@@ -50,9 +50,9 @@ fun ArenaDeckBuilderOverlay(
                     val identity = read.deck.copy(geometry = null)
                     when (validation) {
                         is MemoryDeckValidation.Ready -> presentation.accepted(identity, read.deck.editorSession,
-                            VerifiedDeckOverlay(memoryGuidanceModel(target, validation.deck), validation.names), read.deck.geometry, now)
+                            VerifiedDeckOverlay(memoryGuidanceModel(target, validation.deck), validation.names), read.deck.geometry, now, retainGeometry = read.diagnostics.geometryReason == null)
                         is MemoryDeckValidation.Rejected -> if (validation.settling)
-                            presentation.settling(identity, read.deck.editorSession, read.deck.geometry, now)
+                            presentation.settling(identity, read.deck.editorSession, read.deck.geometry, now, retainGeometry = read.diagnostics.geometryReason == null)
                         else presentation.clear(now, OverlayHealth(OverlayHealthState.READING, validation.reason))
                     }
                 }

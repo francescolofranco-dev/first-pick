@@ -260,7 +260,8 @@
       "namespace": "",
       "fields": {
         "<IsDragging>k__BackingField": 235,
-        "_cardData": 72
+        "_cardData": 72,
+        "<IsMouseOver>k__BackingField": 234
       }
     },
     "draft_deck_manager": {
@@ -461,6 +462,77 @@
     "deck_details_popup": {
       "index": 1250,
       "name": "DeckDetailsPopup",
+      "namespace": "",
+      "fields": {}
+    },
+    "zoom_delegator": {
+      "index": 9707,
+      "name": "CardRolloverZoomDelegator",
+      "namespace": "Wotc.Mtga",
+      "fields": {
+        "_cardRolloverZoom": 16,
+        "_cardDetailsZoom": 24
+      }
+    },
+    "rollover_zoom": {
+      "index": 1063,
+      "name": "View_CardRolloverZoom",
+      "namespace": "",
+      "fields": {
+        "_abilityHanger": 280,
+        "_faceHanger": 288
+      }
+    },
+    "static_rollover_zoom": {
+      "index": 1060,
+      "name": "StaticCardRolloverZoom",
+      "namespace": "",
+      "fields": {}
+    },
+    "rollover_base": {
+      "index": 1021,
+      "name": "CardRolloverZoomBase",
+      "namespace": "",
+      "fields": {
+        "_lastRolloverModel": 40,
+        "_zoomCard": 176,
+        "<IsActive>k__BackingField": 184
+      }
+    },
+    "meta_cdc": {
+      "index": 580,
+      "name": "Meta_CDC",
+      "namespace": "",
+      "fields": {}
+    },
+    "base_cdc": {
+      "index": 586,
+      "name": "BASE_CDC",
+      "namespace": "",
+      "fields": {
+        "_model": 64,
+        "<Collider>k__BackingField": 120
+      }
+    },
+    "hanger_base": {
+      "index": 867,
+      "name": "HangerBase",
+      "namespace": "",
+      "fields": {
+        "<Active>k__BackingField": 32
+      }
+    },
+    "ability_hanger": {
+      "index": 851,
+      "name": "AbilityHangerBase",
+      "namespace": "",
+      "fields": {
+        "_view": 40
+      }
+    },
+    "ability_hanger_view": {
+      "index": 855,
+      "name": "AbilityHangerView",
       "namespace": "",
       "fields": {}
     }

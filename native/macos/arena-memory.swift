@@ -373,7 +373,7 @@ private final class DeckRuntime {
             if try flag(menu, "settings_menu", "<IsOpen>k__BackingField") { throw ReadFailure("blocked", "Close Arena's settings to resume deck guidance.") }
         }
     }
-    func activeServices(_ keys: [String]) throws -> [String: UInt64] {
+    func activeServices(_ keys: [String], required: Bool = true) throws -> [String: UInt64] {
         let pantry = try singleton("pantry", "instance"), parent = try memory.pointer(klass("pantry") + 0x58)
         try require(try identity(parent) == ("Pantry`1", "SharedClientCore.SharedClientCore.Code"), "Unexpected service registry.")
         guard let offset = try fields(parent)["_containers"] else { throw ReadFailure("unsupported_build", "Missing registry scope table.") }
@@ -387,8 +387,8 @@ private final class DeckRuntime {
                 for key in found.keys { if type == (try klass(key)) { found[key]!.insert(value) } }
             }
         }
-        try require(found.values.allSatisfy { $0.count == 1 }, "A unique active deck service could not be found.")
-        return found.mapValues { $0.first! }
+        try require(found.values.allSatisfy { required ? $0.count == 1 : $0.count <= 1 }, "A unique active deck service could not be found.")
+        return found.compactMapValues { $0.first }
     }
     func checkPopup(_ manager: UInt64) throws {
         let popup = try memory.pointer(manager + profile.offset("popup_manager", "_activePopup"), nullable: true)

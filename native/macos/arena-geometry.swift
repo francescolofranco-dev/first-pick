@@ -19,6 +19,8 @@ private final class ArenaGeometry {
     var canvasRect: ArenaRect?
     var trsCache: [UInt64: [Double]] = [:]
     var rows: [[Any]] = []
+    var occlusions: [[Double]] = []
+    var packViews: [UInt64] = []
 
     init(_ runtime: DeckRuntime) throws {
         r = runtime
@@ -127,7 +129,9 @@ private final class ArenaGeometry {
         return try projected(transform,center:[q.x+q.w/2,q.y+q.h/2,0],size:[q.w,q.h,0])
     }
     func cardRect(_ view: UInt64) throws -> ArenaRect {
-        let collider=try native(m.pointer(view + p.offset("cdc_meta","_cardCollider")))
+        try colliderRect(native(m.pointer(view + p.offset("cdc_meta","_cardCollider"))))
+    }
+    func colliderRect(_ collider: UInt64) throws -> ArenaRect {
         try require(try m.pointer(collider) == marker("box_collider_vtable_vm"), "Unexpected Arena card collider.")
         let center=try floats(collider+0x60,3), size=try floats(collider+0x6c,3)
         try require(size.allSatisfy { $0 > 0 && $0 < 10000 }, "Invalid card collider size.")
@@ -147,8 +151,48 @@ private final class ArenaGeometry {
         guard x >= 0 && y >= 0 && w > 0 && h > 0 && x+w <= 1.000001 && y+h <= 1.000001 else { return }
         rows.append([id,count,zone,x,y,w,h])
     }
-    func result() -> [String: Any] { ["screen":screen,"cards":rows] }
+    func result() throws -> [String: Any] {
+        try hoverPreview()
+        return ["screen":screen,"cards":rows,"occlusions":occlusions]
+    }
+    func hoverPreview() throws {
+        guard let service = try r.activeServices(["zoom_delegator"], required:false)["zoom_delegator"] else { return }
+        for (field,key) in [("_cardRolloverZoom","rollover_zoom"),("_cardDetailsZoom","static_rollover_zoom")] {
+            let zoom = try m.pointer(service + p.offset("zoom_delegator",field),nullable:true)
+            if zoom == 0 { continue }
+            try r.check(zoom,key)
+            guard try r.flag(zoom,"rollover_base","<IsActive>k__BackingField"), try active(native(zoom)) else { continue }
+            let card = try m.pointer(zoom + p.offset("rollover_base","_zoomCard"))
+            try r.check(card,"meta_cdc")
+            guard try active(native(card)) else { continue }
+            let model = try m.pointer(card + p.offset("base_cdc","_model"))
+            let id = try r.cardID(model)
+            let bounds = try colliderRect(native(m.pointer(card + p.offset("base_cdc","<Collider>k__BackingField"))))
+            try append(id,1,"preview",bounds)
+            let hovered = try packViews.enumerated().filter { try r.flag($0.element,"meta_card_view","<IsMouseOver>k__BackingField") }
+            if hovered.count == 1, rows.last?[2] as? String == "preview" {
+                rows[rows.count-1].append(hovered[0].offset)
+            }
+            if key == "rollover_zoom" {
+                let hanger = try m.pointer(zoom + p.offset(key,"_abilityHanger"),nullable:true)
+                if hanger != 0, try r.flag(hanger,"hanger_base","<Active>k__BackingField") {
+                    let view = try m.pointer(hanger + p.offset("ability_hanger","_view"))
+                    try r.check(view,"ability_hanger_view")
+                    if try active(native(view)), let canvas=canvasRect,
+                       let visible = try uiRect(transform(native(view))).intersection(canvas) {
+                        occlusions.append([(visible.x-canvas.x)/canvas.w,(canvas.top-visible.top)/canvas.h,visible.w/canvas.w,visible.h/canvas.h])
+                    }
+                }
+            }
+            guard try r.flag(zoom,"rollover_base","<IsActive>k__BackingField"),
+                  try m.pointer(card + p.offset("base_cdc","_model")) == model,
+                  try m.pointer(zoom + p.offset("rollover_base","_zoomCard")) == card else {
+                throw ReadFailure("changing","Arena is changing its card preview.")
+            }
+        }
+    }
     func pack(_ views: [UInt64]) throws -> [String: Any] {
+        packViews = views
         for view in views {
             guard try active(native(view)) else { throw ReadFailure("changing","Arena is showing the new cards.") }
             let item=try r.field(view,"draft_card_view","<CurrentCard>k__BackingField","card_collection_item")
@@ -159,7 +203,7 @@ private final class ArenaGeometry {
             try append(r.cardID(card),1,"pack",q)
         }
         try require(rows.count == views.count, "Arena's pack is outside the current viewport.")
-        return result()
+        return try result()
     }
     func deck(_ nav: UInt64) throws -> [String: Any] {
         let widget=try r.field(nav,"editor","_deckbuilder","widget")
@@ -226,6 +270,6 @@ private final class ArenaGeometry {
                 }
             }
         }
-        return result()
+        return try result()
     }
 }

@@ -80,6 +80,45 @@ class MemoryCardGeometryTest {
         }
     }
 
+    @Test fun hoverPreviewHidesCoveredCardsAndRepeatsTheHoveredScore() {
+        val payload = """{"status":"draft_ready","editor_session":"${"a".repeat(64)}","cards":[1,2,3],"picked":[],
+            "geometry":{"screen":[1920,1080],"cards":[
+                [1,1,"pack",0.05,0.2,0.12,0.3], [2,1,"pack",0.3,0.2,0.12,0.3], [3,1,"pack",0.5,0.2,0.12,0.3],
+                [1,1,"preview",0.22,0.05,0.28,0.85]]}}"""
+        val read = assertIs<ArenaMemoryRead.PackReady>(parseArenaMemoryRead(Json.parseToJsonElement(payload) as JsonObject))
+        val geometry = assertNotNull(read.pack.geometry, "An Arena hover preview must retain usable geometry")
+        val cards = listOf(OverlayCard(80.0, null, grpId = 1), OverlayCard(40.0, null, grpId = 2), OverlayCard(null, null, grpId = 3))
+        val marks = draftScoreMarks(cards, geometry.cards)
+        assertEquals(listOf(80.0, null, 80.0), marks.map { it.value })
+        assertEquals(listOf(true, false, true), marks.map { it.isBest })
+        assertEquals(NormalizedRect(.22, .05, .28, .85), marks.last().bounds)
+        val restored = draftScoreMarks(cards, geometry.cards.take(3))
+        assertEquals(listOf(80.0, 40.0, null), restored.map { it.value })
+    }
+
+    @Test fun tooltipOcclusionSurvivesTitleBarCoordinateConversion() {
+        val geometry = ArenaCardGeometry(2560, 1440, listOf(placement(1), placement(2, rect = b)), listOf(b))
+        val placements = geometry.inWindow(WindowBounds(0, 0, 1280, 748, backingScale = 2.0))
+        val marks = draftScoreMarks(listOf(OverlayCard(80.0, null, grpId = 1), OverlayCard(40.0, null, grpId = 2)), placements)
+        assertEquals(listOf(80.0), marks.map { it.value })
+    }
+
+    @Test fun anUnratedOrOutOfPackPreviewStillHidesTheCardsBehindIt() {
+        val preview = ArenaVisibleCard(9, 1, ArenaCardZone.PREVIEW, b)
+        assertTrue(draftScoreMarks(listOf(OverlayCard(40.0, null, grpId = 1)), listOf(placement(1, rect = b), preview)).isEmpty())
+        val unrated = preview.copy(grpId = 1)
+        val mark = draftScoreMarks(listOf(OverlayCard(null, null, grpId = 1)), listOf(placement(1), unrated)).last()
+        assertNull(mark.value)
+        assertEquals(b, mark.bounds)
+    }
+
+    @Test fun duplicatePreviewPreservesTheHoveredCopysRecommendationAndDetails() {
+        val cards = listOf(OverlayCard(80.0, null, grpId = 1, recommendedPair = false),
+            OverlayCard(80.0, null, grpId = 1, recommendedPair = true))
+        val preview = ArenaVisibleCard(1, 1, ArenaCardZone.PREVIEW, NormalizedRect(.6, .1, .3, .8), sourceIndex = 1)
+        assertTrue(draftScoreMarks(cards, listOf(placement(1), placement(1, rect = b), preview)).last().isBest)
+    }
+
     @Test fun horizontalHighlightsUseTheWholeVisibleEntryRatherThanItsGutter() {
         val model = DeckGuidanceOverlayModel(DeckGuidanceStatus.NEEDS_CHANGES,
             changes = listOf(CardGuidance("Cut me", 0, 1)))

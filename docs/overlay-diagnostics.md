@@ -1,5 +1,29 @@
 # Memory overlay verification
 
+## Hover-preview layering (3.8.0)
+
+The memory reader now projects Arena's rollover and enlarged-detail card
+colliders separately from the pack. Draft badges covered by a preview or its
+ability/flavor tooltip disappear, and the enlarged card repeats the matching
+pack card's score, breakdown and recommendation at the same bottom-center
+anchor. Hover-source indices preserve the selected copy's recommendation when
+the pack contains duplicates. Deck highlights also disappear under previews.
+
+An inactive retained preview card is ignored even if Arena leaves its zoom
+controller marked active. An unreadable active preview withholds geometry;
+the presentation clears old rectangles immediately while keeping verified
+advice. This avoids retaining ordinary badges over a newly opened preview.
+
+Validation: 504 app tests and 25 compiled native-reader fixture tests pass. The
+profile's added types and offsets match the installed Arena 2026.65.0 binary.
+The signed production app was rebuilt, installed and restarted. A live reader
+returned the complete eight-card Quick Draft pack with eight positions after
+the inactive-preview fix. Synthetic tests cover enlarged geometry, tooltip
+occlusion, preview closure, duplicate source selection and interrupted reads.
+The final live hover/composite visual check remains pending: automated input
+did not trigger Arena's hover preview. These checks are not measured benchmarks.
+
+
 ## Hidden deck-details recovery (3.7.1)
 
 Arena can retain a hidden `DeckDetailsPopup` with `IsShowing` still set. Checking

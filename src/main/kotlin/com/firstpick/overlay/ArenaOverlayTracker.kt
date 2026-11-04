@@ -70,9 +70,9 @@ fun ArenaOverlayTracker(
                     val identity = read.pack.copy(geometry = null)
                     when (validation) {
                         is MemoryPackValidation.Ready -> presentation.accepted(identity, read.pack.editorSession,
-                            validation.cards, read.pack.geometry, now)
+                            validation.cards, read.pack.geometry, now, retainGeometry = read.diagnostics.geometryReason == null)
                         is MemoryPackValidation.Rejected -> if (validation.settling)
-                            presentation.settling(identity, read.pack.editorSession, read.pack.geometry, now, newPack = true)
+                            presentation.settling(identity, read.pack.editorSession, read.pack.geometry, now, newPack = true, retainGeometry = read.diagnostics.geometryReason == null)
                         else presentation.clear(now, OverlayHealth(OverlayHealthState.READING, validation.reason))
                     }
                 }

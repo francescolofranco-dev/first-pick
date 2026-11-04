@@ -2,13 +2,15 @@ package com.firstpick.overlay
 
 import com.firstpick.cards.canonicalBasicLandName
 
-internal enum class ArenaCardZone { PACK, POOL, DECK, COLUMN }
+internal enum class ArenaCardZone { PACK, POOL, DECK, COLUMN, PREVIEW }
 
 internal data class ArenaVisibleCard(
     val grpId: Int,
     val count: Int,
     val zone: ArenaCardZone,
     val bounds: NormalizedRect,
+    val occluded: Boolean = false,
+    val sourceIndex: Int? = null,
 )
 
 /** Coordinates describe Arena's client viewport, excluding the macOS title bar. */
@@ -16,6 +18,7 @@ internal data class ArenaCardGeometry(
     val screenWidth: Int,
     val screenHeight: Int,
     val cards: List<ArenaVisibleCard>,
+    val occlusions: List<NormalizedRect> = emptyList(),
 ) {
     fun inWindow(window: WindowBounds): List<ArenaVisibleCard> {
         if (screenWidth !in 320..16384 || screenHeight !in 200..16384 || window.w <= 0 || window.h <= 0) return emptyList()
@@ -28,7 +31,7 @@ internal data class ArenaCardGeometry(
             val rect = card.bounds
             val adjusted = NormalizedRect(rect.x, (topInset.coerceAtLeast(0.0) + rect.y * contentHeight) / window.h,
                 rect.width, rect.height * contentHeight / window.h)
-            adjusted.takeIf(NormalizedRect::isValid)?.let { card.copy(bounds = it) }
+            adjusted.takeIf(NormalizedRect::isValid)?.let { card.copy(bounds = it, occluded = occlusions.any(rect::overlaps)) }
         }
     }
 }
@@ -38,10 +41,19 @@ internal fun draftScoreMarks(cards: List<OverlayCard>, placements: List<ArenaVis
     if (pack.map { it.grpId } != cards.map { it.grpId } || pack.any { it.count != 1 || !it.bounds.isValid() }) return emptyList()
     val best = bestRatedOverlayCard(cards, cards.indices.toList())
     val paired = cards.any { it.recommendedPair }
-    return cards.mapIndexed { index, card ->
+    val previews = placements.filter { it.zone == ArenaCardZone.PREVIEW }
+    val marks = cards.mapIndexed { index, card ->
         DraftScoreMark(pack[index].bounds, card.value, if (paired) card.recommendedPair else index == best, card.breakdown, card.model, card.gihWr, card.highlight)
     }
+    return marks.filterIndexed { index, mark -> !pack[index].occluded && previews.none { mark.bounds.overlaps(it.bounds) } } + previews.mapNotNull { preview ->
+        val index = preview.sourceIndex?.takeIf { cards.getOrNull(it)?.grpId == preview.grpId }
+            ?: cards.indexOfFirst { it.grpId == preview.grpId }
+        if (index < 0 || preview.occluded || !preview.bounds.isValid()) null else marks[index].copy(bounds = preview.bounds)
+    }
 }
+
+internal fun NormalizedRect.overlaps(other: NormalizedRect): Boolean =
+    x < other.right && right > other.x && y < other.bottom && bottom > other.y
 
 internal fun DeckGuidanceOverlayModel.withMemoryMarks(
     placements: List<ArenaVisibleCard>,
@@ -51,7 +63,7 @@ internal fun DeckGuidanceOverlayModel.withMemoryMarks(
     val advice = (changes + basicLandChanges).associateBy { it.name }
     val matcher = CanonicalCardNameMatcher(advice.keys)
     return copy(marks = placements.mapNotNull { card ->
-        if (!card.bounds.isValid() || card.count !in 1..300) return@mapNotNull null
+        if (card.occluded || placements.any { it.zone == ArenaCardZone.PREVIEW && card.zone != ArenaCardZone.PREVIEW && card.bounds.overlaps(it.bounds) } || !card.bounds.isValid() || card.count !in 1..300) return@mapNotNull null
         val name = names[card.grpId] ?: return@mapNotNull null
         val canonical = canonicalBasicLandName(name)?.removePrefix("Snow-Covered ")
             ?: (matcher.match(name) as? CanonicalCardNameMatch.Matched)?.name
@@ -64,7 +76,7 @@ internal fun DeckGuidanceOverlayModel.withMemoryMarks(
                 DeckGuidanceAction.OK -> null
             }
             ArenaCardZone.POOL -> if (guidance.action == DeckGuidanceAction.ADD) DeckGuidanceVisualMark.AddCard(card.bounds) else null
-            ArenaCardZone.PACK -> null
+            ArenaCardZone.PACK, ArenaCardZone.PREVIEW -> null
         }
     })
 }
