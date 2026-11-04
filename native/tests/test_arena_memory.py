@@ -154,6 +154,17 @@ def draft_geometry_graph():
 
 
 class NativeDeckReaderTests(unittest.TestCase):
+    def test_deck_details_hide_guidance_until_closed(self):
+        g = graph()
+        popup = g.object('deck_details_popup')
+        g.field(g.widget, 'widget', '_detailsPopup', popup)
+        g.field(popup, 'popup_base', '<IsShowing>k__BackingField', 1, 'B')
+        value = read(g)
+        self.assertEqual('blocked', value['status'])
+        self.assertNotIn('main', value)
+        g.field(popup, 'popup_base', '<IsShowing>k__BackingField', 0, 'B')
+        self.assertEqual('ready', read(g)['status'])
+
     def test_exact_quantities_and_pool_are_read_by_the_native_implementation(self):
         value = read(graph())
         self.assertEqual('ready', value['status'])
@@ -187,6 +198,20 @@ class NativeDeckReaderTests(unittest.TestCase):
 
 
 class NativeDraftReaderTests(unittest.TestCase):
+    def test_deck_details_hide_advice_even_with_a_retained_active_pack(self):
+        g = draft_geometry_graph()
+        popup = g.object('deck_details_popup')
+        g.field(g.draft_controller, 'draft_controller', '_deckDetailsPopup', popup)
+        g.field(popup, 'popup_base', '<IsShowing>k__BackingField', 1, 'B')
+        value = read(g)
+        self.assertEqual('blocked', value['status'])
+        self.assertNotIn('cards', value)
+        self.assertNotIn('geometry', value)
+        g.field(popup, 'popup_base', '<IsShowing>k__BackingField', 0, 'B')
+        value = read(g)
+        self.assertEqual('draft_ready', value['status'])
+        self.assertIn('geometry', value)
+
     def test_duplicate_pack_ids_follow_actual_card_views_and_preserve_picked_pool(self):
         value=read(draft_graph())
         self.assertEqual('draft_ready',value['status'])

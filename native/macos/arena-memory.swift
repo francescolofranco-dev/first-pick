@@ -403,6 +403,15 @@ private final class DeckRuntime {
             if try flag(popup, "popup_base", "<IsShowing>k__BackingField") { throw ReadFailure("blocked", "Close the Arena popup to resume deck guidance.") }
         }
     }
+    func checkDeckDetails(_ owner: UInt64, _ key: String, _ name: String) throws {
+        let popup = try memory.pointer(owner + profile.offset(key, name), nullable: true)
+        if popup != 0 {
+            try check(popup, "deck_details_popup")
+            if try flag(popup, "popup_base", "<IsShowing>k__BackingField") {
+                throw ReadFailure("blocked", "Close Arena's deck details to resume card advice.")
+            }
+        }
+    }
     func roots() throws -> [UInt64] {
         let wrapper = try singleton("wrapper", "<Instance>k__BackingField")
         let scene = try field(wrapper, "wrapper", "<SceneLoader>k__BackingField", "scene")
@@ -411,6 +420,7 @@ private final class DeckRuntime {
         guard try flag(nav, "editor", "_isActive") else { throw ReadFailure("outside_builder", "The deck builder is inactive.") }
         let widget = try field(nav, "editor", "_deckbuilder", "widget")
         guard try flag(widget, "widget", "_isActive") else { throw ReadFailure("outside_builder", "The deck builder is inactive.") }
+        try checkDeckDetails(widget, "widget", "_detailsPopup")
         try connectionAndMessages(wrapper)
         let found = try activeServices(["model_provider", "context_provider", "popup_manager"])
         try checkPopup(found["popup_manager"]!)
@@ -480,6 +490,7 @@ private final class DeckRuntime {
     func draftSnapshot(_ nav: UInt64) throws -> [String: Any] {
         try check(nav, "draft_controller")
         guard try flag(nav, "draft_controller", "_active") else { throw ReadFailure("outside_builder", "The draft screen is inactive.") }
+        try checkDeckDetails(nav, "draft_controller", "_deckDetailsPopup")
         let wrapper = try singleton("wrapper", "<Instance>k__BackingField")
         try connectionAndMessages(wrapper)
         try checkPopup(activeServices(["popup_manager"])["popup_manager"]!)

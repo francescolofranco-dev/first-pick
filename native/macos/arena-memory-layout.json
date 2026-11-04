@@ -82,7 +82,8 @@
         "_isActive": 48,
         "_deckListView": 192,
         "_deckColumnView": 200,
-        "_poolCardHolder": 208
+        "_poolCardHolder": 208,
+        "_detailsPopup": 216
       }
     },
     "pantry": {
@@ -228,7 +229,8 @@
         "_draftDeckManager": 296,
         "_layoutChangeCoroutine": 312,
         "_okToPickCard": 427,
-        "_settingCardsCoroutine": 456
+        "_settingCardsCoroutine": 456,
+        "_deckDetailsPopup": 376
       }
     },
     "draft_holder": {
@@ -455,6 +457,12 @@
       "fields": {
         "_quantity": 468
       }
+    },
+    "deck_details_popup": {
+      "index": 1250,
+      "name": "DeckDetailsPopup",
+      "namespace": "",
+      "fields": {}
     }
   },
   "field_offsets_vm": 150754504,
