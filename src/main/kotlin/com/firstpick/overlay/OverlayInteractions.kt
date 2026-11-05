@@ -146,21 +146,26 @@ internal fun scoreBadgeBounds(mark: DraftScoreMark, width: Float, height: Float)
 
 @Composable
 internal fun DraftScoreInteractions(marks: List<DraftScoreMark>, arena: WindowBounds) {
-    var hovered by remember { mutableStateOf<Int?>(null) }
-    // A changed pack or reading must never retain the previous card's explanation.
-    LaunchedEffect(marks.map { it.breakdown to it.model }) { hovered = null }
-    val hoveredMark = hovered?.let { marks.getOrNull(it) }?.takeUnless { it.covered }
+    var hovered by remember { mutableStateOf<Pair<Int, DraftScoreMark>?>(null) }
+    // Preview windows can appear/disappear independently of the hovered pack badge.
+    // Only changes to that badge's identity or explanation should end its hover.
+    val hoveredMark = hovered?.let { (slot, original) ->
+        marks.withIndex().firstOrNull { (index, mark) -> (mark.slot ?: index) == slot }?.value
+            ?.takeIf { !it.covered && it.breakdown == original.breakdown && it.model == original.model }
+    }
+    LaunchedEffect(hoveredMark == null) { if (hoveredMark == null) hovered = null }
     if (hoveredMark?.breakdown != null) {
         OverlayScoreDetailsWindow(hoveredMark, arena)
     }
     for ((index, mark) in marks.withIndex()) {
         if (mark.breakdown == null) continue
         val rect = scoreBadgeBounds(mark, arena.w.toFloat(), arena.h.toFloat()) ?: continue
-        key(mark.slot ?: index) {
+        val slot = mark.slot ?: index
+        key(slot) {
             OverlayPanelWindow("FirstPick Score ${index + 1}", arena.x + rect.left,
                 arena.y + rect.top, rect.width, rect.height, visible = !mark.covered) {
                 OverlayScoreBadge(mark, rect.width, drawBadge = false, enabled = !mark.covered) { inside ->
-                    if (inside) hovered = index else if (hovered == index) hovered = null
+                    if (inside) hovered = slot to mark else if (hovered?.first == slot) hovered = null
                 }
             }
         }
