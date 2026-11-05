@@ -127,8 +127,11 @@ class DraftScoreBadgeRenderTest {
         assertEquals(0, image.getRGB(577, 250) ushr 24)
         // The aura must remain visible well beyond the previous thin border.
         val redAura = java.awt.Color(image.getRGB(41, 250), true)
-        val tealAura = java.awt.Color(image.getRGB(297, 250), true)
+        val tealAura = java.awt.Color(image.getRGB(306, 250), true)
         assertTrue(redAura.alpha > 10 && redAura.red > redAura.green)
+        val rightFire = java.awt.Color(image.getRGB(285, 250), true)
+        assertTrue(rightFire.alpha > 10 && rightFire.red > rightFire.green * 1.5,
+            "The clear winner must glow red on its right side too, rather than yellow")
         assertTrue(tealAura.alpha > 10 && tealAura.green > tealAura.red)
         val goldAura = java.awt.Color(image.getRGB(542, 250), true)
         assertTrue(goldAura.alpha > 10 && goldAura.red > goldAura.blue)
