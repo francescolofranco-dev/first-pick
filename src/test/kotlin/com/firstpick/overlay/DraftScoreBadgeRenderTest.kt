@@ -14,6 +14,59 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class DraftScoreBadgeRenderTest {
+    @OptIn(androidx.compose.ui.ExperimentalComposeUiApi::class)
+    @Test fun productionFrameClockActuallyAdvancesTheEnergy() {
+        val mark = DraftScoreMark(NormalizedRect(.2, .2, .4, .6), 80.0, true,
+            highlight = com.firstpick.ui.PickHighlight.CLEAR)
+        val scene = androidx.compose.ui.ImageComposeScene(500, 400) { DraftCardHighlights(listOf(mark)) }
+        var time = 1_000_000_000L
+        fun advance() { time += 100_000_000L; scene.render(time).close() }
+        fun pixels(): ByteArray = scene.render(time).use { image -> image.encodeToData()!!.use { it.bytes } }
+        try {
+            repeat(4) { advance() }
+            val before = pixels()
+            repeat(12) { advance() }
+            assertTrue(!before.contentEquals(pixels()), "Production animation must advance with the Compose frame clock")
+        } finally { scene.close() }
+    }
+
+    @Test fun previewAuraSurvivesACoveredBadgeWithoutPaintingOverTheTooltip() {
+        val mark = DraftScoreMark(NormalizedRect(.1, .2, .2, .5), 80.0, true,
+            highlight = com.firstpick.ui.PickHighlight.CLEAR, isPreview = true, covered = true,
+            highlightOcclusions = listOf(NormalizedRect(0.0, .2, .18, .1)))
+        val file = File("build/reports/preview-highlight-clipping.png")
+        file.parentFile.mkdirs()
+        renderComposeScene(1000, 700) { DraftScoreBadges(listOf(mark), 1000.dp, 700.dp) }.use { image ->
+            image.encodeToData()!!.use { file.writeBytes(it.bytes) }
+        }
+        val image = ImageIO.read(file)
+        assertEquals(0, image.getRGB(98, 180) ushr 24, "Tooltip must not be painted over")
+        assertTrue(image.getRGB(98, 300) ushr 24 > 200, "Uncovered preview edge must stay visible")
+        assertEquals(0, image.getRGB(200, 300) ushr 24, "Card artwork must remain clear")
+    }
+
+    @Test fun animationChangesTheAuraWithoutMovingTheCardEdgeOrPaintingItsArtwork() {
+        val mark = DraftScoreMark(NormalizedRect(.15, .2, .3, .6), 80.0, true,
+            highlight = com.firstpick.ui.PickHighlight.CLEAR)
+        fun frame(phase: Float): java.awt.image.BufferedImage {
+            val file = File("build/reports/animated-aura-$phase.png")
+            file.parentFile.mkdirs()
+            renderComposeScene(800, 600) { DraftCardHighlights(listOf(mark), animationPhase = phase) }.use { image ->
+                image.encodeToData()!!.use { file.writeBytes(it.bytes) }
+            }
+            return ImageIO.read(file)
+        }
+        val before = frame(0f); val after = frame(.25f)
+        var changes = 0
+        for (y in 0 until before.height) for (x in 0 until before.width) {
+            if (before.getRGB(x, y) != after.getRGB(x, y)) changes++
+        }
+        assertTrue(changes > 500, "The rendered energy must move, rather than staying static")
+        assertEquals(before.getRGB(117, 300), after.getRGB(117, 300), "The hard card edge must stay fixed")
+        assertEquals(0, before.getRGB(230, 300) ushr 24)
+        assertEquals(0, after.getRGB(230, 300) ushr 24)
+    }
+
     @Test fun interactiveBadgesRenderInTheSameFrameAsAllOtherMarks() {
         val mark = DraftScoreMark(NormalizedRect(.1, .2, .2, .4), 70.0, false,
             breakdown = com.firstpick.advisor.ValueBreakdown(70.0, 0.0, 0.0, 0.0, 0.0, 70.0))

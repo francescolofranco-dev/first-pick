@@ -38,12 +38,14 @@ internal data class DraftScoreMark(
     val highlight: PickHighlight = PickHighlight.NONE,
     val slot: Int? = null,
     val covered: Boolean = false,
+    val isPreview: Boolean = false,
+    val highlightOcclusions: List<NormalizedRect> = emptyList(),
 )
 
 @Composable
 internal fun DraftScoreBadges(marks: List<DraftScoreMark>, width: Dp, height: Dp) {
     Box(androidx.compose.ui.Modifier.size(width, height)) {
-        DraftCardHighlights(marks.filterNot { it.covered })
+        DraftCardHighlights(marks.filter { !it.covered || it.isPreview })
         for (mark in marks) {
             if (mark.covered) continue
             val rect = scoreBadgeBounds(mark, width.value, height.value) ?: continue

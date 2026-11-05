@@ -10,6 +10,32 @@ class MemoryCardGeometryTest {
     private fun placement(id: Int, zone: ArenaCardZone = ArenaCardZone.PACK, rect: NormalizedRect = a) =
         ArenaVisibleCard(id, 1, zone, rect)
 
+    @Test fun hoverTransfersTheAuraToTheExactDuplicateAndRestoresItOnExit() {
+        val accent = com.firstpick.ui.PickHighlight.CONTENDER
+        val cards = listOf(OverlayCard(80.0, null, grpId = 1, highlight = accent),
+            OverlayCard(80.0, null, grpId = 1, highlight = accent))
+        val pack = listOf(placement(1), placement(1, rect = b))
+        val preview = ArenaVisibleCard(1, 1, ArenaCardZone.PREVIEW, NormalizedRect(.6, .1, .3, .8), sourceIndex = 1)
+        val during = draftScoreMarks(cards, pack + preview, includeCovered = true)
+        assertEquals(accent, during.single { it.slot == 0 }.highlight)
+        assertEquals(com.firstpick.ui.PickHighlight.NONE, during.single { it.slot == 1 }.highlight)
+        assertEquals(accent, during.single { it.isPreview }.highlight)
+        assertEquals(listOf(accent, accent), draftScoreMarks(cards, pack).map { it.highlight })
+        val moving = draftScoreMarks(cards, pack + preview.copy(previewSettled = false), includeCovered = true)
+        assertEquals(com.firstpick.ui.PickHighlight.NONE, moving.single { it.isPreview }.highlight)
+        assertEquals(com.firstpick.ui.PickHighlight.NONE, moving.single { it.slot == 1 }.highlight)
+    }
+
+    @Test fun previewTooltipMasksOnlyItsCoveredBorderInsteadOfDroppingTheAura() {
+        val card = OverlayCard(80.0, null, grpId = 1, highlight = com.firstpick.ui.PickHighlight.CLEAR)
+        val tooltip = NormalizedRect(.58, .15, .12, .12)
+        val preview = ArenaVisibleCard(1, 1, ArenaCardZone.PREVIEW, NormalizedRect(.6, .1, .3, .8),
+            sourceIndex = 0, occlusions = listOf(tooltip))
+        val mark = draftScoreMarks(listOf(card), listOf(placement(1), preview)).single { it.isPreview }
+        assertEquals(com.firstpick.ui.PickHighlight.CLEAR, mark.highlight)
+        assertEquals(listOf(tooltip), mark.highlightOcclusions)
+    }
+
     @Test fun recommendationEmphasisFollowsExactCardGeometry() {
         val cards = listOf(
             OverlayCard(80.0, null, grpId = 1, highlight = com.firstpick.ui.PickHighlight.CONTENDER),

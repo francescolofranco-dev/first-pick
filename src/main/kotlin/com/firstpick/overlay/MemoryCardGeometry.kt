@@ -53,28 +53,38 @@ internal fun draftScoreMarks(
     val best = bestRatedOverlayCard(cards, cards.indices.toList())
     val paired = cards.any { it.recommendedPair }
     val previews = placements.filter { it.zone == ArenaCardZone.PREVIEW }
+    fun sourceIndex(preview: ArenaVisibleCard): Int? =
+        preview.sourceIndex?.takeIf { cards.getOrNull(it)?.grpId == preview.grpId }
+            ?: cards.indices.singleOrNull { cards[it].grpId == preview.grpId }
+    val previewSources = previews.mapNotNull(::sourceIndex).toSet()
     val marks = cards.mapIndexed { index, card ->
         DraftScoreMark(pack[index].bounds, card.value, if (paired) card.recommendedPair else index == best, card.breakdown, card.model, card.gihWr, card.highlight, slot = index)
     }
     fun applyOcclusion(mark: DraftScoreMark, blockers: List<NormalizedRect>): DraftScoreMark? {
         // Card borders and score badges have different footprints. A tooltip over
         // artwork must not hide a score that remains below the tooltip.
-        val visible = if (blockers.any(mark.bounds::overlaps)) mark.copy(highlight = com.firstpick.ui.PickHighlight.NONE) else mark
+        val visible = when {
+            mark.isPreview -> mark.copy(highlightOcclusions = blockers)
+            blockers.any(mark.bounds::overlaps) -> mark.copy(highlight = com.firstpick.ui.PickHighlight.NONE)
+            else -> mark
+        }
         val badge = scoreBadgeBounds(visible, viewportWidth, viewportHeight) ?: return null
         val footprint = NormalizedRect((badge.left / viewportWidth).toDouble(), (badge.top / viewportHeight).toDouble(),
             (badge.width / viewportWidth).toDouble(), (badge.height / viewportHeight).toDouble())
         return visible.copy(covered = blockers.any(footprint::overlaps))
     }
     val all = marks.mapIndexedNotNull { index, mark ->
-        applyOcclusion(mark, pack[index].occlusions + previews.map { it.occlusionBounds ?: it.bounds })
+        applyOcclusion(
+            if (index in previewSources) mark.copy(highlight = com.firstpick.ui.PickHighlight.NONE) else mark,
+            pack[index].occlusions + previews.map { it.occlusionBounds ?: it.bounds },
+        )
     } + previews.mapIndexedNotNull { previewIndex, preview ->
-        val index = preview.sourceIndex?.takeIf { cards.getOrNull(it)?.grpId == preview.grpId }
-            ?: cards.indexOfFirst { it.grpId == preview.grpId }
-        if (index < 0 || !preview.bounds.isValid()) null else applyOcclusion(marks[index].copy(bounds = preview.bounds, slot = -previewIndex - 1),
+        val index = sourceIndex(preview)
+        if (index == null || !preview.bounds.isValid()) null else applyOcclusion(marks[index].copy(bounds = preview.bounds, slot = -previewIndex - 1, isPreview = true),
             preview.occlusions + previews.filter { it !== preview }.map { it.occlusionBounds ?: it.bounds })
                 ?.let { if (preview.previewSettled) it else it.copy(covered = true, highlight = com.firstpick.ui.PickHighlight.NONE) }
     }
-    return if (includeCovered) all else all.filterNot { it.covered }
+    return if (includeCovered) all else all.filterNot { it.covered && !(it.isPreview && it.highlight != com.firstpick.ui.PickHighlight.NONE) }
 }
 
 internal fun NormalizedRect.overlaps(other: NormalizedRect): Boolean =

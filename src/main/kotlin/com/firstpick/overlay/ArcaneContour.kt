@@ -1,9 +1,16 @@
 package com.firstpick.overlay
 
-import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.withFrameNanos
+import androidx.compose.ui.draw.drawWithCache
+import kotlinx.coroutines.isActive
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.geometry.CornerRadius
@@ -15,6 +22,8 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipPath
 import kotlin.math.exp
+import kotlin.math.sin
+import kotlin.math.PI
 import androidx.compose.ui.unit.dp
 import com.firstpick.ui.PickHighlight
 
@@ -40,23 +49,53 @@ internal fun arenaOuterCardContour(rect: GuidanceViewportRect): Path {
 }
 
 @Composable
-internal fun DraftCardHighlights(marks: List<DraftScoreMark>) {
-    Canvas(Modifier.fillMaxSize()) {
+internal fun DraftCardHighlights(marks: List<DraftScoreMark>, animationPhase: Float? = null) {
+    val clock = remember { mutableFloatStateOf(0f) }
+    val active = animationPhase == null && marks.any { it.highlight != PickHighlight.NONE }
+    LaunchedEffect(active) {
+        if (!active) return@LaunchedEffect
+        var origin = 0L
+        var last = 0L
+        while (isActive) {
+            withFrameNanos { now ->
+                if (origin == 0L) origin = now
+                // Cap repainting at 30 fps; reading the clock in draw avoids recomposition/layout.
+                if (last == 0L || now - last >= 33_333_333L) {
+                    clock.floatValue = ((now - origin) % 6_000_000_000L) / 6_000_000_000f
+                    last = now
+                }
+            }
+        }
+    }
+    Box(Modifier.fillMaxSize().drawWithCache {
         val frames = marks.mapNotNull { mark ->
             mark.bounds.inViewport(size.width, size.height)?.let { rect ->
                 Triple(mark, rect, arenaOuterCardContour(rect))
             }
         }
         val artwork = Path().apply { frames.forEach { addPath(it.third) } }
-        for ((mark, rect, path) in frames) {
-            if (mark.highlight == PickHighlight.NONE) continue
-            // Exclude every card's interior, including adjacent unhighlighted cards.
-            clipPath(artwork, ClipOp.Difference) {
-                drawArcaneAura(path, mark.highlight, rect)
+        val blockers = frames.associate { (mark, _, path) ->
+            path to Path().apply {
+                mark.highlightOcclusions.forEach { rect ->
+                    addRect(Rect((rect.x * size.width).toFloat(), (rect.y * size.height).toFloat(),
+                        (rect.right * size.width).toFloat(), (rect.bottom * size.height).toFloat()))
+                }
             }
-            drawArcaneEdge(path, mark.highlight, rect)
         }
-    }
+        onDrawBehind {
+            val phase = animationPhase ?: clock.floatValue
+            for ((mark, rect, path) in frames) {
+                if (mark.highlight == PickHighlight.NONE) continue
+                // A tooltip can cover a section of a preview without hiding its entire aura.
+                clipPath(blockers.getValue(path), ClipOp.Difference) {
+                    clipPath(artwork, ClipOp.Difference) {
+                        drawArcaneAura(path, mark.highlight, rect, phase)
+                    }
+                    drawArcaneEdge(path, mark.highlight, rect)
+                }
+            }
+        }
+    })
 }
 
 private data class ArcanePalette(val shadow: Color, val energy: Color, val gold: Color, val core: Color)
@@ -75,12 +114,14 @@ private fun ArcanePalette.brush(rect: GuidanceViewportRect): Brush = Brush.linea
 
 private fun DrawScope.arcaneScale(width: Float) = (width / 220.dp.toPx()).coerceIn(.65f, 2.4f)
 
-private fun DrawScope.drawArcaneAura(path: Path, highlight: PickHighlight, rect: GuidanceViewportRect) {
+private fun DrawScope.drawArcaneAura(path: Path, highlight: PickHighlight, rect: GuidanceViewportRect, phase: Float) {
     val clear = highlight == PickHighlight.CLEAR
     val palette = arcanePalette(highlight)
     val brush = palette.brush(rect)
     val scale = arcaneScale(rect.width)
-    val strength = if (clear) 1f else .8f
+    val angle = phase * (2f * PI.toFloat())
+    val pulse = .92f + .08f * sin(angle)
+    val strength = (if (clear) 1f else .8f) * pulse
     val bloom = (if (clear) 66f else 52f).dp.toPx() * scale
 
     // A broad, soft chromatic bloom surrounds a much brighter, narrow energy band.
@@ -94,20 +135,21 @@ private fun DrawScope.drawArcaneAura(path: Path, highlight: PickHighlight, rect:
     val bounds = path.getBounds()
     val left = bounds.left; val right = bounds.right; val top = bounds.top; val bottom = bounds.bottom
     val width = bounds.width; val height = bounds.height
-    val reach = 19.dp.toPx() * scale
+    val reach = 19.dp.toPx() * scale * (1f + .18f * sin(angle))
+    val drift = .025f * sin(angle)
     // Short, irregular ribbons stay outside the hard card edge, never deforming it.
     val ribbons = listOf(
         Path().apply {
-            moveTo(left + width * .23f, top)
-            cubicTo(left + width * .28f, top - reach * 1.6f, left + width * .48f, top - reach, left + width * .51f, top)
+            moveTo(left + width * (.23f + drift), top)
+            cubicTo(left + width * .28f, top - reach * 1.6f, left + width * .48f, top - reach, left + width * (.51f + drift), top)
         },
         Path().apply {
-            moveTo(left, top + height * .18f)
-            cubicTo(left - reach * 1.4f, top + height * .25f, left - reach * .25f, top + height * .39f, left, top + height * .42f)
+            moveTo(left, top + height * (.18f + drift))
+            cubicTo(left - reach * 1.4f, top + height * .25f, left - reach * .25f, top + height * .39f, left, top + height * (.42f + drift))
         },
         Path().apply {
-            moveTo(right, top + height * .36f)
-            cubicTo(right + reach * .4f, top + height * .45f, right + reach * 1.2f, top + height * .55f, right, top + height * .66f)
+            moveTo(right, top + height * (.36f - drift))
+            cubicTo(right + reach * .4f, top + height * .45f, right + reach * 1.2f, top + height * .55f, right, top + height * (.66f - drift))
         },
         Path().apply {
             moveTo(left + width * .35f, bottom)
@@ -133,10 +175,14 @@ private fun DrawScope.drawArcaneAura(path: Path, highlight: PickHighlight, rect:
         Offset(left + width * .48f, bottom + reach * .61f),
         Offset(left + width * .65f, bottom + reach * .38f),
     )
-    for ((index, point) in sparks.withIndex()) {
+    for ((index, anchor) in sparks.withIndex()) {
+        val localAngle = angle + index * 1.7f
+        val shimmer = .48f + .52f * (.5f + .5f * sin(localAngle * 2f))
+        val point = anchor + Offset(sin(localAngle) * 3.dp.toPx() * scale,
+            sin(localAngle + 1.2f) * 4.dp.toPx() * scale)
         val color = if (index % 3 == 0) palette.core else if (point.x > left + width * .55f) palette.gold else palette.energy
         val radius = (if (index % 3 == 0) 2.2f else 1.2f).dp.toPx() * scale
-        drawCircle(Brush.radialGradient(listOf(color.copy(alpha = .65f * strength), Color.Transparent),
+        drawCircle(Brush.radialGradient(listOf(color.copy(alpha = .65f * strength * shimmer), Color.Transparent),
             center = point, radius = radius * 5f), radius = radius * 5f, center = point)
         val glint = Path().apply {
             moveTo(point.x, point.y - radius * 2.3f)
@@ -145,7 +191,7 @@ private fun DrawScope.drawArcaneAura(path: Path, highlight: PickHighlight, rect:
             lineTo(point.x - radius * .65f, point.y)
             close()
         }
-        drawPath(glint, color.copy(alpha = .95f))
+        drawPath(glint, color.copy(alpha = .95f * shimmer))
     }
 }
 
