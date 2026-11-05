@@ -95,7 +95,9 @@ fun ArenaOverlayTracker(
         SideEffect { trace.composed(frame, frontmost) }
         Box(Modifier.size(arena.w.dp, arena.h.dp)) {
             val marks = if (visible) draftScoreMarks(frame.content.orEmpty(), frame.geometry?.inWindow(arena).orEmpty(), arena.w.toFloat(), arena.h.toFloat(), includeCovered = true) else emptyList()
-            DraftScoreBadges(marks, arena.w.dp, arena.h.dp)
+            OverlayEntrance(visible = marks.isNotEmpty()) {
+                DraftScoreBadges(marks, arena.w.dp, arena.h.dp)
+            }
             DraftScoreInteractions(marks, arena)
             OverlayAccessNotice(arena, frame.health, access, onGrantArenaAccess)
             if (visible && marks.isEmpty() && frame.showNotice && !showOverlayAccessNotice(frame.health, access)) Box(Modifier.align(Alignment.TopEnd).padding(24.dp).widthIn(max = (arena.w * .6).dp)

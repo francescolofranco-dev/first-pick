@@ -76,10 +76,13 @@ fun ArenaDeckBuilderOverlay(
         OverlayAccessNotice(arena, frame.health, access, onGrantArenaAccess)
         if (!contentVisible) return@ArenaMemoryOverlayWindow
         val verified = frame.content
-        if (verified != null) {
-            DeckGuidanceOverlay(verified.model.withMemoryMarks(frame.geometry?.inWindow(arena).orEmpty(), verified.names), arena.w.dp, arena.h.dp)
+        val model = if (verified != null) {
+            verified.model.withMemoryMarks(frame.geometry?.inWindow(arena).orEmpty(), verified.names)
         } else if (frame.showNotice && !showOverlayAccessNotice(frame.health, access)) {
-            DeckGuidanceOverlay(DeckGuidanceOverlayModel(DeckGuidanceStatus.READING, notice = frame.health.detail), arena.w.dp, arena.h.dp)
+            DeckGuidanceOverlayModel(DeckGuidanceStatus.READING, notice = frame.health.detail)
+        } else null
+        OverlayEntrance(visible = model != null) {
+            if (model != null) DeckGuidanceOverlay(model, arena.w.dp, arena.h.dp)
         }
     }
 }
