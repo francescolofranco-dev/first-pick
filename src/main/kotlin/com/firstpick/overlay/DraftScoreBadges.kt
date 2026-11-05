@@ -19,8 +19,9 @@ import androidx.compose.ui.geometry.Size
 import com.firstpick.ui.PickHighlight
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.lerp
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -101,24 +102,24 @@ internal fun ScoreBadge(value: Double?, badge: Float) {
             )
         } else {
             Column(
-                modifier = Modifier.align(Alignment.Center).offset(y = (-0.015f * badge).dp),
+                modifier = Modifier.align(Alignment.Center).offset(y = (-0.025f * badge).dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
                     letterGrade(value),
                     color = accent,
                     fontWeight = FontWeight.ExtraBold,
-                    fontSize = (0.245f * badge).sp,
-                    lineHeight = (0.23f * badge).sp,
+                    fontSize = (0.265f * badge).sp,
+                    lineHeight = (0.30f * badge).sp,
+                    style = androidx.compose.ui.text.TextStyle(shadow = Shadow(accent.copy(alpha = 0.55f), blurRadius = badge * 0.065f)),
                     maxLines = 1,
                 )
                 Text(
                     value.roundToInt().toString(),
-                    color = Color(0xFFF2E9D8),
-                    fontFamily = FontFamily.Monospace,
+                    color = Color.White,
                     fontWeight = FontWeight.Bold,
-                    fontSize = (0.145f * badge).sp,
-                    lineHeight = (0.145f * badge).sp,
+                    fontSize = (0.20f * badge).sp,
+                    lineHeight = (0.20f * badge).sp,
                     maxLines = 1,
                 )
             }
@@ -134,77 +135,60 @@ private fun PickCrest(accent: Color, modifier: Modifier = Modifier) {
 }
 
 private fun DrawScope.drawPickCrest(accent: Color) {
-    val keyline = Color(0xFF070B0A)
-    val face = Color(0xFF0E1312)
-    val rearFace = lerp(accent, face, 0.42f)
+    val unit = size.width
+    val faceTop = Color(0xFF14191F)
+    val faceBottom = Color(0xFF0E1217)
+    val rimLight = lerp(accent, Color.White, 0.55f)
 
-    fun card(
-        left: Float,
-        top: Float,
-        width: Float,
-        height: Float,
-        degrees: Float,
-        fill: Color,
-    ) {
-        val pivot = Offset(left + width / 2f, top + height / 2f)
-        rotate(degrees = degrees, pivot = pivot) {
+    // The glow stays within the existing square footprint, including at the
+    // minimum badge size. No offscreen blur layers are needed per Arena card.
+    drawCircle(
+        brush = Brush.radialGradient(
+            listOf(accent.copy(alpha = 0.25f), accent.copy(alpha = 0.09f), Color.Transparent),
+            center = Offset(unit * 0.5f, unit * 0.48f), radius = unit * 0.48f,
+        ),
+        radius = unit * 0.48f,
+        center = Offset(unit * 0.5f, unit * 0.48f),
+    )
+
+    fun card(left: Float, top: Float, width: Float, height: Float, degrees: Float, front: Boolean) {
+        val origin = Offset(unit * left, unit * top)
+        val cardSize = Size(unit * width, unit * height)
+        val radius = CornerRadius(unit * 0.065f)
+        val pivot = origin + Offset(cardSize.width / 2f, cardSize.height / 2f)
+        rotate(degrees, pivot) {
+            // Layered low-alpha strokes give the rim a restrained bloom.
+            for ((stroke, alpha) in listOf(0.075f to 0.035f, 0.050f to 0.06f, 0.030f to 0.12f)) {
+                drawRoundRect(accent.copy(alpha = alpha), origin, cardSize, radius,
+                    style = Stroke(unit * stroke))
+            }
             drawRoundRect(
-                color = keyline,
-                topLeft = Offset(left, top),
-                size = Size(width, height),
-                cornerRadius = CornerRadius(width * 0.14f),
+                brush = Brush.verticalGradient(
+                    if (front) listOf(faceTop, faceBottom)
+                    else listOf(lerp(faceTop, accent, 0.18f).copy(alpha = 0.92f), faceBottom.copy(alpha = 0.88f)),
+                    startY = origin.y, endY = origin.y + cardSize.height,
+                ),
+                topLeft = origin, size = cardSize, cornerRadius = radius,
             )
-            val inset = width * 0.055f
             drawRoundRect(
-                color = fill,
-                topLeft = Offset(left + inset, top + inset),
-                size = Size(width - 2f * inset, height - 2f * inset),
-                cornerRadius = CornerRadius(width * 0.10f),
+                brush = Brush.verticalGradient(
+                    listOf(rimLight.copy(alpha = if (front) 1f else 0.72f), accent.copy(alpha = if (front) 1f else 0.60f)),
+                    startY = origin.y, endY = origin.y + cardSize.height,
+                ),
+                topLeft = origin, size = cardSize, cornerRadius = radius,
+                style = Stroke(unit * if (front) 0.021f else 0.016f),
+            )
+            val inset = unit * 0.026f
+            drawRoundRect(
+                color = accent.copy(alpha = if (front) 0.42f else 0.22f),
+                topLeft = origin + Offset(inset, inset),
+                size = Size(cardSize.width - inset * 2, cardSize.height - inset * 2),
+                cornerRadius = CornerRadius(unit * 0.043f), style = Stroke(unit * 0.007f),
             )
         }
     }
 
-    card(
-        left = size.width * 0.13f,
-        top = size.height * 0.19f,
-        width = size.width * 0.43f,
-        height = size.height * 0.68f,
-        degrees = -10f,
-        fill = rearFace,
-    )
-    card(
-        left = size.width * 0.44f,
-        top = size.height * 0.19f,
-        width = size.width * 0.43f,
-        height = size.height * 0.68f,
-        degrees = 10f,
-        fill = rearFace,
-    )
-
-    val frontLeft = size.width * 0.25f
-    val frontTop = size.height * 0.06f
-    val frontWidth = size.width * 0.50f
-    val frontHeight = size.height * 0.81f
-    drawRoundRect(
-        color = keyline,
-        topLeft = Offset(frontLeft, frontTop),
-        size = Size(frontWidth, frontHeight),
-        cornerRadius = CornerRadius(frontWidth * 0.14f),
-    )
-
-    val rimInset = frontWidth * 0.055f
-    drawRoundRect(
-        color = accent,
-        topLeft = Offset(frontLeft + rimInset, frontTop + rimInset),
-        size = Size(frontWidth - 2f * rimInset, frontHeight - 2f * rimInset),
-        cornerRadius = CornerRadius(frontWidth * 0.10f),
-    )
-
-    val faceInset = frontWidth * 0.105f
-    drawRoundRect(
-        color = face,
-        topLeft = Offset(frontLeft + faceInset, frontTop + faceInset),
-        size = Size(frontWidth - 2f * faceInset, frontHeight - 2f * faceInset),
-        cornerRadius = CornerRadius(frontWidth * 0.065f),
-    )
+    card(0.15f, 0.22f, 0.39f, 0.62f, -12f, front = false)
+    card(0.46f, 0.22f, 0.39f, 0.62f, 12f, front = false)
+    card(0.235f, 0.07f, 0.53f, 0.80f, 0f, front = true)
 }

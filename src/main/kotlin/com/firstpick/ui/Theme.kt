@@ -347,13 +347,13 @@ fun pipColor(c: Char): Color = when (c) {
 
 fun valueTierColor(value: Double?): Color = when {
     value == null -> Color(0xFF64748B)
-    value >= 80 -> Color(0xFF10B981) // A+ Bomb (Vibrant Emerald Green)
-    value >= 72 -> Color(0xFF34D399) // A  Great (Green)
-    value >= 64 -> Color(0xFF6EE7B7) // B+ Strong (Mint Green)
-    value >= 56 -> Color(0xFFA3E635) // B  Good (Lime Green)
-    value >= 48 -> Color(0xFFFBBF24) // C  Playable / Average (Amber Yellow)
-    value >= 40 -> Color(0xFFFB7185) // D  Filler (Rose Red)
-    else -> Color(0xFFF43F5E)        // F  Weak (Crimson Red)
+    value >= 80 -> Color(0xFFFFD166) // A+ — gold
+    value >= 72 -> Color(0xFFB6F36B) // A — chartreuse
+    value >= 64 -> Color(0xFF4EFEB3) // B+ — illuminated mint
+    value >= 56 -> Color(0xFF22D3EE) // B — cyan
+    value >= 48 -> Color(0xFF7DA8F7) // C — cool blue
+    value >= 40 -> Color(0xFFFF9566) // D — ember
+    else -> Color(0xFFFF4D5E)        // F — red
 }
 
 fun buildTierColor(tier: String?): Color = when (tier?.trim()?.uppercase()) {

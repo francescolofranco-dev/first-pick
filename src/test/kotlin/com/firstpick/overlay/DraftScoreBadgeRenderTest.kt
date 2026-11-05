@@ -3,6 +3,7 @@ package com.firstpick.overlay
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.renderComposeScene
@@ -14,6 +15,34 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class DraftScoreBadgeRenderTest {
+    @Test fun crestPaletteAndTypographyAtEverySupportedSize() {
+        val values = listOf(20.0, 44.0, 52.0, 60.0, 67.0, 76.0, 90.0, null)
+        val file = File("build/reports/score-crest-palette.png")
+        file.parentFile.mkdirs()
+        renderComposeScene(1120, 390) {
+            Box(Modifier.fillMaxSize().background(Color(0xFF151B23))) {
+                for ((row, size) in listOf(BADGE_MIN_SIZE, 84f, BADGE_MAX_SIZE).withIndex()) {
+                    for ((column, value) in values.withIndex()) {
+                        Box(Modifier.offset((column * 140 + 10).dp, (row * 130).dp)) {
+                            ScoreBadge(value, size)
+                        }
+                    }
+                }
+            }
+        }.use { image -> image.encodeToData()!!.use { file.writeBytes(it.bytes) } }
+        // Transparent rendering also checks that the glow fades before the
+        // footprint edge, rather than being cut off by the interaction window.
+        for (size in listOf(BADGE_MIN_SIZE, BADGE_MAX_SIZE)) {
+            renderComposeScene(size.toInt(), size.toInt()) { ScoreBadge(67.0, size) }.use { image ->
+                val pixels = ImageIO.read(java.io.ByteArrayInputStream(image.encodeToData()!!.use { it.bytes }))
+                for (y in 0 until pixels.height) {
+                    assertEquals(0, pixels.getRGB(0, y) ushr 24)
+                    assertEquals(0, pixels.getRGB(pixels.width - 1, y) ushr 24)
+                }
+            }
+        }
+    }
+
     @OptIn(androidx.compose.ui.ExperimentalComposeUiApi::class)
     @Test fun productionFrameClockActuallyAdvancesTheEnergy() {
         val mark = DraftScoreMark(NormalizedRect(.2, .2, .4, .6), 80.0, true,
