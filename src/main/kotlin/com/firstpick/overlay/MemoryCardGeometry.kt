@@ -57,10 +57,16 @@ internal fun draftScoreMarks(
         preview.sourceIndex?.takeIf { cards.getOrNull(it)?.grpId == preview.grpId }
             ?: cards.indices.singleOrNull { cards[it].grpId == preview.grpId }
     val previewSources = previews.mapNotNull(::sourceIndex).toSet()
+    val emphasized = cards.indices.filter { cards[it].highlight != com.firstpick.ui.PickHighlight.NONE }
+        .withIndex().associate { it.value to it.index }
+    val speeds = listOf(.78f, 1.15f, 1.47f, .94f, 1.31f)
     val marks = cards.mapIndexed { index, card ->
+        val order = emphasized[index] ?: index
         DraftScoreMark(pack[index].bounds, card.value, if (paired) card.recommendedPair else index == best, card.breakdown, card.model, card.gihWr, card.highlight, slot = index,
-            // Stable spacing gives every pack slot a different phase; previews inherit it.
-            animationOffset = (index * .381966f) % 1f)
+            // Spread the visible contenders around the cycle, then let their speeds diverge.
+            // Both values survive the copy to a zoomed preview.
+            animationOffset = (.25f + order.toFloat() / emphasized.size.coerceAtLeast(1)) % 1f,
+            animationSpeed = speeds[order % speeds.size])
     }
     fun applyOcclusion(mark: DraftScoreMark, blockers: List<NormalizedRect>): DraftScoreMark? {
         // Card borders and score badges have different footprints. A tooltip over

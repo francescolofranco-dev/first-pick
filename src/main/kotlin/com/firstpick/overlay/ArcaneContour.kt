@@ -61,7 +61,7 @@ internal fun DraftCardHighlights(marks: List<DraftScoreMark>, animationPhase: Fl
                 if (origin == 0L) origin = now
                 // Cap repainting at 30 fps; reading the clock in draw avoids recomposition/layout.
                 if (last == 0L || now - last >= 33_333_333L) {
-                    clock.floatValue = ((now - origin) % 6_000_000_000L) / 6_000_000_000f
+                    clock.floatValue = (now - origin) / 6_000_000_000f
                     last = now
                 }
             }
@@ -89,7 +89,7 @@ internal fun DraftCardHighlights(marks: List<DraftScoreMark>, animationPhase: Fl
                 // A tooltip can cover a section of a preview without hiding its entire aura.
                 clipPath(blockers.getValue(path), ClipOp.Difference) {
                     clipPath(artwork, ClipOp.Difference) {
-                        drawArcaneAura(path, mark.highlight, rect, (phase + mark.animationOffset) % 1f)
+                        drawArcaneAura(path, mark.highlight, rect, (phase * mark.animationSpeed + mark.animationOffset) % 1f)
                     }
                     drawArcaneEdge(path, mark.highlight, rect)
                 }
@@ -120,7 +120,7 @@ private fun DrawScope.drawArcaneAura(path: Path, highlight: PickHighlight, rect:
     val brush = palette.brush(rect)
     val scale = arcaneScale(rect.width)
     val angle = phase * (2f * PI.toFloat())
-    val pulse = .92f + .08f * sin(angle)
+    val pulse = .88f + .20f * sin(angle)
     val strength = (if (clear) 1f else .8f) * pulse
     val bloom = (if (clear) 66f else 52f).dp.toPx() * scale
 
@@ -135,7 +135,7 @@ private fun DrawScope.drawArcaneAura(path: Path, highlight: PickHighlight, rect:
     val bounds = path.getBounds()
     val left = bounds.left; val right = bounds.right; val top = bounds.top; val bottom = bounds.bottom
     val width = bounds.width; val height = bounds.height
-    val reach = 19.dp.toPx() * scale * (1f + .18f * sin(angle))
+    val reach = 19.dp.toPx() * scale * (1f + .30f * sin(angle))
     val drift = .025f * sin(angle)
     // Short, irregular ribbons stay outside the hard card edge, never deforming it.
     val ribbons = listOf(
@@ -177,7 +177,7 @@ private fun DrawScope.drawArcaneAura(path: Path, highlight: PickHighlight, rect:
     )
     for ((index, anchor) in sparks.withIndex()) {
         val localAngle = angle + index * 1.7f
-        val shimmer = .48f + .52f * (.5f + .5f * sin(localAngle * 2f))
+        val shimmer = .28f + .72f * (.5f + .5f * sin(localAngle * 2f))
         val point = anchor + Offset(sin(localAngle) * 3.dp.toPx() * scale,
             sin(localAngle + 1.2f) * 4.dp.toPx() * scale)
         val color = if (index % 3 == 0) palette.core else if (point.x > left + width * .55f) palette.gold else palette.energy

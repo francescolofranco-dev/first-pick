@@ -19,7 +19,11 @@ class MemoryCardGeometryTest {
         val before = draftScoreMarks(cards, pack)
         assertNotEquals(before[0].animationOffset, before[1].animationOffset,
             "Even duplicate cards need independent animation phases")
+        assertNotEquals(before[0].animationSpeed, before[1].animationSpeed,
+            "Highlighted cards must run at different speeds, rather than remain phase-locked")
         val during = draftScoreMarks(cards, pack + preview, includeCovered = true)
+        assertEquals(before[1].animationSpeed, during.single { it.isPreview }.animationSpeed,
+            "Zooming must retain the source card's animation speed")
         assertEquals(before[1].animationOffset, during.single { it.isPreview }.animationOffset,
             "Zooming must retain the source card's animation phase")
         assertEquals(before[0].animationOffset, during.single { it.slot == 0 }.animationOffset,
