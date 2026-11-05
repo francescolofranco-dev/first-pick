@@ -100,8 +100,8 @@ Wait for an **Accepted** result before stapling or installing. A submission that
 is still **In Progress** has not passed notarization. The local setup was verified
 on 2026-11-04: the certificate/private-key pair is valid, the official Developer ID
 G2 intermediate is installed, the Keychain profile authenticates with Apple, and
-an optimized signed 3.7.0 app has been submitted. No passwords or private keys are
-stored in this repository.
+the initial optimized signed app was accepted by Apple's notarization service.
+No passwords or private keys are stored in this repository.
 
 For the existing CI `.dmg` workflow, configure all six repository secrets listed
 above. `notarizeDmg` uses these environment variables directly. Run it with
@@ -155,3 +155,22 @@ installs an update automatically.
   the artifact name.
 - The release uses `notarizeDmg` (not the ProGuard-minified `notarizeReleaseDmg`) to
   avoid needing Compose keep-rules. Switch later if you want a smaller bundle.
+
+## Signing acceptance (2026-11-05)
+
+[Manual release validation for 3.8.4](https://github.com/francescolofranco-dev/first-pick/actions/runs/42001644330)
+passed on both Apple Silicon and Intel jobs. Each produced a signed, notarized
+DMG, validated its stapled ticket, and uploaded a checksum alongside the image.
+The publish job was skipped because this was an artifact-only manual run.
+
+A downloaded Apple Silicon 3.8.4 image also passed checksum verification,
+`stapler validate`, and deep strict app-signature verification. Gatekeeper
+reported `accepted` with `source=Notarized Developer ID` for the app inside it.
+This verifies the signed distribution path; macOS can still show its normal
+first-open confirmation, and Arena's read-only access approval remains separate.
+
+The Intel validation exposed two timing assumptions in tests. The reader fixture
+now uses a shell worker so cold Python startup is outside the production reader's
+short response deadline, while Python still serves authenticated private sockets.
+The hover-layout test waits for the actual hover state instead of a fixed delay.
+The full local app suite passes 512 tests, and the native fixtures pass 30 tests.
