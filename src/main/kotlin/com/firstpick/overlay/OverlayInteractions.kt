@@ -38,13 +38,10 @@ private fun OverlayPanelWindow(
     width: Float,
     height: Float,
     visible: Boolean = true,
-    clickThrough: Boolean = false,
-    aboveOverlayControls: Boolean = false,
     content: @Composable () -> Unit,
 ) {
-    var prepared by remember { mutableStateOf(!clickThrough) }
     SwingWindow(
-        visible = visible && prepared,
+        visible = visible,
         create = {
             ComposeWindow().apply {
                 // A normal non-focusable NSWindow still activates its application on click.
@@ -59,12 +56,6 @@ private fun OverlayPanelWindow(
                 this.title = title
                 setLocation(x.roundToInt(), y.roundToInt())
                 setSize(width.roundToInt(), height.roundToInt())
-                if (clickThrough) {
-                    // Configure before showing: a full-size transient panel must never intercept
-                    // the pointer and cause its own badge's hover to end.
-                    addNotify()
-                    prepared = MacOverlay.setClickThrough(this, true, aboveOverlayControls)
-                }
             }
         },
         update = {
@@ -75,8 +66,7 @@ private fun OverlayPanelWindow(
     ) {
         LaunchedEffect(window) {
             repeat(40) {
-                if (withContext(Dispatchers.IO) { MacOverlay.setClickThrough(window, clickThrough, aboveOverlayControls) }) {
-                    prepared = true
+                if (withContext(Dispatchers.IO) { MacOverlay.setClickThrough(window, false) }) {
                     return@LaunchedEffect
                 }
                 delay(150)
@@ -155,7 +145,9 @@ internal fun DraftScoreInteractions(marks: List<DraftScoreMark>, arena: WindowBo
     }
     LaunchedEffect(hoveredMark == null) { if (hoveredMark == null) hovered = null }
     if (hoveredMark?.breakdown != null) {
-        OverlayScoreDetailsWindow(hoveredMark, arena)
+        // Draw after the score badges in the existing click-through layer. A new native
+        // window over the badge makes AppKit emit Exit even while the pointer stays put.
+        OverlayScoreDetails(hoveredMark, arena.w.toFloat(), arena.h.toFloat())
     }
     for ((index, mark) in marks.withIndex()) {
         if (mark.breakdown == null) continue
@@ -193,15 +185,7 @@ internal fun OverlayScoreBadge(mark: DraftScoreMark, size: Float, drawBadge: Boo
     }
 }
 
-@Composable
-internal fun OverlayScoreDetailsWindow(mark: DraftScoreMark, arena: WindowBounds) {
-    OverlayPanelWindow("FirstPick Score Details", arena.x.toFloat(), arena.y.toFloat(),
-        arena.w.toFloat(), arena.h.toFloat(), clickThrough = true, aboveOverlayControls = true) {
-        OverlayScoreDetails(mark, arena.w.toFloat(), arena.h.toFloat())
-    }
-}
-
-/** Shared layout for the full-size transient details layer and rendering regression fixtures. */
+/** Positions details within the existing overlay viewport. */
 @Composable
 internal fun OverlayScoreDetails(mark: DraftScoreMark, width: Float, height: Float) {
     val breakdown = mark.breakdown ?: return

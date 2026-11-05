@@ -31,12 +31,6 @@ object MacOverlay {
     private val mainQueue: Pointer? =
         libSystem?.let { runCatching { it.getGlobalVariableAddress("_dispatch_main_q") }.getOrNull() }
 
-    // kCGPopUpMenuWindowLevelKey from CoreGraphics/CGWindowLevel.h.
-    private val overlayDetailsLevel: Long? = if (isMac) runCatching {
-        NativeLibrary.getInstance("CoreGraphics").getFunction("CGWindowLevelForKey")
-            .invokeInt(arrayOf<Any>(11)).toLong() + 1L
-    }.getOrNull() else null
-
     private fun sel(name: String): Pointer? = selRegFn?.invokePointer(arrayOf<Any>(name))
 
     fun configureDarkWindow(window: java.awt.Window) {
@@ -66,27 +60,22 @@ object MacOverlay {
     }
 
 
-    fun setClickThrough(window: ComposeWindow, enabled: Boolean, aboveOverlayControls: Boolean = false): Boolean {
+    fun setClickThrough(window: ComposeWindow, enabled: Boolean): Boolean {
         if (!isMac) return false
         val send = msgSend ?: return false
         val setSel = sel("setIgnoresMouseEvents:") ?: return false
         val getSel = sel("ignoresMouseEvents") ?: return false
         val moveSel = sel("setAcceptsMouseMovedEvents:") ?: return false
         val getMoveSel = sel("acceptsMouseMovedEvents") ?: return false
-        val setLevel = if (aboveOverlayControls) sel("setLevel:") ?: return false else null
-        val getLevel = if (aboveOverlayControls) sel("level") ?: return false else null
-        val detailsLevel = if (aboveOverlayControls) overlayDetailsLevel ?: return false else null
         val handle = runCatching { window.windowHandle }.getOrDefault(0L)
         if (handle == 0L) return false
         val nsWindow = Pointer(handle)
 
         val apply = {
-            if (detailsLevel != null) send.invokeVoid(arrayOf<Any>(nsWindow, setLevel!!, detailsLevel))
             send.invokeVoid(arrayOf<Any>(nsWindow, setSel, (if (enabled) 1 else 0).toByte()))
             send.invokeVoid(arrayOf<Any>(nsWindow, moveSel, (if (enabled) 0 else 1).toByte()))
             ((send.invokeInt(arrayOf<Any>(nsWindow, getSel)) and 0xFF != 0) == enabled) &&
-                ((send.invokeInt(arrayOf<Any>(nsWindow, getMoveSel)) and 0xFF != 0) == !enabled) &&
-                (detailsLevel == null || send.invokeLong(arrayOf<Any>(nsWindow, getLevel!!)) == detailsLevel)
+                ((send.invokeInt(arrayOf<Any>(nsWindow, getMoveSel)) and 0xFF != 0) == !enabled)
         }
 
         val queue = mainQueue
