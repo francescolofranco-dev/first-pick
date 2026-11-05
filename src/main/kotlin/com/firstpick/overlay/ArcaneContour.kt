@@ -123,7 +123,7 @@ private fun DrawScope.drawArcaneAura(path: Path, highlight: PickHighlight, rect:
     val angle = phase * (2f * PI.toFloat())
     val pulse = .88f + .20f * sin(angle)
     val strength = (if (clear) 1f else .8f) * pulse
-    val bloom = (if (clear) 78f else 52f).dp.toPx() * scale
+    val bloom = (if (clear) 66f else 52f).dp.toPx() * scale
 
     // A broad, soft chromatic bloom surrounds a much brighter, narrow energy band.
     for (step in 28 downTo 1) {
@@ -133,10 +133,6 @@ private fun DrawScope.drawArcaneAura(path: Path, highlight: PickHighlight, rect:
     }
     drawPath(path, brush, alpha = .8f, style = Stroke(8.dp.toPx() * scale))
 
-    if (clear) {
-        drawFireWisps(path.getBounds(), scale, phase)
-        return
-    }
     val bounds = path.getBounds()
     val left = bounds.left; val right = bounds.right; val top = bounds.top; val bottom = bounds.bottom
     val width = bounds.width; val height = bounds.height
@@ -197,70 +193,6 @@ private fun DrawScope.drawArcaneAura(path: Path, highlight: PickHighlight, rect:
             close()
         }
         drawPath(glint, color.copy(alpha = .95f * shimmer))
-    }
-}
-
-/** Flame shapes grow and curl outward, while the underlying card outline stays fixed. */
-private fun DrawScope.drawFireWisps(bounds: Rect, scale: Float, phase: Float) {
-    val unit = 1.dp.toPx() * scale
-    val red = Color(0xFFFF291F)
-    val orange = Color(0xFFFF792F)
-    val hot = Color(0xFFFFD47B)
-    val angle = phase * 2f * PI.toFloat()
-    val anchors = buildList {
-        for (i in 0 until 6) {
-            val y = bounds.top + bounds.height * (.10f + i * .15f + .025f * sin(i * 2.4f))
-            add(Offset(bounds.left, y) to Offset(-1f, 0f))
-            add(Offset(bounds.right, y) to Offset(1f, 0f))
-        }
-        for (i in 0 until 4) {
-            val x = bounds.left + bounds.width * (.16f + i * .23f + .035f * sin(i * 1.8f))
-            add(Offset(x, bounds.top) to Offset(0f, -1f))
-            add(Offset(x, bounds.bottom) to Offset(0f, 1f))
-        }
-    }
-    for ((index, entry) in anchors.withIndex()) {
-        val (anchor, normal) = entry
-        val tangent = Offset(-normal.y, normal.x)
-        val life = (phase * 2f + index * .173f) % 1f
-        val flare = sin(life * PI.toFloat())
-        val height = (3f + (19f + index % 4 * 4f) * flare) * unit
-        val width = (3f + (index % 3 + 2f) * flare) * unit
-        val curl = sin(angle * 3f + index * 1.31f) * 7f * unit
-        val tip = anchor + normal * (height * .6f) + tangent * (curl * .45f) + Offset(0f, -height * .95f)
-        val flame = Path().apply {
-            val base = anchor - tangent * width
-            moveTo(base.x, base.y)
-            val c1 = anchor + normal * (height * .35f) - tangent * (width * 1.1f)
-            val c2 = tip - normal * (height * .45f) + Offset(0f, height * .25f) + tangent * (curl * .8f)
-            cubicTo(c1.x, c1.y, c2.x, c2.y, tip.x, tip.y)
-            val c3 = anchor + normal * (height * .65f) + Offset(0f, -height * .3f) + tangent * width
-            val c4 = anchor + normal * (height * .08f) + tangent * (width * .15f)
-            val end = anchor + tangent * width
-            cubicTo(c3.x, c3.y, c4.x, c4.y, end.x, end.y)
-            close()
-        }
-        drawPath(flame, red.copy(alpha = .16f * flare), style = Stroke(11f * unit))
-        drawPath(flame, red.copy(alpha = .22f * flare), style = Stroke(5f * unit))
-        drawPath(flame, Brush.linearGradient(listOf(red.copy(alpha = .65f), orange.copy(alpha = .8f), hot.copy(alpha = .85f)),
-            start = anchor, end = tip), alpha = .35f + .65f * flare)
-        val thread = Path().apply {
-            moveTo(anchor.x, anchor.y)
-            val bend = anchor + normal * (height * .6f) + tangent * (curl * .4f)
-            quadraticTo(bend.x, bend.y, tip.x, tip.y)
-        }
-        drawPath(thread, orange.copy(alpha = .8f * flare), style = Stroke(1.3f * unit))
-
-        // Embers rise and fade to zero before recycling, avoiding abrupt jumps.
-        val emberLife = (phase * 2.7f + index * .219f) % 1f
-        val emberAlpha = sin(emberLife * PI.toFloat())
-        val point = anchor + normal * ((7f + emberLife * 19f) * unit) +
-            Offset(sin(angle * 2f + index) * 5f * unit, -emberLife * 34f * unit)
-        val radius = (if (index % 3 == 0) 1.6f else .9f) * unit
-        drawCircle(Brush.radialGradient(listOf(red.copy(alpha = .65f * emberAlpha), Color.Transparent),
-            center = point, radius = radius * 5f), radius = radius * 5f, center = point)
-        drawLine(if (index % 3 == 0) hot.copy(alpha = emberAlpha) else orange.copy(alpha = emberAlpha),
-            start = point, end = point + Offset(1.1f * unit, -3f * unit), strokeWidth = radius)
     }
 }
 
