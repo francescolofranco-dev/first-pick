@@ -18,6 +18,7 @@ import kotlinx.coroutines.swing.Swing
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import kotlin.test.Test
 import kotlin.test.assertTrue
 
@@ -44,7 +45,12 @@ class OverlayScoreLayoutTest {
                 badgeScene.sendPointerEvent(PointerEventType.Enter, Offset(50f, 50f), type = PointerType.Mouse)
                 badgeScene.sendPointerEvent(PointerEventType.Move, Offset(51f, 50f), type = PointerType.Mouse)
                 badgeScene.render().close()
-                delay(250)
+                withTimeout(10_000) {
+                    while (!hovered.value) {
+                        badgeScene.render().close()
+                        delay(16)
+                    }
+                }
                 overlayScene.render().close()
                 val preview = java.nio.file.Path.of("build/reports/overlay-score-hover.png")
                 java.nio.file.Files.createDirectories(preview.parent)
@@ -80,7 +86,12 @@ class OverlayScoreLayoutTest {
                 }
                 badgeScene.sendPointerEvent(PointerEventType.Exit, Offset(-1f, -1f), type = PointerType.Mouse)
                 badgeScene.render().close()
-                delay(50)
+                withTimeout(10_000) {
+                    while (hovered.value) {
+                        badgeScene.render().close()
+                        delay(16)
+                    }
+                }
                 overlayScene.render().close()
                 assertTrue(overlayScene.semanticsOwners.flatMap { allNodes(it.rootSemanticsNode) }
                     .none { it.config.getOrElse(SemanticsProperties.Text) { emptyList() }.any { it.text == "SCORE BREAKDOWN" } },

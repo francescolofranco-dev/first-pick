@@ -10,17 +10,13 @@ class ArenaMemoryReaderTest {
     @Test fun savedApprovalReconnectsAcrossAppAndArenaRestartsWithoutInstallingAgainAndCanBeRevoked() {
         val directory = Files.createTempDirectory("firstpick-saved-access").toFile()
         try {
-            val helper = directory.resolve("reader").apply {
-                writeText("""
+            directory.resolve("session.py").writeText("""
                     |#!/usr/bin/python3
                     |import json, pathlib, socket, sys
                     |root = pathlib.Path(__file__).parent
                     |mode = sys.argv[1]
                     |with (root / 'calls').open('a') as log: log.write(mode + '\n')
-                    |if mode == '--worker':
-                    |    for line in sys.stdin:
-                    |        print(json.dumps({'status': 'access_required' if (root / 'revoked').exists() else 'saved_access'}), flush=True)
-                    |elif mode == '--connect':
+                    |if mode == '--connect':
                     |    path, token = sys.argv[2:4]
                     |    server = socket.socket(socket.AF_UNIX)
                     |    server.bind(path)
@@ -46,6 +42,22 @@ class ArenaMemoryReaderTest {
                     |    print('{"status":"revoked"}')
                     |else:
                     |    raise RuntimeError('A saved grant must never request installation')
+                """.trimMargin())
+            // Keep the worker's 2.5-second production deadline independent of cold Python startup.
+            // Python still serves the real authenticated private sockets for each connection.
+            val helper = directory.resolve("reader").apply {
+                writeText("""
+                    |#!/bin/sh
+                    |root=${'$'}(dirname "${'$'}0")
+                    |if [ "${'$'}1" = --worker ]; then
+                    |  printf '%s\n' --worker >> "${'$'}root/calls"
+                    |  while IFS= read -r request; do
+                    |    if [ -f "${'$'}root/revoked" ]; then status=access_required; else status=saved_access; fi
+                    |    printf '{"status":"%s"}\n' "${'$'}status"
+                    |  done
+                    |else
+                    |  exec /usr/bin/python3 "${'$'}root/session.py" "${'$'}@"
+                    |fi
                 """.trimMargin())
                 check(setExecutable(true))
             }
