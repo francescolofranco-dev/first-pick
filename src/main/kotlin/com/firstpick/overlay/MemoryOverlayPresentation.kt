@@ -9,6 +9,7 @@ internal data class MemoryOverlayFrame<T>(
 
 /** Keeps advice and positions fresh independently; called only on the UI thread. */
 internal class MemoryOverlayPresentation<T>(private val retentionMs: Long = 1200) {
+    private val hover = HoverAnimation()
     private var identity: Any? = null
     private var editor: String? = null
     private var verifiedAt: Long? = null
@@ -17,8 +18,12 @@ internal class MemoryOverlayPresentation<T>(private val retentionMs: Long = 1200
     private var frame = MemoryOverlayFrame<T>()
 
     fun accepted(key: Any, editorSession: String, content: T, geometry: ArenaCardGeometry?, nowMs: Long): MemoryOverlayFrame<T> {
-        if (identity != key) positionedAt = null
-        val positions = geometry ?: frame.geometry.takeIf { identity == key && positionsFresh(nowMs) }
+        if (identity != key || editor != editorSession) {
+            positionedAt = null
+            hover.reset()
+        }
+        val positions = if (geometry != null) hover.observe(geometry, nowMs)
+            else hover.interrupted(frame.geometry.takeIf { identity == key && positionsFresh(nowMs) })
         if (geometry != null) positionedAt = nowMs
         identity = key; editor = editorSession; verifiedAt = nowMs
         frame = MemoryOverlayFrame(content, positions,
@@ -32,11 +37,12 @@ internal class MemoryOverlayPresentation<T>(private val retentionMs: Long = 1200
         if (editor != editorSession || (newPack && identity != key)) return clear(nowMs)
         if (geometry != null && frame.content != null) {
             positionedAt = nowMs
-            frame = frame.copy(geometry = geometry)
+            frame = frame.copy(geometry = hover.observe(geometry, nowMs))
         } else if (identity != key) {
             positionedAt = null
             frame = frame.copy(geometry = null)
         }
+        if (geometry == null) frame = frame.copy(geometry = hover.interrupted(frame.geometry))
         frame = frame.copy(health = OverlayHealth(OverlayHealthState.READING, "Confirming recent Arena changes…"))
         return expire(nowMs)
     }
@@ -44,11 +50,12 @@ internal class MemoryOverlayPresentation<T>(private val retentionMs: Long = 1200
     fun interrupted(read: ArenaMemoryRead, nowMs: Long): MemoryOverlayFrame<T> {
         val health = memoryReadHealth(read)
         if (read.resetsPresentation()) return clear(nowMs, health)
-        frame = frame.copy(health = health)
+        frame = frame.copy(health = health, geometry = hover.interrupted(frame.geometry))
         return expire(nowMs)
     }
 
     fun clear(nowMs: Long, health: OverlayHealth = OverlayHealth(OverlayHealthState.READING, "Updating Arena…")): MemoryOverlayFrame<T> {
+        hover.reset()
         identity = null; editor = null; verifiedAt = null; positionedAt = null
         frame = MemoryOverlayFrame(health = health, showNotice = health.needsAttention || delayed(nowMs))
         return frame
@@ -61,6 +68,9 @@ internal class MemoryOverlayPresentation<T>(private val retentionMs: Long = 1200
         } else if (frame.content != null && !positionsFresh(nowMs)) {
             frame = frame.copy(geometry = null,
                 health = OverlayHealth(OverlayHealthState.READING, "Card counts are verified; reading card positions…"))
+        }
+        if (positionedAt?.let { nowMs - it > 100 } == true) {
+            frame = frame.copy(geometry = hover.interrupted(frame.geometry))
         }
         frame = frame.copy(showNotice = frame.health.needsAttention || delayed(nowMs))
         return frame

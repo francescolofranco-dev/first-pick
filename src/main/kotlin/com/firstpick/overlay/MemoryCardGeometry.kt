@@ -11,6 +11,8 @@ internal data class ArenaVisibleCard(
     val bounds: NormalizedRect,
     val occluded: Boolean = false,
     val sourceIndex: Int? = null,
+    val previewSettled: Boolean = true,
+    val occlusionBounds: NormalizedRect? = null,
     val occlusions: List<NormalizedRect> = emptyList(),
 )
 
@@ -28,14 +30,15 @@ internal data class ArenaCardGeometry(
         val topInset = window.h - contentHeight
         // A changed viewport must settle before any old rectangles are reused.
         if (topInset < -1.0 || topInset > 40.0) return emptyList()
+        fun adjusted(rect: NormalizedRect) = NormalizedRect(rect.x,
+            (topInset.coerceAtLeast(0.0) + rect.y * contentHeight) / window.h,
+            rect.width, rect.height * contentHeight / window.h)
+        val blockers = occlusions.map(::adjusted)
         return cards.mapNotNull { card ->
-            val rect = card.bounds
-            val adjusted = NormalizedRect(rect.x, (topInset.coerceAtLeast(0.0) + rect.y * contentHeight) / window.h,
-                rect.width, rect.height * contentHeight / window.h)
-            adjusted.takeIf(NormalizedRect::isValid)?.let { card.copy(bounds = it, occluded = occlusions.any(rect::overlaps),
-                occlusions = occlusions.map { region -> NormalizedRect(region.x,
-                    (topInset.coerceAtLeast(0.0) + region.y * contentHeight) / window.h,
-                    region.width, region.height * contentHeight / window.h) }) }
+            adjusted(card.bounds).takeIf(NormalizedRect::isValid)?.let {
+                card.copy(bounds = it, occluded = occlusions.any(card.bounds::overlaps), occlusions = blockers,
+                    occlusionBounds = card.occlusionBounds?.let(::adjusted))
+            }
         }
     }
 }
@@ -63,12 +66,13 @@ internal fun draftScoreMarks(
         return visible.copy(covered = blockers.any(footprint::overlaps))
     }
     val all = marks.mapIndexedNotNull { index, mark ->
-        applyOcclusion(mark, pack[index].occlusions + previews.map { it.bounds })
+        applyOcclusion(mark, pack[index].occlusions + previews.map { it.occlusionBounds ?: it.bounds })
     } + previews.mapIndexedNotNull { previewIndex, preview ->
         val index = preview.sourceIndex?.takeIf { cards.getOrNull(it)?.grpId == preview.grpId }
             ?: cards.indexOfFirst { it.grpId == preview.grpId }
         if (index < 0 || !preview.bounds.isValid()) null else applyOcclusion(marks[index].copy(bounds = preview.bounds, slot = -previewIndex - 1),
-            preview.occlusions + previews.filter { it !== preview }.map { it.bounds })
+            preview.occlusions + previews.filter { it !== preview }.map { it.occlusionBounds ?: it.bounds })
+                ?.let { if (preview.previewSettled) it else it.copy(covered = true, highlight = com.firstpick.ui.PickHighlight.NONE) }
     }
     return if (includeCovered) all else all.filterNot { it.covered }
 }
@@ -84,7 +88,7 @@ internal fun DeckGuidanceOverlayModel.withMemoryMarks(
     val advice = (changes + basicLandChanges).associateBy { it.name }
     val matcher = CanonicalCardNameMatcher(advice.keys)
     return copy(marks = placements.mapNotNull { card ->
-        if (card.occluded || placements.any { it.zone == ArenaCardZone.PREVIEW && card.zone != ArenaCardZone.PREVIEW && card.bounds.overlaps(it.bounds) } || !card.bounds.isValid() || card.count !in 1..300) return@mapNotNull null
+        if (card.occluded || placements.any { it.zone == ArenaCardZone.PREVIEW && card.zone != ArenaCardZone.PREVIEW && card.bounds.overlaps(it.occlusionBounds ?: it.bounds) } || !card.bounds.isValid() || card.count !in 1..300) return@mapNotNull null
         val name = names[card.grpId] ?: return@mapNotNull null
         val canonical = canonicalBasicLandName(name)?.removePrefix("Snow-Covered ")
             ?: (matcher.match(name) as? CanonicalCardNameMatch.Matched)?.name

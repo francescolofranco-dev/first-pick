@@ -1,5 +1,30 @@
 # Memory overlay verification
 
+## Hover animation settlement (3.8.5)
+
+Preview geometry now immediately masks only overlapping badge footprints, including
+the observed swept path while a preview moves. Its rating stays hidden until three
+fresh readings span at least 50 ms with all edges within one physical screen pixel
+of the candidate anchor. The published rating then uses that fixed anchor, ignoring
+subpixel jitter. Renewed motion, a different card, a viewport change, or interrupted
+reads hide it again; cached frames cannot confirm settlement. A fresh close restores
+the original badges together.
+
+Arena can report both a rollover and a foreground enlarged details preview during
+the same transition. Both retain their occlusion masks, but only the last (foreground)
+preview can publish a rating. This prevents the old rating remaining visible while
+the new preview opens, or two ratings appearing once both objects settle.
+
+The complete suite passed 520 app tests and 30 native fixtures. Eight new regression
+tests exercise motion, selective masking, jitter, read interruptions, card switching,
+close/reopen, viewport changes, and simultaneous preview objects. A live read-only
+probe using the production settlement class confirmed waiting states for both objects
+during the rollover-to-details transition, followed by one fixed foreground anchor.
+The signed optimized production app was rebuilt, installed, and restarted as 3.8.5
+with saved Arena access connected and the overlay enabled. Settlement is inferred
+from fresh geometry, not a native animation-complete flag. Per-window screenshots
+cannot independently establish overlay compositor timing or end-to-end latency.
+
 ## Hover responsiveness (3.8.3)
 
 Frame inspection of the supplied 11.22-second recording found a representative
