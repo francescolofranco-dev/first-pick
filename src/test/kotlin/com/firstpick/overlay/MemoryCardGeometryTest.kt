@@ -16,7 +16,14 @@ class MemoryCardGeometryTest {
             OverlayCard(80.0, null, grpId = 1, highlight = accent))
         val pack = listOf(placement(1), placement(1, rect = b))
         val preview = ArenaVisibleCard(1, 1, ArenaCardZone.PREVIEW, NormalizedRect(.6, .1, .3, .8), sourceIndex = 1)
+        val before = draftScoreMarks(cards, pack)
+        assertNotEquals(before[0].animationOffset, before[1].animationOffset,
+            "Even duplicate cards need independent animation phases")
         val during = draftScoreMarks(cards, pack + preview, includeCovered = true)
+        assertEquals(before[1].animationOffset, during.single { it.isPreview }.animationOffset,
+            "Zooming must retain the source card's animation phase")
+        assertEquals(before[0].animationOffset, during.single { it.slot == 0 }.animationOffset,
+            "Hovering another card must not shift this card's phase")
         assertEquals(accent, during.single { it.slot == 0 }.highlight)
         assertEquals(com.firstpick.ui.PickHighlight.NONE, during.single { it.slot == 1 }.highlight)
         assertEquals(accent, during.single { it.isPreview }.highlight)

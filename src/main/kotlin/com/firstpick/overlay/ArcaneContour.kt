@@ -89,7 +89,7 @@ internal fun DraftCardHighlights(marks: List<DraftScoreMark>, animationPhase: Fl
                 // A tooltip can cover a section of a preview without hiding its entire aura.
                 clipPath(blockers.getValue(path), ClipOp.Difference) {
                     clipPath(artwork, ClipOp.Difference) {
-                        drawArcaneAura(path, mark.highlight, rect, phase)
+                        drawArcaneAura(path, mark.highlight, rect, (phase + mark.animationOffset) % 1f)
                     }
                     drawArcaneEdge(path, mark.highlight, rect)
                 }

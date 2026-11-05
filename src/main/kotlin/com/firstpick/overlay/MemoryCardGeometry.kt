@@ -58,7 +58,9 @@ internal fun draftScoreMarks(
             ?: cards.indices.singleOrNull { cards[it].grpId == preview.grpId }
     val previewSources = previews.mapNotNull(::sourceIndex).toSet()
     val marks = cards.mapIndexed { index, card ->
-        DraftScoreMark(pack[index].bounds, card.value, if (paired) card.recommendedPair else index == best, card.breakdown, card.model, card.gihWr, card.highlight, slot = index)
+        DraftScoreMark(pack[index].bounds, card.value, if (paired) card.recommendedPair else index == best, card.breakdown, card.model, card.gihWr, card.highlight, slot = index,
+            // Stable spacing gives every pack slot a different phase; previews inherit it.
+            animationOffset = (index * .381966f) % 1f)
     }
     fun applyOcclusion(mark: DraftScoreMark, blockers: List<NormalizedRect>): DraftScoreMark? {
         // Card borders and score badges have different footprints. A tooltip over

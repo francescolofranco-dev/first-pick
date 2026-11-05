@@ -40,6 +40,7 @@ internal data class DraftScoreMark(
     val covered: Boolean = false,
     val isPreview: Boolean = false,
     val highlightOcclusions: List<NormalizedRect> = emptyList(),
+    val animationOffset: Float = 0f,
 )
 
 @Composable
