@@ -81,8 +81,6 @@ fun ArenaDeckBuilderOverlay(
         } else if (frame.showNotice && !showOverlayAccessNotice(frame.health, access)) {
             DeckGuidanceOverlayModel(DeckGuidanceStatus.READING, notice = frame.health.detail)
         } else null
-        OverlayEntrance(visible = model != null) {
-            if (model != null) DeckGuidanceOverlay(model, arena.w.dp, arena.h.dp)
-        }
+        if (model != null) DeckGuidanceOverlay(model, arena.w.dp, arena.h.dp)
     }
 }

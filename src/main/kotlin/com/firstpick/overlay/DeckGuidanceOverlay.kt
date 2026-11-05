@@ -128,10 +128,16 @@ fun DeckGuidanceOverlay(
     val summaryAlpha by animateFloatAsState(if (showSummary) 1f else 0f, tween(250))
     Box(modifier.size(viewportWidth, viewportHeight)) {
         for (mark in model.renderableMarks()) {
-            val rect = mark.bounds.inViewport(viewportWidth.value, viewportHeight.value) ?: continue
-            when (mark) {
-                is DeckGuidanceVisualMark.RemoveRow -> ActionHighlight(rect, adding = false, inDeckList = true, compact = mark.compact)
-                is DeckGuidanceVisualMark.AddCard -> ActionHighlight(rect, adding = true, inDeckList = mark.inDeckList, compact = mark.compact)
+            key(mark::class, mark.bounds) {
+                val rect = mark.bounds.inViewport(viewportWidth.value, viewportHeight.value)
+                if (rect != null) OverlayEntrance(visible = true,
+                    modifier = Modifier.offset(rect.left.dp, rect.top.dp).size(rect.width.dp, rect.height.dp)) {
+                    val local = rect.copy(left = 0f, top = 0f)
+                    when (mark) {
+                        is DeckGuidanceVisualMark.RemoveRow -> ActionHighlight(local, adding = false, inDeckList = true, compact = mark.compact)
+                        is DeckGuidanceVisualMark.AddCard -> ActionHighlight(local, adding = true, inDeckList = mark.inDeckList, compact = mark.compact)
+                    }
+                }
             }
         }
         Column(
@@ -141,7 +147,9 @@ fun DeckGuidanceOverlay(
                 .alpha(summaryAlpha),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            StatusPill(model = model)
+            OverlayEntrance(visible = true, appearanceKey = model.status) {
+                StatusPill(model = model)
+            }
         }
     }
 }

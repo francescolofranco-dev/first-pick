@@ -90,7 +90,9 @@ internal fun OverlayAccessNotice(
     val width = minOf(260f, arena.w * .24f)
     OverlayPanelWindow("FirstPick Arena Access", arena.x + arena.w * .55f - width / 2f,
         arena.y + 34f, width, 36f) {
-        OverlayAccessNoticeContent(access, onGrant)
+        OverlayEntrance(visible = true, modifier = Modifier.fillMaxSize()) {
+            OverlayAccessNoticeContent(access, onGrant)
+        }
     }
 }
 
@@ -147,7 +149,11 @@ internal fun DraftScoreInteractions(marks: List<DraftScoreMark>, arena: WindowBo
     if (hoveredMark?.breakdown != null) {
         // Draw after the score badges in the existing click-through layer. A new native
         // window over the badge makes AppKit emit Exit even while the pointer stays put.
-        OverlayScoreDetails(hoveredMark, arena.w.toFloat(), arena.h.toFloat())
+        key(hovered?.first) {
+            OverlayEntrance(visible = true) {
+                OverlayScoreDetails(hoveredMark, arena.w.toFloat(), arena.h.toFloat())
+            }
+        }
     }
     for ((index, mark) in marks.withIndex()) {
         if (mark.breakdown == null) continue

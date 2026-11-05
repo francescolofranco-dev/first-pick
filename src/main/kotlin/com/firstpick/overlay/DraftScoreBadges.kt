@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,10 +50,18 @@ internal data class DraftScoreMark(
 internal fun DraftScoreBadges(marks: List<DraftScoreMark>, width: Dp, height: Dp) {
     Box(androidx.compose.ui.Modifier.size(width, height)) {
         DraftCardHighlights(marks.filter { !it.covered || it.isPreview })
-        for (mark in marks) {
-            if (mark.covered) continue
-            val rect = scoreBadgeBounds(mark, width.value, height.value) ?: continue
-            GradeSeal(mark, rect)
+        for ((index, mark) in marks.withIndex()) {
+            key(mark.slot ?: index) {
+                val rect = scoreBadgeBounds(mark, width.value, height.value)
+                if (rect != null) {
+                    val margin = rect.width * .12f
+                    OverlayEntrance(visible = !mark.covered,
+                        modifier = Modifier.offset((rect.left - margin).dp, (rect.top - margin).dp)
+                            .size((rect.width + margin * 2).dp)) {
+                        if (!mark.covered) GradeSeal(mark, rect.copy(left = margin, top = margin))
+                    }
+                }
+            }
         }
     }
 }

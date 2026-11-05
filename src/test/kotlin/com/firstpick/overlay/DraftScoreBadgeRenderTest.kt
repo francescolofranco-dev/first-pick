@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.renderComposeScene
 import androidx.compose.ui.unit.dp
 import java.io.File
 import javax.imageio.ImageIO
@@ -19,7 +18,7 @@ class DraftScoreBadgeRenderTest {
         val values = listOf(20.0, 44.0, 52.0, 60.0, 67.0, 76.0, 90.0, null)
         val file = File("build/reports/score-crest-palette.png")
         file.parentFile.mkdirs()
-        renderComposeScene(1120, 390) {
+        renderSettledOverlay(1120, 390) {
             Box(Modifier.fillMaxSize().background(Color(0xFF151B23))) {
                 for ((row, size) in listOf(BADGE_MIN_SIZE, 84f, BADGE_MAX_SIZE).withIndex()) {
                     for ((column, value) in values.withIndex()) {
@@ -33,7 +32,7 @@ class DraftScoreBadgeRenderTest {
         // Transparent rendering also checks that the glow fades before the
         // footprint edge, rather than being cut off by the interaction window.
         for (size in listOf(BADGE_MIN_SIZE, BADGE_MAX_SIZE)) {
-            renderComposeScene(size.toInt(), size.toInt()) { ScoreBadge(67.0, size) }.use { image ->
+            renderSettledOverlay(size.toInt(), size.toInt()) { ScoreBadge(67.0, size) }.use { image ->
                 val pixels = ImageIO.read(java.io.ByteArrayInputStream(image.encodeToData()!!.use { it.bytes }))
                 for (y in 0 until pixels.height) {
                     assertEquals(0, pixels.getRGB(0, y) ushr 24)
@@ -65,7 +64,7 @@ class DraftScoreBadgeRenderTest {
             highlightOcclusions = listOf(NormalizedRect(0.0, .2, .18, .1)))
         val file = File("build/reports/preview-highlight-clipping.png")
         file.parentFile.mkdirs()
-        renderComposeScene(1000, 700) { DraftScoreBadges(listOf(mark), 1000.dp, 700.dp) }.use { image ->
+        renderSettledOverlay(1000, 700) { DraftScoreBadges(listOf(mark), 1000.dp, 700.dp) }.use { image ->
             image.encodeToData()!!.use { file.writeBytes(it.bytes) }
         }
         val image = ImageIO.read(file)
@@ -80,7 +79,7 @@ class DraftScoreBadgeRenderTest {
         fun frame(phase: Float): java.awt.image.BufferedImage {
             val file = File("build/reports/animated-aura-$phase.png")
             file.parentFile.mkdirs()
-            renderComposeScene(800, 600) { DraftCardHighlights(listOf(mark), animationPhase = phase) }.use { image ->
+            renderSettledOverlay(800, 600) { DraftCardHighlights(listOf(mark), animationPhase = phase) }.use { image ->
                 image.encodeToData()!!.use { file.writeBytes(it.bytes) }
             }
             return ImageIO.read(file)
@@ -101,7 +100,7 @@ class DraftScoreBadgeRenderTest {
             breakdown = com.firstpick.advisor.ValueBreakdown(70.0, 0.0, 0.0, 0.0, 0.0, 70.0))
         val file = File("build/reports/interactive-score-frame.png")
         file.parentFile.mkdirs()
-        renderComposeScene(1000, 700) { DraftScoreBadges(listOf(mark), 1000.dp, 700.dp) }.use { image ->
+        renderSettledOverlay(1000, 700) { DraftScoreBadges(listOf(mark), 1000.dp, 700.dp) }.use { image ->
             image.encodeToData()!!.use { file.writeBytes(it.bytes) }
         }
         val image = ImageIO.read(file)
@@ -115,7 +114,7 @@ class DraftScoreBadgeRenderTest {
             highlight = com.firstpick.ui.PickHighlight.CLEAR, covered = true)
         val file = File("build/reports/covered-score-frame.png")
         file.parentFile.mkdirs()
-        renderComposeScene(1000, 700) { DraftScoreBadges(listOf(mark), 1000.dp, 700.dp) }.use { image ->
+        renderSettledOverlay(1000, 700) { DraftScoreBadges(listOf(mark), 1000.dp, 700.dp) }.use { image ->
             image.encodeToData()!!.use { file.writeBytes(it.bytes) }
         }
         val image = ImageIO.read(file)
@@ -129,7 +128,7 @@ class DraftScoreBadgeRenderTest {
         )
         val file = File("build/reports/adjacent-pick-aura.png")
         file.parentFile.mkdirs()
-        renderComposeScene(1000, 700) { DraftCardHighlights(marks) }.use { image ->
+        renderSettledOverlay(1000, 700) { DraftCardHighlights(marks) }.use { image ->
             image.encodeToData()!!.use { file.writeBytes(it.bytes) }
         }
         val image = ImageIO.read(file)
@@ -146,7 +145,7 @@ class DraftScoreBadgeRenderTest {
         )
         val file = File("build/reports/draft-pick-highlights.png")
         file.parentFile.mkdirs()
-        renderComposeScene(1280, 740) { DraftScoreBadges(marks, 1280.dp, 740.dp) }.use { image ->
+        renderSettledOverlay(1280, 740) { DraftScoreBadges(marks, 1280.dp, 740.dp) }.use { image ->
             image.encodeToData()!!.use { file.writeBytes(it.bytes) }
         }
         val image = ImageIO.read(file)
@@ -168,7 +167,7 @@ class DraftScoreBadgeRenderTest {
         assertEquals(0, image.getRGB(160, 250) ushr 24)
         assertTrue(image.getRGB(62, 250) ushr 24 > 220)
         val preview = File("build/reports/draft-pick-aura-on-background.png")
-        renderComposeScene(1280, 740) {
+        renderSettledOverlay(1280, 740) {
             Box(Modifier.fillMaxSize().background(Color(0xFF39271F))) {
                 DraftScoreBadges(marks, 1280.dp, 740.dp)
             }
@@ -187,7 +186,7 @@ class DraftScoreBadgeRenderTest {
         )
         val file = File("build/reports/draft-score-badges.png")
         file.parentFile.mkdirs()
-        renderComposeScene(1280, 740) { DraftScoreBadges(marks, 1280.dp, 740.dp) }.use { image ->
+        renderSettledOverlay(1280, 740) { DraftScoreBadges(marks, 1280.dp, 740.dp) }.use { image ->
             image.encodeToData()!!.use { file.writeBytes(it.bytes) }
         }
         val image = ImageIO.read(file)

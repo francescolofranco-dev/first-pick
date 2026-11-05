@@ -29,7 +29,7 @@ class OverlayScoreHoverTest {
         assumeTrue(System.getProperty("os.name").contains("Mac") && !GraphicsEnvironment.isHeadless())
         withContext(Dispatchers.Swing) {
             // Deliver events to the badge's real Compose input listener without moving the user's mouse.
-            val arena = WindowBounds(-2000, -2000, 800, 500, true)
+            val arena = WindowBounds(200, 200, 800, 500, true)
             val mark = DraftScoreMark(NormalizedRect(.2, .2, .2, .4), 75.0, true,
                 ValueBreakdown(65.0, 3.0, 5.0, -2.0, 4.0, 75.0), slot = 0)
             val previewVisible = mutableStateOf(true)
@@ -59,8 +59,10 @@ class OverlayScoreHoverTest {
                         arena.x + x, arena.y + y, 0, false, MouseEvent.NOBUTTON)
                     input.dispatchEvent(event)
                 }
-                fun hasDetails(): Boolean = parent.semanticsOwners.flatMap { nodes(it.rootSemanticsNode) }
-                    .any { it.config.getOrElse(SemanticsProperties.Text) { emptyList() }.any { text -> text.text == "SCORE BREAKDOWN" } }
+                fun hasDetails(): Boolean {
+                    return parent.semanticsOwners.flatMap { nodes(it.rootSemanticsNode) }
+                        .any { it.config.getOrElse(SemanticsProperties.Text) { emptyList() }.any { text -> text.text == "SCORE BREAKDOWN" } }
+                }
                 send(MouseEvent.MOUSE_ENTERED, input.width / 2, input.height / 2)
                 send(MouseEvent.MOUSE_MOVED, input.width / 2, input.height / 2)
                 withTimeout(5000) { while (!hasDetails() && detailsWindows().isEmpty()) delay(10) }

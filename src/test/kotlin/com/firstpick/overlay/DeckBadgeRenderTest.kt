@@ -1,6 +1,5 @@
 package com.firstpick.overlay
 
-import androidx.compose.ui.renderComposeScene
 import androidx.compose.ui.unit.dp
 import java.io.File
 import javax.imageio.ImageIO
@@ -26,7 +25,7 @@ class DeckBadgeRenderTest {
         )
         val output = File("build/reports/deck-badges.png")
         output.parentFile.mkdirs()
-        renderComposeScene(1280, 740) {
+        renderSettledOverlay(1280, 740) {
             DeckGuidanceOverlay(model, 1280.dp, 740.dp)
         }.use { image ->
             image.encodeToData()!!.use { output.writeBytes(it.bytes) }

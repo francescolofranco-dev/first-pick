@@ -3,6 +3,7 @@ package com.firstpick.overlay
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableFloatStateOf
@@ -18,6 +19,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.ClipOp
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipPath
@@ -67,14 +69,19 @@ internal fun DraftCardHighlights(marks: List<DraftScoreMark>, animationPhase: Fl
             }
         }
     }
+    val entrances = marks.mapIndexed { index, mark ->
+        key(mark.slot ?: index) {
+            rememberOverlayEntranceAlpha(mark.highlight != PickHighlight.NONE, mark.highlightOcclusions)
+        }
+    }
     Box(Modifier.fillMaxSize().drawWithCache {
-        val frames = marks.mapNotNull { mark ->
+        val frames = marks.map { mark ->
             mark.bounds.inViewport(size.width, size.height)?.let { rect ->
                 Triple(mark, rect, arenaOuterCardContour(rect))
             }
         }
-        val artwork = Path().apply { frames.forEach { addPath(it.third) } }
-        val blockers = frames.associate { (mark, _, path) ->
+        val artwork = Path().apply { frames.filterNotNull().forEach { addPath(it.third) } }
+        val blockers = frames.filterNotNull().associate { (mark, _, path) ->
             path to Path().apply {
                 mark.highlightOcclusions.forEach { rect ->
                     addRect(Rect((rect.x * size.width).toFloat(), (rect.y * size.height).toFloat(),
@@ -84,8 +91,18 @@ internal fun DraftCardHighlights(marks: List<DraftScoreMark>, animationPhase: Fl
         }
         onDrawBehind {
             val phase = animationPhase ?: clock.floatValue
-            for ((mark, rect, path) in frames) {
+            for ((index, frame) in frames.withIndex()) {
+                val (mark, rect, path) = frame ?: continue
                 if (mark.highlight == PickHighlight.NONE) continue
+                val alpha = entrances[index].value
+                if (alpha == 0f) continue
+                // Allocate a local compositing layer only during the entrance, leaving the
+                // steady-state aura on its existing draw path and shared animation clock.
+                val fading = alpha < 1f
+                if (fading) drawContext.canvas.saveLayer(
+                    path.getBounds().inflate(90.dp.toPx() * arcaneScale(rect.width)),
+                    Paint().apply { this.alpha = alpha },
+                )
                 // A tooltip can cover a section of a preview without hiding its entire aura.
                 clipPath(blockers.getValue(path), ClipOp.Difference) {
                     clipPath(artwork, ClipOp.Difference) {
@@ -94,6 +111,7 @@ internal fun DraftCardHighlights(marks: List<DraftScoreMark>, animationPhase: Fl
                     }
                     drawArcaneEdge(path, mark.highlight, rect)
                 }
+                if (fading) drawContext.canvas.restore()
             }
         }
     })

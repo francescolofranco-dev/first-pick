@@ -95,16 +95,16 @@ fun ArenaOverlayTracker(
         SideEffect { trace.composed(frame, frontmost) }
         Box(Modifier.size(arena.w.dp, arena.h.dp)) {
             val marks = if (visible) draftScoreMarks(frame.content.orEmpty(), frame.geometry?.inWindow(arena).orEmpty(), arena.w.toFloat(), arena.h.toFloat(), includeCovered = true) else emptyList()
-            OverlayEntrance(visible = marks.isNotEmpty()) {
-                DraftScoreBadges(marks, arena.w.dp, arena.h.dp)
-            }
+            DraftScoreBadges(marks, arena.w.dp, arena.h.dp)
             DraftScoreInteractions(marks, arena)
             OverlayAccessNotice(arena, frame.health, access, onGrantArenaAccess)
-            if (visible && marks.isEmpty() && frame.showNotice && !showOverlayAccessNotice(frame.health, access)) Box(Modifier.align(Alignment.TopEnd).padding(24.dp).widthIn(max = (arena.w * .6).dp)
-                .background(DeckGuidanceOverlayPalette.PillBackground, RoundedCornerShape(12.dp))
-                .border(1.dp, DeckGuidanceOverlayPalette.ReadingAccent, RoundedCornerShape(12.dp)).padding(9.dp)) {
-                Text(if (frame.content != null && frame.geometry != null) "Updating card positions…" else frame.health.detail,
-                    color = DeckGuidanceOverlayPalette.PillText, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            if (visible && marks.isEmpty() && frame.showNotice && !showOverlayAccessNotice(frame.health, access)) OverlayEntrance(visible = true, modifier = Modifier.fillMaxSize()) {
+                Box(Modifier.align(Alignment.TopEnd).padding(24.dp).widthIn(max = (arena.w * .6).dp)
+                    .background(DeckGuidanceOverlayPalette.PillBackground, RoundedCornerShape(12.dp))
+                    .border(1.dp, DeckGuidanceOverlayPalette.ReadingAccent, RoundedCornerShape(12.dp)).padding(9.dp)) {
+                    Text(if (frame.content != null && frame.geometry != null) "Updating card positions…" else frame.health.detail,
+                        color = DeckGuidanceOverlayPalette.PillText, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                }
             }
         }
     }
