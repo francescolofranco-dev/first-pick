@@ -1,5 +1,10 @@
 package com.firstpick.overlay
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.renderComposeScene
 import androidx.compose.ui.unit.dp
 import java.io.File
@@ -35,6 +40,22 @@ class DraftScoreBadgeRenderTest {
         assertTrue((0 until image.height).all { y -> (0 until image.width).all { x -> image.getRGB(x, y) ushr 24 == 0 } })
     }
 
+    @Test fun broadAuraLeavesAdjacentUnhighlightedArtworkClear() {
+        val marks = listOf(
+            DraftScoreMark(NormalizedRect(.1, .2, .2, .5), 80.0, true, highlight = com.firstpick.ui.PickHighlight.CLEAR),
+            DraftScoreMark(NormalizedRect(.31, .2, .2, .5), 60.0, false),
+        )
+        val file = File("build/reports/adjacent-pick-aura.png")
+        file.parentFile.mkdirs()
+        renderComposeScene(1000, 700) { DraftCardHighlights(marks) }.use { image ->
+            image.encodeToData()!!.use { file.writeBytes(it.bytes) }
+        }
+        val image = ImageIO.read(file)
+        for (x in 315..350) for (y in 200..400) {
+            assertEquals(0, image.getRGB(x, y) ushr 24, "Aura painted adjacent artwork at $x, $y")
+        }
+    }
+
     @Test fun fullCardBordersDistinguishClearAndSharedChoices() {
         val marks = listOf(
             DraftScoreMark(NormalizedRect(.05, .22, .16, .4), 80.0, true, highlight = com.firstpick.ui.PickHighlight.CLEAR),
@@ -51,9 +72,24 @@ class DraftScoreBadgeRenderTest {
         val softAlpha = image.getRGB(312, 250) ushr 24
         assertTrue(clearAlpha > softAlpha && softAlpha > 0)
         assertEquals(0, image.getRGB(577, 250) ushr 24)
+        // The aura must remain visible well beyond the previous thin border.
+        val redAura = java.awt.Color(image.getRGB(41, 250), true)
+        val tealAura = java.awt.Color(image.getRGB(297, 250), true)
+        assertTrue(redAura.alpha > 10 && redAura.red > redAura.green)
+        assertTrue(tealAura.alpha > 10 && tealAura.green > tealAura.red)
+        val goldAura = java.awt.Color(image.getRGB(542, 250), true)
+        assertTrue(goldAura.alpha > 10 && goldAura.red > goldAura.blue)
         // The glow stays outside the card: no wash over artwork or rules.
         assertEquals(0, image.getRGB(160, 250) ushr 24)
         assertTrue(image.getRGB(62, 250) ushr 24 > 220)
+        val preview = File("build/reports/draft-pick-aura-on-background.png")
+        renderComposeScene(1280, 740) {
+            Box(Modifier.fillMaxSize().background(Color(0xFF39271F))) {
+                DraftScoreBadges(marks, 1280.dp, 740.dp)
+            }
+        }.use { rendered ->
+            rendered.encodeToData()!!.use { preview.writeBytes(it.bytes) }
+        }
         // The frame encloses the footer too, instead of ending at the printed rules box.
         assertTrue(image.getRGB(235, 463) ushr 24 > 200)
     }
