@@ -150,7 +150,7 @@ installs an update automatically.
 
 ## Notes
 
-- Both jobs run on `macos-14`: the arm64 app uses an AArch64 JDK and the x86_64 app
+- Both jobs run on `macos-15`: the arm64 app uses an AArch64 JDK and the x86_64 app
   uses an Intel JDK under Rosetta. `jpackage` therefore bundles a runtime matching
   the artifact name.
 - The release uses `notarizeDmg` (not the ProGuard-minified `notarizeReleaseDmg`) to
