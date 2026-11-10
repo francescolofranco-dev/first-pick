@@ -131,6 +131,7 @@ fun main() {
             }
             App(
                 state = state,
+                onOpenAbout = { isAboutOpen = true },
                 history = history,
                 stats = stats,
                 onReviewDraft = viewModel::reviewDraft,

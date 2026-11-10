@@ -40,6 +40,7 @@ data class PackCardUi(
     val modelRank: Int? = null,
     val guideConstrained: Boolean = false,
     val recommendedPair: Boolean = false,
+    val manaCost: String? = null,
 )
 
 data class ColorScore(val color: Char, val score: Double)

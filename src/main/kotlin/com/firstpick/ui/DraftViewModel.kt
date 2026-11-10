@@ -389,7 +389,7 @@ class DraftViewModel(
                 }
             } else emptySet()
             packRows(ranked, basicLands, state.packCards).mapIndexed { index, row ->
-                row.copy(recommendedPair = index in pair)
+                row.copy(recommendedPair = index in pair, manaCost = meta(row.name)?.manaCost)
             }
         } else {
             emptyList()

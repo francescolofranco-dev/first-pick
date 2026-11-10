@@ -34,6 +34,7 @@ class OverlayScoreHoverTest {
                 ValueBreakdown(65.0, 3.0, 5.0, -2.0, 4.0, 75.0), slot = 0)
             val previewVisible = mutableStateOf(true)
             val preview = mark.copy(bounds = NormalizedRect(.6, .1, .3, .6), slot = -1, isPreview = true)
+            val previousFrames = Frame.getFrames().toSet()
             val app = launchApplication {
                 Window(onCloseRequest = {}, title = "Score hover regression", undecorated = true,
                     transparent = true, alwaysOnTop = true, focusable = false,
@@ -45,14 +46,25 @@ class OverlayScoreHoverTest {
             }
             fun detailsWindows() = Frame.getFrames().filter { it.title == "FirstPick Score Details" && it.isVisible }
             try {
-                withTimeout(5000) {
-                    while (Frame.getFrames().none { it.title == "FirstPick Score 1" && it.isVisible }) delay(25)
+                val (parent, badge) = withTimeout(5000) {
+                    var windows: Pair<ComposeWindow, ComposeWindow>? = null
+                    while (windows == null) {
+                        val frames = Frame.getFrames().filter { it !in previousFrames && it.isVisible }
+                        val parent = frames.firstOrNull { it.title == "Score hover regression" } as? ComposeWindow
+                        val badge = frames.firstOrNull { it.title == "FirstPick Score 1" } as? ComposeWindow
+                        if (parent != null && badge != null) windows = parent to badge else delay(25)
+                    }
+                    windows
                 }
-                val parent = Frame.getFrames().single { it.title == "Score hover regression" && it.isVisible } as ComposeWindow
-                val badge = Frame.getFrames().single { it.title == "FirstPick Score 1" && it.isVisible } as ComposeWindow
-                delay(200)
-                val input = components(badge).first { c ->
-                    c.mouseListeners.any { it.javaClass.name.contains("ComposeSceneMediator") }
+                val input = withTimeout(5000) {
+                    var listener: Component? = null
+                    while (listener == null) {
+                        listener = components(badge).firstOrNull { c ->
+                            c.mouseListeners.any { it.javaClass.name.contains("ComposeSceneMediator") }
+                        }
+                        if (listener == null) delay(25)
+                    }
+                    listener
                 }
                 fun send(id: Int, x: Int, y: Int) {
                     val event = MouseEvent(input, id, System.currentTimeMillis(), 0, x, y,

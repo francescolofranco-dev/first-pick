@@ -27,33 +27,33 @@ import androidx.compose.ui.unit.sp
 
 @Immutable
 object AppColors {
-    // Raycast Warm Graphite & Frosted Bento hierarchy
-    val background = Color(0xFF111114)
-    val chrome = Color(0xFF151519)
-    val surface = Color(0xFF18181C)
-    val surfaceElevated = Color(0xFF202026)
-    val surfaceSelected = Color(0xFF27272E)
-    val surfacePopover = Color(0xFF1C1C22)
+    // Midnight surfaces, restrained violet accents and warm gold emphasis.
+    val background = Color(0xFF11131F)
+    val chrome = Color(0xFF0C1019)
+    val surface = Color(0xFF171B2A)
+    val surfaceElevated = Color(0xFF1B2031)
+    val surfaceSelected = Color(0xFF24283C)
+    val surfacePopover = Color(0xFF1B2031)
 
     // Bento & hairline borders
-    val borderHairline = Color(0xFF1F1F25)
-    val borderSubtle = Color(0xFF27272E)
-    val borderDefault = Color(0xFF33333D)
-    val borderAccent = Color(0x73FF6363)
+    val borderHairline = Color(0xFF202437)
+    val borderSubtle = Color(0xFF24283C)
+    val borderDefault = Color(0xFF38394F)
+    val borderAccent = Color(0x73C0B9E3)
 
     // Zinc typography hierarchy
-    val textPrimary = Color(0xFFFAFAFA)
-    val textSecondary = Color(0xFFA1A1AA)
-    val textMuted = Color(0xFF71717A)
-    val textOnAccent = Color(0xFF111114)
+    val textPrimary = Color(0xFFEEF0F7)
+    val textSecondary = Color(0xFFA4AABD)
+    val textMuted = Color(0xFF7D849C)
+    val textOnAccent = Color(0xFF11131F)
 
     // Semantic color system: Green = Good, Amber = Caution/Average, Red = Bad/Error, Info/Slate = Neutral Role/Category
-    val accent = Color(0xFF34D399)
-    val accentBright = Color(0xFF10B981)
-    val accentSecondary = Color(0xFFF59E0B)
+    val accent = Color(0xFFC0B9E3)
+    val accentBright = Color(0xFFA38BBF)
+    val accentSecondary = Color(0xFFE0BD81)
     val info = Color(0xFF94A3B8)
-    val positive = Color(0xFF34D399)
-    val warning = Color(0xFFFBBF24)
+    val positive = Color(0xFF98C9AA)
+    val warning = Color(0xFFE0BD81)
     val danger = Color(0xFFF43F5E)
 }
 
@@ -208,7 +208,7 @@ fun Modifier.appPanel(
         .background(
             Brush.verticalGradient(
                 colors = listOf(
-                    Color(0xFF1C1C21),
+                    Color(0xFF191D2D),
                     AppColors.surface,
                 ),
             ),
@@ -262,7 +262,7 @@ fun Modifier.appCard(
                 AppColors.surface,
             ),
         )
-        else -> Brush.verticalGradient(listOf(Color(0xFF1C1C21), AppColors.surface))
+        else -> Brush.verticalGradient(listOf(Color(0xFF191D2D), AppColors.surface))
     }
     val borderColor = when {
         active -> accentColor
@@ -318,7 +318,7 @@ fun Modifier.appPopover(radius: Dp = AppTheme.radii.lg): Modifier {
         .background(
             Brush.verticalGradient(
                 listOf(
-                    Color(0xFF222229),
+                    Color(0xFF24283C),
                     AppColors.surfacePopover,
                 ),
             ),

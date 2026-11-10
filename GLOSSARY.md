@@ -53,3 +53,17 @@ copies to add to the current deck, and red indicates deck copies to cut.
 **Copy change**:
 The number of copies of a card that must be added or cut to make the current
 deck match the selected suggested build.
+
+**Close cuts**:
+Non-basic card copies in the draft pool that are absent from the selected
+suggested build. This read-only list presents near-miss alternatives; it is not
+a sideboard. Copies already used by the build are subtracted individually.
+
+**Fit**:
+The compact workspace label for the advisor score. It is a contextual preference,
+not a win percentage. GIH WR is a separate observed reference metric.
+
+**Draft review**:
+Read-only inspection of a locally recorded draft and its linked event/matches.
+A recorded saved deck is distinguished from the drafted pool. Missing historical
+pick decisions or advisor scores must not be inferred from the final pool.
