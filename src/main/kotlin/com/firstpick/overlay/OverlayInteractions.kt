@@ -31,7 +31,7 @@ import kotlinx.coroutines.withContext
 
 /** Small non-activating windows receive input; the full Arena-sized layer stays click-through. */
 @Composable
-private fun OverlayPanelWindow(
+internal fun OverlayPanelWindow(
     title: String,
     x: Float,
     y: Float,

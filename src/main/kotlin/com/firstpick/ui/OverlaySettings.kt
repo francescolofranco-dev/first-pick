@@ -8,6 +8,7 @@ import kotlin.io.path.exists
 
 @Serializable
 data class OverlaySettings(
+    val showDeckRecommendationsAutomatically: Boolean = true,
     val x: Int = 100,
     val y: Int = 100,
     val width: Int = 1000,

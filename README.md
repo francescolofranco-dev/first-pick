@@ -29,7 +29,7 @@ and needs, then proposes 2–3 finished decks when the draft ends.
 - **Set guides** — color-pair themes and key commons/uncommons per set, with cited sources.
 - **Personal stats** — local SQLite storage for drafts, draft event results, draft match history, play/draw performance, deck colors, and Limited rank progression. Recover available records from older Arena logs automatically.
 - **Draft history** — completed drafts saved locally; reopen deck builds and the full drafted pool, including drafts recovered from the current Arena log.
-- **Deck builder** — 2–3 ranked builds with manabase, then red/green guidance in Arena's deck builder.
+- **Deck builder** — an automatic post-draft Arena overlay compares 2–3 ranked builds with full card lists and manabases. Choose a build for red/green guidance, or disable automatic display and reopen it with Show overlay.
 
 Hover any card to preview it:
 

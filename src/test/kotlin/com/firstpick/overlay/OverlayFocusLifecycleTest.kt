@@ -107,6 +107,35 @@ class OverlayFocusLifecycleTest {
         } finally { directory.deleteRecursively() }
     }
 
+    @Test fun recommendationsHideWithArenaAndUseANonActivatingPanel() = runBlocking {
+        assumeTrue(System.getProperty("os.name").contains("Mac") && !GraphicsEnvironment.isHeadless())
+        withContext(Dispatchers.Swing) {
+            val foreground = WindowBounds(200, 200, 900, 650, true)
+            val bounds = AtomicReference<WindowBounds?>(foreground)
+            val locator = ArenaWindowLocator { bounds.get() }
+            val app = launchApplication {
+                DeckRecommendationsOverlay(emptyList(), true, {}, {}, {}, locator)
+            }
+            fun panel() = Frame.getFrames().firstOrNull { it.title == "FirstPick Deck Recommendations" && it.isVisible }
+            suspend fun awaitPanel() = withTimeout(5000) { while (panel() == null) delay(25) }
+            try {
+                awaitPanel()
+                val window = panel() as ComposeWindow
+                assertEquals(java.awt.Window.Type.POPUP, window.type)
+                assertFalse(window.focusableWindowState)
+                assertNativeNonActivatingPanel(window)
+                bounds.set(foreground.copy(frontmost = false))
+                delay(600)
+                assertEquals(null, panel())
+                bounds.set(foreground)
+                awaitPanel()
+                bounds.set(null)
+                delay(600)
+                assertEquals(null, panel())
+            } finally { app.cancelAndJoin() }
+        }
+    }
+
     private fun nativeIgnoresMouseEvents(window: ComposeWindow): Boolean {
         val objc = NativeLibrary.getInstance("objc")
         val selector = objc.getFunction("sel_registerName").invokePointer(arrayOf("ignoresMouseEvents"))

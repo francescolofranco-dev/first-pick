@@ -81,6 +81,20 @@ fun main() {
         }
         var isAboutOpen by remember { mutableStateOf(false) }
         var isOverlayOpen by remember { mutableStateOf(false) }
+        var overlaySettings by remember { mutableStateOf(com.firstpick.ui.OverlaySettings.load()) }
+        val recommendationTrigger = remember { com.firstpick.overlay.DeckRecommendationTrigger() }
+        var recommendationsOpen by remember(state.sessionKey) { mutableStateOf(false) }
+        LaunchedEffect(liveState.phase, liveState.sessionKey, liveState.deckOptions.isNotEmpty(),
+            liveState.simulating, overlaySettings.showDeckRecommendationsAutomatically) {
+            if (recommendationTrigger.observe(liveState.phase, liveState.sessionKey,
+                    liveState.deckOptions.isNotEmpty(), overlaySettings.showDeckRecommendationsAutomatically,
+                    liveState.simulating)) {
+                archivedGuidance = null
+                recommendationsOpen = true
+                isOverlayOpen = true
+            }
+            if (liveState.phase != DraftPhase.COMPLETE) recommendationsOpen = false
+        }
         var draftOverlayHealth by remember {
             mutableStateOf(OverlayHealth(OverlayHealthState.INACTIVE, "Overlay is turned off."))
         }
@@ -93,6 +107,7 @@ fun main() {
         }
         val selectedDeck = committedDeck ?: state.deckOptions.firstOrNull()
         val activeOverlayHealth = when {
+            recommendationsOpen && isOverlayOpen -> OverlayHealth(OverlayHealthState.ACTIVE, "Choose a recommended deck.")
             state.phase == DraftPhase.COMPLETE && isOverlayOpen && selectedDeck != null -> deckOverlayHealth
             state.phase != DraftPhase.COMPLETE && isOverlayOpen -> draftOverlayHealth
             else -> OverlayHealth(OverlayHealthState.INACTIVE, "Overlay is turned off.")
@@ -127,7 +142,10 @@ fun main() {
                 isOverlayOpen = isOverlayOpen,
                 overlayHealth = activeOverlayHealth,
                 liveDeckGuidance = liveDeckGuidance,
-                onToggleOverlay = { isOverlayOpen = !isOverlayOpen },
+                onToggleOverlay = {
+                    isOverlayOpen = !isOverlayOpen
+                    recommendationsOpen = isOverlayOpen && state.phase == DraftPhase.COMPLETE && state.deckOptions.isNotEmpty()
+                },
                 liveDeckAccess = liveDeckAccess,
                 onGrantArenaAccess = grantArenaAccess,
                 onRevokeArenaAccess = { appScope.launch(Dispatchers.IO) { liveDeckReader.revokeAccess() }; Unit },
@@ -136,6 +154,7 @@ fun main() {
                     if (state.phase == DraftPhase.COMPLETE) {
                         liveDeckGuidance = null
                         committedDeck = it
+                        recommendationsOpen = false
                     }
                 },
                 onSelectPickCount = viewModel::setPickCountOverride,
@@ -156,7 +175,25 @@ fun main() {
             FirstPickAboutWindow(onCloseRequest = { isAboutOpen = false })
         }
 
+        if (recommendationsOpen && isOverlayOpen && state.phase == DraftPhase.COMPLETE) {
+            com.firstpick.overlay.DeckRecommendationsOverlay(
+                options = state.deckOptions,
+                automatic = overlaySettings.showDeckRecommendationsAutomatically,
+                onAutomaticChanged = { automatic ->
+                    overlaySettings = overlaySettings.copy(showDeckRecommendationsAutomatically = automatic)
+                    com.firstpick.ui.OverlaySettings.save(overlaySettings)
+                },
+                onUseDeck = { deck ->
+                    committedDeck = deck
+                    liveDeckGuidance = null
+                    recommendationsOpen = false
+                },
+                onClose = { recommendationsOpen = false },
+            )
+        }
+
         when {
+            recommendationsOpen && isOverlayOpen -> Unit
             state.phase == DraftPhase.COMPLETE && isOverlayOpen && selectedDeck != null -> {
                 val target = remember(selectedDeck) { deckGuidanceTarget(selectedDeck) }
                 val draftPool = remember(state.draftPool) { deckGuidancePool(state.draftPool) }
