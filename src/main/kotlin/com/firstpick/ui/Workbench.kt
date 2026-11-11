@@ -12,6 +12,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.text.style.TextAlign
@@ -89,7 +94,23 @@ internal fun Workbench(
                         SegmentedTabItem(it.name, selected = mode == it, onClick = { mode = it; query = "" })
                     })
                     Row(Modifier.weight(1f), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
-                        WorkbenchButton(onClick = { searching = !searching }, outlined=false, contentPadding = PaddingValues(4.dp)) { Text(if(layout.small) "⌕" else "⌕ Search   ⌘ K", color = AppColors.textSecondary,fontSize=12.sp) }
+                        WorkbenchButton(
+                            onClick = { searching = !searching },
+                            modifier = Modifier.heightIn(min = 32.dp).widthIn(min = 32.dp).semantics { contentDescription = "Search" },
+                            outlined = false, contentPadding = PaddingValues(6.dp),
+                        ) {
+                            Canvas(Modifier.size(20.dp)) {
+                                val stroke = 1.8.dp.toPx()
+                                drawCircle(AppColors.textSecondary, radius = size.width * .28f,
+                                    center = Offset(size.width * .42f, size.height * .42f), style = Stroke(stroke))
+                                drawLine(AppColors.textSecondary, Offset(size.width * .62f, size.height * .62f),
+                                    Offset(size.width * .85f, size.height * .85f), strokeWidth = stroke, cap = StrokeCap.Round)
+                            }
+                            if (!layout.small) {
+                                Spacer(Modifier.width(6.dp))
+                                Text("Search   ⌘ K", color = AppColors.textSecondary, fontSize = 12.sp)
+                            }
+                        }
                         Spacer(Modifier.width(7.dp))
                         WorkbenchButton(onClick = onToggleOverlay, active = isOverlayOpen) { Text(if (isOverlayOpen) "Disable overlay" else "Enable overlay", fontSize = if(layout.small)10.sp else 12.sp) }
                     }
