@@ -155,7 +155,6 @@ internal fun Workbench(
                                 WorkMode.Settings -> QuietText("Application and Arena access")
                             }
                         }
-                        RailItem("◷  Draft history") { mode = WorkMode.Analytics; analyticsSection = "Match history" }
                         RailItem("▤  Format guides", selected = mode == WorkMode.Guides) { mode = WorkMode.Guides }
                         RailItem("ⓘ  About") { onOpenAbout() }
                         RailItem("⚙  Settings", selected = mode == WorkMode.Settings) { mode = WorkMode.Settings }
