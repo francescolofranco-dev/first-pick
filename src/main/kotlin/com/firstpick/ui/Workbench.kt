@@ -62,6 +62,7 @@ internal fun Workbench(
     val key = resolveDeckPreviewKey(options.map { it.deckBuildKey }, previewKey, committedDeck?.deckBuildKey)
     val deck = options.firstOrNull { it.deckBuildKey == key }
     LaunchedEffect(state.phase) {
+        if(state.phase==DraftPhase.IDLE)draftPool=false
         if (mode in listOf(WorkMode.Draft, WorkMode.Deckbuilder)) mode = if (state.phase == DraftPhase.COMPLETE) WorkMode.Deckbuilder else WorkMode.Draft
     }
     AppTheme {
@@ -114,12 +115,18 @@ internal fun Workbench(
                         Column(Modifier.weight(1f).verticalScroll(rememberScrollState())) {
                             when (mode) {
                                 WorkMode.Draft -> {
+                                    if(state.phase==DraftPhase.IDLE && state.packCards.isEmpty()) {
+                                        QuietText("No active draft")
+                                        Spacer(Modifier.height(10.dp))
+                                        QuietText("Your pack and pool will appear when you start drafting.")
+                                    } else {
                                     RailItem("Current pack", "${state.packCards.size}", !draftPool) { draftPool = false }
                                     RailItem("Drafted pool so far", "${state.poolSize}", draftPool) { draftPool = true }
                                     Spacer(Modifier.height(24.dp)); RailLabel("Current draft")
                                     QuietText(state.setReferences.firstOrNull{it.code==state.setCode}?.name ?: state.setCode ?: "Waiting for Arena")
                                     QuietText(state.format.label)
                                     if (state.pack > 0) QuietText("Pack ${state.pack} · Pick ${state.pick}")
+                                    }
                                 }
                                 WorkMode.Deckbuilder -> {
                                     RailItem("Suggested deck", deck?.let { "${(it.spells + it.lands).sumOf { s -> s.count }}" }.orEmpty(), true) {}

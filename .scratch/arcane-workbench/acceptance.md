@@ -32,3 +32,12 @@ The approved reference is `firstpick-interactive-prototype.html` in the design a
 - Opened an actual saved 40-card deck and recorded packs; checked explicit missing-match state. Saved native screenshots alongside the deterministic comparison renders.
 - Search opens from its toolbar control. Command-K / Escape / reopen passes in the production-composable input regression. Desktop automation did not deliver keyboard input reliably, so OS-level shortcut acceptance is not claimed from that tool.
 - Comparison artifacts: `fidelity/release-3.12.1/` in the design artifact directory.
+
+## Waiting-screen redesign — 3.12.2
+
+- Replaced the legacy hero panel with a quiet, centered entry state: native vector brand mark, official mana symbols, clear draft-start guidance, and compact plain-text Arena setup instructions.
+- Removed Deep synergy, Data synergy, and AI picks coverage lists and their unused private UI helpers. Idle navigation now explains that no draft is active instead of presenting empty pack/pool counters.
+- Retained developer-only demo entry and the distinct between-packs message. Returning to idle clears the pool view so the waiting screen appears consistently.
+- Rendered 720 × 760, 1280 × 900, and 1440 × 960. Verified the installed 3.12.2 production app visually and through its accessibility tree; no coverage lists or zero-card controls are present.
+- `./gradlew buildProduction workbenchVisuals`: passed; 548 JVM tests and 30 native tests. Production installer verified its signature and restarted `~/Applications/FirstPick.app`.
+- Screenshots: `fidelity/release-3.12.2/` in the design artifact directory, including `native-waiting.png`.
