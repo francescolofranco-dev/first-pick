@@ -88,7 +88,7 @@ internal fun Workbench(
                 val toolbarWidth = maxWidth
                 Row(Modifier.fillMaxWidth().align(Alignment.Center).padding(horizontal = if (layout.small) 12.dp else 20.dp), verticalAlignment = Alignment.CenterVertically) {
                     Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(7.dp)) {
-                        WorkbenchBrand(Modifier.size(if(layout.small)18.dp else 21.dp))
+                        WorkbenchBrand(Modifier.size(if(layout.small)26.dp else 30.dp))
                         Text("FirstPick", style = AppTypography.appTitle.copy(fontSize=if(layout.small)12.sp else 14.sp,fontWeight=FontWeight.SemiBold), color = AppColors.textPrimary)
                     }
                     WorkbenchTabs(listOf(WorkMode.Draft, WorkMode.Deckbuilder, WorkMode.Analytics).map {

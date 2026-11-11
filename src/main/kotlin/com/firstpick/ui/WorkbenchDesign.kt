@@ -16,7 +16,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
@@ -80,13 +80,9 @@ internal fun WorkbenchTabs(tabs: List<SegmentedTabItem>, modifier: Modifier = Mo
     Text(text, style = AppTypography.paneTitle.copy(fontSize = LocalWorkbenchLayout.current.heading, lineHeight = (LocalWorkbenchLayout.current.heading.value * 1.2f).sp, fontWeight = FontWeight.SemiBold, letterSpacing = (-.7).sp), color = Color(0xFFF0EDF8), modifier = modifier)
 }
 
+/** The same FirstPick icon used by the application bundle and Dock. */
 @Composable internal fun WorkbenchBrand(modifier: Modifier = Modifier) {
-    androidx.compose.foundation.Canvas(modifier.size(21.dp)) {
-        val p = Path().apply { moveTo(size.width*.5f,0f);lineTo(size.width*.65f,size.height*.35f);lineTo(size.width,size.height*.5f);lineTo(size.width*.65f,size.height*.65f);lineTo(size.width*.5f,size.height);lineTo(size.width*.35f,size.height*.65f);lineTo(0f,size.height*.5f);lineTo(size.width*.35f,size.height*.35f);close() }
-        drawPath(p, Color(0xFFDDC48D),style=androidx.compose.ui.graphics.drawscope.Stroke(1.dp.toPx()))
-        val inner = Path().apply { moveTo(size.width*.5f,size.height*.22f);lineTo(size.width*.59f,size.height*.41f);lineTo(size.width*.78f,size.height*.5f);lineTo(size.width*.59f,size.height*.59f);lineTo(size.width*.5f,size.height*.78f);lineTo(size.width*.41f,size.height*.59f);lineTo(size.width*.22f,size.height*.5f);lineTo(size.width*.41f,size.height*.41f);close() }
-        drawPath(inner,Color(0x88DDC48D))
-    }
+    Image(painterResource("icons/app_icon.png"),contentDescription="FirstPick logo",modifier=modifier.size(28.dp))
 }
 
 @Composable internal fun WorkbenchInspector(title: String, intro: String? = null, content: @Composable ColumnScope.() -> Unit) {

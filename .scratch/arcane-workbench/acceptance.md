@@ -53,3 +53,9 @@ Merged main's concurrent navigation cleanup (`e7830a2`) without restoring the re
 Preserved main's subsequent compact-toolbar search-icon fix (`cf1395d`) as well. The final waiting-screen build includes both navigation improvements and uses 3.12.4. Its comparison artifacts are in `fidelity/release-3.12.4/`.
 
 Final integrated gate passed: 548 JVM tests and 30 native tests, zero failures or skips. Installed and visibly verified 3.12.4, including the accessible vector Search button, simplified idle rail, and redesigned waiting content. Native proof: `release-3.12.4/native-waiting.png`.
+
+## FirstPick logo — 3.12.5
+
+Replaced the provisional star drawings in the shared toolbar and waiting screen with the bundled `icons/app_icon.png` used by the app/Dock. The toolbar uses a larger 26 / 30 dp icon at compact / desktop sizes; the waiting screen uses an 84 dp icon. Both expose “FirstPick logo” to accessibility. Rendered the actual composables at all three comparison sizes.
+
+`./gradlew buildProduction workbenchVisuals` passed: 548 JVM tests, 30 native tests. Installed and visually verified the signed production app at version 3.12.5. Screenshot: `fidelity/release-3.12.5/native-logo.png`.
