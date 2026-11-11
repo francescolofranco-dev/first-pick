@@ -47,3 +47,9 @@ The approved reference is `firstpick-interactive-prototype.html` in the design a
 Merged main's concurrent navigation cleanup (`e7830a2`) without restoring the redundant Draft history footer shortcut. The combined waiting-screen release uses 3.12.3 to advance both parents' 3.12.2 versions. Final comparison artifacts are in `fidelity/release-3.12.3/`.
 
 `./gradlew buildProduction workbenchVisuals` passed for the merged source: 548 JVM tests, 30 native tests. The production installer verified the bundle signature and restarted 3.12.3. Its visible/accessibility state confirms the new waiting page, no coverage lists, no idle counters, and no redundant Draft history footer entry. Final native proof is `release-3.12.3/native-waiting.png`.
+
+### Integrated release — 3.12.4
+
+Preserved main's subsequent compact-toolbar search-icon fix (`cf1395d`) as well. The final waiting-screen build includes both navigation improvements and uses 3.12.4. Its comparison artifacts are in `fidelity/release-3.12.4/`.
+
+Final integrated gate passed: 548 JVM tests and 30 native tests, zero failures or skips. Installed and visibly verified 3.12.4, including the accessible vector Search button, simplified idle rail, and redesigned waiting content. Native proof: `release-3.12.4/native-waiting.png`.
