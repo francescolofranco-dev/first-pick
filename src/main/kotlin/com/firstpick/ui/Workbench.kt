@@ -27,7 +27,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.firstpick.core.AppVersion
 import com.firstpick.draft.DraftHistoryEntry
 import com.firstpick.model.DraftPhase
 import com.firstpick.model.DraftState
@@ -49,7 +48,7 @@ internal fun Workbench(
     onSelectPickCount: (Int) -> Unit, onSimulate: (String) -> Unit, onStopSim: () -> Unit,
     onTogglePause: () -> Unit, onLoadReferenceSet: (String) -> Unit, onRetryRatings: () -> Unit,
     onNewDraft: () -> Unit, stats: PlayerStats, history: List<DraftHistoryEntry>,
-    onReviewDraft: suspend (DraftState) -> DraftUiState, onOpenAbout: () -> Unit,
+    onReviewDraft: suspend (DraftState) -> DraftUiState,
 ) {
     var mode by remember { mutableStateOf(if (state.phase == DraftPhase.COMPLETE) WorkMode.Deckbuilder else WorkMode.Draft) }
     var draftPool by remember { mutableStateOf(false) }
@@ -176,10 +175,8 @@ internal fun Workbench(
                                 WorkMode.Settings -> QuietText("Application and Arena access")
                             }
                         }
-                        RailItem("▤  Format guides", selected = mode == WorkMode.Guides) { mode = WorkMode.Guides }
-                        RailItem("ⓘ  About") { onOpenAbout() }
+                        RailItem("Format guides", selected = mode == WorkMode.Guides, icon = { FormatGuidesIcon() }) { mode = WorkMode.Guides }
                         RailItem("⚙  Settings", selected = mode == WorkMode.Settings) { mode = WorkMode.Settings }
-                        Spacer(Modifier.height(18.dp)); Hairline();Spacer(Modifier.height(18.dp)); QuietText("FIRSTPICK ${AppVersion.value}", micro = true)
                     }
                     Box(Modifier.weight(1f).fillMaxHeight().testTag("workbench-workspace").background(Brush.verticalGradient(listOf(Color(0xFF171A2A), AppColors.background), endY = 260f)).padding(start=layout.gutter,end=if(mode==WorkMode.Deckbuilder||mode==WorkMode.Analytics)0.dp else layout.gutter,top=if(mode==WorkMode.Draft)16.dp else if(mode==WorkMode.Deckbuilder||mode==WorkMode.Analytics)0.dp else layout.top)) {
                         when (mode) {
@@ -237,8 +234,9 @@ internal fun Workbench(
 @Composable internal fun Hairline() = Box(Modifier.fillMaxWidth().height(1.dp).background(Color(0x12B2B0DB)))
 @Composable internal fun QuietText(text: String, micro: Boolean = false) = Text(text, color = AppColors.textSecondary, style = if (micro) AppTypography.micro.copy(fontSize=9.sp,fontWeight=FontWeight.Normal) else AppTypography.caption)
 @Composable private fun RailLabel(text: String) { Text(text.uppercase(), style = AppTypography.sectionHeader, color = AppColors.textMuted); Spacer(Modifier.height(12.dp)) }
-@Composable private fun RailItem(label: String, trailing: String = "", selected: Boolean = false, onClick: () -> Unit) {
+@Composable private fun RailItem(label: String, trailing: String = "", selected: Boolean = false, icon: (@Composable () -> Unit)? = null, onClick: () -> Unit) {
     Row(Modifier.fillMaxWidth().background(if (selected) AppColors.accent.copy(alpha=.10f) else Color.Transparent, RoundedCornerShape(5.dp)).clickable(onClick = onClick).padding(horizontal=10.dp,vertical=10.dp), verticalAlignment = Alignment.CenterVertically) {
+        if(icon!=null){icon();Spacer(Modifier.width(6.dp))}
         Text(label, style = AppTypography.caption.copy(fontSize=12.sp), color = if (selected) AppColors.textPrimary else AppColors.textSecondary, modifier = Modifier.weight(1f))
         if (trailing.isNotBlank()) Text(trailing, style = AppTypography.monoMicro, color = AppColors.textMuted)
     }

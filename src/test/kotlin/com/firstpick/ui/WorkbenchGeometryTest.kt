@@ -60,7 +60,7 @@ class WorkbenchGeometryTest {
 
     private class Fixture(width:Int,height:Int):AutoCloseable {
         private val scene=ImageComposeScene(width,height,Density(1f)) {
-            Workbench(WorkbenchVisualFixtures.state,false,OverlayHealth(OverlayHealthState.INACTIVE),LiveDeckAccess(),{},{},{},null,{}, {}, {}, {}, {}, {}, {}, {},WorkbenchVisualFixtures.stats,WorkbenchVisualFixtures.history,{WorkbenchVisualFixtures.review},{})
+            Workbench(WorkbenchVisualFixtures.state,false,OverlayHealth(OverlayHealthState.INACTIVE),LiveDeckAccess(),{},{},{},null,{}, {}, {}, {}, {}, {}, {}, {},WorkbenchVisualFixtures.stats,WorkbenchVisualFixtures.history,{WorkbenchVisualFixtures.review})
         }
         private var time=0L
         init{render()}

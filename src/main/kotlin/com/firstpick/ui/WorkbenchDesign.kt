@@ -101,3 +101,22 @@ internal fun WorkbenchTabs(tabs: List<SegmentedTabItem>, modifier: Modifier = Mo
 @Composable internal fun InspectorLine(label: String, value: String) {
     Row(Modifier.fillMaxWidth().padding(vertical=9.dp),verticalAlignment=Alignment.CenterVertically) {Text(label,style=AppTypography.caption,color=AppColors.textSecondary,modifier=Modifier.weight(1f));Text(value,style=AppTypography.micro.copy(fontWeight=FontWeight.Normal),color=AppColors.textPrimary,maxLines=2,overflow=TextOverflow.Ellipsis)}
 }
+
+/** Open-book outline: a guide, rather than the old ambiguous list glyph. */
+@Composable internal fun FormatGuidesIcon() {
+    Canvas(Modifier.size(16.dp)) {
+        val w=size.width;val h=size.height
+        val outline=androidx.compose.ui.graphics.Path().apply {
+            moveTo(w*.5f,h*.25f)
+            cubicTo(w*.35f,h*.12f,w*.18f,h*.12f,w*.06f,h*.19f)
+            lineTo(w*.06f,h*.81f)
+            cubicTo(w*.2f,h*.74f,w*.35f,h*.76f,w*.5f,h*.88f)
+            cubicTo(w*.65f,h*.76f,w*.8f,h*.74f,w*.94f,h*.81f)
+            lineTo(w*.94f,h*.19f)
+            cubicTo(w*.82f,h*.12f,w*.65f,h*.12f,w*.5f,h*.25f)
+            close()
+        }
+        drawPath(outline,AppColors.textSecondary,style=androidx.compose.ui.graphics.drawscope.Stroke(1.2.dp.toPx()))
+        drawLine(AppColors.textSecondary,androidx.compose.ui.geometry.Offset(w*.5f,h*.25f),androidx.compose.ui.geometry.Offset(w*.5f,h*.88f),1.dp.toPx())
+    }
+}

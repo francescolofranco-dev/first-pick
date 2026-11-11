@@ -16,7 +16,7 @@ fun main(args: Array<String>) {
     for ((width,height) in listOf(720 to 760,1280 to 900,1440 to 960)) {
         val displayedState=mutableStateOf(DraftUiState(researchedSets=listOf("FRA"),groundedSets=listOf("FRA"),modelSets=listOf("FRA")))
         ImageComposeScene(width,height,Density(1f)) {
-            Workbench(displayedState.value,false,OverlayHealth(OverlayHealthState.INACTIVE),LiveDeckAccess(),{},{},{},null,{}, {}, {}, {}, {}, {}, {}, {},WorkbenchVisualFixtures.stats,WorkbenchVisualFixtures.history,{WorkbenchVisualFixtures.review},{})
+            Workbench(displayedState.value,false,OverlayHealth(OverlayHealthState.INACTIVE),LiveDeckAccess(),{},{},{},null,{}, {}, {}, {}, {}, {}, {}, {},WorkbenchVisualFixtures.stats,WorkbenchVisualFixtures.history,{WorkbenchVisualFixtures.review})
         }.use{ scene ->
             var frameTime=0L
             fun render(name:String){repeat(4){frameTime+=16_000_000L;scene.render(frameTime).close()};frameTime+=16_000_000L;scene.render(frameTime).use{image->image.encodeToData(EncodedImageFormat.PNG)!!.use{Files.write(out.resolve("$name-$width.png"),it.bytes)}}}

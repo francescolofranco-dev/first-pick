@@ -59,3 +59,10 @@ Final integrated gate passed: 548 JVM tests and 30 native tests, zero failures o
 Replaced the provisional star drawings in the shared toolbar and waiting screen with the bundled `icons/app_icon.png` used by the app/Dock. The toolbar uses a larger 26 / 30 dp icon at compact / desktop sizes; the waiting screen uses an 84 dp icon. Both expose “FirstPick logo” to accessibility. Rendered the actual composables at all three comparison sizes.
 
 `./gradlew buildProduction workbenchVisuals` passed: 548 JVM tests, 30 native tests. Installed and visually verified the signed production app at version 3.12.5. Screenshot: `fidelity/release-3.12.5/native-logo.png`.
+
+## Sidebar cleanup — 3.12.6
+
+- Removed sidebar About and version text, including their unused in-app About callback wiring. The native macOS About handler remains registered independently.
+- Replaced the Format guides list glyph with a crisp vector open-book outline, keeping the text label and navigation action.
+- `./gradlew buildProduction workbenchVisuals` passed: 548 JVM tests, 30 native tests, zero failures or skips. Installed the signed production build and verified the cleaned sidebar.
+- Opened FirstPick → About FirstPick from the macOS menu and confirmed “Version 3.12.6”, then returned to the main workspace. Native proof: `fidelity/release-3.12.6/native-sidebar.png`.
