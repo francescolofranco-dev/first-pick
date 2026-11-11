@@ -293,3 +293,13 @@ tasks.register<JavaExec>("overlayInteractionProbe") {
     mainClass.set("com.firstpick.overlay.OverlayInteractionProbeKt")
     classpath = sourceSets["test"].runtimeClasspath
 }
+
+// Isolated visual fixture runner. It renders production composables without reading player data.
+tasks.register<JavaExec>("workbenchVisuals") {
+    group = "verification"
+    description = "Render fixed-data workspace snapshots at mockup comparison sizes."
+    dependsOn("testClasses")
+    mainClass.set("com.firstpick.ui.WorkbenchVisualProbeKt")
+    classpath = sourceSets["test"].runtimeClasspath
+    args(providers.gradleProperty("visualOutput").orElse("build/workbench-visuals").get())
+}

@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -79,49 +80,51 @@ object AppRadii {
 }
 
 @Immutable
+@OptIn(androidx.compose.ui.text.ExperimentalTextApi::class)
 object AppTypography {
+    val interfaceFont = if (System.getProperty("os.name").startsWith("Mac")) FontFamily(".AppleSystemUIFont") else FontFamily.Default
     val appTitle = TextStyle(
-        fontFamily = FontFamily.Default,
+        fontFamily = interfaceFont,
         fontSize = 14.sp,
         lineHeight = 18.sp,
         fontWeight = FontWeight.Bold,
         letterSpacing = (-0.3).sp,
     )
     val paneTitle = TextStyle(
-        fontFamily = FontFamily.Default,
+        fontFamily = interfaceFont,
         fontSize = 15.sp,
         lineHeight = 20.sp,
         fontWeight = FontWeight.SemiBold,
         letterSpacing = (-0.25).sp,
     )
     val sectionHeader = TextStyle(
-        fontFamily = FontFamily.Default,
+        fontFamily = interfaceFont,
         fontSize = 10.sp,
         lineHeight = 13.sp,
-        fontWeight = FontWeight.Bold,
-        letterSpacing = 0.7.sp,
+        fontWeight = FontWeight.SemiBold,
+        letterSpacing = 1.sp,
     )
     val cardTitle = TextStyle(
-        fontFamily = FontFamily.Default,
+        fontFamily = interfaceFont,
         fontSize = 13.sp,
         lineHeight = 17.sp,
         fontWeight = FontWeight.SemiBold,
         letterSpacing = (-0.1).sp,
     )
     val body = TextStyle(
-        fontFamily = FontFamily.Default,
+        fontFamily = interfaceFont,
         fontSize = 12.sp,
         lineHeight = 16.sp,
         fontWeight = FontWeight.Normal,
     )
     val caption = TextStyle(
-        fontFamily = FontFamily.Default,
+        fontFamily = interfaceFont,
         fontSize = 11.sp,
         lineHeight = 15.sp,
         fontWeight = FontWeight.Normal,
     )
     val micro = TextStyle(
-        fontFamily = FontFamily.Default,
+        fontFamily = interfaceFont,
         fontSize = 10.sp,
         lineHeight = 13.sp,
         fontWeight = FontWeight.Medium,
@@ -130,21 +133,21 @@ object AppTypography {
         fontFamily = FontFamily.Monospace,
         fontSize = 12.sp,
         lineHeight = 16.sp,
-        fontWeight = FontWeight.SemiBold,
+        fontWeight = FontWeight.Normal,
         fontFeatureSettings = "tnum",
     )
     val monoSmall = TextStyle(
         fontFamily = FontFamily.Monospace,
         fontSize = 11.sp,
         lineHeight = 14.sp,
-        fontWeight = FontWeight.Medium,
+        fontWeight = FontWeight.Normal,
         fontFeatureSettings = "tnum",
     )
     val monoMicro = TextStyle(
         fontFamily = FontFamily.Monospace,
         fontSize = 10.sp,
         lineHeight = 13.sp,
-        fontWeight = FontWeight.Medium,
+        fontWeight = FontWeight.Normal,
         fontFeatureSettings = "tnum",
     )
 }
@@ -186,6 +189,7 @@ val DraftColorScheme = darkColorScheme(
 @Composable
 fun AppTheme(content: @Composable () -> Unit) {
     MaterialTheme(colorScheme = DraftColorScheme) {
+        ProvideTextStyle(AppTypography.body.copy(letterSpacing=0.sp)) {
         CompositionLocalProvider(
             LocalScrollbarStyle provides LocalScrollbarStyle.current.copy(
                 thickness = 5.dp,
@@ -195,6 +199,7 @@ fun AppTheme(content: @Composable () -> Unit) {
             ),
             content = content,
         )
+        }
     }
 }
 

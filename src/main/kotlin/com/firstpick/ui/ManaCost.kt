@@ -42,7 +42,7 @@ internal fun manaSymbolDescription(symbol: String): String {
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-internal fun ManaCost(cost: String?, isLand: Boolean = false, modifier: Modifier = Modifier) {
+internal fun ManaCost(cost: String?, isLand: Boolean = false, modifier: Modifier = Modifier, symbolSize: androidx.compose.ui.unit.Dp = 16.dp) {
     val tokens = remember(cost) { manaCostTokens(cost.orEmpty()) }
     val description = when {
         cost == "" || (isLand && cost == null) -> "No mana cost"
@@ -60,7 +60,7 @@ internal fun ManaCost(cost: String?, isLand: Boolean = false, modifier: Modifier
             tokens.forEach { symbol ->
                 val painter = manaCostPainter(symbol)
                 if (painter != null) {
-                    Image(painter, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Image(painter, contentDescription = null, modifier = Modifier.size(symbolSize))
                 } else {
                     Text(
                         if (symbol == "//") "/ /" else "{$symbol}",
