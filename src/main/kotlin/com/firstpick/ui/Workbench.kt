@@ -124,8 +124,8 @@ internal fun Workbench(
             if (searching) OutlinedTextField(query, { query = it }, label = { Text(if (mode == WorkMode.Analytics) "Find an expansion, event or date" else "Find a card") }, singleLine = true, modifier = Modifier.fillMaxWidth().padding(10.dp).focusRequester(searchFocus))
             if (state.dataError != null) Text(state.dataError, color = AppColors.danger, style = AppTypography.caption, modifier = Modifier.padding(8.dp))
             if (isOverlayOpen && liveDeckAccess.status != LiveDeckAccessStatus.CONNECTED) {
-                Row(Modifier.fillMaxWidth().background(AppColors.surface).padding(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Text(liveDeckAccess.detail, style = AppTypography.caption, color = AppColors.textSecondary, modifier = Modifier.weight(1f))
+                Row(Modifier.fillMaxWidth().background(AppColors.surface).padding(horizontal = if (layout.small) 12.dp else 20.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(liveDeckAccess.detail, style = AppTypography.caption, color = AppColors.textSecondary, textAlign = TextAlign.End, modifier = Modifier.weight(1f))
                     if (liveDeckAccess.canGrant) WorkbenchButton(onClick = onGrantArenaAccess) { Text("Grant Arena access") }
                     if (liveDeckAccess.savedApproval) WorkbenchButton(onClick = onRevokeArenaAccess) { Text("Revoke access") }
                 }
