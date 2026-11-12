@@ -32,6 +32,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.text.font.FontWeight
@@ -87,16 +88,16 @@ internal fun FirstPickAboutWindow(onCloseRequest: () -> Unit) {
         AppTheme {
             Surface(
                 modifier = Modifier.fillMaxSize(),
-                color = AppTheme.colors.background,
+                color = AppTheme.colors.surface,
             ) {
                 Box(
-                    modifier = Modifier.fillMaxSize().padding(18.dp),
+                    modifier = Modifier.fillMaxSize()
+                        .background(Brush.verticalGradient(listOf(Color(0xFF191D2D), AppTheme.colors.surface)))
+                        .padding(24.dp),
                     contentAlignment = Alignment.Center,
                 ) {
                     Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .appPanel(padding = 24.dp, radius = AppTheme.radii.xl),
+                        modifier = Modifier.fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center,
                     ) {
