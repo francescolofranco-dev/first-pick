@@ -90,9 +90,9 @@ internal fun Workbench(
             BoxWithConstraints(Modifier.fillMaxWidth().height(53.dp).testTag("workbench-toolbar").background(Brush.horizontalGradient(listOf(Color(0xFF101423),Color(0xFF0D111B),Color(0xFF131520))))) {
                 val toolbarWidth = maxWidth
                 Row(Modifier.fillMaxWidth().align(Alignment.Center).padding(horizontal = if (layout.small) 12.dp else 20.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(7.dp)) {
-                        WorkbenchBrand(Modifier.size(if(layout.small)26.dp else 30.dp))
-                        Text("FirstPick", style = AppTypography.appTitle.copy(fontSize=if(layout.small)12.sp else 14.sp,fontWeight=FontWeight.SemiBold), color = AppColors.textPrimary)
+                    Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        WorkbenchBrand(Modifier.size(if(layout.small)34.dp else 40.dp))
+                        Text("FirstPick", style = AppTypography.appTitle.copy(fontSize=if(layout.small)16.sp else 18.sp,lineHeight=if(layout.small)20.sp else 24.sp,fontWeight=FontWeight.SemiBold), color = AppColors.textPrimary, maxLines = 1)
                     }
                     WorkbenchTabs(listOf(WorkMode.Draft, WorkMode.Deckbuilder, WorkMode.Analytics).map {
                         SegmentedTabItem(it.name, selected = mode == it, onClick = { mode = it; query = "" })
