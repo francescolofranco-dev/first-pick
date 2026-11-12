@@ -2,6 +2,7 @@ package com.firstpick.ui
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
@@ -18,6 +19,8 @@ import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+
+internal val NavigationMarkerGutter = 8.dp
 
 internal data class NavigationFeedback(val modifier: Modifier, val ink: Color)
 
@@ -53,6 +56,7 @@ internal fun navigationFeedback(
         .hoverable(source, enabled = enabled)
         .clickable(source, indication = null, enabled = enabled, role = role, onClick = onClick)
         .focusable(enabled, source)
+        .then(if (vertical) Modifier.padding(start = NavigationMarkerGutter) else Modifier)
     val ink = when {
         !enabled -> AppColors.textMuted
         selected == true || highlighted -> AppColors.textPrimary

@@ -46,7 +46,12 @@ fun main(args: Array<String>) {
             scene.sendPointerEvent(PointerEventType.Exit, androidx.compose.ui.geometry.Offset(-1f, -1f), type = PointerType.Mouse)
             click("Draft history");render("history")
             val row=scene.semanticsOwners.flatMap{nodes(it.rootSemanticsNode)}.firstOrNull{it.config.contains(SemanticsActions.OnClick)&&it.config.getOrElse(SemanticsProperties.Text){emptyList()}.any{a->a.text=="FRA" || a.text=="Reality Fracture"}}
-            checkNotNull(row){"No archived draft row found"}.config[SemanticsActions.OnClick].action!!.invoke();render("review")
+            val archiveRow = checkNotNull(row) { "No archived draft row found" }
+            scene.sendPointerEvent(PointerEventType.Enter, archiveRow.boundsInRoot.center, type = PointerType.Mouse)
+            scene.sendPointerEvent(PointerEventType.Move, archiveRow.boundsInRoot.center, type = PointerType.Mouse)
+            render("history-row-hover")
+            scene.sendPointerEvent(PointerEventType.Exit, androidx.compose.ui.geometry.Offset(-1f, -1f), type = PointerType.Mouse)
+            archiveRow.config[SemanticsActions.OnClick].action!!.invoke();render("review")
             val pickTab = scene.semanticsOwners.flatMap { nodes(it.rootSemanticsNode) }.first {
                 it.config.getOrElse(SemanticsProperties.Text) { emptyList() }.any { text -> text.text == "Pick log" }
             }

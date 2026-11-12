@@ -241,7 +241,7 @@ internal fun Workbench(
 @Composable private fun RailItem(label: String, trailing: String = "", selected: Boolean = false, icon: (@Composable () -> Unit)? = null, onClick: () -> Unit) {
     val feedback = navigationFeedback(selected = selected, vertical = true, indicatorInset = 7.dp, onClick = onClick)
     Row(Modifier.fillMaxWidth().then(feedback.modifier)
-        .padding(horizontal=8.dp,vertical=10.dp), verticalAlignment = Alignment.CenterVertically) {
+        .padding(start=8.dp,top=10.dp,bottom=10.dp), verticalAlignment = Alignment.CenterVertically) {
         if(icon!=null){icon();Spacer(Modifier.width(6.dp))}
         Text(label, style = AppTypography.caption.copy(fontSize=if (LocalWorkbenchLayout.current.small) 11.sp else 12.sp), maxLines = 1, overflow = TextOverflow.Ellipsis, color = feedback.ink, modifier = Modifier.weight(1f))
         if (trailing.isNotBlank()) Text(trailing, style = AppTypography.monoMicro, color = AppColors.textMuted)
