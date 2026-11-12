@@ -98,7 +98,7 @@ internal fun WorkbenchAnalytics(stats: PlayerStats, history: List<DraftHistoryEn
                 Row(Modifier.fillMaxWidth().padding(start=NavigationMarkerGutter).padding(horizontal=8.dp,vertical=12.dp)){Text("Completed",modifier=Modifier.width(if(layout.small)76.dp else 100.dp),style=AppTypography.micro,color=AppColors.textMuted);Text("Draft",modifier=Modifier.weight(1f),style=AppTypography.micro,color=AppColors.textMuted);if(!layout.small)Text("Format",modifier=Modifier.width(115.dp),style=AppTypography.micro,color=AppColors.textMuted);QuietText("Record",true)};Hairline()
                 LazyColumn(Modifier.weight(1f)) {
                     items(rows,key={it.key}){row->
-                        val feedback = navigationFeedback(vertical = true, indicatorInset = 8.dp) { selectedKey = row.key }
+                        val feedback = navigationFeedback(vertical = true, indicatorInset = 8.dp, highlightRow = true) { selectedKey = row.key }
                         Row(Modifier.fillMaxWidth().heightIn(min=57.dp).then(feedback.modifier).padding(horizontal=8.dp,vertical=9.dp),verticalAlignment=Alignment.CenterVertically){
                             Text((row.history?.completedAt?:row.course?.at).orEmpty().take(10),style=AppTypography.micro.copy(fontWeight=FontWeight.Normal),color=AppColors.textSecondary,modifier=Modifier.width(if(layout.small)76.dp else 100.dp))
                             val code=row.history?.state?.setCode?:row.course?.let{setOfEvent(it.event)}?:"Unknown set"
@@ -181,7 +181,7 @@ internal fun WorkbenchAnalytics(stats: PlayerStats, history: List<DraftHistoryEn
 }
 @Composable private fun MatchTableHeader(){Row(Modifier.fillMaxWidth().padding(start=NavigationMarkerGutter).padding(vertical=12.dp,horizontal=5.dp)){listOf("Played" to 1.1f,"Expansion" to .75f,"Format" to 1.2f,"Result" to .7f,"Position" to 1.1f).forEach{(s,w)->Text(s,style=AppTypography.micro.copy(fontSize=10.sp,fontWeight=FontWeight.Normal),color=AppColors.textMuted,modifier=Modifier.weight(w))}};Hairline()}
 @Composable private fun MatchRecordRow(match:MatchRecord,onClick:()->Unit){
-    val feedback = navigationFeedback(vertical = true, indicatorInset = 6.dp, onClick = onClick)
+    val feedback = navigationFeedback(vertical = true, indicatorInset = 6.dp, highlightRow = true, onClick = onClick)
     Row(Modifier.fillMaxWidth().heightIn(min=38.dp).then(feedback.modifier).padding(horizontal=5.dp,vertical=9.dp),verticalAlignment=Alignment.CenterVertically){val size=if(LocalWorkbenchLayout.current.small)10.sp else 12.sp;listOf(match.at.take(10) to 1.1f,setOfEvent(match.event).orEmpty() to .75f,eventType(match.event) to 1.2f,match.outcome to .7f,when(match.onPlay){true->"On the play";false->"On the draw";null->"Unavailable"} to 1.1f).forEachIndexed{i,(label,w)->Text(label,fontSize=size,color=if(i==3&&match.outcome=="Win")AppColors.accent else AppColors.textSecondary,modifier=Modifier.weight(w),maxLines=1,overflow=TextOverflow.Ellipsis)}};Hairline()}
 
 @Composable private fun ArchiveReview(row: ArchiveRow, matches: List<MatchRecord>, onReview: suspend (DraftState) -> DraftUiState, onBack: () -> Unit, setNames:Map<String,String> = emptyMap()) {
@@ -249,7 +249,7 @@ internal fun WorkbenchAnalytics(stats: PlayerStats, history: List<DraftHistoryEn
                     QuietText("Card-taken attribution and the original recommendation scores were not saved, so they are not inferred here.")
                     Row(Modifier.fillMaxWidth().padding(start=NavigationMarkerGutter).padding(horizontal=8.dp,vertical=12.dp)) {QuietText("Pick",true);Spacer(Modifier.width(56.dp));Text("Pack contents",fontSize=10.sp,color=AppColors.textMuted,modifier=Modifier.weight(1f));Text("Advice at the time",fontSize=10.sp,color=AppColors.textMuted,modifier=Modifier.width(if(layout.small)100.dp else 200.dp))};Hairline()
                     LazyColumn { items(seen.keys.sortedWith(compareBy({ it.first }, { it.second }))) { pack ->
-                        val feedback = navigationFeedback(vertical = true, indicatorInset = 6.dp) { selectedPack = pack }
+                        val feedback = navigationFeedback(vertical = true, indicatorInset = 6.dp, highlightRow = true) { selectedPack = pack }
                         Row(Modifier.fillMaxWidth().height(38.dp).then(feedback.modifier).padding(horizontal=8.dp),verticalAlignment=Alignment.CenterVertically) {
                             Text("P${pack.first} · ${pack.second}",fontSize=11.sp,color=AppColors.textPrimary,modifier=Modifier.width(76.dp))
                             Text("${seen[pack]?.size} recorded cards",fontSize=11.sp,color=AppColors.textSecondary,modifier=Modifier.weight(1f))

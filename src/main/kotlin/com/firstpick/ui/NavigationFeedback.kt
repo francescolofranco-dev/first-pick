@@ -31,6 +31,7 @@ internal fun navigationFeedback(
     enabled: Boolean = true,
     vertical: Boolean = false,
     indicatorInset: Dp = 0.dp,
+    highlightRow: Boolean = false,
     role: Role = Role.Button,
     onClick: () -> Unit,
 ): NavigationFeedback {
@@ -45,6 +46,7 @@ internal fun navigationFeedback(
         else -> 0f
     }
     val modifier = Modifier.drawBehind {
+        if (highlightRow && highlighted) drawRect(AppColors.accent.copy(alpha = .08f))
         if (opacity > 0f) {
             val stroke = 2.dp.toPx()
             val inset = indicatorInset.toPx()
