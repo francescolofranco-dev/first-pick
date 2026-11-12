@@ -60,6 +60,8 @@ fun main(args: Array<String>) {
             render("review-tab-hover")
             scene.sendPointerEvent(PointerEventType.Exit, androidx.compose.ui.geometry.Offset(-1f, -1f), type = PointerType.Mouse)
             click("Pick log");render("review-picks");click("Results");render("review-matches")
+            click("Format guides");render("guides")
+            click("Reality Fracture");render("guides-expanded")
         }
     }
     println("Visual snapshots: $out")
