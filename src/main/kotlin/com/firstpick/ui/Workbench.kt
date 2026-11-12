@@ -135,7 +135,6 @@ internal fun Workbench(
                 val railWidth = layout.rail
                 Row(Modifier.fillMaxSize()) {
                     Column(Modifier.width(railWidth).fillMaxHeight().testTag("workbench-rail").background(AppColors.chrome).drawBehind { drawLine(AppColors.borderDefault, Offset(size.width, 0f), Offset(size.width, size.height), 1.dp.toPx()) }.padding(horizontal = 14.dp, vertical = if(layout.small)20.dp else 26.dp)) {
-                        RailLabel(when (mode) { WorkMode.Draft -> "Draft workspace"; WorkMode.Deckbuilder -> "Workspace"; WorkMode.Analytics -> "Analytics workspace"; else -> "FirstPick" })
                         Column(Modifier.weight(1f).verticalScroll(rememberScrollState())) {
                             when (mode) {
                                 WorkMode.Draft -> {

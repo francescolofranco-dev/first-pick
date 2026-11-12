@@ -57,8 +57,7 @@ internal fun WorkbenchAnalytics(stats: PlayerStats, history: List<DraftHistoryEn
     val periodLabel=if(selection.last30Days)"Last 30 days" else selection.month?.let{monthLabels[it.toString()]?:it.toString()}?:"All time"
     Row(Modifier.fillMaxSize()) {
         Column(Modifier.weight(1f).padding(end=layout.gutter,bottom=20.dp,top=layout.top)) {
-            Text("TELEMETRY",style=AppTypography.sectionHeader,color=Color(0xFF9599B8))
-            Spacer(Modifier.height(9.dp));WorkbenchHeading(if(section=="Overview")"Your draft performance" else "Match history")
+            WorkbenchHeading(if(section=="Overview")"Your draft performance" else "Match history")
             Spacer(Modifier.height(if(layout.small)22.dp else 28.dp))
             Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(if(layout.small)8.dp else 12.dp),verticalAlignment=Alignment.Bottom) {
                 FilterField("Expansion",selection.set?.let{setNames[it]?:it}?:"All expansions",listOf("All expansions")+sets.map{setNames[it]?:it},Modifier.weight(1f)) { v->selection=selection.copy(set=sets.firstOrNull{(setNames[it]?:it)==v}) }
