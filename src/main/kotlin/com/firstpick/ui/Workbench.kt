@@ -1,6 +1,10 @@
 package com.firstpick.ui
 
 import androidx.compose.foundation.*
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -235,7 +239,19 @@ internal fun Workbench(
 @Composable internal fun QuietText(text: String, micro: Boolean = false) = Text(text, color = AppColors.textSecondary, style = if (micro) AppTypography.micro.copy(fontSize=9.sp,fontWeight=FontWeight.Normal) else AppTypography.caption)
 @Composable private fun RailLabel(text: String) { Text(text.uppercase(), style = AppTypography.sectionHeader, color = AppColors.textMuted); Spacer(Modifier.height(12.dp)) }
 @Composable private fun RailItem(label: String, trailing: String = "", selected: Boolean = false, icon: (@Composable () -> Unit)? = null, onClick: () -> Unit) {
-    Row(Modifier.fillMaxWidth().background(if (selected) AppColors.accent.copy(alpha=.10f) else Color.Transparent, RoundedCornerShape(5.dp)).clickable(onClick = onClick).padding(horizontal=6.dp,vertical=10.dp), verticalAlignment = Alignment.CenterVertically) {
+    val source = remember { MutableInteractionSource() }
+    val hovered by source.collectIsHoveredAsState()
+    val pressed by source.collectIsPressedAsState()
+    val focused by source.collectIsFocusedAsState()
+    val fill = when {
+        selected -> AppColors.accent.copy(alpha = .10f)
+        pressed -> AppColors.accent.copy(alpha = .08f)
+        hovered || focused -> AppColors.accent.copy(alpha = .05f)
+        else -> Color.Transparent
+    }
+    Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(5.dp)).background(fill)
+        .clickable(interactionSource = source, indication = null, onClick = onClick)
+        .padding(horizontal=6.dp,vertical=10.dp), verticalAlignment = Alignment.CenterVertically) {
         if(icon!=null){icon();Spacer(Modifier.width(6.dp))}
         Text(label, style = AppTypography.caption.copy(fontSize=if (LocalWorkbenchLayout.current.small) 11.sp else 12.sp), maxLines = 1, overflow = TextOverflow.Ellipsis, color = if (selected) AppColors.textPrimary else AppColors.textSecondary, modifier = Modifier.weight(1f))
         if (trailing.isNotBlank()) Text(trailing, style = AppTypography.monoMicro, color = AppColors.textMuted)
