@@ -34,7 +34,15 @@ fun main(args: Array<String>) {
             scene.sendPointerEvent(PointerEventType.Exit, androidx.compose.ui.geometry.Offset(-1f, -1f), type = PointerType.Mouse)
             click("Draft history");render("history")
             val row=scene.semanticsOwners.flatMap{nodes(it.rootSemanticsNode)}.firstOrNull{it.config.contains(SemanticsActions.OnClick)&&it.config.getOrElse(SemanticsProperties.Text){emptyList()}.any{a->a.text=="FRA" || a.text=="Reality Fracture"}}
-            checkNotNull(row){"No archived draft row found"}.config[SemanticsActions.OnClick].action!!.invoke();render("review");click("Pick log");render("review-picks");click("Results");render("review-matches")
+            checkNotNull(row){"No archived draft row found"}.config[SemanticsActions.OnClick].action!!.invoke();render("review")
+            val pickTab = scene.semanticsOwners.flatMap { nodes(it.rootSemanticsNode) }.first {
+                it.config.getOrElse(SemanticsProperties.Text) { emptyList() }.any { text -> text.text == "Pick log" }
+            }
+            scene.sendPointerEvent(PointerEventType.Enter, pickTab.boundsInRoot.center, type = PointerType.Mouse)
+            scene.sendPointerEvent(PointerEventType.Move, pickTab.boundsInRoot.center, type = PointerType.Mouse)
+            render("review-tab-hover")
+            scene.sendPointerEvent(PointerEventType.Exit, androidx.compose.ui.geometry.Offset(-1f, -1f), type = PointerType.Mouse)
+            click("Pick log");render("review-picks");click("Results");render("review-matches")
         }
     }
     println("Visual snapshots: $out")

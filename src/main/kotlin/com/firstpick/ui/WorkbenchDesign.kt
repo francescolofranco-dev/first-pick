@@ -3,6 +3,8 @@ package com.firstpick.ui
 import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.LocalContentColor
@@ -69,13 +71,22 @@ internal fun WorkbenchTabs(tabs: List<SegmentedTabItem>, modifier: Modifier = Mo
         horizontalArrangement = Arrangement.spacedBy(if (underlined) 20.dp else 5.dp), verticalAlignment = Alignment.CenterVertically) {
         tabs.forEach { tab ->
             val small = LocalWorkbenchLayout.current.small
-            Box(Modifier.fillMaxHeight().then(if (underlined) Modifier.drawBehind { if (tab.selected) drawLine(AppColors.accent, androidx.compose.ui.geometry.Offset(0f,size.height-1.dp.toPx()), androidx.compose.ui.geometry.Offset(size.width,size.height-1.dp.toPx()),2.dp.toPx()) } else Modifier.clip(RoundedCornerShape(5.dp)).background(if (tab.selected) AppColors.accent.copy(alpha = if (primary) .18f else .085f) else Color.Transparent))
+            val source = remember { MutableInteractionSource() }
+            val hovered by source.collectIsHoveredAsState()
+            val focused by source.collectIsFocusedAsState()
+            val pressed by source.collectIsPressedAsState()
+            val highlighted = tab.enabled && (hovered || focused || pressed)
+            Box(Modifier.fillMaxHeight().then(if (underlined) Modifier.drawBehind { if (tab.selected || highlighted) drawLine(AppColors.accent.copy(alpha = if (tab.selected) 1f else if (pressed || focused) .65f else .35f), androidx.compose.ui.geometry.Offset(0f,size.height-1.dp.toPx()), androidx.compose.ui.geometry.Offset(size.width,size.height-1.dp.toPx()),2.dp.toPx()) } else Modifier.clip(RoundedCornerShape(5.dp)).background(if (tab.selected) AppColors.accent.copy(alpha = if (primary) .18f else .085f) else Color.Transparent))
                 .then(if (primary && tab.selected) Modifier.drawBehind {
                     drawLine(AppColors.warning, androidx.compose.ui.geometry.Offset(10.dp.toPx(), size.height - 1.dp.toPx()), androidx.compose.ui.geometry.Offset(size.width - 10.dp.toPx(), size.height - 1.dp.toPx()), 2.dp.toPx())
                 } else Modifier)
-                .semantics { selected = tab.selected }.clickable(enabled = tab.enabled, role = Role.Tab, onClick = tab.onClick).focusable(tab.enabled)
+                .semantics { selected = tab.selected }
+                .then(if (underlined) Modifier.hoverable(source, enabled = tab.enabled)
+                    .clickable(source, indication = null, enabled = tab.enabled, role = Role.Tab, onClick = tab.onClick)
+                    .focusable(tab.enabled, source)
+                else Modifier.clickable(enabled = tab.enabled, role = Role.Tab, onClick = tab.onClick).focusable(tab.enabled))
                 .padding(horizontal = if (underlined) 0.dp else if(compact)9.dp else if (small) 7.dp else 18.dp), contentAlignment = Alignment.Center) {
-                Text(tab.label, color = if (tab.selected) AppColors.textPrimary else if (primary) Color(0xFFC4C8D7) else AppColors.textSecondary, fontSize = if (primary) 13.sp else if(compact)11.sp else 12.sp, fontWeight = if (primary) FontWeight.SemiBold else FontWeight.Normal, maxLines = 1)
+                Text(tab.label, color = if (tab.selected || (underlined && highlighted)) AppColors.textPrimary else if (primary) Color(0xFFC4C8D7) else AppColors.textSecondary, fontSize = if (primary) 13.sp else if(compact)11.sp else 12.sp, fontWeight = if (primary) FontWeight.SemiBold else FontWeight.Normal, maxLines = 1)
             }
         }
     }
