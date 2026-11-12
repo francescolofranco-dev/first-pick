@@ -14,6 +14,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
@@ -22,7 +24,7 @@ import androidx.compose.ui.unit.dp
 
 internal val NavigationMarkerGutter = 8.dp
 
-internal data class NavigationFeedback(val modifier: Modifier, val ink: Color)
+internal data class NavigationFeedback(val modifier: Modifier, val ink: Color, val highlighted: Boolean = false)
 
 /** Shared navigation treatment: text emphasis plus a bottom or leading-edge marker. */
 @Composable
@@ -55,6 +57,7 @@ internal fun navigationFeedback(
             drawLine(AppColors.accent.copy(alpha = opacity), start, end, stroke)
         }
     }.semantics { if (selected != null) this.selected = selected }
+        .then(if (enabled) Modifier.pointerHoverIcon(PointerIcon.Hand) else Modifier)
         .hoverable(source, enabled = enabled)
         .clickable(source, indication = null, enabled = enabled, role = role, onClick = onClick)
         .focusable(enabled, source)
@@ -64,5 +67,5 @@ internal fun navigationFeedback(
         selected == true || highlighted -> AppColors.textPrimary
         else -> AppColors.textSecondary
     }
-    return NavigationFeedback(modifier, ink)
+    return NavigationFeedback(modifier, ink, highlighted)
 }

@@ -17,6 +17,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
@@ -51,6 +53,7 @@ internal fun WorkbenchButton(
     Row(modifier.heightIn(min = 26.dp).clip(shape)
         .background(if (active) AppColors.accent.copy(alpha = .12f) else if (hovered) AppColors.accent.copy(alpha = .07f) else if (outlined) AppColors.accent.copy(alpha = .025f) else Color.Transparent)
         .then(if (outlined) Modifier.border(1.dp, AppColors.accent.copy(alpha = .22f), shape) else Modifier)
+        .then(if (enabled) Modifier.pointerHoverIcon(PointerIcon.Hand) else Modifier)
         .hoverable(source).clickable(source, indication = null, enabled = enabled, role = Role.Button, onClick = onClick)
         .focusable(enabled).padding(contentPadding), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
         CompositionLocalProvider(LocalContentColor provides ink) {

@@ -38,8 +38,7 @@ private data class ArchiveRow(val key: String, val history: DraftHistoryEntry?, 
 internal fun WorkbenchAnalytics(stats: PlayerStats, history: List<DraftHistoryEntry>, section: String, review: suspend (DraftState) -> DraftUiState, query: String = "", setNames: Map<String,String> = emptyMap(), onScope:(Int,Int)->Unit={_,_->}, onArchiveContext:(List<String>?)->Unit={}) {
     var selection by remember { mutableStateOf(AnalyticsSelection()) }
     var selectedKey by remember { mutableStateOf<String?>(null) }
-    var inspectedMatch by remember { mutableStateOf<MatchRecord?>(null) }
-    LaunchedEffect(section) { selectedKey = null; inspectedMatch=null }
+    LaunchedEffect(section) { selectedKey = null }
     val records = remember(stats) { stats.draftOnly() }
     val courses = records.courses.filter { selection.includes(it.at,it.event) && "${it.event} ${it.at}".contains(query,true) }
     val matches = records.matches.filter { selection.includes(it.at,it.event) && "${it.event} ${it.at} ${it.outcome}".contains(query,true) }
@@ -70,7 +69,6 @@ internal fun WorkbenchAnalytics(stats: PlayerStats, history: List<DraftHistoryEn
             Spacer(Modifier.height(14.dp));Hairline();Spacer(Modifier.height(if(layout.small)16.dp else 22.dp))
             stats.error?.let{Text(it,color=AppColors.warning,style=AppTypography.micro)}
             if(stats.importing)QuietText("Recovering local records…",true)
-            val openMatch:(MatchRecord)->Unit={m-> val row=m.courseId?.let{id->allRows.firstOrNull{it.course?.id==id}};if(row!=null)selectedKey=row.key else inspectedMatch=m }
             if(section=="Overview") {
                 val results=courses.filter{it.wins!=null&&it.losses!=null}.courseResults()
                 LazyColumn(Modifier.weight(1f)) {
@@ -90,21 +88,30 @@ internal fun WorkbenchAnalytics(stats: PlayerStats, history: List<DraftHistoryEn
                     item {Spacer(Modifier.height(22.dp));FinishChart(courses)}
                     item {Spacer(Modifier.height(24.dp));Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){Text("Match results",color=AppColors.textPrimary,fontSize=13.sp,fontWeight=FontWeight.Medium);QuietText("${matches.size} matching matches",true)};Spacer(Modifier.height(12.dp));MatchTableHeader()}
                     if(matches.isEmpty())item{QuietText("No matches in this selection.")}
-                    items(matches.take(40),key={it.id}){m->MatchRecordRow(m){openMatch(m)}}
+                    items(matches.take(40),key={it.id}){m->MatchRecordRow(m)}
                 }
             } else {
                 val rows=allRows.filter{it.history?.let{e->e in drafts}?: (it.course in courses)}.sortedByDescending{it.history?.completedAt?:it.course?.at}
-                Text("Completed drafts",color=AppColors.textPrimary,fontSize=13.sp,fontWeight=FontWeight.Medium);Spacer(Modifier.height(6.dp));QuietText("Review saved decks, recorded packs and available results.");Spacer(Modifier.height(16.dp))
-                Row(Modifier.fillMaxWidth().padding(start=NavigationMarkerGutter).padding(horizontal=8.dp,vertical=12.dp)){Text("Completed",modifier=Modifier.width(if(layout.small)76.dp else 100.dp),style=AppTypography.micro,color=AppColors.textMuted);Text("Draft",modifier=Modifier.weight(1f),style=AppTypography.micro,color=AppColors.textMuted);if(!layout.small)Text("Format",modifier=Modifier.width(115.dp),style=AppTypography.micro,color=AppColors.textMuted);QuietText("Record",true)};Hairline()
+                val showActionLabel=layout.width>=680.dp
+                Text("Completed drafts",color=AppColors.textPrimary,fontSize=13.sp,fontWeight=FontWeight.Medium);Spacer(Modifier.height(6.dp));QuietText("Select a draft to review its saved deck, recorded packs and available results.");Spacer(Modifier.height(16.dp))
+                Row(Modifier.fillMaxWidth().padding(start=NavigationMarkerGutter).padding(horizontal=8.dp,vertical=12.dp),verticalAlignment=Alignment.CenterVertically){
+                    Text("Completed",modifier=Modifier.width(if(layout.small)72.dp else 100.dp),style=AppTypography.micro,color=AppColors.textMuted)
+                    Text("Draft",modifier=Modifier.weight(1f),style=AppTypography.micro,color=AppColors.textMuted)
+                    if(!layout.small)Text("Format",modifier=Modifier.width(115.dp),style=AppTypography.micro,color=AppColors.textMuted)
+                    QuietText("Record",true)
+                    Spacer(Modifier.width(if(showActionLabel)62.dp else 32.dp))
+                };Hairline()
                 LazyColumn(Modifier.weight(1f)) {
                     items(rows,key={it.key}){row->
                         val feedback = navigationFeedback(vertical = true, indicatorInset = 8.dp, highlightRow = true) { selectedKey = row.key }
                         Row(Modifier.fillMaxWidth().heightIn(min=57.dp).then(feedback.modifier).padding(horizontal=8.dp,vertical=9.dp),verticalAlignment=Alignment.CenterVertically){
-                            Text((row.history?.completedAt?:row.course?.at).orEmpty().take(10),style=AppTypography.micro.copy(fontWeight=FontWeight.Normal),color=AppColors.textSecondary,modifier=Modifier.width(if(layout.small)76.dp else 100.dp))
+                            Text((row.history?.completedAt?:row.course?.at).orEmpty().take(10),style=AppTypography.micro.copy(fontWeight=FontWeight.Normal),color=AppColors.textSecondary,modifier=Modifier.width(if(layout.small)72.dp else 100.dp))
                             val code=row.history?.state?.setCode?:row.course?.let{setOfEvent(it.event)}?:"Unknown set"
-                            Column(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(5.dp)){Text(setNames[code]?:code,color=AppColors.textPrimary,fontSize=if(layout.small)11.sp else 12.sp,maxLines=1,overflow=TextOverflow.Ellipsis);QuietText("$code · ${if(row.history!=null)"Saved draft" else "Results only"}",true)}
+                            Column(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(5.dp)){Text(setNames[code]?:code,color=if(feedback.highlighted)Color(0xFFF0EDF8)else AppColors.textPrimary,fontWeight=FontWeight.Medium,fontSize=if(layout.small)11.sp else 12.sp,maxLines=1,overflow=TextOverflow.Ellipsis);QuietText("$code · ${if(row.history!=null)"Saved draft" else "Results only"}",true)}
                             if(!layout.small)Text((row.course?.event?:row.history?.state?.eventName)?.let(::eventType).orEmpty(),style=AppTypography.caption,color=AppColors.textSecondary,modifier=Modifier.width(115.dp))
-                            Text(row.course?.let{if(it.wins!=null&&it.losses!=null)"${it.wins}–${it.losses}" else "—"}?:"—",style=AppTypography.monoSmall,color=if(row.course?.isTrophy()==true)AppColors.warning else AppColors.textSecondary);Spacer(Modifier.width(8.dp));QuietText("↗",true)
+                            Text(row.course?.let{if(it.wins!=null&&it.losses!=null)"${it.wins}–${it.losses}" else "—"}?:"—",style=AppTypography.monoSmall,color=if(row.course?.isTrophy()==true)AppColors.warning else AppColors.textSecondary)
+                            Spacer(Modifier.width(if(layout.small)10.dp else 14.dp))
+                            OpenRowAffordance(label=if(showActionLabel)"Open" else null,highlighted=feedback.highlighted)
                         };Hairline()
                     }
                     if(rows.isEmpty())item{QuietText("No draft records match your filters.")}
@@ -114,7 +121,6 @@ internal fun WorkbenchAnalytics(stats: PlayerStats, history: List<DraftHistoryEn
         WorkbenchInspector("Report context","Filters combine across this report and stay applied when you change sections.") {
             InspectorSection("Active filters") {InspectorLine("Expansion",selection.set?.let{setNames[it]?:it}?:"All expansions");InspectorLine("Format",selection.format?:"All formats");InspectorLine("Period",periodLabel)}
             InspectorSection("Arena seasons") {QuietText("Arena ranked seasons are monthly and separate from expansions. Older records do not contain exact season assignments; date filters use calendar months.")}
-            InspectorSection("Match details") {if(inspectedMatch==null)QuietText("Select a match row for its context.") else {val m=inspectedMatch!!;QuietText("${m.outcome} · ${m.at.take(10)}");QuietText(eventType(m.event));QuietText(when(m.onPlay){true->"On the play";false->"On the draw";null->"Starting player unavailable"})}}
             QuietText("Saved on this Mac. In-progress event totals may be partial; only completed results appear in the finish chart.",true)
         }
     }
@@ -179,10 +185,31 @@ internal fun WorkbenchAnalytics(stats: PlayerStats, history: List<DraftHistoryEn
         Spacer(Modifier.height(if(layout.small)8.dp else 0.dp));Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){QuietText("Final wins",true);QuietText(if(average==null)"No completed results" else "${"%.1f".format(average)} average wins  ·  ${counts[7]} seven-win finishes",true)}
     }
 }
-@Composable private fun MatchTableHeader(){Row(Modifier.fillMaxWidth().padding(start=NavigationMarkerGutter).padding(vertical=12.dp,horizontal=5.dp)){listOf("Played" to 1.1f,"Expansion" to .75f,"Format" to 1.2f,"Result" to .7f,"Position" to 1.1f).forEach{(s,w)->Text(s,style=AppTypography.micro.copy(fontSize=10.sp,fontWeight=FontWeight.Normal),color=AppColors.textMuted,modifier=Modifier.weight(w))}};Hairline()}
-@Composable private fun MatchRecordRow(match:MatchRecord,onClick:()->Unit){
-    val feedback = navigationFeedback(vertical = true, indicatorInset = 6.dp, highlightRow = true, onClick = onClick)
-    Row(Modifier.fillMaxWidth().heightIn(min=38.dp).then(feedback.modifier).padding(horizontal=5.dp,vertical=9.dp),verticalAlignment=Alignment.CenterVertically){val size=if(LocalWorkbenchLayout.current.small)10.sp else 12.sp;listOf(match.at.take(10) to 1.1f,setOfEvent(match.event).orEmpty() to .75f,eventType(match.event) to 1.2f,match.outcome to .7f,when(match.onPlay){true->"On the play";false->"On the draw";null->"Unavailable"} to 1.1f).forEachIndexed{i,(label,w)->Text(label,fontSize=size,color=if(i==3&&match.outcome=="Win")AppColors.accent else AppColors.textSecondary,modifier=Modifier.weight(w),maxLines=1,overflow=TextOverflow.Ellipsis)}};Hairline()}
+@Composable private fun MatchTableHeader(){Row(Modifier.fillMaxWidth().padding(vertical=12.dp,horizontal=8.dp)){listOf("Played" to 1.1f,"Expansion" to .75f,"Format" to 1.2f,"Result" to .7f,"Position" to 1.1f).forEach{(s,w)->Text(s,style=AppTypography.micro.copy(fontSize=10.sp,fontWeight=FontWeight.Normal),color=AppColors.textMuted,modifier=Modifier.weight(w))}};Hairline()}
+@Composable private fun MatchRecordRow(match:MatchRecord){
+    Row(Modifier.fillMaxWidth().heightIn(min=38.dp).padding(horizontal=8.dp,vertical=9.dp),verticalAlignment=Alignment.CenterVertically){val size=if(LocalWorkbenchLayout.current.small)10.sp else 12.sp;listOf(match.at.take(10) to 1.1f,setOfEvent(match.event).orEmpty() to .75f,eventType(match.event) to 1.2f,match.outcome to .7f,when(match.onPlay){true->"On the play";false->"On the draw";null->"Unavailable"} to 1.1f).forEachIndexed{i,(label,w)->Text(label,fontSize=size,color=if(i==3&&match.outcome=="Win")AppColors.accent else AppColors.textSecondary,modifier=Modifier.weight(w),maxLines=1,overflow=TextOverflow.Ellipsis)}};Hairline()}
+
+@Composable private fun OpenRowAffordance(label: String? = null, highlighted: Boolean = false) {
+    val shape = RoundedCornerShape(5.dp)
+    val ink = if (highlighted) Color(0xFFF0EDF8) else Color(0xFFD3C9E8)
+    Row(
+        Modifier.clip(shape)
+            .background(AppColors.accent.copy(alpha = if (highlighted) .16f else .05f))
+            .border(1.dp, AppColors.accent.copy(alpha = if (highlighted) .45f else .24f), shape)
+            .padding(horizontal = if (label != null) 8.dp else 6.dp, vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        if (label != null) Text(label, fontSize = 10.sp, color = ink, maxLines = 1)
+        Canvas(Modifier.size(10.dp)) {
+            val start = Offset(3.5.dp.toPx(), 1.8.dp.toPx())
+            val tip = Offset(6.8.dp.toPx(), 5.dp.toPx())
+            val end = Offset(3.5.dp.toPx(), 8.2.dp.toPx())
+            drawLine(ink, start, tip, 1.4.dp.toPx(), StrokeCap.Round)
+            drawLine(ink, tip, end, 1.4.dp.toPx(), StrokeCap.Round)
+        }
+    }
+}
 
 @Composable private fun ArchiveReview(row: ArchiveRow, matches: List<MatchRecord>, onReview: suspend (DraftState) -> DraftUiState, onBack: () -> Unit, setNames:Map<String,String> = emptyMap()) {
     var tab by remember(row.key) { mutableStateOf("Deck") }
@@ -253,7 +280,8 @@ internal fun WorkbenchAnalytics(stats: PlayerStats, history: List<DraftHistoryEn
                         Row(Modifier.fillMaxWidth().height(38.dp).then(feedback.modifier).padding(horizontal=8.dp),verticalAlignment=Alignment.CenterVertically) {
                             Text("P${pack.first} · ${pack.second}",fontSize=11.sp,color=AppColors.textPrimary,modifier=Modifier.width(76.dp))
                             Text("${seen[pack]?.size} recorded cards",fontSize=11.sp,color=AppColors.textSecondary,modifier=Modifier.weight(1f))
-                            Text("Unavailable",fontSize=11.sp,color=AppColors.textMuted,modifier=Modifier.width(if(layout.small)85.dp else 185.dp));QuietText("↗",true)
+                            Text("Unavailable",fontSize=11.sp,color=AppColors.textMuted,modifier=Modifier.width(if(layout.small)70.dp else 170.dp))
+                            OpenRowAffordance(label=if(layout.small)null else "Open",highlighted=feedback.highlighted)
                         };Hairline()
                     } }
                 } else {

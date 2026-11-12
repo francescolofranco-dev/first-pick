@@ -106,6 +106,22 @@ class WorkbenchGeometryTest {
         }
     }
 
+    @Test fun `match results rows are read only while draft history rows expose an open affordance`() {
+        Fixture(720, 900).use { ui ->
+            ui.click("Analytics")
+            val matchOutcome = assertNotNull(ui.text("Win"))
+            assertNull(
+                generateSequence(matchOutcome) { it.parent }.firstNotNullOfOrNull { it.config.getOrNull(SemanticsActions.OnClick) },
+                "Overview match rows must be read-only and non-clickable",
+            )
+            assertNull(ui.text("Select a match row for its context."))
+            ui.click("Draft history")
+            assertNotNull(ui.text("Open"))
+            ui.click("Open")
+            assertNotNull(ui.text("Draft review"))
+        }
+    }
+
     private class Fixture(width:Int,height:Int, initialState: DraftUiState = WorkbenchVisualFixtures.state, stats: com.firstpick.stats.PlayerStats = WorkbenchVisualFixtures.stats, history: List<com.firstpick.draft.DraftHistoryEntry> = WorkbenchVisualFixtures.history):AutoCloseable {
         val state = androidx.compose.runtime.mutableStateOf(initialState)
         private val scene=ImageComposeScene(width,height,Density(1f)) {
