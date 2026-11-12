@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -51,7 +52,6 @@ import androidx.compose.ui.res.useResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
-import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
@@ -199,50 +199,15 @@ internal fun AppSegmentedTabs(
     fillWidth: Boolean = false,
 ) {
     Row(
-        modifier = modifier.height(30.dp),
+        modifier = modifier.height(30.dp).selectableGroup(),
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         for (tab in tabs) {
-            val itemShape = RoundedCornerShape(AppTheme.radii.md)
+            val feedback = navigationFeedback(tab.selected, tab.enabled, indicatorInset = 10.dp, role = Role.Tab, onClick = tab.onClick)
             val tabModifier = if (fillWidth) Modifier.weight(1f) else Modifier
             Row(
-                modifier = tabModifier
-                    .fillMaxHeight()
-                    .alpha(if (tab.enabled) 1f else 0.38f)
-                    .clip(itemShape)
-                    .background(
-                        if (tab.selected) {
-                            Brush.verticalGradient(
-                                listOf(Color(0xFF2D2D36), AppTheme.colors.surfaceSelected),
-                            )
-                        } else {
-                            Brush.verticalGradient(
-                                listOf(Color.Transparent, Color.Transparent),
-                            )
-                        },
-                    )
-                    .then(
-                        if (tab.selected) {
-                            Modifier.border(1.dp, Color(0xFF3F3F48), itemShape)
-                        } else {
-                            Modifier
-                        },
-                    )
-                    .semantics {
-                        selected = tab.selected
-                        stateDescription = when {
-                            !tab.enabled -> "Disabled"
-                            tab.selected -> "Selected"
-                            else -> "Not selected"
-                        }
-                    }
-                    .focusable(tab.enabled)
-                    .clickable(
-                        enabled = tab.enabled,
-                        role = Role.Tab,
-                        onClick = tab.onClick,
-                    )
+                modifier = tabModifier.fillMaxHeight().then(feedback.modifier)
                     .padding(horizontal = 10.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center,
@@ -251,7 +216,7 @@ internal fun AppSegmentedTabs(
                     text = tab.label,
                     fontSize = 11.sp,
                     fontWeight = if (tab.selected) FontWeight.SemiBold else FontWeight.Medium,
-                    color = if (tab.selected) AppTheme.colors.textPrimary else AppTheme.colors.textSecondary,
+                    color = feedback.ink,
                     maxLines = 1,
                 )
                 if (tab.badge != null) {
@@ -268,7 +233,7 @@ internal fun AppSegmentedTabs(
                         Text(
                             text = tab.badge,
                             style = AppTheme.typography.monoMicro,
-                            color = if (tab.selected) AppTheme.colors.textPrimary else AppTheme.colors.textSecondary,
+                            color = feedback.ink,
                             maxLines = 1,
                         )
                     }

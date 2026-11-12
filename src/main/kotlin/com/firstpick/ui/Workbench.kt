@@ -1,10 +1,6 @@
 package com.firstpick.ui
 
 import androidx.compose.foundation.*
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsFocusedAsState
-import androidx.compose.foundation.interaction.collectIsHoveredAsState
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -161,10 +157,10 @@ internal fun Workbench(
                                     RailItem("Close cuts",deck?.let{closeCuts(state.draftPool,it).size.toString()}.orEmpty()){cutsExpanded=true}
                                     Spacer(Modifier.height(30.dp)); RailLabel("Suggested builds")
                                     options.forEachIndexed { i, option ->
-                                        Column(Modifier.fillMaxWidth().drawBehind {if(option==deck)drawLine(AppColors.warning,androidx.compose.ui.geometry.Offset.Zero,androidx.compose.ui.geometry.Offset(0f,size.height),1.dp.toPx())}.background(if(option==deck)AppColors.accent.copy(alpha=.025f)else Color.Transparent)
-                                            .clickable{previewKey=option.deckBuildKey;onUseDeck(option)}.padding(horizontal=9.dp,vertical=12.dp),verticalArrangement=Arrangement.spacedBy(8.dp)) {
+                                        val feedback = navigationFeedback(selected = option == deck, vertical = true, indicatorInset = 8.dp, role = androidx.compose.ui.semantics.Role.RadioButton) { previewKey=option.deckBuildKey;onUseDeck(option) }
+                                        Column(Modifier.fillMaxWidth().then(feedback.modifier).padding(horizontal=9.dp,vertical=12.dp),verticalArrangement=Arrangement.spacedBy(8.dp)) {
                                             Row(horizontalArrangement=Arrangement.spacedBy(5.dp)) {
-                                                Text(option.title.replace(" · "," "),fontSize=if(layout.small)10.sp else 11.sp,lineHeight=16.sp,color=if(option==deck)Color(0xFFF0DFB8)else AppColors.textPrimary,modifier=Modifier.weight(1f))
+                                                Text(option.title.replace(" · "," "),fontSize=if(layout.small)10.sp else 11.sp,lineHeight=16.sp,color=feedback.ink,modifier=Modifier.weight(1f))
                                                 Column(Modifier.width(27.dp),horizontalAlignment=Alignment.End){Text("Power",fontSize=8.sp,maxLines=1,color=AppColors.textSecondary);Text(if(option.hasObservedPower)"${option.power}"else"—",style=AppTypography.monoMicro,color=if(option==deck)AppColors.warning else AppColors.textSecondary)}
                                             }
                                             QuietText("Rank ${i+1} · ${if(option==deck)"Selected"else"View suggestion"}",micro=true)
@@ -243,21 +239,11 @@ internal fun Workbench(
 @Composable internal fun QuietText(text: String, micro: Boolean = false) = Text(text, color = AppColors.textSecondary, style = if (micro) AppTypography.micro.copy(fontSize=9.sp,fontWeight=FontWeight.Normal) else AppTypography.caption)
 @Composable private fun RailLabel(text: String) { Text(text.uppercase(), style = AppTypography.sectionHeader, color = AppColors.textMuted); Spacer(Modifier.height(12.dp)) }
 @Composable private fun RailItem(label: String, trailing: String = "", selected: Boolean = false, icon: (@Composable () -> Unit)? = null, onClick: () -> Unit) {
-    val source = remember { MutableInteractionSource() }
-    val hovered by source.collectIsHoveredAsState()
-    val pressed by source.collectIsPressedAsState()
-    val focused by source.collectIsFocusedAsState()
-    val fill = when {
-        selected -> AppColors.accent.copy(alpha = .10f)
-        pressed -> AppColors.accent.copy(alpha = .08f)
-        hovered || focused -> AppColors.accent.copy(alpha = .05f)
-        else -> Color.Transparent
-    }
-    Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(5.dp)).background(fill)
-        .clickable(interactionSource = source, indication = null, onClick = onClick)
-        .padding(horizontal=6.dp,vertical=10.dp), verticalAlignment = Alignment.CenterVertically) {
+    val feedback = navigationFeedback(selected = selected, vertical = true, indicatorInset = 7.dp, onClick = onClick)
+    Row(Modifier.fillMaxWidth().then(feedback.modifier)
+        .padding(horizontal=8.dp,vertical=10.dp), verticalAlignment = Alignment.CenterVertically) {
         if(icon!=null){icon();Spacer(Modifier.width(6.dp))}
-        Text(label, style = AppTypography.caption.copy(fontSize=if (LocalWorkbenchLayout.current.small) 11.sp else 12.sp), maxLines = 1, overflow = TextOverflow.Ellipsis, color = if (selected) AppColors.textPrimary else AppColors.textSecondary, modifier = Modifier.weight(1f))
+        Text(label, style = AppTypography.caption.copy(fontSize=if (LocalWorkbenchLayout.current.small) 11.sp else 12.sp), maxLines = 1, overflow = TextOverflow.Ellipsis, color = feedback.ink, modifier = Modifier.weight(1f))
         if (trailing.isNotBlank()) Text(trailing, style = AppTypography.monoMicro, color = AppColors.textMuted)
     }
 }

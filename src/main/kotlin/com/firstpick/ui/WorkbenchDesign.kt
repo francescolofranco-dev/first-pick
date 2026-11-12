@@ -3,9 +3,8 @@ package com.firstpick.ui
 import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
-import androidx.compose.foundation.interaction.collectIsFocusedAsState
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.ProvideTextStyle
@@ -20,8 +19,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.selected
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -63,30 +60,17 @@ internal fun WorkbenchButton(
 }
 
 @Composable
-internal fun WorkbenchTabs(tabs: List<SegmentedTabItem>, modifier: Modifier = Modifier, underlined: Boolean = false, compact: Boolean = false, primary: Boolean = false) {
-    val groupShape = RoundedCornerShape(if (primary) 9.dp else 7.dp)
-    Row(modifier.height(if (primary) 38.dp else if (underlined) 39.dp else if(compact)26.dp else 32.dp)
-        .then(if (underlined) Modifier else Modifier.background(if (primary) Color(0xFF171C2A) else Color(0x44080B14), groupShape)
-            .then(if (primary) Modifier.border(1.dp, AppColors.accent.copy(alpha = .16f), groupShape) else Modifier).padding(3.dp)),
-        horizontalArrangement = Arrangement.spacedBy(if (underlined) 20.dp else 5.dp), verticalAlignment = Alignment.CenterVertically) {
+internal fun WorkbenchTabs(tabs: List<SegmentedTabItem>, modifier: Modifier = Modifier, compact: Boolean = false, primary: Boolean = false) {
+    Row(modifier.height(if (primary) 38.dp else if (compact) 26.dp else 39.dp).selectableGroup(),
+        horizontalArrangement = Arrangement.spacedBy(if (primary || compact) 5.dp else 20.dp),
+        verticalAlignment = Alignment.CenterVertically) {
         tabs.forEach { tab ->
             val small = LocalWorkbenchLayout.current.small
-            val source = remember { MutableInteractionSource() }
-            val hovered by source.collectIsHoveredAsState()
-            val focused by source.collectIsFocusedAsState()
-            val pressed by source.collectIsPressedAsState()
-            val highlighted = tab.enabled && (hovered || focused || pressed)
-            Box(Modifier.fillMaxHeight().then(if (underlined) Modifier.drawBehind { if (tab.selected || highlighted) drawLine(AppColors.accent.copy(alpha = if (tab.selected) 1f else if (pressed || focused) .65f else .35f), androidx.compose.ui.geometry.Offset(0f,size.height-1.dp.toPx()), androidx.compose.ui.geometry.Offset(size.width,size.height-1.dp.toPx()),2.dp.toPx()) } else Modifier.clip(RoundedCornerShape(5.dp)).background(if (tab.selected) AppColors.accent.copy(alpha = if (primary) .18f else .085f) else Color.Transparent))
-                .then(if (primary && tab.selected) Modifier.drawBehind {
-                    drawLine(AppColors.warning, androidx.compose.ui.geometry.Offset(10.dp.toPx(), size.height - 1.dp.toPx()), androidx.compose.ui.geometry.Offset(size.width - 10.dp.toPx(), size.height - 1.dp.toPx()), 2.dp.toPx())
-                } else Modifier)
-                .semantics { selected = tab.selected }
-                .then(if (underlined) Modifier.hoverable(source, enabled = tab.enabled)
-                    .clickable(source, indication = null, enabled = tab.enabled, role = Role.Tab, onClick = tab.onClick)
-                    .focusable(tab.enabled, source)
-                else Modifier.clickable(enabled = tab.enabled, role = Role.Tab, onClick = tab.onClick).focusable(tab.enabled))
-                .padding(horizontal = if (underlined) 0.dp else if(compact)9.dp else if (small) 7.dp else 18.dp), contentAlignment = Alignment.Center) {
-                Text(tab.label, color = if (tab.selected || (underlined && highlighted)) AppColors.textPrimary else if (primary) Color(0xFFC4C8D7) else AppColors.textSecondary, fontSize = if (primary) 13.sp else if(compact)11.sp else 12.sp, fontWeight = if (primary) FontWeight.SemiBold else FontWeight.Normal, maxLines = 1)
+            val padding = if (primary) { if (small) 7.dp else 18.dp } else if (compact) 9.dp else 0.dp
+            val feedback = navigationFeedback(tab.selected, tab.enabled, indicatorInset = padding, role = Role.Tab, onClick = tab.onClick)
+            Box(Modifier.fillMaxHeight().then(feedback.modifier).padding(horizontal = padding), contentAlignment = Alignment.Center) {
+                Text(tab.label, color = feedback.ink, fontSize = if (primary) 13.sp else if (compact) 11.sp else 12.sp,
+                    fontWeight = if (primary) FontWeight.SemiBold else FontWeight.Normal, maxLines = 1)
             }
         }
     }

@@ -1,6 +1,5 @@
 package com.firstpick.ui
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -8,7 +7,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
@@ -23,17 +21,18 @@ internal fun GuidePane(state: DraftUiState, onLoadSet: (String) -> Unit = {}) {
     LazyColumn(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         items(state.setReferences, key = { it.code }) { set ->
             val open = set.code in expanded
+            val feedback = navigationFeedback(selected = open, vertical = true, indicatorInset = 8.dp) {
+                expanded = if (open) expanded - set.code else expanded + set.code
+                if (!open) onLoadSet(set.code)
+            }
             Surface(shape = MaterialTheme.shapes.medium, color = AppTheme.colors.surfaceElevated) {
                 Row(
                     Modifier.fillMaxWidth()
                         .semantics { stateDescription = if (open) "Expanded" else "Collapsed" }
-                        .clickable(role = Role.Button) {
-                            expanded = if (open) expanded - set.code else expanded + set.code
-                            if (!open) onLoadSet(set.code)
-                        }.padding(12.dp),
+                        .then(feedback.modifier).padding(12.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text(set.name, style = AppTheme.typography.body.copy(fontWeight = FontWeight.SemiBold), color = AppTheme.colors.textPrimary, modifier = Modifier.weight(1f))
+                    Text(set.name, style = AppTheme.typography.body.copy(fontWeight = FontWeight.SemiBold), color = feedback.ink, modifier = Modifier.weight(1f))
                     Text(set.code, fontSize = 11.sp, color = AppTheme.colors.textSecondary)
                     Spacer(Modifier.width(12.dp))
                     Text(if (open) "▾" else "▸")

@@ -4,8 +4,6 @@ import androidx.compose.foundation.LocalScrollbarStyle
 import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -633,10 +631,11 @@ private fun OptionCard(
 ) {
     val tierColor = buildTierColor(opt.displayTier)
     val powerFraction = (opt.power / 100f).coerceIn(0.12f, 1f)
+    val feedback = navigationFeedback(selected = previewed, vertical = true, indicatorInset = 10.dp, role = Role.RadioButton, onClick = onClick)
     Column(
         modifier
             .appCard(
-                selected = previewed,
+                selected = false,
                 active = active,
                 accentColor = tierColor,
                 radius = AppTheme.radii.xl,
@@ -649,8 +648,7 @@ private fun OptionCard(
                     if (active) append(", guidance active")
                 }
             }
-            .focusable()
-            .clickable(role = Role.RadioButton, onClick = onClick)
+            .then(feedback.modifier)
             .padding(horizontal = 12.dp, vertical = 10.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
