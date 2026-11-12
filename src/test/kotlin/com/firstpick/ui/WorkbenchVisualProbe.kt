@@ -13,7 +13,7 @@ import org.jetbrains.skia.EncodedImageFormat
 @OptIn(ExperimentalComposeUiApi::class)
 fun main(args: Array<String>) {
     val out=Path.of(args.firstOrNull() ?: "build/workbench-visuals");Files.createDirectories(out)
-    for ((width,height) in listOf(720 to 760,1280 to 900,1440 to 960)) {
+    for ((width,height) in listOf(600 to 640,706 to 730,720 to 760,1280 to 900,1440 to 960)) {
         val displayedState=mutableStateOf(DraftUiState(researchedSets=listOf("FRA"),groundedSets=listOf("FRA"),modelSets=listOf("FRA")))
         ImageComposeScene(width,height,Density(1f)) {
             Workbench(displayedState.value,false,OverlayHealth(OverlayHealthState.INACTIVE),LiveDeckAccess(),{},{},{},null,{}, {}, {}, {}, {}, {}, {}, {},WorkbenchVisualFixtures.stats,WorkbenchVisualFixtures.history,{WorkbenchVisualFixtures.review})

@@ -26,11 +26,11 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-/** CSS breakpoint measurements from the approved HTML, in logical pixels/dp. */
+/** Workspace dimensions in logical pixels; compact rails still reserve readable text insets. */
 internal data class WorkbenchLayout(val width: Dp) {
     val small = width <= 760.dp
-    val rail = when { small -> 110.dp; width <= 1100.dp -> 145.dp; else -> 166.dp }
-    val inspector = when { small -> 220.dp; width <= 1100.dp -> 250.dp; else -> 274.dp }
+    val rail = when { small -> 148.dp; width <= 1100.dp -> 145.dp; else -> 166.dp }
+    val inspector = when { width <= 640.dp -> 190.dp; small -> 220.dp; width <= 1100.dp -> 250.dp; else -> 274.dp }
     val gutter = when { small -> 12.dp; width <= 1200.dp -> 16.dp; else -> 24.dp }
     val top = when { small -> 20.dp; width <= 1200.dp -> 24.dp; else -> 27.dp }
     val heading = if (small) 23.sp else 28.sp

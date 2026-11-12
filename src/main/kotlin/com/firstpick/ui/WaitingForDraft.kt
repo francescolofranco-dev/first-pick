@@ -1,6 +1,9 @@
 package com.firstpick.ui
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
@@ -23,16 +26,16 @@ internal fun WaitingForDraft(state: DraftUiState, onSimulate: (String) -> Unit =
         Column(
             Modifier.widthIn(max = 460.dp).fillMaxWidth()
                 .heightIn(max = maxHeight).verticalScroll(rememberScrollState())
-                .padding(horizontal = 24.dp, vertical = 32.dp),
+                .padding(horizontal = if (LocalWorkbenchLayout.current.small) 12.dp else 24.dp, vertical = 28.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            WorkbenchBrand(Modifier.size(84.dp))
+            WorkbenchBrand(Modifier.size(if (LocalWorkbenchLayout.current.small) 64.dp else 84.dp))
             Spacer(Modifier.height(22.dp))
             Text("AWAITING YOUR NEXT PACK", style = AppTypography.sectionHeader, color = AppColors.textMuted)
             Spacer(Modifier.height(12.dp))
             Text(
                 if (idle) "Your next draft starts here" else "Waiting for the next pack",
-                fontSize = if (LocalWorkbenchLayout.current.small) 25.sp else 28.sp,
+                fontSize = if (LocalWorkbenchLayout.current.small) 23.sp else 28.sp,
                 lineHeight = 34.sp, fontWeight = FontWeight.SemiBold,
                 letterSpacing = (-.6).sp, textAlign = TextAlign.Center, color = AppColors.textPrimary,
             )
@@ -45,11 +48,17 @@ internal fun WaitingForDraft(state: DraftUiState, onSimulate: (String) -> Unit =
             Spacer(Modifier.height(24.dp))
             PipRow(listOf('W','U','B','R','G'), 15.dp)
             if (idle) {
-                Spacer(Modifier.height(30.dp)); Hairline(); Spacer(Modifier.height(20.dp))
-                Text("ONE-TIME ARENA SETUP", style = AppTypography.sectionHeader, color = AppColors.textMuted)
-                Spacer(Modifier.height(10.dp))
-                Text("In Arena, open Options → Account and enable\nDetailed Logs (Plugin Support).",
-                    fontSize = 11.sp, lineHeight = 19.sp, textAlign = TextAlign.Center, color = AppColors.textSecondary)
+                Spacer(Modifier.height(26.dp))
+                Column(
+                    Modifier.fillMaxWidth().background(AppColors.chrome.copy(alpha = .55f), RoundedCornerShape(10.dp))
+                        .border(1.dp, AppColors.borderDefault, RoundedCornerShape(10.dp)).padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Text("ONE-TIME ARENA SETUP", style = AppTypography.sectionHeader, color = AppColors.textMuted)
+                    Spacer(Modifier.height(10.dp))
+                    Text("In Arena, open Options → Account and enable Detailed Logs (Plugin Support).",
+                        fontSize = 11.sp, lineHeight = 19.sp, textAlign = TextAlign.Center, color = AppColors.textSecondary)
+                }
             }
             if (DevFlags.demoEnabled && idle && !state.simulating) {
                 Spacer(Modifier.height(24.dp))

@@ -12,7 +12,7 @@ import kotlin.test.*
 class WorkbenchGeometryTest {
     @Test fun `context panels remain beside content at compact and desktop sizes`() {
         for ((width, height, rail, inspector) in listOf(
-            listOf(720,760,110,220), listOf(1280,900,166,274), listOf(1440,960,166,274),
+            listOf(600,640,148,190), listOf(720,760,148,220), listOf(1280,900,166,274), listOf(1440,960,166,274),
         )) {
             Fixture(width,height).use { ui ->
                 assertEquals(rail.toFloat(),ui.tag("workbench-rail").boundsInRoot.width)
@@ -23,7 +23,7 @@ class WorkbenchGeometryTest {
                     assertEquals(inspector.toFloat(),bounds.width,"$mode context width at $width")
                     assertEquals((width-inspector).toFloat(),bounds.left,"$mode context remains on the right")
                     assertEquals(54f,bounds.top,"$mode context starts directly below toolbar")
-                    assertEquals((height-27).toFloat(),bounds.bottom,"$mode context reaches the status bar")
+                    assertEquals((height-33).toFloat(),bounds.bottom,"$mode context reaches the status bar")
                     assertEquals(rail.toFloat(),ui.tag("workbench-workspace").boundsInRoot.left)
                 }
             }

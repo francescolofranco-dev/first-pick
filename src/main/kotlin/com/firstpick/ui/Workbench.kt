@@ -130,7 +130,7 @@ internal fun Workbench(
                 val workbenchWidth = maxWidth
                 val railWidth = layout.rail
                 Row(Modifier.fillMaxSize()) {
-                    Column(Modifier.width(railWidth).fillMaxHeight().testTag("workbench-rail").background(AppColors.chrome).padding(horizontal = if(layout.small)6.dp else 14.dp, vertical = if(layout.small)20.dp else 26.dp)) {
+                    Column(Modifier.width(railWidth).fillMaxHeight().testTag("workbench-rail").background(AppColors.chrome).drawBehind { drawLine(AppColors.borderDefault, Offset(size.width, 0f), Offset(size.width, size.height), 1.dp.toPx()) }.padding(horizontal = 14.dp, vertical = if(layout.small)20.dp else 26.dp)) {
                         RailLabel(when (mode) { WorkMode.Draft -> "Draft workspace"; WorkMode.Deckbuilder -> "Workspace"; WorkMode.Analytics -> "Analytics workspace"; else -> "FirstPick" })
                         Column(Modifier.weight(1f).verticalScroll(rememberScrollState())) {
                             when (mode) {
@@ -178,7 +178,7 @@ internal fun Workbench(
                         RailItem("Format guides", selected = mode == WorkMode.Guides, icon = { FormatGuidesIcon() }) { mode = WorkMode.Guides }
                         RailItem("⚙  Settings", selected = mode == WorkMode.Settings) { mode = WorkMode.Settings }
                     }
-                    Box(Modifier.weight(1f).fillMaxHeight().testTag("workbench-workspace").background(Brush.verticalGradient(listOf(Color(0xFF171A2A), AppColors.background), endY = 260f)).padding(start=layout.gutter,end=if(mode==WorkMode.Deckbuilder||mode==WorkMode.Analytics)0.dp else layout.gutter,top=if(mode==WorkMode.Draft)16.dp else if(mode==WorkMode.Deckbuilder||mode==WorkMode.Analytics)0.dp else layout.top)) {
+                    Box(Modifier.weight(1f).fillMaxHeight().testTag("workbench-workspace").background(Brush.verticalGradient(listOf(Color(0xFF171A2A), AppColors.background), endY = 260f)).padding(start=layout.gutter,end=if(mode==WorkMode.Deckbuilder||mode==WorkMode.Analytics)0.dp else layout.gutter,top=if(mode==WorkMode.Draft && state.packCards.isEmpty() && !draftPool)0.dp else if(mode==WorkMode.Draft)16.dp else if(mode==WorkMode.Deckbuilder||mode==WorkMode.Analytics)0.dp else layout.top)) {
                         when (mode) {
                             WorkMode.Draft -> if (state.packCards.isEmpty() && !draftPool) PackPane(state, onSimulate) else Column(Modifier.fillMaxSize().padding(bottom=20.dp)) {
                                 Row(Modifier.heightIn(min=32.dp).padding(bottom=9.dp),verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -219,8 +219,8 @@ internal fun Workbench(
                 }
             }
             Hairline()
-            Row(Modifier.fillMaxWidth().height(26.dp).background(Color(0xFF0B0E17)).padding(horizontal = 19.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-                QuietText(if (state.simulating) "Demo session" else state.headline, micro = true)
+            Row(Modifier.fillMaxWidth().heightIn(min = 32.dp).background(Color(0xFF0B0E17)).padding(horizontal = 16.dp, vertical = 4.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text(if (state.simulating) "Demo session" else state.headline, color = AppColors.textSecondary, style = AppTypography.micro.copy(fontSize = 9.sp, fontWeight = FontWeight.Normal), maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
                 if (state.canRetryRatings) WorkbenchButton(onClick = onRetryRatings) { Text("Retry data", fontSize = 10.sp) }
                 else AppTooltip(title = "Data and overlay status", tooltip = ratingsDataDescription(state) + "\n" + state.ratingsDataWarning.orEmpty()) { QuietText(if (isOverlayOpen) "Overlay · ${overlayHealth.state.name.lowercase()}" else "Overlay disabled", micro = true) }
             }
@@ -235,9 +235,9 @@ internal fun Workbench(
 @Composable internal fun QuietText(text: String, micro: Boolean = false) = Text(text, color = AppColors.textSecondary, style = if (micro) AppTypography.micro.copy(fontSize=9.sp,fontWeight=FontWeight.Normal) else AppTypography.caption)
 @Composable private fun RailLabel(text: String) { Text(text.uppercase(), style = AppTypography.sectionHeader, color = AppColors.textMuted); Spacer(Modifier.height(12.dp)) }
 @Composable private fun RailItem(label: String, trailing: String = "", selected: Boolean = false, icon: (@Composable () -> Unit)? = null, onClick: () -> Unit) {
-    Row(Modifier.fillMaxWidth().background(if (selected) AppColors.accent.copy(alpha=.10f) else Color.Transparent, RoundedCornerShape(5.dp)).clickable(onClick = onClick).padding(horizontal=10.dp,vertical=10.dp), verticalAlignment = Alignment.CenterVertically) {
+    Row(Modifier.fillMaxWidth().background(if (selected) AppColors.accent.copy(alpha=.10f) else Color.Transparent, RoundedCornerShape(5.dp)).clickable(onClick = onClick).padding(horizontal=6.dp,vertical=10.dp), verticalAlignment = Alignment.CenterVertically) {
         if(icon!=null){icon();Spacer(Modifier.width(6.dp))}
-        Text(label, style = AppTypography.caption.copy(fontSize=12.sp), color = if (selected) AppColors.textPrimary else AppColors.textSecondary, modifier = Modifier.weight(1f))
+        Text(label, style = AppTypography.caption.copy(fontSize=if (LocalWorkbenchLayout.current.small) 11.sp else 12.sp), maxLines = 1, overflow = TextOverflow.Ellipsis, color = if (selected) AppColors.textPrimary else AppColors.textSecondary, modifier = Modifier.weight(1f))
         if (trailing.isNotBlank()) Text(trailing, style = AppTypography.monoMicro, color = AppColors.textMuted)
     }
 }
@@ -325,7 +325,7 @@ internal fun Workbench(
             Spacer(Modifier.height(8.dp))
             FlowRow(horizontalArrangement=Arrangement.spacedBy(7.dp),verticalArrangement=Arrangement.spacedBy(4.dp),itemVerticalAlignment=Alignment.CenterVertically){PipRow(deck.colors.filter{it in "WUBRG"}.toList(),16.dp);QuietText(context)}
             Spacer(Modifier.height(26.dp))
-            Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically){QuietText("${deck.spells.sumOf{it.count}} spells + ${deck.lands.sumOf{it.count}} lands");WorkbenchTabs(listOf(SegmentedTabItem("▤ Vertical",selected=!horizontal,onClick={horizontal=false}),SegmentedTabItem("▥ Horizontal",selected=horizontal,onClick={horizontal=true})),compact=true)}
+            FlowRow(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween,verticalArrangement=Arrangement.spacedBy(8.dp),itemVerticalAlignment=Alignment.CenterVertically){QuietText("${deck.spells.sumOf{it.count}} spells + ${deck.lands.sumOf{it.count}} lands");WorkbenchTabs(listOf(SegmentedTabItem("▤ Vertical",selected=!horizontal,onClick={horizontal=false}),SegmentedTabItem("▥ Horizontal",selected=horizontal,onClick={horizontal=true})),compact=true)}
             Spacer(Modifier.height(19.dp));Box(Modifier.weight(1f)){ReadOnlyDeckList(deck.spells+deck.lands,query,horizontal)}
             if(cuts.isNotEmpty()) {
                 Hairline();Spacer(Modifier.height(13.dp))
