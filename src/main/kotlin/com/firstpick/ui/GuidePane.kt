@@ -1,5 +1,6 @@
 package com.firstpick.ui
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -8,6 +9,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
@@ -36,7 +39,14 @@ internal fun GuidePane(state: DraftUiState, onLoadSet: (String) -> Unit = {}) {
                     Text(set.name, style = AppTheme.typography.body.copy(fontWeight = FontWeight.SemiBold), color = AppTheme.colors.textPrimary, modifier = Modifier.weight(1f))
                     Text(set.code, fontSize = 11.sp, color = AppTheme.colors.textSecondary)
                     Spacer(Modifier.width(12.dp))
-                    Text(if (open) "▾" else "▸")
+                    val chevronColor = AppTheme.colors.textSecondary
+                    Canvas(Modifier.size(20.dp)) {
+                        val edgeY = if (open) 13.dp.toPx() else 7.dp.toPx()
+                        val centerY = if (open) 7.dp.toPx() else 13.dp.toPx()
+                        val center = Offset(size.width / 2, centerY)
+                        drawLine(chevronColor, Offset(4.dp.toPx(), edgeY), center, 2.dp.toPx(), StrokeCap.Round)
+                        drawLine(chevronColor, center, Offset(size.width - 4.dp.toPx(), edgeY), 2.dp.toPx(), StrokeCap.Round)
+                    }
                 }
             }
             if (open) {
