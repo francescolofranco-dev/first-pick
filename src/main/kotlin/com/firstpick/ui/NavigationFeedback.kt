@@ -6,7 +6,6 @@ import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -35,13 +34,11 @@ internal fun navigationFeedback(
     val source = remember { MutableInteractionSource() }
     val hovered by source.collectIsHoveredAsState()
     val focused by source.collectIsFocusedAsState()
-    val pressed by source.collectIsPressedAsState()
-    val highlighted = enabled && (hovered || focused || pressed)
+    val highlighted = enabled && (hovered || focused)
     val opacity = when {
         !enabled -> 0f
         selected == true -> 1f
-        pressed || focused -> .65f
-        hovered -> .35f
+        hovered || focused -> .35f
         else -> 0f
     }
     val modifier = Modifier.drawBehind {

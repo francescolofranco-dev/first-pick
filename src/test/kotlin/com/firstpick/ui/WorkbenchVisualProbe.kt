@@ -31,6 +31,10 @@ fun main(args: Array<String>) {
             scene.sendPointerEvent(PointerEventType.Enter, deckTab.boundsInRoot.center, type = PointerType.Mouse)
             scene.sendPointerEvent(PointerEventType.Move, deckTab.boundsInRoot.center, type = PointerType.Mouse)
             render("draft-navigation-hover")
+            scene.sendPointerEvent(PointerEventType.Press, deckTab.boundsInRoot.center, type = PointerType.Mouse)
+            render("draft-navigation-pressed")
+            scene.sendPointerEvent(PointerEventType.Release, deckTab.boundsInRoot.center, type = PointerType.Mouse)
+            render("draft-navigation-selected")
             scene.sendPointerEvent(PointerEventType.Exit, androidx.compose.ui.geometry.Offset(-1f, -1f), type = PointerType.Mouse)
             click("Deckbuilder");render("deck");click("▥ Horizontal");render("deck-horizontal");click("▤ Vertical");click("Analytics");render("analytics")
             val historyItem = scene.semanticsOwners.flatMap { nodes(it.rootSemanticsNode) }.first {
