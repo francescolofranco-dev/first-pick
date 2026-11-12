@@ -184,7 +184,7 @@ internal fun Workbench(
                             }
                         }
                         RailItem("Format guides", selected = mode == WorkMode.Guides, icon = { FormatGuidesIcon() }) { mode = WorkMode.Guides }
-                        RailItem("⚙  Settings", selected = mode == WorkMode.Settings) { mode = WorkMode.Settings }
+                        RailItem("Settings", selected = mode == WorkMode.Settings, icon = { SettingsIcon() }) { mode = WorkMode.Settings }
                     }
                     Box(Modifier.weight(1f).fillMaxHeight().testTag("workbench-workspace").background(Brush.verticalGradient(listOf(Color(0xFF171A2A), AppColors.background), endY = 260f)).padding(start=layout.gutter,end=if((mode==WorkMode.Deckbuilder && deck!=null)||mode==WorkMode.Analytics)0.dp else layout.gutter,top=if(mode==WorkMode.Draft && state.packCards.isEmpty() && !draftPool)0.dp else if(mode==WorkMode.Draft)16.dp else if(mode==WorkMode.Deckbuilder||mode==WorkMode.Analytics)0.dp else layout.top)) {
                         when (mode) {

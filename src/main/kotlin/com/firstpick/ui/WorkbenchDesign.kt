@@ -125,3 +125,20 @@ internal fun WorkbenchTabs(tabs: List<SegmentedTabItem>, modifier: Modifier = Mo
         drawLine(AppColors.textSecondary,androidx.compose.ui.geometry.Offset(w*.5f,h*.25f),androidx.compose.ui.geometry.Offset(w*.5f,h*.88f),1.dp.toPx())
     }
 }
+
+@Composable internal fun SettingsIcon() {
+    Canvas(Modifier.size(16.dp)) {
+        val color = AppColors.textSecondary
+        val stroke = 1.2.dp.toPx()
+        val w = size.width
+        val h = size.height
+        listOf(.27f to .35f, .5f to .68f, .73f to .42f).forEach { (y, knob) ->
+            val cy = h * y
+            val cx = w * knob
+            val radius = w * .10f
+            drawLine(color, androidx.compose.ui.geometry.Offset(w * .08f, cy), androidx.compose.ui.geometry.Offset(cx - radius, cy), stroke)
+            drawLine(color, androidx.compose.ui.geometry.Offset(cx + radius, cy), androidx.compose.ui.geometry.Offset(w * .92f, cy), stroke)
+            drawCircle(color, radius = radius, center = androidx.compose.ui.geometry.Offset(cx, cy), style = androidx.compose.ui.graphics.drawscope.Stroke(stroke))
+        }
+    }
+}
