@@ -24,7 +24,7 @@ fun main(args: Array<String>) {
             fun render(name:String){repeat(4){frameTime+=16_000_000L;scene.render(frameTime).close()};frameTime+=16_000_000L;scene.render(frameTime).use{image->image.encodeToData(EncodedImageFormat.PNG)!!.use{Files.write(out.resolve("$name-$width.png"),it.bytes)}}}
             fun nodes(n:SemanticsNode):List<SemanticsNode> = listOf(n)+n.children.flatMap(::nodes)
             fun click(text:String){val n=scene.semanticsOwners.flatMap{nodes(it.rootSemanticsNode)}.first{it.config.getOrElse(SemanticsProperties.Text){emptyList()}.any{a->a.text==text}&&it.config.contains(SemanticsActions.OnClick)};n.config[SemanticsActions.OnClick].action!!.invoke()}
-            render("waiting");displayedState.value=WorkbenchVisualFixtures.state;render("draft");click("Deckbuilder");render("deck");click("▥ Horizontal");render("deck-horizontal");click("▤ Vertical");click("Analytics");render("analytics")
+            render("waiting");click("Deckbuilder");render("deck-waiting");click("Draft");displayedState.value=WorkbenchVisualFixtures.state;render("draft");click("Deckbuilder");render("deck");click("▥ Horizontal");render("deck-horizontal");click("▤ Vertical");click("Analytics");render("analytics")
             val historyItem = scene.semanticsOwners.flatMap { nodes(it.rootSemanticsNode) }.first {
                 it.config.getOrElse(SemanticsProperties.Text) { emptyList() }.any { text -> text.text == "Match history" }
             }

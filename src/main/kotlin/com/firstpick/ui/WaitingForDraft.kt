@@ -20,7 +20,7 @@ import com.firstpick.sim.DraftSimulator
 /** Quiet entry state: explain the next action without exposing internal model coverage. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-internal fun WaitingForDraft(state: DraftUiState, onSimulate: (String) -> Unit = {}) {
+internal fun WaitingForDraft(state: DraftUiState, onSimulate: (String) -> Unit = {}, forDeckBuilder: Boolean = false) {
     val idle = state.phase == DraftPhase.IDLE
     BoxWithConstraints(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Column(
@@ -31,17 +31,20 @@ internal fun WaitingForDraft(state: DraftUiState, onSimulate: (String) -> Unit =
         ) {
             WorkbenchBrand(Modifier.size(if (LocalWorkbenchLayout.current.small) 64.dp else 84.dp))
             Spacer(Modifier.height(22.dp))
-            Text("AWAITING YOUR NEXT PACK", style = AppTypography.sectionHeader, color = AppColors.textMuted)
+            Text(if (forDeckBuilder) "AWAITING YOUR DRAFTED CARDS" else "AWAITING YOUR NEXT PACK", style = AppTypography.sectionHeader, color = AppColors.textMuted)
             Spacer(Modifier.height(12.dp))
             Text(
-                if (idle) "Your next draft starts here" else "Waiting for the next pack",
+                if (forDeckBuilder) "Your next deck starts here"
+                else if (idle) "Your next draft starts here" else "Waiting for the next pack",
                 fontSize = if (LocalWorkbenchLayout.current.small) 23.sp else 28.sp,
                 lineHeight = 34.sp, fontWeight = FontWeight.SemiBold,
                 letterSpacing = (-.6).sp, textAlign = TextAlign.Center, color = AppColors.textPrimary,
             )
             Spacer(Modifier.height(12.dp))
             Text(
-                if (idle) "Start a draft in MTG Arena. Your cards and pick suggestions will appear here automatically."
+                if (forDeckBuilder && idle) "Start a draft in MTG Arena. Suggested builds will appear here as your drafted pool develops."
+                else if (forDeckBuilder) "Continue drafting in MTG Arena. Suggested builds will appear here as your drafted pool develops."
+                else if (idle) "Start a draft in MTG Arena. Your cards and pick suggestions will appear here automatically."
                 else "Continue drafting in MTG Arena. Your choices will appear here when the next pack arrives.",
                 fontSize = 12.sp, lineHeight = 20.sp, textAlign = TextAlign.Center, color = AppColors.textSecondary,
             )

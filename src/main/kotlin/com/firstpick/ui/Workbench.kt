@@ -153,6 +153,11 @@ internal fun Workbench(
                                     }
                                 }
                                 WorkMode.Deckbuilder -> {
+                                    if (deck == null) {
+                                        QuietText("No deck to build yet")
+                                        Spacer(Modifier.height(10.dp))
+                                        QuietText("Suggested builds will appear as your drafted pool develops.")
+                                    } else {
                                     RailItem("Suggested deck", deck?.let { "${(it.spells + it.lands).sumOf { s -> s.count }}" }.orEmpty(), true) {}
                                     RailItem("Close cuts",deck?.let{closeCuts(state.draftPool,it).size.toString()}.orEmpty()){cutsExpanded=true}
                                     Spacer(Modifier.height(30.dp)); RailLabel("Suggested builds")
@@ -167,7 +172,7 @@ internal fun Workbench(
                                         }
                                         Spacer(Modifier.height(5.dp))
                                     }
-                                    if (options.isEmpty()) QuietText("Suggestions appear as your pool develops.")
+                                    }
                                 }
                                 WorkMode.Analytics -> {
                                     listOf("Overview","Match history").forEach{section->RailItem(section,selected=analyticsSection==section){analyticsSection=section}}
@@ -182,7 +187,7 @@ internal fun Workbench(
                         RailItem("Format guides", selected = mode == WorkMode.Guides, icon = { FormatGuidesIcon() }) { mode = WorkMode.Guides }
                         RailItem("⚙  Settings", selected = mode == WorkMode.Settings) { mode = WorkMode.Settings }
                     }
-                    Box(Modifier.weight(1f).fillMaxHeight().testTag("workbench-workspace").background(Brush.verticalGradient(listOf(Color(0xFF171A2A), AppColors.background), endY = 260f)).padding(start=layout.gutter,end=if(mode==WorkMode.Deckbuilder||mode==WorkMode.Analytics)0.dp else layout.gutter,top=if(mode==WorkMode.Draft && state.packCards.isEmpty() && !draftPool)0.dp else if(mode==WorkMode.Draft)16.dp else if(mode==WorkMode.Deckbuilder||mode==WorkMode.Analytics)0.dp else layout.top)) {
+                    Box(Modifier.weight(1f).fillMaxHeight().testTag("workbench-workspace").background(Brush.verticalGradient(listOf(Color(0xFF171A2A), AppColors.background), endY = 260f)).padding(start=layout.gutter,end=if((mode==WorkMode.Deckbuilder && deck!=null)||mode==WorkMode.Analytics)0.dp else layout.gutter,top=if(mode==WorkMode.Draft && state.packCards.isEmpty() && !draftPool)0.dp else if(mode==WorkMode.Draft)16.dp else if(mode==WorkMode.Deckbuilder||mode==WorkMode.Analytics)0.dp else layout.top)) {
                         when (mode) {
                             WorkMode.Draft -> if (state.packCards.isEmpty() && !draftPool) PackPane(state, onSimulate) else Column(Modifier.fillMaxSize().padding(bottom=20.dp)) {
                                 Row(Modifier.heightIn(min=32.dp).padding(bottom=9.dp),verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -202,7 +207,7 @@ internal fun Workbench(
                                 }
                                 Hairline(); DraftPoolDock(state)
                             }
-                            WorkMode.Deckbuilder -> if (deck == null) Centered { QuietText("Suggested builds will appear as you draft.") } else SuggestedDeckWorkspace(deck, options.indexOf(deck) + 1, state.draftPool, query, listOfNotNull(state.setReferences.firstOrNull { it.code==state.setCode }?.name ?: state.setCode,state.format.label).joinToString(" · "),cutsExpanded,{cutsExpanded=it})
+                            WorkMode.Deckbuilder -> if (deck == null) WaitingForDraft(state, onSimulate, forDeckBuilder = true) else SuggestedDeckWorkspace(deck, options.indexOf(deck) + 1, state.draftPool, query, listOfNotNull(state.setReferences.firstOrNull { it.code==state.setCode }?.name ?: state.setCode,state.format.label).joinToString(" · "),cutsExpanded,{cutsExpanded=it})
                             WorkMode.Analytics -> WorkbenchAnalytics(stats, history, analyticsSection, onReviewDraft, query, state.setReferences.associate { it.code to it.name },onScope={drafts,matches->analyticsScope=drafts to matches},onArchiveContext={archiveContext=it})
                             WorkMode.Guides -> GuidePane(state, onLoadReferenceSet)
                             WorkMode.Settings -> Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {

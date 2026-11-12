@@ -58,9 +58,30 @@ class WorkbenchGeometryTest {
         }
     }
 
-    private class Fixture(width:Int,height:Int):AutoCloseable {
+    @Test fun `empty deck builder waits without exposing build controls then shows available builds`() {
+        for (width in listOf(600, 1280)) {
+            Fixture(width, 760, DraftUiState()).use { ui ->
+                ui.click("Deckbuilder")
+                assertNotNull(ui.text("Your next deck starts here"))
+                assertNotNull(ui.text("No deck to build yet"))
+                assertNull(ui.text("Suggested deck"))
+                assertNull(ui.text("Close cuts"))
+                assertFalse(ui.nodes().any { it.config.getOrNull(SemanticsProperties.TestTag) == "workbench-inspector" })
+                ui.state.value = WorkbenchVisualFixtures.state
+                ui.render()
+                ui.click("Deckbuilder")
+                assertNull(ui.text("Your next deck starts here"))
+                assertNotNull(ui.text("Suggested deck"))
+                assertNotNull(ui.text("Close cuts"))
+                assertNotNull(ui.tag("workbench-inspector"))
+            }
+        }
+    }
+
+    private class Fixture(width:Int,height:Int, initialState: DraftUiState = WorkbenchVisualFixtures.state):AutoCloseable {
+        val state = androidx.compose.runtime.mutableStateOf(initialState)
         private val scene=ImageComposeScene(width,height,Density(1f)) {
-            Workbench(WorkbenchVisualFixtures.state,false,OverlayHealth(OverlayHealthState.INACTIVE),LiveDeckAccess(),{},{},{},null,{}, {}, {}, {}, {}, {}, {}, {},WorkbenchVisualFixtures.stats,WorkbenchVisualFixtures.history,{WorkbenchVisualFixtures.review})
+            Workbench(state.value,false,OverlayHealth(OverlayHealthState.INACTIVE),LiveDeckAccess(),{},{},{},null,{}, {}, {}, {}, {}, {}, {}, {},WorkbenchVisualFixtures.stats,WorkbenchVisualFixtures.history,{WorkbenchVisualFixtures.review})
         }
         private var time=0L
         init{render()}
