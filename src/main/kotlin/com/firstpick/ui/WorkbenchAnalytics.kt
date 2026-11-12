@@ -131,8 +131,8 @@ internal fun WorkbenchAnalytics(stats: PlayerStats, history: List<DraftHistoryEn
                 maxLines = 1, overflow = TextOverflow.Ellipsis)
             Spacer(Modifier.width(8.dp))
             val arrowColor = LocalContentColor.current
-            Canvas(Modifier.size(width = 12.dp, height = 8.dp)) {
-                val stroke = 1.5.dp.toPx()
+            Canvas(Modifier.size(width = 8.dp, height = 6.dp)) {
+                val stroke = 1.dp.toPx()
                 drawLine(arrowColor, Offset(1.dp.toPx(), 1.5.dp.toPx()), Offset(size.width / 2, size.height - 1.5.dp.toPx()), stroke, cap = StrokeCap.Round)
                 drawLine(arrowColor, Offset(size.width / 2, size.height - 1.5.dp.toPx()), Offset(size.width - 1.dp.toPx(), 1.5.dp.toPx()), stroke, cap = StrokeCap.Round)
             }
