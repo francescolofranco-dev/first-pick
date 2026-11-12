@@ -40,12 +40,12 @@ internal fun GuidePane(state: DraftUiState, onLoadSet: (String) -> Unit = {}) {
                     Text(set.code, fontSize = 11.sp, color = AppTheme.colors.textSecondary)
                     Spacer(Modifier.width(12.dp))
                     val chevronColor = AppTheme.colors.textSecondary
-                    Canvas(Modifier.size(20.dp)) {
-                        val edgeY = if (open) 13.dp.toPx() else 7.dp.toPx()
-                        val centerY = if (open) 7.dp.toPx() else 13.dp.toPx()
-                        val center = Offset(size.width / 2, centerY)
-                        drawLine(chevronColor, Offset(4.dp.toPx(), edgeY), center, 2.dp.toPx(), StrokeCap.Round)
-                        drawLine(chevronColor, center, Offset(size.width - 4.dp.toPx(), edgeY), 2.dp.toPx(), StrokeCap.Round)
+                    Canvas(Modifier.size(16.dp)) {
+                        val start = if (open) Offset(3.dp.toPx(), 10.5.dp.toPx()) else Offset(5.5.dp.toPx(), 3.dp.toPx())
+                        val tip = if (open) Offset(8.dp.toPx(), 5.5.dp.toPx()) else Offset(10.5.dp.toPx(), 8.dp.toPx())
+                        val end = if (open) Offset(13.dp.toPx(), 10.5.dp.toPx()) else Offset(5.5.dp.toPx(), 13.dp.toPx())
+                        drawLine(chevronColor, start, tip, 1.5.dp.toPx(), StrokeCap.Round)
+                        drawLine(chevronColor, tip, end, 1.5.dp.toPx(), StrokeCap.Round)
                     }
                 }
             }
