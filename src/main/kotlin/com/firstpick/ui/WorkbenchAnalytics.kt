@@ -10,6 +10,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.text.style.TextOverflow
@@ -122,7 +124,23 @@ internal fun WorkbenchAnalytics(stats: PlayerStats, history: List<DraftHistoryEn
 }
 @Composable internal fun WorkbenchChoice(value:String,choices:List<String>,onChoose:(String)->Unit,modifier:Modifier=Modifier) {
     var open by remember{mutableStateOf(false)}
-    Box(modifier){WorkbenchButton(onClick={open=true},modifier=Modifier.fillMaxWidth(),contentPadding=PaddingValues(horizontal=8.dp,vertical=if(LocalWorkbenchLayout.current.small)7.dp else 8.dp)){Text(value,modifier=Modifier.weight(1f),fontSize=if(LocalWorkbenchLayout.current.small)10.sp else 11.sp,maxLines=1,overflow=TextOverflow.Ellipsis);Text("⌄",fontSize=10.sp)};DropdownMenu(open,onDismissRequest={open=false}){choices.forEach{v->DropdownMenuItem(text={Text(v,fontSize=12.sp)},onClick={open=false;onChoose(v)})}}}
+    Box(modifier) {
+        WorkbenchButton(onClick = { open = true }, modifier = Modifier.fillMaxWidth(),
+            contentPadding = PaddingValues(horizontal = 10.dp, vertical = if (LocalWorkbenchLayout.current.small) 7.dp else 8.dp)) {
+            Text(value, modifier = Modifier.weight(1f), fontSize = if (LocalWorkbenchLayout.current.small) 10.sp else 11.sp,
+                maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Spacer(Modifier.width(8.dp))
+            val arrowColor = LocalContentColor.current
+            Canvas(Modifier.size(width = 12.dp, height = 8.dp)) {
+                val stroke = 1.5.dp.toPx()
+                drawLine(arrowColor, Offset(1.dp.toPx(), 1.5.dp.toPx()), Offset(size.width / 2, size.height - 1.5.dp.toPx()), stroke, cap = StrokeCap.Round)
+                drawLine(arrowColor, Offset(size.width / 2, size.height - 1.5.dp.toPx()), Offset(size.width - 1.dp.toPx(), 1.5.dp.toPx()), stroke, cap = StrokeCap.Round)
+            }
+        }
+        DropdownMenu(open, onDismissRequest = { open = false }) {
+            choices.forEach { v -> DropdownMenuItem(text = { Text(v, fontSize = 12.sp) }, onClick = { open = false; onChoose(v) }) }
+        }
+    }
 }
 @Composable private fun AnalyticsMetric(label:String,value:String,detail:String,modifier:Modifier=Modifier){Column(modifier,verticalArrangement=Arrangement.spacedBy(8.dp)){QuietText(label);Text(value,style=AppTypography.monoValue.copy(fontSize=30.sp,lineHeight=36.sp),color=AppColors.textPrimary);QuietText(detail)}}
 
