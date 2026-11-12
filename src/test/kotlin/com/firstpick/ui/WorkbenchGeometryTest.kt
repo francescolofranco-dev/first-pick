@@ -38,11 +38,11 @@ class WorkbenchGeometryTest {
             ui.render(90)
             val last=assertNotNull(ui.text("Vineslasher Adept")).boundsInRoot
             assertTrue(last.top>100f&&last.bottom<700f,"The fourteenth choice must remain reachable above the pool footer")
-            ui.click("Analytics");ui.click("Match history");ui.click("Reality Fracture")
-            assertNotNull(ui.text("Draft review"));assertNotNull(ui.text("← Back to match history"))
+            ui.click("Analytics");ui.click("Draft history");ui.click("Reality Fracture")
+            assertNotNull(ui.text("Draft review"));assertNotNull(ui.text("← Back to draft history"))
             assertEquals(500f,ui.tag("workbench-inspector").boundsInRoot.left)
             ui.click("Pick log");assertNotNull(ui.text("P1 · 1"))
-            ui.click("← Back to match history");assertNotNull(ui.text("Completed drafts"))
+            ui.click("← Back to draft history");assertNotNull(ui.text("Completed drafts"))
         }
     }
 
@@ -78,10 +78,38 @@ class WorkbenchGeometryTest {
         }
     }
 
-    private class Fixture(width:Int,height:Int, initialState: DraftUiState = WorkbenchVisualFixtures.state):AutoCloseable {
+    @Test fun `draft results distinguish missing records from event totals and individual matches`() {
+        val course = WorkbenchVisualFixtures.courses.first()
+        val history = listOf(WorkbenchVisualFixtures.history.first())
+        val cases = listOf(
+            com.firstpick.stats.PlayerStats(),
+            com.firstpick.stats.PlayerStats(courses = listOf(course)),
+            WorkbenchVisualFixtures.stats.copy(courses = listOf(course), matches = WorkbenchVisualFixtures.stats.matches.filter { it.courseId == course.id }),
+        )
+        for ((index, stats) in cases.withIndex()) {
+            Fixture(1280, 900, stats = stats, history = history).use { ui ->
+                ui.click("Analytics"); ui.click("Draft history"); ui.click("Reality Fracture"); ui.click("Results")
+                assertNotNull(ui.text("Recorded matches"))
+                assertNull(ui.text("0 wins · 0 losses"))
+                if (index == 0) {
+                    assertNotNull(ui.text("No event result is linked to this draft."))
+                    assertNotNull(ui.text("This saved draft has no linked match details. Its cards and any recorded packs are still available in Deck and Pick log."))
+                } else {
+                    assertNotNull(ui.text("3 wins · 3 losses · Completed"))
+                    if (index == 1) assertNotNull(ui.text("Individual match details are unavailable for this draft. Event records and match details are saved separately."))
+                    else {
+                        assertNotNull(ui.text("6 recorded · 3 wins · 3 losses"))
+                        assertNotNull(ui.text("On the play"))
+                    }
+                }
+            }
+        }
+    }
+
+    private class Fixture(width:Int,height:Int, initialState: DraftUiState = WorkbenchVisualFixtures.state, stats: com.firstpick.stats.PlayerStats = WorkbenchVisualFixtures.stats, history: List<com.firstpick.draft.DraftHistoryEntry> = WorkbenchVisualFixtures.history):AutoCloseable {
         val state = androidx.compose.runtime.mutableStateOf(initialState)
         private val scene=ImageComposeScene(width,height,Density(1f)) {
-            Workbench(state.value,false,OverlayHealth(OverlayHealthState.INACTIVE),LiveDeckAccess(),{},{},{},null,{}, {}, {}, {}, {}, {}, {}, {},WorkbenchVisualFixtures.stats,WorkbenchVisualFixtures.history,{WorkbenchVisualFixtures.review})
+            Workbench(state.value,false,OverlayHealth(OverlayHealthState.INACTIVE),LiveDeckAccess(),{},{},{},null,{}, {}, {}, {}, {}, {}, {}, {},stats,history,{WorkbenchVisualFixtures.review})
         }
         private var time=0L
         init{render()}

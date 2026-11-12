@@ -174,7 +174,7 @@ internal fun Workbench(
                                     }
                                 }
                                 WorkMode.Analytics -> {
-                                    listOf("Overview","Match history").forEach{section->RailItem(section,selected=analyticsSection==section){analyticsSection=section}}
+                                    listOf("Overview","Draft history").forEach{section->RailItem(section,selected=analyticsSection==section){analyticsSection=section}}
                                     Spacer(Modifier.height(30.dp));RailLabel(if(archiveContext!=null)"Reviewing draft"else"Report scope")
                                     if(archiveContext!=null)archiveContext!!.forEach{QuietText(it)}
                                     else {QuietText("${analyticsScope.first} completed drafts");Spacer(Modifier.height(5.dp));QuietText("${analyticsScope.second} matches")}

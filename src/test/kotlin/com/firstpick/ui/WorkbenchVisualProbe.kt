@@ -26,15 +26,15 @@ fun main(args: Array<String>) {
             fun click(text:String){val n=scene.semanticsOwners.flatMap{nodes(it.rootSemanticsNode)}.first{it.config.getOrElse(SemanticsProperties.Text){emptyList()}.any{a->a.text==text}&&it.config.contains(SemanticsActions.OnClick)};n.config[SemanticsActions.OnClick].action!!.invoke()}
             render("waiting");click("Deckbuilder");render("deck-waiting");click("Draft");displayedState.value=WorkbenchVisualFixtures.state;render("draft");click("Deckbuilder");render("deck");click("▥ Horizontal");render("deck-horizontal");click("▤ Vertical");click("Analytics");render("analytics")
             val historyItem = scene.semanticsOwners.flatMap { nodes(it.rootSemanticsNode) }.first {
-                it.config.getOrElse(SemanticsProperties.Text) { emptyList() }.any { text -> text.text == "Match history" }
+                it.config.getOrElse(SemanticsProperties.Text) { emptyList() }.any { text -> text.text == "Draft history" }
             }
             scene.sendPointerEvent(PointerEventType.Enter, historyItem.boundsInRoot.center, type = PointerType.Mouse)
             scene.sendPointerEvent(PointerEventType.Move, historyItem.boundsInRoot.center, type = PointerType.Mouse)
             render("analytics-hover")
             scene.sendPointerEvent(PointerEventType.Exit, androidx.compose.ui.geometry.Offset(-1f, -1f), type = PointerType.Mouse)
-            click("Match history");render("history")
+            click("Draft history");render("history")
             val row=scene.semanticsOwners.flatMap{nodes(it.rootSemanticsNode)}.firstOrNull{it.config.contains(SemanticsActions.OnClick)&&it.config.getOrElse(SemanticsProperties.Text){emptyList()}.any{a->a.text=="FRA" || a.text=="Reality Fracture"}}
-            checkNotNull(row){"No archived draft row found"}.config[SemanticsActions.OnClick].action!!.invoke();render("review");click("Pick log");render("review-picks");click("Matches");render("review-matches")
+            checkNotNull(row){"No archived draft row found"}.config[SemanticsActions.OnClick].action!!.invoke();render("review");click("Pick log");render("review-picks");click("Results");render("review-matches")
         }
     }
     println("Visual snapshots: $out")
