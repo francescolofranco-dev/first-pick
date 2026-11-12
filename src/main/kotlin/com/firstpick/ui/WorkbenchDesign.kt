@@ -61,16 +61,21 @@ internal fun WorkbenchButton(
 }
 
 @Composable
-internal fun WorkbenchTabs(tabs: List<SegmentedTabItem>, modifier: Modifier = Modifier, underlined: Boolean = false, compact: Boolean = false) {
-    Row(modifier.height(if (underlined) 39.dp else if(compact)26.dp else 32.dp)
-        .then(if (underlined) Modifier else Modifier.background(Color(0x44080B14), RoundedCornerShape(7.dp)).padding(3.dp)),
+internal fun WorkbenchTabs(tabs: List<SegmentedTabItem>, modifier: Modifier = Modifier, underlined: Boolean = false, compact: Boolean = false, primary: Boolean = false) {
+    val groupShape = RoundedCornerShape(if (primary) 9.dp else 7.dp)
+    Row(modifier.height(if (primary) 38.dp else if (underlined) 39.dp else if(compact)26.dp else 32.dp)
+        .then(if (underlined) Modifier else Modifier.background(if (primary) Color(0xFF171C2A) else Color(0x44080B14), groupShape)
+            .then(if (primary) Modifier.border(1.dp, AppColors.accent.copy(alpha = .16f), groupShape) else Modifier).padding(3.dp)),
         horizontalArrangement = Arrangement.spacedBy(if (underlined) 20.dp else 5.dp), verticalAlignment = Alignment.CenterVertically) {
         tabs.forEach { tab ->
             val small = LocalWorkbenchLayout.current.small
-            Box(Modifier.fillMaxHeight().then(if (underlined) Modifier.drawBehind { if (tab.selected) drawLine(AppColors.accent, androidx.compose.ui.geometry.Offset(0f,size.height-1.dp.toPx()), androidx.compose.ui.geometry.Offset(size.width,size.height-1.dp.toPx()),2.dp.toPx()) } else Modifier.clip(RoundedCornerShape(5.dp)).background(if (tab.selected) AppColors.accent.copy(alpha = .085f) else Color.Transparent))
+            Box(Modifier.fillMaxHeight().then(if (underlined) Modifier.drawBehind { if (tab.selected) drawLine(AppColors.accent, androidx.compose.ui.geometry.Offset(0f,size.height-1.dp.toPx()), androidx.compose.ui.geometry.Offset(size.width,size.height-1.dp.toPx()),2.dp.toPx()) } else Modifier.clip(RoundedCornerShape(5.dp)).background(if (tab.selected) AppColors.accent.copy(alpha = if (primary) .18f else .085f) else Color.Transparent))
+                .then(if (primary && tab.selected) Modifier.drawBehind {
+                    drawLine(AppColors.warning, androidx.compose.ui.geometry.Offset(10.dp.toPx(), size.height - 1.dp.toPx()), androidx.compose.ui.geometry.Offset(size.width - 10.dp.toPx(), size.height - 1.dp.toPx()), 2.dp.toPx())
+                } else Modifier)
                 .semantics { selected = tab.selected }.clickable(enabled = tab.enabled, role = Role.Tab, onClick = tab.onClick).focusable(tab.enabled)
                 .padding(horizontal = if (underlined) 0.dp else if(compact)9.dp else if (small) 7.dp else 18.dp), contentAlignment = Alignment.Center) {
-                Text(tab.label, color = if (tab.selected) AppColors.textPrimary else AppColors.textSecondary, fontSize = if(compact)11.sp else 12.sp, fontWeight = FontWeight.Normal, maxLines = 1)
+                Text(tab.label, color = if (tab.selected) AppColors.textPrimary else if (primary) Color(0xFFC4C8D7) else AppColors.textSecondary, fontSize = if (primary) 13.sp else if(compact)11.sp else 12.sp, fontWeight = if (primary) FontWeight.SemiBold else FontWeight.Normal, maxLines = 1)
             }
         }
     }

@@ -96,7 +96,7 @@ internal fun Workbench(
                     }
                     WorkbenchTabs(listOf(WorkMode.Draft, WorkMode.Deckbuilder, WorkMode.Analytics).map {
                         SegmentedTabItem(it.name, selected = mode == it, onClick = { mode = it; query = "" })
-                    })
+                    }, primary = true)
                     Row(Modifier.weight(1f), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
                         WorkbenchButton(
                             onClick = { searching = !searching },
