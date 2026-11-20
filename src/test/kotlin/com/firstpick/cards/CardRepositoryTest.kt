@@ -14,6 +14,25 @@ import kotlin.test.assertFailsWith
 class CardRepositoryTest {
 
     @Test
+    fun earlyRatingsKeepUnratedCardsAvailableForDeckBuilding() = runBlocking {
+        val cache = createTempDirectory("fp-trk-early-ratings")
+        val ratings = """{"data":[{"name":"Seven of Nine","mtga_id":1,"color":"UB","ever_drawn_win_rate":0.57,"ever_drawn_game_count":220}]}"""
+        val catalog = """{"data":[{"name":"Seven of Nine","arena_id":1},{"name":"Constable Odo","arena_id":2,"colors":["W","U"]}]}"""
+        val repo = CardRepository(
+            client = SeventeenLandsClient(cacheDir = cache, http = ScriptedHttpClient(StubHttpAction.Response(200, ratings))),
+            catalogClient = ScryfallClient(cacheDir = cache, http = ScriptedHttpClient(StubHttpAction.Response(200, catalog))),
+        )
+
+        val info = repo.load("TRK", "PremierDraft")
+
+        assertEquals(RatingsDataSource.NETWORK, info.source)
+        assertEquals(1, info.reliableCardCount)
+        assertEquals(0.57, repo.resolve(1).gihWr)
+        assertEquals("Constable Odo", repo.resolve(2).displayName)
+        assertNull(repo.resolve(2).gihWr)
+    }
+
+    @Test
     fun emptyLaunchRatingsUseCatalogAndRealArenaIdsUntilRefreshSucceeds() = runBlocking {
         val cache = createTempDirectory("fp-fra-repo")
         val ratingsHttp = ScriptedHttpClient(

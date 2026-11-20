@@ -1,0 +1,296 @@
+{
+ "schemaVersion": 2,
+ "set": "TRK",
+ "setName": "Star Trek",
+ "updatedAt": "2026-11-20",
+ "sources": [
+  {
+   "id": "guide",
+   "title": "Star Trek Prerelease Guide",
+   "publisher": "Wizards of the Coast",
+   "author": "Jubilee Finnegan",
+   "date": "2026-10-30",
+   "url": "https://magic.wizards.com/en/news/feature/star-trek-prerelease-guide",
+   "kind": "OFFICIAL_LIMITED_GUIDE"
+  },
+  {
+   "id": "mechanics",
+   "title": "Star Trek Mechanics",
+   "publisher": "Wizards of the Coast",
+   "author": "Matt Tabak",
+   "date": "2026-10-20",
+   "url": "https://magic.wizards.com/en/news/feature/star-trek-mechanics",
+   "kind": "OFFICIAL_MECHANICS"
+  },
+  {
+   "id": "release-notes",
+   "title": "Star Trek Release Notes",
+   "publisher": "Wizards of the Coast",
+   "author": "Eric Levine",
+   "date": "2026-10-30",
+   "url": "https://magic.wizards.com/en/news/feature/star-trek-release-notes",
+   "kind": "OFFICIAL_RELEASE_NOTES"
+  }
+ ],
+ "mechanics": [
+  {
+   "name": "Beam me up",
+   "summary": "Cast the spell from your graveyard by paying the alternate cost and returning your creature. Reuse that creature’s enters ability on a later turn.",
+   "sourceIds": [
+    "mechanics"
+   ]
+  },
+  {
+   "name": "Face a dilemma",
+   "summary": "Choosing one or more modes on a spell or ability counts once. A payoff can trigger even if that spell is countered.",
+   "sourceIds": [
+    "mechanics"
+   ]
+  },
+  {
+   "name": "Federation",
+   "summary": "Diversify creature types among your non-Borg creatures to increase federation bonuses.",
+   "sourceIds": [
+    "mechanics"
+   ]
+  },
+  {
+   "name": "Strange new worlds",
+   "summary": "The payoff counts distinct land names. Duplicate lands of the same name contribute only once.",
+   "sourceIds": [
+    "mechanics"
+   ]
+  },
+  {
+   "name": "Spacecraft and station",
+   "summary": "Tap creatures at sorcery speed to add charge counters equal to their power. Station thresholds unlock the spacecraft’s stronger abilities.",
+   "sourceIds": [
+    "mechanics"
+   ]
+  },
+  {
+   "name": "Assimilate",
+   "summary": "Assimilation gives you the card as a Borg artifact creature with a +1/+1 counter. Artifact-creature bonuses apply.",
+   "sourceIds": [
+    "mechanics"
+   ]
+  }
+ ],
+ "archetypes": [
+  {
+   "pair": "WU",
+   "name": "Spacecraft and Artificers",
+   "playstyle": "Use creatures with enters effects as station crew. Keep the board stable until your spacecraft can attack.",
+   "speed": "midrange",
+   "sourceIds": [
+    "guide"
+   ],
+   "signposts": [
+    "Hemmer, Fixing What Is Broken",
+    "Constable Odo"
+   ],
+   "payoffs": [
+    "U.S.S. Enterprise-D, Galaxy-Class"
+   ],
+   "enablers": [
+    "Interstellar Effigy",
+    "Assembly Specialist"
+   ]
+  },
+  {
+   "pair": "WB",
+   "name": "Borg Artifact Creatures",
+   "playstyle": "Establish artifact creatures, then turn a wide board into pressure with an anthem. Spare artifacts can fuel sacrifice effects.",
+   "speed": "midrange",
+   "sourceIds": [
+    "guide"
+   ],
+   "signposts": [
+    "Locutus, the One Who Speaks",
+    "Zero, Incorporeal Sensate"
+   ],
+   "payoffs": [],
+   "enablers": [
+    "Vexing Drone",
+    "Assault Drone"
+   ]
+  },
+  {
+   "pair": "WR",
+   "name": "Command 8+ Power",
+   "playstyle": "Fill the board with Officers and reach eight total power before attacking. Preserve enough bodies to keep that threshold on later turns.",
+   "speed": "aggro",
+   "sourceIds": [
+    "guide"
+   ],
+   "signposts": [
+    "Kirk, Commanding Officer",
+    "Worf, Honor-Bound Warrior"
+   ],
+   "payoffs": [],
+   "enablers": [
+    "Academy Instructor",
+    "La'An Noonien-Singh, Security"
+   ]
+  },
+  {
+   "pair": "WG",
+   "name": "Doctors and Counters",
+   "playstyle": "Spread counters across your creatures so Phlox pays you for attacks and The Doctor can grow several creatures at once.",
+   "speed": "midrange",
+   "sourceIds": [
+    "guide"
+   ],
+   "signposts": [
+    "Phlox, Unorthodox Doctor",
+    "The Doctor, EMH"
+   ],
+   "payoffs": [],
+   "enablers": [
+    "Pure Energy",
+    "Support Mission"
+   ]
+  },
+  {
+   "pair": "UB",
+   "name": "Dilemma Control",
+   "playstyle": "Hold up flexible interaction, then take over with repeated dilemma triggers. Prioritize cards with useful modes on both offense and defense.",
+   "speed": "control",
+   "sourceIds": [
+    "guide"
+   ],
+   "signposts": [
+    "Seven of Nine",
+    "Lore, Positronic Provocateur"
+   ],
+   "payoffs": [],
+   "enablers": [
+    "Consider the Prime Directive",
+    "Resistance Is Futile"
+   ]
+  },
+  {
+   "pair": "UR",
+   "name": "Scientists and Noncreatures",
+   "playstyle": "Pair cheap noncreature spells with token-copy payoffs. Give Gray and Adira a valuable creature to copy before casting your setup spell.",
+   "speed": "tempo",
+   "sourceIds": [
+    "guide"
+   ],
+   "signposts": [
+    "Spock, Always Your Friend",
+    "Gray and Adira, Forever Joined"
+   ],
+   "payoffs": [],
+   "enablers": [
+    "Test of Priorities",
+    "Test of Identity"
+   ]
+  },
+  {
+   "pair": "UG",
+   "name": "Strange New Worlds",
+   "playstyle": "Draft differently named lands to grow your payoffs. Favor lands that still let you cast your early green and blue spells on time.",
+   "speed": "ramp",
+   "sourceIds": [
+    "guide"
+   ],
+   "signposts": [
+    "The Traveler",
+    "D'Vana Tendi, Optimistic Ensign"
+   ],
+   "payoffs": [
+    "Suus Mahna Practitioner",
+    "Deep Space Scan"
+   ],
+   "enablers": [
+    "Orion",
+    "Risa"
+   ]
+  },
+  {
+   "pair": "BR",
+   "name": "Klingons and Dies",
+   "playstyle": "Attack with temporary tokens, then sacrifice them for value before they leave anyway. Include creatures that replace themselves when they die.",
+   "speed": "aggro",
+   "sourceIds": [
+    "guide"
+   ],
+   "signposts": [
+    "L'Rell, Fierce Visionary",
+    "The Duras Sisters"
+   ],
+   "payoffs": [
+    "Vengeance Mission",
+    "Sarcophagus, Ship of the Dead"
+   ],
+   "enablers": [
+    "Starfleet Security",
+    "A Good Day to Die"
+   ]
+  },
+  {
+   "pair": "BG",
+   "name": "Archaeology Graveyard",
+   "playstyle": "Stock the graveyard, then recur cards or cast them from there to trigger Vash. Prefer cheap effects that set up later turns.",
+   "speed": "midrange",
+   "sourceIds": [
+    "guide"
+   ],
+   "signposts": [
+    "Vash, Freelance Archaeologist",
+    "Daniels, Temporal Agent"
+   ],
+   "payoffs": [
+    "Pattern Buffer Preservation"
+   ],
+   "enablers": [
+    "Battle-Scarred Survivalist"
+   ]
+  },
+  {
+   "pair": "RG",
+   "name": "Away Team Landfall",
+   "playstyle": "Keep making land drops and use landfall rewards to build a board. Save repeatable land triggers for turns when you can capitalize on them.",
+   "speed": "midrange",
+   "sourceIds": [
+    "guide"
+   ],
+   "signposts": [
+    "Cleveland Booker, Empath",
+    "Dal R'El, Augment Orphan"
+   ],
+   "payoffs": [
+    "Captain Michael Burnham",
+    "Jake Sisko, War Correspondent"
+   ],
+   "enablers": [
+    "Erica Ortegas, Plucky Pilot"
+   ]
+  }
+ ],
+ "combos": [
+  {
+   "cards": [
+    "Seven of Nine",
+    "Lore, Positronic Provocateur"
+   ],
+   "note": "Choosing a mode for Lore’s enters trigger faces a dilemma and draws a card with Seven of Nine in play.",
+   "sourceIds": [
+    "release-notes",
+    "guide"
+   ]
+  },
+  {
+   "cards": [
+    "Vash, Freelance Archaeologist",
+    "Pattern Buffer Preservation"
+   ],
+   "note": "Casting Preservation with beam me up takes it out of your graveyard and triggers Vash if her ability hasn’t triggered this turn. Return a different creature to keep Vash on the battlefield.",
+   "sourceIds": [
+    "release-notes",
+    "guide"
+   ]
+  }
+ ]
+}

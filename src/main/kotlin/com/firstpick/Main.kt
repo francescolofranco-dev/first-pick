@@ -30,6 +30,8 @@ import com.firstpick.ui.FirstPickAboutMenu
 import com.firstpick.ui.FirstPickAboutWindow
 import com.firstpick.ui.PackCardUi
 import com.firstpick.ui.deckBuildKey
+import com.firstpick.update.UpdateCheckResult
+import com.firstpick.update.UpdateChecker
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -115,6 +117,16 @@ fun main() {
 
         val grantArenaAccess: () -> Unit = { appScope.launch(Dispatchers.IO) { liveDeckReader.grantAccess() }; Unit }
 
+        var availableUpdate by remember { mutableStateOf<UpdateCheckResult.Available?>(null) }
+        LaunchedEffect(Unit) {
+            val checker = UpdateChecker()
+            while (true) {
+                val result = checker.check()
+                if (result is UpdateCheckResult.Available) availableUpdate = result
+                if (result is UpdateCheckResult.NotCheckable) break
+                delay(6 * 60 * 60 * 1000L)
+            }
+        }
         FirstPickAboutMenu(onOpenAbout = { isAboutOpen = true })
 
         Window(
@@ -131,6 +143,7 @@ fun main() {
             }
             App(
                 state = state,
+                onOpenUpdate = { isAboutOpen = true }.takeIf { availableUpdate != null },
                 history = history,
                 stats = stats,
                 onReviewDraft = viewModel::reviewDraft,
@@ -172,7 +185,7 @@ fun main() {
         }
 
         if (isAboutOpen) {
-            FirstPickAboutWindow(onCloseRequest = { isAboutOpen = false })
+            FirstPickAboutWindow(initialUpdate = availableUpdate, onCloseRequest = { isAboutOpen = false })
         }
 
         if (recommendationsOpen && isOverlayOpen && state.phase == DraftPhase.COMPLETE) {

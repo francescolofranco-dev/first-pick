@@ -16,7 +16,7 @@ fun main() {
     val json = Json { ignoreUnknownKeys = true }
     val http = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(15)).build()
 
-    val bundled = StandardSets.manifest.sets.map { it.code.uppercase() }.sorted()
+    val bundled = StandardSets.manifest.sets.filter { it.tier != "catalog" }.map { it.code.uppercase() }.sorted()
     println("Bundled synergy profiles (${bundled.size}): ${bundled.joinToString(" ")}")
     println("Manifest checked: ${StandardSets.manifest.checked}\n")
 

@@ -60,17 +60,21 @@ class CardRepository(
         if (!forceRefresh && key == loadedKey) ratingsInfo?.let { return it }
 
         val result = try {
-            client.fetchWithMetadata(set = setCode, format = format, forceRefresh = forceRefresh)
+            val observed = client.fetchWithMetadata(set = setCode, format = format, forceRefresh = forceRefresh)
                 .takeIf { it.ratings.isNotEmpty() }
                 ?: throw DataUnavailableException(FetchFailure.NOT_FOUND)
+            if (StandardSets.entry(setCode)?.releasedAt != null &&
+                observed.ratings.count(CardRating::hasReliableWinRate) < 100
+            ) {
+                val known = observed.ratings.mapTo(mutableSetOf()) { normalize(it.name) }
+                val unrated = loadCatalog(setCode, forceRefresh).cards.filterNot { normalize(it.name) in known }
+                observed.copy(ratings = observed.ratings + unrated)
+            } else observed
         } catch (failure: DataUnavailableException) {
-            val catalog = catalogClient.cardCatalog(setCode, forceRefresh = forceRefresh)
+            val catalog = loadCatalog(setCode, forceRefresh)
             if (catalog.cards.isEmpty()) throw failure
-            val arenaIds = arenaCatalogIds(setCode)
             RatingsFetchResult(
-                ratings = catalog.cards.map { card ->
-                    if (card.mtgaId != null) card else card.copy(mtgaId = arenaIds[normalize(card.name)])
-                },
+                ratings = catalog.cards,
                 metadata = RatingsFetchMetadata(RatingsDataSource.CARD_CATALOG, catalog.lastUpdated, failure.reason),
             )
         }
@@ -84,6 +88,15 @@ class CardRepository(
             medianGamesPerCard = medianGamesPerCard(result.ratings),
             fallbackReason = result.metadata.fallbackReason,
         ).also { ratingsInfo = it }
+    }
+
+    private suspend fun loadCatalog(setCode: String, forceRefresh: Boolean): CardCatalog {
+        val catalog = catalogClient.cardCatalog(setCode, forceRefresh = forceRefresh)
+        if (catalog.cards.none { it.mtgaId == null }) return catalog
+        val arenaIds = arenaCatalogIds(setCode)
+        return catalog.copy(cards = catalog.cards.map { card ->
+            if (card.mtgaId != null) card else card.copy(mtgaId = arenaIds[normalize(card.name)])
+        })
     }
 
     fun isLoadedFor(setCode: String, format: String): Boolean =

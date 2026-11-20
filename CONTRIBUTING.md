@@ -81,3 +81,32 @@ internal changes, minor for backward-compatible features, major for breaking
 changes. Bump before testing. Documentation-only and test-only commits do not
 need a new version. Release tags and any `-PpackageVersion` override must match
 `VERSION`. The guard checks the staged version, so unstaged bumps do not count.
+
+## Arena Limited releases
+
+[Sync Arena Limited sets](.github/workflows/sync-limited-sets.yml) checks Scryfall
+and 17Lands every six hours. It considers Arena card pools starting seven days
+before Scryfall’s tabletop date, since Arena can open early. It saves the
+[Wizards release calendar](docs/limited-release-calendar.json) daily when dates
+change, and records a successful calendar check at least every 28 days. The
+calendar keeps a history of what was announced and gives the public repository
+activity during gaps between sets. GitHub can disable schedules after 60 days
+of inactivity. If that happens, enable the workflow in Actions and run it on
+`main`.
+
+The first app update adds the set as soon as an Arena card pool is available.
+FirstPick uses card roles, curve, and provisional color-pair themes inferred
+from multicolor uncommons. A bundled, researched profile in
+`src/main/resources/synergy/<CODE>.json` takes precedence where available.
+Once at least 30 cards have 200 or more games in hand on 17Lands Premier Draft,
+the workflow publishes the ratings-ready update. FirstPick queries live card
+and color-pair ratings directly, so newer observations can influence advice
+before and after that update. The weekly pick-model training workflow is
+separate and depends on the public raw draft dataset.
+
+Set changes stage a patch bump, pass tests, and fast-forward `main` before
+calling the existing macOS release workflow with that exact commit. A later
+sync retries the current version if packaging or publishing failed. Calendar
+changes alone need no version bump. The workflow uses the repository Actions
+token and requires permission to fast-forward `main`. Release signing uses
+the same settings as ordinary FirstPick releases.

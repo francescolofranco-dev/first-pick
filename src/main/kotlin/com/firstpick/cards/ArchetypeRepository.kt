@@ -17,10 +17,10 @@ class ArchetypeRepository(
     var loadedKey: String? = null
         private set
 
-    suspend fun loadStrengths(setCode: String, format: String) {
+    suspend fun loadStrengths(setCode: String, format: String, forceRefresh: Boolean = false) {
         val key = dataKey(setCode, format)
-        if (key == loadedKey && strengths.isNotEmpty()) return
-        val rows = client.colorRatings(setCode, format)
+        if (!forceRefresh && key == loadedKey && strengths.isNotEmpty()) return
+        val rows = client.colorRatings(setCode, format, forceRefresh)
         val validRows = rows.filter { row -> row.games > 0 && row.wins in 0..row.games }
         val observations = validRows
             .mapNotNull { row ->
@@ -51,6 +51,7 @@ class ArchetypeRepository(
             }
             .toMap()
         loadedKey = key
+        if (forceRefresh) perPair.keys.removeIf { it.startsWith("${key}_") }
     }
 
     suspend fun ensurePair(setCode: String, format: String, pair: String) {

@@ -32,9 +32,15 @@ class SetReferenceRepository(
         val repository = SynergyRepository(cacheDir)
         repository.load(code)
         val profile = repository.index?.profile
-        if (profile != null) profiles[code] = profile
-        SetReference(code, profile?.setName?.ifBlank { code } ?: code,
-            profile?.archetypes.orEmpty().map { ThemeReference(it.pair, it.referenceTheme.ifBlank { it.name }) })
+        val guide = profile?.copy(archetypes = profile.archetypes.map { archetype ->
+            val theme = set.themes[archetype.pair]
+            if (profile.schemaVersion == 0 && theme != null) archetype.copy(signposts = theme.signposts) else archetype
+        })
+        if (guide != null) profiles[code] = guide
+        val name = guide?.setName?.ifBlank { set.name } ?: set.name
+        SetReference(code, name.ifBlank { code },
+            guide?.archetypes.orEmpty().map { ThemeReference(it.pair, it.referenceTheme.ifBlank { it.name }) },
+            cardsLoaded = guide == null)
     }
 
     suspend fun cards(code: String): List<ThemeReference> {

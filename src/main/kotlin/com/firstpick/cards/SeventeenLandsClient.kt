@@ -103,11 +103,11 @@ class SeventeenLandsClient(
             )
         }
 
-    suspend fun colorRatings(set: String, format: String): List<ColorRatingRow> =
+    suspend fun colorRatings(set: String, format: String, forceRefresh: Boolean = false): List<ColorRatingRow> =
         withContext(Dispatchers.IO) {
             DraftRatingsFormats.requireSupported(format)
             val body = runCatching {
-                cachedBody("colorratings_${set.uppercase()}_${format}.json") { colorRatingsUrl(set, format) }.body
+                cachedBody("colorratings_${set.uppercase()}_${format}.json", forceRefresh) { colorRatingsUrl(set, format) }.body
             }.getOrElse {
                 Log.warn(TAG, "color ratings ${set.uppercase()}/$format unavailable", it)
                 return@withContext emptyList()

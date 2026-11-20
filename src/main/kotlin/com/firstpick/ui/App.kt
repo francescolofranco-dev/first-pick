@@ -37,10 +37,11 @@ fun App(
     history: List<com.firstpick.draft.DraftHistoryEntry> = emptyList(),
     onReviewDraft: suspend (com.firstpick.model.DraftState) -> DraftUiState = { DraftUiState() },
     onGuideArchivedDraft: (DraftUiState) -> Unit = {},
+    onOpenUpdate: (() -> Unit)? = null,
 ) {
     Workbench(state, isOverlayOpen, overlayHealth, liveDeckAccess, onGrantArenaAccess, onRevokeArenaAccess,
         onToggleOverlay, committedDeck, onUseDeck, onSelectPickCount, onSimulate, onStopSim,
-        onTogglePause, onLoadReferenceSet, onRetryRatings, onNewDraft, stats, history, onReviewDraft)
+        onTogglePause, onLoadReferenceSet, onRetryRatings, onNewDraft, stats, history, onReviewDraft, onOpenUpdate)
 }
 
 @Composable

@@ -1,0 +1,22 @@
+{
+ "source": "https://www.magic.wizards.com/en/products",
+ "checked": "2026-11-20",
+ "upcoming": [
+  {
+   "date": "2027-02-05",
+   "name": "Nauctis: The Sunken Realm"
+  },
+  {
+   "date": "2027-04-09",
+   "name": "Magic: The Gathering | Marvel: Darkhold Destiny"
+  },
+  {
+   "date": "2027-06-04",
+   "name": "Kamigawa: Titanbreach"
+  },
+  {
+   "date": "2027-10-01",
+   "name": "Zhalfir"
+  }
+ ]
+}

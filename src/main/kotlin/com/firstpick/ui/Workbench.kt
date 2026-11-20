@@ -49,6 +49,7 @@ internal fun Workbench(
     onTogglePause: () -> Unit, onLoadReferenceSet: (String) -> Unit, onRetryRatings: () -> Unit,
     onNewDraft: () -> Unit, stats: PlayerStats, history: List<DraftHistoryEntry>,
     onReviewDraft: suspend (DraftState) -> DraftUiState,
+    onOpenUpdate: (() -> Unit)? = null,
 ) {
     var mode by remember { mutableStateOf(if (state.phase == DraftPhase.COMPLETE) WorkMode.Deckbuilder else WorkMode.Draft) }
     var draftPool by remember { mutableStateOf(false) }
@@ -225,6 +226,7 @@ internal fun Workbench(
             Hairline()
             Row(Modifier.fillMaxWidth().heightIn(min = 32.dp).background(Color(0xFF0B0E17)).padding(horizontal = 16.dp, vertical = 4.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
                 Text(if (state.simulating) "Demo session" else state.headline, color = AppColors.textSecondary, style = AppTypography.micro.copy(fontSize = 9.sp, fontWeight = FontWeight.Normal), maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+                if (onOpenUpdate != null) WorkbenchButton(onClick = onOpenUpdate) { Text("Update available", fontSize = 10.sp) }
                 if (state.canRetryRatings) WorkbenchButton(onClick = onRetryRatings) { Text("Retry data", fontSize = 10.sp) }
                 else AppTooltip(title = "Data and overlay status", tooltip = ratingsDataDescription(state) + "\n" + state.ratingsDataWarning.orEmpty()) { QuietText(if (isOverlayOpen) "Overlay · ${overlayHealth.state.name.lowercase()}" else "Overlay disabled", micro = true) }
             }

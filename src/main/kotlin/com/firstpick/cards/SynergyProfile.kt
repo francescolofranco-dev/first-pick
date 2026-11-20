@@ -291,7 +291,7 @@ class SynergyRepository(private val cacheDir: Path = AppPaths.cacheDir) {
         }
         val bundled = javaClass.getResourceAsStream("/synergy/$key.json")
             ?.use { it.readBytes().decodeToString() }
-        return parse(bundled, key)
+        return parse(bundled, key) ?: StandardSets.entry(key)?.catalogProfile()
     }
 
     private fun parse(body: String?, key: String): SetSynergyProfile? {
@@ -317,3 +317,22 @@ class SynergyRepository(private val cacheDir: Path = AppPaths.cacheDir) {
         private const val TAG = "Synergy"
     }
 }
+
+internal fun StandardSet.catalogProfile(): SetSynergyProfile? =
+    themes.takeIf { it.isNotEmpty() }?.let { catalogThemes ->
+        SetSynergyProfile(
+            set = code,
+            setName = name,
+            archetypes = catalogThemes.map { (pair, theme) ->
+                SynergyArchetype(
+                    pair = pair,
+                    name = theme.name,
+                    // Multicolor uncommons with no shared mechanic are useful
+                    // guide references without implying a synergy bonus.
+                    signposts = theme.signposts.takeIf { theme.supportingCards.isNotEmpty() }.orEmpty(),
+                    keyCards = theme.supportingCards,
+                    referenceTheme = "${theme.name} · card-based",
+                )
+            },
+        )
+    }

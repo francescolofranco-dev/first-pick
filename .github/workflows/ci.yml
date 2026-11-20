@@ -34,6 +34,9 @@ jobs:
       - name: Test production launcher
         run: python3 scripts/test-production-launch.py
 
+      - name: Test Limited set sync
+        run: python3 scripts/test-sync-limited-sets.py
+
       - name: Run tests
         run: ./gradlew test --stacktrace
 

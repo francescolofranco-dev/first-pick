@@ -1,0 +1,96 @@
+name: Sync Arena Limited sets
+
+on:
+  schedule:
+    - cron: '23 2 * * *'
+    - cron: '23 8,14,20 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sync-limited-sets
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    permissions:
+      contents: write
+    outputs:
+      release_commit: ${{ steps.integrate.outputs.release_commit }}
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          ref: main
+
+      - name: Discover sets and ratings
+        id: plan
+        env:
+          EVENT: ${{ github.event_name }}
+          SCHEDULE: ${{ github.event.schedule }}
+        run: |
+          args=()
+          if [[ "$EVENT" == workflow_dispatch || "$SCHEDULE" == '23 2 * * *' ]]; then
+            args+=(--calendar)
+          fi
+          python3 scripts/sync-limited-sets.py "${args[@]}"
+          git config core.hooksPath .githooks
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add docs/limited-release-calendar.json src/main/resources/synergy/standard.json
+          if ! git diff --cached --quiet -- src/main/resources/synergy/standard.json; then
+            python3 - <<'PY'
+          from pathlib import Path
+          version = Path("VERSION")
+          major, minor, patch = map(int, version.read_text().strip().split("."))
+          version.write_text(f"{major}.{minor}.{patch + 1}\n")
+          PY
+            git add VERSION
+            echo 'verify=true' >> "$GITHUB_OUTPUT"
+          fi
+
+      - if: steps.plan.outputs.verify == 'true'
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4.8.0
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - if: steps.plan.outputs.verify == 'true'
+        uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4.4.3
+
+      - name: Verify the staged set update
+        if: steps.plan.outputs.verify == 'true'
+        run: |
+          python3 scripts/check-version.py
+          python3 scripts/test-sync-limited-sets.py
+          ./gradlew test --stacktrace
+
+      - name: Integrate into main and select a release
+        id: integrate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ! git diff --cached --quiet; then
+            git diff --cached --check
+            git commit -m 'Sync Arena Limited sets and calendar'
+            git push origin HEAD:refs/heads/main
+          fi
+          # Retry a verified release if its earlier packaging or publication failed.
+          version="$(tr -d '[:space:]' < VERSION)"
+          if [[ "$(gh release view "v$version" --json assets --jq '[.assets[] | select(.name | endswith(".dmg"))] | length' 2>/dev/null || true)" != 2 ]]; then
+            echo "release_commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          fi
+
+  release:
+    needs: sync
+    if: needs.sync.outputs.release_commit != ''
+    permissions:
+      contents: write
+    uses: ./.github/workflows/release.yml
+    with:
+      commit: ${{ needs.sync.outputs.release_commit }}
+    secrets: inherit

@@ -1,7 +1,14 @@
 {
- "checked": "2026-09-30",
- "note": "Standard-legal sets with a bundled synergy profile. tier: researched=deeply verified archetypes+combos, data=grounded from 17Lands overperformance. Live ratings and trained models depend on each format's data availability. Drop a set when it rotates out of Standard (./gradlew auditSets).",
+ "checked": "2026-11-20",
+ "note": "Arena Limited sets with bundled guidance. Research profiles describe verified archetypes. Catalog entries use the Arena card pool to identify possible themes. Live 17Lands ratings and trained models depend on data availability.",
  "sets": [
+  {
+   "code": "TRK",
+   "tier": "researched",
+   "name": "Star Trek",
+   "releasedAt": "2026-11-13",
+   "ratingsReady": true
+  },
   {
    "code": "FRA",
    "rotatesYear": 2029,

@@ -35,7 +35,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -157,6 +159,17 @@ class DraftViewModel(
                 }.onFailure { Log.warn(TAG, "pipeline step failed: $it") }
             }
         }
+        scope.launch {
+            while (isActive) {
+                delay(30 * 60 * 1000L)
+                val snapshot = ui.value
+                val set = snapshot.setCode ?: continue
+                if (snapshot.phase == DraftPhase.IDLE || snapshot.ratingsDataStatus == RatingsDataStatus.LOADING) continue
+                if (snapshot.ratingsDataStatus == RatingsDataStatus.CARD_CATALOG ||
+                    (StandardSets.entry(set)?.ratingsReady == false && snapshot.ratingsReliableCardCount < 30)
+                ) refreshRatings(set)
+            }
+        }
     }
 
     fun startSimulation(set: String) {
@@ -221,12 +234,14 @@ class DraftViewModel(
     /** Force a new 17Lands request for the active set, even if this key was already attempted. */
     fun retryRatings() {
         scope.launch {
-            val state = tracker.state.value
-            val set = state.setCode ?: return@launch
-            ensureLoaded(set, forceRefresh = true)
-            ensureLanePair(tracker.state.value)
-            publish()
+            tracker.state.value.setCode?.let { refreshRatings(it) }
         }
+    }
+
+    private suspend fun refreshRatings(set: String) {
+        ensureLoaded(set, forceRefresh = true)
+        ensureLanePair(tracker.state.value)
+        publish()
     }
 
     private suspend fun publish() = mutex.withLock {
@@ -235,6 +250,7 @@ class DraftViewModel(
 
     private suspend fun ensureLoaded(set: String, forceRefresh: Boolean = false) {
         ratingsLoadMutex.withLock {
+            if (forceRefresh && tracker.state.value.setCode != set) return@withLock
             val format = DraftRatingsFormats.DEFAULT
             val key = "${set.uppercase()}_$format"
             val proceed = mutex.withLock {
@@ -273,7 +289,10 @@ class DraftViewModel(
             if (failure == null) {
                 scope.launch {
                     runCatching { metaRepo.load(set, repo.cardNames) }
-                    runCatching { archetypeRepo.loadStrengths(set, format) }
+                    if (repo.ratingsInfo?.source != RatingsDataSource.CARD_CATALOG) {
+                        runCatching { archetypeRepo.loadStrengths(set, format, forceRefresh) }
+                        ensureLanePair(tracker.state.value)
+                    }
                     runCatching { pickNetRepo.load(set, format) }
                     publish()
                 }
@@ -286,6 +305,7 @@ class DraftViewModel(
         val format = DraftRatingsFormats.DEFAULT
         val dataKey = "${set.uppercase()}_$format"
         if (!repo.isLoadedFor(set, format)) return
+        if (repo.ratingsInfo?.source == RatingsDataSource.CARD_CATALOG) return
         val pool = state.pool.map(repo::resolve)
         val signals = SignalsEngine.openLanes(state.seen, repo::resolve)
         val strength = archetypeRepo.strengthMap().takeIf { archetypeRepo.loadedKey == dataKey }.orEmpty()

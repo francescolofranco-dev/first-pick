@@ -71,11 +71,11 @@ internal fun FirstPickAboutMenu(onOpenAbout: () -> Unit) {
 }
 
 @Composable
-internal fun FirstPickAboutWindow(onCloseRequest: () -> Unit) {
+internal fun FirstPickAboutWindow(initialUpdate: UpdateCheckResult.Available? = null, onCloseRequest: () -> Unit) {
     val updateChecker = remember { UpdateChecker() }
     val scope = rememberCoroutineScope()
     var checking by remember { mutableStateOf(false) }
-    var updateResult by remember { mutableStateOf<UpdateCheckResult?>(null) }
+    var updateResult by remember(initialUpdate) { mutableStateOf<UpdateCheckResult?>(initialUpdate) }
     DialogWindow(
         onCloseRequest = onCloseRequest,
         state = rememberDialogState(size = DpSize(400.dp, 360.dp)),

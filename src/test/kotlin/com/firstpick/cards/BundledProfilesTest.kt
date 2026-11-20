@@ -21,7 +21,7 @@ class BundledProfilesTest {
         val manifest = json.decodeFromString<StandardManifest>(resource("/synergy/standard.json")!!)
         assertTrue(manifest.sets.size >= 15, "manifest should list the supported Standard sets")
 
-        for (entry in manifest.sets) {
+        for (entry in manifest.sets.filter { it.tier != "catalog" }) {
             val body = resource("/synergy/${entry.code}.json")
             assertTrue(body != null, "missing bundled profile for ${entry.code}")
             val profile = json.decodeFromString<SetSynergyProfile>(body)
