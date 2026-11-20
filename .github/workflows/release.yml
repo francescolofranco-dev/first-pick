@@ -72,7 +72,7 @@ jobs:
   build:
     name: Build dmg (${{ matrix.arch }})
     needs: plan
-    if: needs.plan.outputs.publish == 'true' || github.event_name == 'workflow_dispatch'
+    if: needs.plan.outputs.publish == 'true' || (github.event_name == 'workflow_dispatch' && !inputs.commit)
     strategy:
       fail-fast: false
       matrix:
@@ -239,7 +239,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    # Manual workflow runs are artifact-only. Both architectures must build (and,
+    # Direct manual release runs are artifact-only. Both architectures must build (and,
     # when credentials exist, pass notarization and staple validation) first.
     if: needs.plan.outputs.publish == 'true'
     steps:
