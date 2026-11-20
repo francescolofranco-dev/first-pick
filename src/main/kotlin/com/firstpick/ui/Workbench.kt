@@ -180,8 +180,8 @@ internal fun Workbench(
                                 WorkMode.Settings -> QuietText("Application and Arena access")
                             }
                         }
-                        RailItem("Format guides", selected = mode == WorkMode.Guides, icon = { FormatGuidesIcon() }) { mode = WorkMode.Guides }
-                        RailItem("Settings", selected = mode == WorkMode.Settings, icon = { SettingsIcon() }) { mode = WorkMode.Settings }
+                        RailItem("Format guides", selected = mode == WorkMode.Guides, showIndicator = false, icon = { FormatGuidesIcon() }) { mode = WorkMode.Guides }
+                        RailItem("Settings", selected = mode == WorkMode.Settings, showIndicator = false, icon = { SettingsIcon() }) { mode = WorkMode.Settings }
                     }
                     Box(Modifier.weight(1f).fillMaxHeight().testTag("workbench-workspace").background(Brush.verticalGradient(listOf(Color(0xFF171A2A), AppColors.background), endY = 260f)).padding(start=layout.gutter,end=if((mode==WorkMode.Deckbuilder && deck!=null)||mode==WorkMode.Analytics)0.dp else layout.gutter,top=if(mode==WorkMode.Draft && state.packCards.isEmpty() && !draftPool)0.dp else if(mode==WorkMode.Draft)16.dp else if(mode==WorkMode.Deckbuilder||mode==WorkMode.Analytics)0.dp else layout.top)) {
                         when (mode) {
@@ -240,8 +240,8 @@ internal fun Workbench(
 @Composable internal fun Hairline() = Box(Modifier.fillMaxWidth().height(1.dp).background(Color(0x12B2B0DB)))
 @Composable internal fun QuietText(text: String, micro: Boolean = false) = Text(text, color = AppColors.textSecondary, style = if (micro) AppTypography.micro.copy(fontSize=9.sp,fontWeight=FontWeight.Normal) else AppTypography.caption)
 @Composable private fun RailLabel(text: String) { Text(text.uppercase(), style = AppTypography.sectionHeader, color = AppColors.textMuted); Spacer(Modifier.height(12.dp)) }
-@Composable private fun RailItem(label: String, trailing: String = "", selected: Boolean = false, icon: (@Composable () -> Unit)? = null, onClick: () -> Unit) {
-    val feedback = navigationFeedback(selected = selected, vertical = true, indicatorInset = 7.dp, onClick = onClick)
+@Composable private fun RailItem(label: String, trailing: String = "", selected: Boolean = false, showIndicator: Boolean = true, icon: (@Composable () -> Unit)? = null, onClick: () -> Unit) {
+    val feedback = navigationFeedback(selected = selected, vertical = true, indicatorInset = 7.dp, showIndicator = showIndicator, onClick = onClick)
     Row(Modifier.fillMaxWidth().then(feedback.modifier)
         .padding(start=8.dp,top=10.dp,bottom=10.dp), verticalAlignment = Alignment.CenterVertically) {
         if(icon!=null){icon();Spacer(Modifier.width(6.dp))}

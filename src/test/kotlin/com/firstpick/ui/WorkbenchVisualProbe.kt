@@ -15,7 +15,7 @@ import org.jetbrains.skia.EncodedImageFormat
 @OptIn(ExperimentalComposeUiApi::class)
 fun main(args: Array<String>) {
     val out=Path.of(args.firstOrNull() ?: "build/workbench-visuals");Files.createDirectories(out)
-    for ((width,height) in listOf(600 to 640,706 to 730,720 to 760,1280 to 900,1440 to 960)) {
+    for ((width,height) in listOf(600 to 640,706 to 730,720 to 760,760 to 760,761 to 760,1100 to 900,1101 to 900,1280 to 900,1440 to 960)) {
         val displayedState=mutableStateOf(DraftUiState(researchedSets=listOf("FRA"),groundedSets=listOf("FRA"),modelSets=listOf("FRA")))
         ImageComposeScene(width,height,Density(1f)) {
             Workbench(displayedState.value,false,OverlayHealth(OverlayHealthState.INACTIVE),LiveDeckAccess(),{},{},{},null,{}, {}, {}, {}, {}, {}, {}, {},WorkbenchVisualFixtures.stats,WorkbenchVisualFixtures.history,{WorkbenchVisualFixtures.review})
@@ -62,6 +62,13 @@ fun main(args: Array<String>) {
             click("Pick log");render("review-picks");click("Results");render("review-matches")
             click("Format guides");render("guides")
             click("Reality Fracture");render("guides-expanded")
+            val settings = scene.semanticsOwners.flatMap { nodes(it.rootSemanticsNode) }.first {
+                it.config.getOrElse(SemanticsProperties.Text) { emptyList() }.any { text -> text.text == "Settings" }
+            }
+            scene.sendPointerEvent(PointerEventType.Enter, settings.boundsInRoot.center, type = PointerType.Mouse)
+            scene.sendPointerEvent(PointerEventType.Move, settings.boundsInRoot.center, type = PointerType.Mouse)
+            render("utility-navigation-hover")
+            click("Settings");render("settings")
         }
     }
     println("Visual snapshots: $out")

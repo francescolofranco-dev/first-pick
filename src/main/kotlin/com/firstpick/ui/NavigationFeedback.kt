@@ -34,6 +34,7 @@ internal fun navigationFeedback(
     vertical: Boolean = false,
     indicatorInset: Dp = 0.dp,
     highlightRow: Boolean = false,
+    showIndicator: Boolean = true,
     role: Role = Role.Button,
     onClick: () -> Unit,
 ): NavigationFeedback {
@@ -49,7 +50,7 @@ internal fun navigationFeedback(
     }
     val modifier = Modifier.drawBehind {
         if (highlightRow && highlighted) drawRect(AppColors.accent.copy(alpha = .08f))
-        if (opacity > 0f) {
+        if (showIndicator && opacity > 0f) {
             val stroke = 2.dp.toPx()
             val inset = indicatorInset.toPx()
             val start = if (vertical) Offset(stroke / 2, inset) else Offset(inset, size.height - stroke / 2)
@@ -61,7 +62,7 @@ internal fun navigationFeedback(
         .hoverable(source, enabled = enabled)
         .clickable(source, indication = null, enabled = enabled, role = role, onClick = onClick)
         .focusable(enabled, source)
-        .then(if (vertical) Modifier.padding(start = NavigationMarkerGutter) else Modifier)
+        .then(if (vertical && showIndicator) Modifier.padding(start = NavigationMarkerGutter) else Modifier)
     val ink = when {
         !enabled -> AppColors.textMuted
         selected == true || highlighted -> AppColors.textPrimary
