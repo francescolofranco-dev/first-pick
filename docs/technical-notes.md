@@ -46,7 +46,37 @@ ordinary OS window metadata supplies window position and foreground state. It
 captures no screenshots, requests no Screen Recording access, and never writes
 Arena memory, calls game functions, pauses the game or blocks its Done button.
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for the architecture.
+See [CONTRIBUTING.md](../CONTRIBUTING.md) for the architecture.
+
+## Current workspace
+
+The app groups work into **Draft**, **Deckbuilder**, and **Analytics**. Draft
+compares ranked picks and the drafted pool, with curve, color direction, and
+optional signals. Deckbuilder offers suggested builds, close cuts, vertical and
+horizontal card layouts, and a curve/manabase inspector. Analytics combines the
+performance overview and draft history, with shared expansion, format, and period
+filters. Saved drafts open a review with **Deck**, **Pick log**, and **Results**.
+**Format guides** and **Settings** remain in the sidebar.
+
+See the [README gallery](../README.md#a-look-inside) and
+[screenshot refresh instructions](screenshots/README.md).
+
+## New sets and updates
+
+The repository checks Scryfall's set calendar and Arena card availability every
+six hours, starting up to seven days before the listed tabletop release date.
+It also refreshes the [announced Wizards release calendar](limited-release-calendar.json)
+daily. New Arena card pools receive an initial catalog release, using card roles,
+curve, and provisional themes inferred from multicolor uncommons. Researched set
+profiles take precedence when available. A follow-up release marks ratings ready
+once enough reliable 17Lands Premier Draft results exist; the app also fetches live
+ratings directly as they become available.
+
+These set changes are tested, versioned, and published through the macOS release
+pipeline. The installed app checks GitHub for a newer version at startup and every
+six hours, then offers a download link through **Update available**. It does not
+install updates itself. See the [contributor workflow](../CONTRIBUTING.md#arena-limited-releases)
+and [distribution notes](distribution.md#update-checks).
 
 ## Build an app for everyday use
 
@@ -88,7 +118,7 @@ both).
 This is the same build type used by the shipped DMG, not the experimental
 ProGuard `*Release` tasks. Both development and packaged apps use JVM JIT
 optimization. Local builds are not notarized unless signing and
-notarization are configured (see [the distribution runbook](docs/distribution.md)).
+notarization are configured (see [the distribution runbook](distribution.md)).
 If packaging cannot find a full JDK, pass `-PcomposeJdk=/path/to/full/jdk21` to
 either command, or set `COMPOSE_JDK`.
 
@@ -133,7 +163,7 @@ prepare. The advisor and deck builder use the same profile as the guide.
 FRA includes a dedicated Premier Draft PickNet model trained on public 17Lands
 FRA picks. It refines suggestions within the existing guide and mana guardrails;
 other formats continue to use their own live ratings and contextual advisor.
-See the [model validation report](docs/fra-model-validation.md) for provenance,
+See the [model validation report](fra-model-validation.md) for provenance,
 card coverage, and the independent held-out comparison.
 
 When 17Lands has no ratings for a format yet, FirstPick loads card details from
@@ -145,8 +175,8 @@ existing weekly model-training selection as its public draft data grows.
 ## Starting another draft
 
 FirstPick clears the old pool and signals when Arena reports a new draft or course ID,
-including repeated runs of Pick Two Draft. If detection misses a transition, click
-**New draft** in the header before entering the draft in Arena. This clears the tracked
+including repeated runs of Pick Two Draft. If detection misses a transition, open
+**Settings → Start a new draft session** before entering the draft in Arena. This clears the tracked
 pool, pack, and recommendations and follows only new log activity. If the new pack is
 already open, re-enter the draft in Arena to obtain a fresh snapshot. Cards from before
 the reset can only be recovered if Arena sends a full pool snapshot.
@@ -190,7 +220,7 @@ sources. These rules also apply when filling short pools.
 against frozen data from three sets. It checks card conservation, color and
 splash legality, completeness, and conservative quality substitutions.
 Use `-PauditSeedStart=100 -PauditSeeds=100` to check another 600 pools.
-See [the audit report and reproduction instructions](docs/deck-building-audit.md).
+See [the audit report and reproduction instructions](deck-building-audit.md).
 
 
 ## Mana access and fixing

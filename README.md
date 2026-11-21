@@ -16,36 +16,52 @@ and needs, then proposes 2–3 finished decks when the draft ends.
 
 <p align="center">
   <picture>
-    <img src="docs/screenshots/draft-dashboard.png" width="820" alt="FirstPick live draft dashboard" />
+    <img src="docs/screenshots/draft-dashboard.png" width="820" alt="FirstPick Draft workspace with ranked picks, mana costs, pool summary, and color direction" />
   </picture>
 </p>
 
 ## Features
 
-- **Live pack ranking** — every card graded **A+ → F** with a 0–100 value, best pick on top.
+- **Live pack ranking** — compare 0–100 fit scores, mana costs, available 17Lands win rates, and a reason for each suggestion.
 - **Deck-aware scoring** — blends global and in-color win rates, archetype synergy, and missing roles.
-- **Dashboard** — likely colors, archetypes, open-color signals, curve, and pool.
-- **Memory-backed overlay** — complete live deck identities and quantities, with named add/cut guidance independent of scrolling and filters. Draft pick advice is a preview pending live pack validation; per-card placement is pending verified memory geometry.
-- **Set guides** — color-pair themes and key commons/uncommons per set, with cited sources.
-- **Personal stats** — local SQLite storage for drafts, draft event results, draft match history, play/draw performance, deck colors, and Limited rank progression. Recover available records from older Arena logs automatically.
-- **Draft history** — completed drafts saved locally; reopen deck builds and the full drafted pool, including drafts recovered from the current Arena log.
-- **Deck builder** — an automatic post-draft Arena overlay compares 2–3 ranked builds with full card lists and manabases. Choose a build for red/green guidance, or disable automatic display and reopen it with Show overlay.
+- **Draft workspace** — switch between the current pack and drafted pool; check your curve, color direction, and draft signals.
+- **Deckbuilder** — compare up to three ranked builds, review close cuts, and inspect the curve and suggested manabase in vertical or horizontal layouts.
+- **Arena overlay** — pick ratings and deck guidance alongside Arena, with read-only memory access for supported game builds.
+- **Format guides** — color-pair themes and key commons/uncommons per set, with cited sources for researched guides.
+- **Analytics and draft history** — local performance reports, expansion/format/period filters, and saved drafts with recorded cards, packs, and available results. Recover available records from older Arena logs automatically.
+- **Automatic set releases** — upcoming Arena sets are checked regularly, with new support and ratings-ready updates published as data becomes available. FirstPick notifies you when a new app version is ready.
 
-Hover any card to preview it:
+## A look inside
 
-<picture>
-  <img src="docs/screenshots/card-preview.png" width="320" alt="Card-image preview on hover" />
-</picture>
-
-After the draft, compare builds and review the full list:
+Compare suggested builds, close cuts, and mana in **Deckbuilder**:
 
 <picture>
-  <img src="docs/screenshots/deck-builder.png" width="820" alt="Post-draft deck builder options" />
+  <img src="docs/screenshots/deck-builder.png" width="820" alt="Deckbuilder with suggested builds, card list, close cuts, curve, and manabase" />
+</picture>
+
+Track results in **Analytics**, then open a saved draft to review its deck, recorded packs, and results:
+
+<picture>
+  <img src="docs/screenshots/analytics.png" width="820" alt="Analytics overview with win rate, completed drafts, trophy runs, and finish distribution" />
 </picture>
 
 <picture>
-  <img src="docs/screenshots/deck-list.png" width="820" alt="Deck list with roles and manabase" />
+  <img src="docs/screenshots/draft-history.png" width="820" alt="Draft history with expansion, format, and period filters and an Open action for each draft" />
 </picture>
+
+Screenshots show the current app UI with illustrative sample data.
+
+## Keeping up with new sets
+
+FirstPick follows upcoming Magic releases and starts checking for Arena card pools
+before release day. New set support is published automatically as cards become
+available, followed by a ratings update once enough 17Lands results exist. Early
+support uses card information and provisional themes; researched guides take
+precedence where available.
+
+The app checks for new versions and shows **Update available** with a download
+link. Installing the new version is a manual step. See the
+[set-update notes](docs/technical-notes.md#new-sets-and-updates) for details.
 
 ## Install
 

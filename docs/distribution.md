@@ -144,9 +144,14 @@ stapler validate /Applications/FirstPick.app # → "The validate action worked!"
 
 The app's update checker requests metadata from GitHub's public
 `/repos/francescolofranco-dev/first-pick/releases/latest` API. It compares semantic
-versions and selects the matching `arm64` or `x86_64` `.dmg`. It only returns the
-release page and asset link for the UI to present: it never downloads, mounts, or
+versions at startup and every six hours, and selects the matching `arm64` or
+`x86_64` `.dmg`. It only returns the release page and asset link for the UI to present: it never downloads, mounts, or
 installs an update automatically.
+
+Set support also reaches users through these releases. The scheduled set-sync
+workflow publishes an initial Arena card catalog and a follow-up ratings-ready
+update as data becomes available. The same in-app update notice points to those
+releases. See [new sets and updates](technical-notes.md#new-sets-and-updates).
 
 ## Notes
 

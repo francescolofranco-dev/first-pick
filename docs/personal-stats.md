@@ -11,8 +11,11 @@ session logs, and local MTGA Draft Tool logs. It then records new events from th
 live log watcher. Stable Arena course IDs and match IDs prevent duplicate totals
 when a session is replayed. There is no expiry or automatic deletion.
 
-The Stats tab provides Overview, Matches, and Rank sections. Set, play type, and
-date filters apply to Overview and Matches; Rank has a date filter. Only Draft
+The **Analytics** workspace provides **Overview** and **Draft history**. Expansion,
+format, and period filters stay applied when switching between them. Overview
+shows match win rate, completed drafts, trophy runs, finish distribution, and match
+results. Open a draft from history to review **Deck**, **Pick log**, and **Results**.
+See the [current screenshots](../README.md#a-look-inside). Only Draft
 events and their matches contribute to statistics or filter choices. Constructed,
 normal Play, Midweek Magic, and Sealed events are excluded, including records
 already saved by earlier app versions. New unrelated records are not persisted.
@@ -29,9 +32,9 @@ already saved by earlier app versions. New unrelated records are not persisted.
   starting players are excluded from those two groups.
 - Color breakdowns use an observed saved deck and locally cached card colors,
   rather than treating all colors in a drafted pool as the played deck.
-- Rank shows only Arena’s Limited ladder. This ladder is shared with Sealed, so
-  its aggregate season win/loss totals are not shown as draft results. Constructed
-  rank is not displayed. Draft results come only from Draft events and matches.
+- Stored Limited rank observations are separate from draft results. Arena’s Limited
+  ladder is shared with Sealed; its season totals are not counted as draft results.
+  The current Analytics workspace does not expose a separate Rank section.
 - Trophies require an observed completed event with seven wins (three for
   Traditional Draft, four for Pick Two Draft). An absent trophy record does not mean every old event failed.
 
@@ -44,8 +47,8 @@ Future schema versions are rejected instead of being opened as a fresh database.
 Historical drafts open using saved card ratings, catalogs, and metadata even when
 those caches are older than live-advice refresh limits. Optional archetype data
 is loaded only from disk during review, so its refresh cannot block the saved
-pool or deck builds. The History set filter includes counts for each selection.
-Stats lists saved draft types even when their historical results are unavailable.
+pool or deck builds. The history filters include saved expansions, and records
+without known results remain available for review.
 
 Verified historical Untapped draft results can be recovered into the local file
 `~/Library/Application Support/FirstPick/recovered-draft-results.json`. Startup
